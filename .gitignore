@@ -1,4 +1,0 @@
-*.gitignore
-stats/env/*
-*.env
-*.pyc

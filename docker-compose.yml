@@ -2,15 +2,17 @@ version: '3.8'
 
 services:
   web:
-    build: ./app
-    # command: gunicorn microUserStats.wsgi --bind 0.0.0.0:8000
-    command: python manage.py runserver 0.0.0.0:8000
-    # expose:
-    #   - 8000
+    build: ./stats
+    container_name: django_app
+#    command: python manage.py runserver 0.0.0.0:8000
+    command: gunicorn microUserStats.wsgi:application --bind 0.0.0.0:8000
+    expose:
+       - 8000
     volumes:
-      - ./app/:/usr/src/app/
-    ports:
-      - 8000:8000
+      - static_volume:/home/stats/web/staticfiles
+      - ./stats/:/usr/src/stats/
+#    ports:
+#      - 8000:8000
     env_file:
       - ./.env
     depends_on:
@@ -18,22 +20,26 @@ services:
   
   db:
     image: postgres:16
+    container_name: postgreSQL
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    expose:
+      - "5432"
     env_file:
      -  ./.env
+    ports:
+      - "5432:5432"
 
-  # nginx:
-  #   build: ./nginx
-  #   ports:
-  #     - 1337:80
-  #   depends_on:
-  #     - web
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    volumes:
+      - static_volume:/home/stats/web/staticfiles
+    ports:
+     - 1338:80
+    depends_on:
+     - web
 
 volumes:
-    postgres_data:
-      # driver: local
-      # driver_opts:
-      #   type: 'none'
-      #   o: 'bind'
-      #   device: "/home/rrebois/data/postgresql/data"
+  postgres_data:
+  static_volume:

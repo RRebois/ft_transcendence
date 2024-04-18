@@ -6,4 +6,5 @@ class UserStat(models.Model):
      user_id = models.IntegerField(primary_key=True)
      user_wins = models.IntegerField(default=0)
      user_losses = models.IntegerField(default=0)
+     user_winrate = models.FloatField(default=0)
      user_elo = models.IntegerField(default=900)
