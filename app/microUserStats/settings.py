@@ -32,7 +32,7 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 # Application definition
 
 INSTALLED_APPS = [
-    "microUserStats",
+    'microUserStats',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -77,8 +77,10 @@ WSGI_APPLICATION = 'microUserStats.wsgi.application'
 
 DATABASES = {
     'default': {
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': 'db.sqlite3',
         'ENGINE': os.environ.get('SQL_ENGINE', 'django.db.backends.sqlite3'),
-        'NAME': os.environ.get('SQL_DATABASE'),
+        'NAME': os.environ.get('SQL_NAME'),
         'USER':os.environ.get('SQL_USER', 'user'),
         'PASSWORD': os.environ.get('SQL_PASSWORD', 'password'),
         'HOST': os.environ.get('SQL_HOST', 'localhost'),
@@ -122,7 +124,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / "staticfiles"
+# STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
