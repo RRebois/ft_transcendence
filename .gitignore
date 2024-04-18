@@ -1,0 +1,6 @@
+.gitignore
+stats/env/*
+*.env
+*.pyc
+.idea
+nginx/*
