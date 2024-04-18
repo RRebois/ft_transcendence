@@ -9,9 +9,11 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+from dotenv import load_dotenv
 from pathlib import Path
 import os
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,12 +29,12 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 DEBUG = bool(os.environ.get("DEBUG", default=0))
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
-
+# ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
 
 # Application definition
 
 INSTALLED_APPS = [
-    'microUserStats',
+    'userStats',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -80,8 +82,8 @@ DATABASES = {
         # 'ENGINE': 'django.db.backends.sqlite3',
         # 'NAME': 'db.sqlite3',
         'ENGINE': os.environ.get('SQL_ENGINE', 'django.db.backends.sqlite3'),
-        'NAME': os.environ.get('SQL_NAME'),
-        'USER':os.environ.get('SQL_USER', 'user'),
+        'NAME': os.environ.get('SQL_DATABASE'),
+        'USER': os.environ.get('SQL_USER', 'user'),
         'PASSWORD': os.environ.get('SQL_PASSWORD', 'password'),
         'HOST': os.environ.get('SQL_HOST', 'localhost'),
         'PORT': os.environ.get('SQL_PORT', '5432'),

@@ -1,6 +1,7 @@
 Django==5.0.4
 Psycopg2==2.9.9
 gunicorn==22.0.0
+python-dotenv==1.0.1
 # Psycopg2==2.9.6
 # sass==2.3
 

@@ -15,6 +15,7 @@ ENV PYTHONDONTWRITEBYTEODE 1
 ENV PYTHONUNBUFFERED 1
 
 # install dependencies
+RUN apt install
 RUN apt-get update && apt-get install netcat-traditional -y
 
 RUN pip install --upgrade pip
