@@ -12,9 +12,9 @@ then
 fi
 
 # python manage.py flush --no-input
-python3 manage.py makemigrations
-python3 manage.py migrate --noinput
-python3 manage.py collectstatic
-python3 manage.py createsuperuser --noinput
+python manage.py makemigrations
+python manage.py migrate --noinput
+python manage.py collectstatic
+python manage.py createsuperuser --noinput
 
 exec "$@"
