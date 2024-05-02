@@ -1,5 +1,5 @@
 .gitignore
-#stats/env/*
-#*.env
+stats/env/*
+*.env
 *.pyc
 .idea

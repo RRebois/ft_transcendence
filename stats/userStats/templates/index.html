@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Transcendence index
+{% endblock %}
+
+{% block body %}
+    <form action="{% url "userStats" 0 %}" method="GET" id="userStats">
+        <input type="submit">Check your stats</input>
+    </form>
+{% endblock %}
