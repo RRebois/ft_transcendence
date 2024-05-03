@@ -10,6 +10,10 @@ from .models import *
 
 
 def index(request):
+    if request.user.is_authenticated:
+        return render(request, "index.html", {
+            "username": request.user.username,
+        })
     return render(request, "index.html")
 
 def login_view(request):
@@ -46,7 +50,7 @@ def register_view(request):
 
         # Attempt to create new user
         try:
-            user = userGameStat.objects.create_user(username="username", email="email", password="password")
+            user = userData.objects.create_user(username, email, password)
             user.save()
         except IntegrityError:
             return render(request, "register.html", {
@@ -58,14 +62,14 @@ def register_view(request):
         return render(request, "register.html")
 
 @csrf_exempt
-def userStats(request, user_id):
+def userStatsData(request, username):
     # Query for requested post
     try:
-        userData = userGameStat.objects.get(user_id=user_id)
-    except userGameStat.DoesNotExist:
+        user = userData.objects.get(username=username)
+    except userData.DoesNotExist:
         return JsonResponse({"error": "User does not exists"}, status=404)
 
     if request.method == "GET":
-        return JsonResponse(userData.serialize())
+        return JsonResponse(user.serialize())
     else:
         return JsonResponse({"Error": "Method not allowed"})

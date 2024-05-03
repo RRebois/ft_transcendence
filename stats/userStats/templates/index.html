@@ -4,8 +4,11 @@
     Transcendence index
 {% endblock %}
 
+
 {% block body %}
-    <form action="{% url "userStats" 0 %}" method="GET" id="userStats">
-        <input type="submit">Check your stats</input>
-    </form>
+    {% if user.is_authenticated %}
+        <form action="{% url "userStatsData" username %}" method="GET" id="stats">
+            <input type="submit">Check your stats</input>
+        </form>
+    {% endif %}
 {% endblock %}

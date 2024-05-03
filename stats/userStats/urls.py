@@ -8,5 +8,5 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
 
     #API Routes
-    path("stats/<int:user_id>", views.userStats, name="userStats")
+    path("stats/<str:username>", views.userStatsData, name="userStatsData")
 ]

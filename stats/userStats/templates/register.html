@@ -1,4 +1,9 @@
 {% extends "layout.html" %}
+{% load static %}
+
+{% block script %}
+    <script src="{% static "script.js" %}"></script>
+{% endblock %}
 
 {% block body %}
 
@@ -8,27 +13,45 @@
         <div style="color: red;">{{ message }}</div>
     {% endif %}
 
-    <form action="{% url 'register' %}" method="post">
+    <form action="{% url "register" %}" method="post" class="needs-validation" novalidate>
         {% csrf_token %}
         <div class="mb-3">
             <label for="validation01" class="form-label">Username</label>
-            <input class="form-control" autofocus type="text" name="username" id="validation01" required>
+            <input class="form-control" autofocus type="text" name="username" id="validation01" minlength="5"
+                   maxlength="12" pattern="[A-Za-z0-9]+" required placeholder="5 to 12 characters
+only letters and digits allowed!">
+            <div class="valid-feedback">Looks good!</div>
+            <div class="invalid-feedback">Username has to be 5 to 12 characters long and
+                composed only by letters and digits!</div>
         </div>
         <div class="mb-3">
             <label for="validation02" class="form-label">Email</label>
-            <input class="form-control" type="email" name="email" id="validation02" required>
+            <input class="form-control" type="email" name="email" id="validation02"
+                   placeholder="example@example.com" required>
+            <div class="valid-feedback">Looks good!</div>
+            <div class="invalid-feedback">Email should look like "example@example.com"</div>
         </div>
         <div class="mb-3">
             <label for="validation03" class="form-label">Password</label>
-            <input class="form-control" type="password" name="password" id="validation03" required>
+            <input class="form-control" type="password" name="password" id="validation03"
+                   pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{5,12}" required
+                   placeholder="5 to 12 characters, one digit, 1 lowercase letter, 1 uppercase letter,
+1 special character">
+            <div class="valid-feedback">Looks good!</div>
+            <div class="invalid-feedback">5 to 12 characters long including one digit,
+                one uppercase and one lowercase letter, and one special character!</div>
         </div>
         <div class="mb-3">
             <label for="validation04" class="form-label">Password confirmation</label>
-            <input class="form-control" type="password" name="confirmation" id="validation04" required>
+            <input class="form-control" type="password" name="confirmation" id="validation04"
+                   pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{5,12}"
+                   placeholder="5 to 12 characters, one digit, 1 lowercase letter, 1 uppercase letter,
+1 special character">required>
+            <div class="valid-feedback">Looks good!</div>
         </div>
-        <input class="btn btn-primary" type="submit" value="Register">
+        <input class="btn btn-primary" type="submit" value="Register" id="submitRegistrationForm">
     </form>
 
-    Already have an account? <a href="{% url 'login' %}">Log In here.</a>
+    Already have an account? <a href="{% url "login" %}">Log In here.</a>
 
 {% endblock %}
