@@ -7,6 +7,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 
 from .models import *
+from .forms import *
 
 
 def index(request):
@@ -37,29 +38,20 @@ def logout_view(request):
     return HttpResponseRedirect(reverse("index"))
 def register_view(request):
     if request.method == "POST":
-        username = request.POST["username"]
-        email = request.POST["email"]
-
-        # Ensure password matches verification
-        password = request.POST["password"]
-        confirmation = request.POST["confirmation"]
-        if password != confirmation:
+        form = userRegistrationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            user = form.instance
+            login(request, user)
+            return HttpResponseRedirect(reverse("index"))
+        else:
             return render(request, "register.html", {
-                "message": "Passwords must match."
+                "form": form,
             })
-
-        # Attempt to create new user
-        try:
-            user = userData.objects.create_user(username, email, password)
-            user.save()
-        except IntegrityError:
-            return render(request, "register.html", {
-                "message": "Username already taken."
-            })
-        login(request, user)
-        return HttpResponseRedirect(reverse("index"))
     else:
-        return render(request, "register.html")
+        return render(request, "register.html", {
+            "form": userRegistrationForm,
+        })
 
 @csrf_exempt
 def userStatsData(request, username):
