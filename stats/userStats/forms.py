@@ -3,13 +3,11 @@ from django import forms
 from .models import *
 
 class UserRegistrationForm(UserCreationForm):
-    password1 = forms.CharField(label="Password", widget=forms.PasswordInput,
-                                min_length=5, max_length=12,
+    password1 = forms.CharField(widget=forms.PasswordInput, min_length=5,
                                 help_text="Password must be 5 to 12 characters including \
                                 1 uppercase character, 1 lowercase character, \
-                                1 special character and 1 digit character")
-    password2 = forms.CharField(label="Password", widget=forms.PasswordInput,
-                                min_length=5, max_length=12,
+                                1 special character and 1 digit character.")
+    password2 = forms.CharField(widget=forms.PasswordInput, min_length=5,
                                 help_text="Repeat password.")
     class Meta:
         model = userData
