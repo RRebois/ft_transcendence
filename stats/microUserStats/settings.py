@@ -52,7 +52,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:1338"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:1338", "https://localhost:1234"]
 
 ROOT_URLCONF = 'microUserStats.urls'
 
