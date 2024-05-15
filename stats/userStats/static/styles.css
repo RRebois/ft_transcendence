@@ -1,3 +1,9 @@
 .red {
     color: red;
 }
+
+.italic_txt {
+    font-family: arial;
+    font-size: 10px;
+    font-style: italic;
+}

@@ -1,9 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.db import IntegrityError
+from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 
 from .models import *
@@ -38,19 +39,41 @@ def logout_view(request):
     return HttpResponseRedirect(reverse("index"))
 def register_view(request):
     if request.method == "POST":
-        form = userRegistrationForm(request.POST)
+        form = UserRegistrationForm(request.POST)
+        print(form.errors)
         if form.is_valid():
-            form.save()
-            user = form.instance
+            user = form.save()
+            # user = request.POST["username"]
+            # # user = form.clean_username()
+            # # password = form.clean_passwords()
+            # email = request.POST["email"]
+            # password = request.POST["password"]
+        # else:
+        #     form = UserRegistrationForm()
+        #     return render(request, "register.html", {
+        #         "message": "bad input",
+        #         "form": form
+        #     })
+
+            messages.success(request, "You have successfully registered.")
             login(request, user)
-            return HttpResponseRedirect(reverse("index"))
+            return redirect(reverse("index"))
+            # return HttpResponseRedirect(reverse("index"))
+        # else:
+        #     return render(request, "register.html")
+            # form = UserRegistrationForm()
+            # return render(request, "register.html", {
+            #     "form": form,
+            # })
         else:
-            return render(request, "register.html", {
-                "form": form,
-            })
-    else:
+            form = UserRegistrationForm()
         return render(request, "register.html", {
-            "form": userRegistrationForm,
+            "form": form
+        })
+    else:
+        form = UserRegistrationForm()
+        return render(request, "register.html", {
+            "form": form
         })
 
 @csrf_exempt
