@@ -21,12 +21,12 @@ class UserRegistrationForm(UserCreationForm):
 
         if password and confirmation and password != confirmation:
             raise forms.ValidationError("Passwords must match")
-        if password.length < 5 or confirmation.length < 5:
+        if len(password) < 5 or len(confirmation) < 5:
             raise forms.ValidationError("Passwords must be at least 5 characters")
         return password
 
     def clean_username(self):
         username = self.cleaned_data.get("username")
-        if username.length < 5 or username.length > 12:
+        if len(username) < 5 or len(username) > 12:
             raise forms.ValidationError("Username must be between 5 and 12 characters and contain only alphanumeric characters")
         return username
