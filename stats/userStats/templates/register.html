@@ -39,19 +39,21 @@
             <div class="invalid-feedback">Email should look like "example@example.com"</div>
         </div>
         <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input class="form-control" type="password" name="password" id="password"
-                   pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{5,12}" required
-                   placeholder="5 to 12 characters, 1 digit, 1 lowercase letter, 1 uppercase letter,
+            <label for="password1" class="form-label">Password</label>
+            <!--                   pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{5,12}"-->
+            <input class="form-control" type="password" name="password1" id="password1"
+                   required
+            placeholder="5 to 12 characters, 1 digit, 1 lowercase letter, 1 uppercase letter,
  1 special character">
             <div class="valid-feedback">Looks good!</div>
             <div class="invalid-feedback">5 to 12 characters long including one digit,
                 one uppercase and one lowercase letter, and one special character!</div>
         </div>
         <div class="mb-3">
-            <label for="confirmation" class="form-label">Password confirmation</label>
-            <input class="form-control" type="password" name="confirmation" id="confirmation"
-                   pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{5,12}" required
+            <label for="password2" class="form-label">Password confirmation</label>
+<!--            pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{5,12}"-->
+            <input class="form-control" type="password" name="password2" id="password2"
+                   required
                    placeholder="5 to 12 characters, 1 digit, 1 lowercase letter, 1 uppercase letter,
  1 special character">
             <div class="valid-feedback">Looks good!</div>

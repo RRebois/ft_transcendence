@@ -2,31 +2,37 @@ services:
   web:
     build: ./stats
     container_name: django_app
-#    command: python manage.py runserver 0.0.0.0:8000
+    #    command: python manage.py runserver 0.0.0.0:8000
     command: gunicorn microUserStats.wsgi:application --bind 0.0.0.0:8000
     expose:
-       - 8000
+      - 8000
     volumes:
       - static_volume:/home/stats/web/staticfiles
       - ./stats/:/usr/src/stats/
-#    ports:
-#      - 8000:8000
+    #    ports:
+    #      - 8000:8000
     env_file:
       - ./.env
     depends_on:
       - db
+    restart: on-failure
   
   db:
-    image: postgres:16
     container_name: postgreSQL
+    build: ./postgresql
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     expose:
       - "5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     env_file:
-     -  ./.env
+      - ./.env
     ports:
       - "5432:5432"
+    restart: on-failure
 
   nginx:
     build: ./nginx
@@ -34,9 +40,10 @@ services:
     volumes:
       - static_volume:/home/stats/web/staticfiles
     ports:
-     - 1338:80
+      - 1338:80
     depends_on:
-     - web
+      - web
+    restart: on-failure
 
 volumes:
   postgres_data:

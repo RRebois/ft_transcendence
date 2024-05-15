@@ -5,12 +5,12 @@ from django.contrib.auth import get_user_model
 class userRegistrationForm(UserCreationForm):
     class Meta:
         model = get_user_model()
-        fields = ("username", "email", "password")
+        fields = ("username", "email", "password1", "password2")
 
     def clean(self):
         cleaned_data = super().clean()
-        password = cleaned_data.get("password")
-        password_confirmation = cleaned_data.get("confirmation")
+        password = cleaned_data.get("password1")
+        password_confirmation = cleaned_data.get("password2")
 
         if password != password_confirmation:
             return

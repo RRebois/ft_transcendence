@@ -1,4 +1,4 @@
 Django==5.0.4
-Psycopg2==2.9.9
+psycopg==3.1.8
 gunicorn==22.0.0
 python-dotenv==1.0.1
