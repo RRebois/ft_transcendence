@@ -2,13 +2,12 @@ services:
   web:
     build: ./stats
     container_name: django_app
-    command: gunicorn --certfile /etc/certs/ft_transcendence.crt --keyfile /etc/certs/ft_transcendence.key microUserStats.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn microUserStats.wsgi:application --bind 0.0.0.0:8000
     expose:
       - 8000
     volumes:
       - static_volume:/home/stats/web/staticfiles
       - ./stats/:/usr/src/stats/
-      - ./config/nginx/certs/:/etc/certs
     env_file:
       - ./.env
     depends_on:
@@ -37,10 +36,9 @@ services:
     container_name: nginx
     volumes:
       - static_volume:/home/stats/web/staticfiles
-      - ./config/nginx/:/etc/nginx/conf.d
     ports:
-      - 1338:80
-      - 1234:443
+      - 8080:80     # <-- Change the http port here
+      - 8443:443    # <-- Change the https port here
     depends_on:
       - web
     restart: on-failure
