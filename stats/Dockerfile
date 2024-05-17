@@ -4,7 +4,7 @@ FROM python:3.12
 RUN mkdir -p /home/stats
 
 ENV HOME=/home/stats
-ENV APP_HOME=/home/stats/web
+ENV APP_HOME=/home/stats/web/
 RUN mkdir $APP_HOME
 RUN mkdir $APP_HOME/staticfiles
 WORKDIR $APP_HOME

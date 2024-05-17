@@ -2,17 +2,20 @@ services:
   web:
     build: ./stats
     container_name: django_app
-    command: gunicorn microUserStats.wsgi:application --bind 0.0.0.0:8000
+#    command: gunicorn microUserStats.wsgi:application --bind 0.0.0.0:8000 --reload
+    command: python manage.py runserver 0.0.0.0:8000          # <-- Add this line for hot reload
     expose:
       - 8000
     volumes:
       - static_volume:/home/stats/web/staticfiles
-      - ./stats/:/usr/src/stats/
+      - ./stats/:/home/stats/web/
     env_file:
       - ./.env
     depends_on:
       - db
-    restart: on-failure
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
   
   db:
     container_name: postgreSQL
@@ -40,7 +43,8 @@ services:
       - 8080:80     # <-- Change the http port here
       - 8443:443    # <-- Change the https port here
     depends_on:
-      - web
+      web:
+        condition: service_healthy
     restart: on-failure
 
 volumes:

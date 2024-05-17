@@ -50,3 +50,25 @@ server {
     return 301 https://$server_name:8443$request_uri;   # <-- Change the http port here
 }
 ```
+
+## Hot reload 🔥
+
+Hot reload is enabled for Django part of the project. Now, you can change the code and see the changes in real time.
+
+> [!NOTE]
+> Just don't forget to reload the page in your browser.
+
+## Before push to production
+
+Before pushing the final project, don't forget to:
+- set the `DEBUG` variable to `False`
+- disable the hot reload
+
+**docker-compose.yml**
+
+```yml
+    build: ./stats
+    container_name: django_app
+#    command: gunicorn microUserStats.wsgi:application --bind 0.0.0.0:8000 --reload   # <-- Uncomment this line
+    command: python manage.py runserver 0.0.0.0:8000          # Remove this line
+```

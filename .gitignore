@@ -1,5 +1,9 @@
 .gitignore
 stats/env/*
-*.env
+.env
 *.pyc
 .idea
+.code
+
+stats/microUserStats/__pycache__/*
+stats/userStats/migrations/*_initial.py
