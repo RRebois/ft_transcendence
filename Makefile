@@ -16,7 +16,7 @@ all: up
 up:
 	docker compose up --build -d
 	@echo "Opening https://localhost:8443 in browser..."
-	@nohup xdg-open https://localhost:8443 > /dev/null 2>&1 &
+	@nohup open https://localhost:8443 > /dev/null 2>&1 &
 
 down:
 	docker compose down -v
