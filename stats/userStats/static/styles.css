@@ -1,9 +1,13 @@
-.red {
+.colorRed {
     color: red;
 }
 
-.helper {
+.helper_txt {
     font-family: arial;
     font-size: 10px;
     font-style: italic;
+}
+
+.padForm {
+    padding: 10px;
 }

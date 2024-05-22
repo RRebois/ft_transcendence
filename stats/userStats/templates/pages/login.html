@@ -1,4 +1,9 @@
 {% extends "pages/layout.html" %}
+{% load static %}
+
+{% block script %}
+    <script src="{% static 'scriptRegistration.js' %}"></script>
+{% endblock %}
 
 {% block body %}
 
@@ -16,19 +21,34 @@
         </ul>
     {% endif %}
 
-    <form action="{% url 'login' %}" method="post">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="login01" class="form-label">Username</label>
-            <input autofocus class="form-control" type="text" name="username" required>
-        </div>
-        <div class="mb-3">
-            <label for="login02" class="form-label">Password</label>
-            <input class="form-control" type="password" name="password" required>
-        </div>
-        <input class="btn btn-primary" type="submit" value="Login">
-    </form>
-
+    <div class="padForm">
+        <form class="row g-3 needs-validation pad" action="{% url 'login' %}" method="post" novalidate>
+            {% csrf_token %}
+            <div class="col-md-6">
+                <label for="username" class="form-label">Username</label>
+                <input autofocus class="form-control" type="text" name="username" id="username"
+                       required>
+                {% if errors.first_name %}
+                    <p class="colorRed">{{ errors.username.0 }}</p>
+                {% endif %}
+                <div class="valid-feedback">Looks good!</div>
+                <div class="invalid-feedback">Bad input!</div>
+            </div>
+            <div class="col-md-6">
+                <label for="password" class="form-label">Password</label>
+                <input class="form-control" type="password" name="password" id="password" required>
+                {% if errors.first_name %}
+                    <p class="colorRed">{{ errors.password.0 }}</p>
+                {% endif %}
+                <div class="valid-feedback">Looks good!</div>
+                <div class="invalid-feedback">Bad input!</div>
+            </div>
+            <div class="col-12">
+                <input class="btn btn-primary" type="submit" value="Login">
+            </div>
+        </form>
+    </div>
+<div class="padForm">
     Don't have an account? <a href="{% url 'register' %}">Register here.</a>
-
+</div>
 {% endblock %}
