@@ -31,7 +31,14 @@ def authenticate_user(request):
         raise AuthenticationFailed('Unauthenticated')
 
     secret = os.environ.get('SECRET_KEY')
-    payload = jwt.decode(token, secret, algorithms=['HS256'])
+
+    try:
+        payload = jwt.decode(token, secret, algorithms=['HS256'])
+    except: jwt.ExpiredSignatureError:
+        raise AuthentificationFailed("Token expired, please log in again.")
+    except: jwt.InvalidTokenError:
+        raise AuthentificationFailed("Invalid token, please log in again.")
+
     user_id = payload.get('id')
 
     try:
