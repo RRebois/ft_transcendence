@@ -6,9 +6,7 @@ ft_transcendence
 
 {% block body %}
 {% if user.is_authenticated %}
-<form action="{% url " userStatsData" username %}" method="GET" id="stats">
-<input type="submit">Check your stats</input>
-</form>
+<p>Hello {{user.username}} 😳👉👈</p>
 {% else %}
 <div class="w-100 h-100 d-flex justify-content-center align-items-center">
     <form action="{% url 'login' %}" method="post"
