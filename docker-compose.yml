@@ -8,6 +8,7 @@ services:
       - 8000
     volumes:
       - static_volume:/home/stats/web/staticfiles
+      - media_volume:/home/stats/web/mediafiles
       - ./stats/:/home/stats/web/
     env_file:
       - ./.env
@@ -39,6 +40,7 @@ services:
     container_name: nginx
     volumes:
       - static_volume:/home/stats/web/staticfiles
+      - media_volume:/home/stats/web/mediafiles
     ports:
       - 8080:80     # <-- Change the http port here
       - 8443:443    # <-- Change the https port here
@@ -50,3 +52,4 @@ services:
 volumes:
   postgres_data:
   static_volume:
+  media_volume:

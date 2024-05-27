@@ -56,8 +56,9 @@ def authenticate_user(request):
 # @method_decorator(csrf_protect, name='dispatch')
 def index(request):
     if request.user.is_authenticated:
+        user = request.user
         return render(request, "pages/index.html", {
-            "username": request.user.username,
+            "user": user,
         })
     return render(request, "pages/index.html")
 
@@ -122,7 +123,7 @@ class register_view(APIView):
             user = serializer.save()
             #2fa
             messages.success(request, "You have successfully registered. Check your emails to verify your account")
-            login(request, user)
+            # login(request, user)
             return redirect("index")
         else:
             return render(request, "pages/register.html", {

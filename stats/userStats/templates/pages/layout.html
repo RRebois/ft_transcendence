@@ -19,12 +19,17 @@
 {% if user.is_authenticated %}
 <nav class="navbar bg-body-tertiary sticky-top">
     <div class="container-fluid">
-        <ul class="nav mr-auto">
+        <ul class="nav">
+            <li class="nav-item">
+                <img src="{{ user.image.url }}" width="60px" height="60px" alt="avatar">
+            </li>
+        </ul>
+        <ul class="nav me-auto">
             <li class="nav-item">
                 <a class="nav-link" href="#">{{ user.username }}</a>
             </li>
         </ul>
-        <ul class="nav ml-auto">
+        <ul class="nav ms-auto">
             <li class="nav-item">
                 <form method="POST" action="{% url 'logout' %}">
                     {% csrf_token %}

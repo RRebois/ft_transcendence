@@ -5,11 +5,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .manager import UserManager
 
 class User(AbstractUser):
-    firstName = models.CharField(max_length=100)
     username = models.CharField(unique=True, max_length=100)
     email = models.EmailField(unique=True, max_length=100)
     password = models.CharField(max_length=100, validators=[MinLengthValidator(8)])
-    image = models.ImageField(default='default_pp.jpg', upload_to='profile_pics')
+    image = models.ImageField(default='profile_pics/default_pp.jpg', upload_to='profile_pics/')
     friends = models.ManyToManyField("self", blank=True)
     status_choices = [
         ('online', 'Online'),
