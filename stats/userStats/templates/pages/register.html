@@ -1,0 +1,103 @@
+{% extends "pages/layout.html" %}
+{% load static %}
+
+{% block script %}
+    <script src="{% static 'scriptRegistration.js' %}"></script>
+{% endblock %}
+
+{% block body %}
+
+    <h2>Register</h2>
+
+    {% if message%}
+        <div class="colorRed">{{ message }}</div>
+    {% endif %}
+
+    {% if errors.non_field_errors %}
+        <ul>
+            {% for error in errors.non_field_errors %}
+                <li class="colorRed">{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div class="padForm">
+        <form class="row g-3 needs-validation pad" action="{% url 'register' %}" method="post"  novalidate>
+            {% csrf_token %}
+            <div class="col-md-4">
+                    <label for="validation01" class="form-label">First name</label>
+                    <input class="form-control" autofocus type="text" name="first_name" id="validation01"
+                           pattern="[A-Za-z]+" required>
+                    {% if errors.first_name %}
+                        <p class="colorRed">{{ errors.first_name.0 }}</p>
+                    {% endif %}
+                    <div class="valid-feedback">Looks good!</div>
+                    <div class="invalid-feedback">Bad input!</div>
+            </div>
+            <div class="col-md-4">
+                <label for="validation02" class="form-label">Last name</label>
+                <input class="form-control" type="text" name="last_name" id="validation02"
+                       pattern="[A-Za-z]+" required>
+                {% if errors.last_name %}
+                    <p class="colorRed">{{ errors.last_name.0 }}</p>
+                {% endif %}
+                <div class="valid-feedback">Looks good!</div>
+                <div class="invalid-feedback">Bad input!</div>
+            </div>
+            <div class="col-md-4">
+                <label for="validation03" class="form-label">Username</label>
+                <input class="form-control" type="text" name="username" id="validation03" minlength="5"
+                       maxlength="12" pattern="[A-Za-z0-9]+" required>
+                <span class="helper_txt">Username has to be 5 to 12 characters long and
+                    composed only by letters and digits!</span>
+                {% if errors.username %}
+                    <p class="colorRed">{{ errors.username.0 }}</p>
+                {% endif %}
+                <div class="valid-feedback">Looks good!</div>
+                <div class="invalid-feedback">Bad input!</div>
+            </div>
+            <div class="col-md-4">
+                <label for="validation04" class="form-label">Email</label>
+                <input class="form-control" type="email" name="email" id="validation04"
+                       required>
+                <span class="helper_txt">example@example.com</span>
+                {% if errors.email %}
+                    <p class="colorRed">{{ errors.email.0 }}</p>
+                {% endif %}
+                <div class="valid-feedback">Looks good!</div>
+                <div class="invalid-feedback">Bad input!</div>
+            </div>
+            <div class="col-md-4">
+                <label for="password" class="form-label">Password</label>
+                <input class="form-control" type="password" name="password" id="password"
+                       minlength="8" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{5,12}"
+                       required>
+                <span class="helper_txt">Password must be at least 8 characters
+                    and contain 1 digit, 1 lowercase, and 1 uppercase.</span>
+                {% if errors.first_name %}
+                    <p class="colorRed">{{ errors.password.0 }}</p>
+                {% endif %}
+                <div class="valid-feedback">Looks good!</div>
+                <div class="invalid-feedback">Bad input!</div>
+            </div>
+            <div class="col-md-4">
+                <label for="password2" class="form-label">Password confirmation</label>
+                <input class="form-control" type="password" name="password2" id="password2"
+                       minlength="8" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{5,12}"
+                       required>
+                <span class="helper_txt">Repeat password.</span>
+                {% if errors.password2 %}
+                    <p class="colorRed">{{ errors.password2.0 }}</p>
+                {% endif %}
+                <div class="valid-feedback">Looks good!</div>
+                <div class="invalid-feedback">Bad input!</div>
+            </div>
+            <div class="col-12">
+                <input class="btn btn-primary" type="submit" value="Register" id="submitRegistrationForm">
+            </div>
+        </form>
+    </div>
+    <div class="padForm">
+        Already have an account? <a href="{% url 'login' %}">Log In here.</a>
+    </div>
+{% endblock %}
