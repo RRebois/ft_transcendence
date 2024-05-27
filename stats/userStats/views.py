@@ -62,7 +62,7 @@ def index(request):
         })
     return render(request, "pages/index.html")
 
-# @method_decorator(csrf_protect, name='dispatch')
+@method_decorator(csrf_protect, name='dispatch')
 class login_view(APIView):
     serializer_class = LoginSerializer
     def post(self, request):
@@ -81,19 +81,16 @@ class login_view(APIView):
         user.status = 'online'
         user.save()
 
-        response = Response({"token": token})
+        response = redirect('index')
         response.set_cookie(key='jwt', value=token, httponly=True)
         response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
         login(request, user)
-        message = "Logged in successfully!"
-        return render(request, "pages/index.html", {
-            "message": message,
-        })
+        return response
 
     def get(self, request):
         return HttpResponseRedirect(reverse("index"))
 
-# @method_decorator(csrf_protect, name='dispatch')
+@method_decorator(csrf_protect, name='dispatch')
 class logout_view(APIView):
     def post(self, request):
         user = authenticate_user(request)
@@ -102,14 +99,11 @@ class logout_view(APIView):
         user.save()
 
         messages.success(request, "Logged out successfully.")
-        response = Response()
+        response = redirect('index')
         response.delete_cookie('jwt')
         response.delete_cookie('csrftoken')
-        # logout(request)
-        return HttpResponseRedirect(reverse("index"))
-
-    # def get(self, request):
-    #     return HttpResponseRedirect(reverse("index"))
+        logout(request)
+        return response
 
 
 # https://www.django-rest-framework.org/api-guide/renderers/#templatehtmlrenderer
