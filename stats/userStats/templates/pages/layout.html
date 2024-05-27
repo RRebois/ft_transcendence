@@ -13,6 +13,8 @@
     {% endblock %}
 
 </head>
+
+
 <body class="bg-gradient fullscreen d-flex flex-column">
 {% if user.is_authenticated %}
 <nav class="navbar bg-body-tertiary sticky-top">
@@ -24,7 +26,11 @@
         </ul>
         <ul class="nav ml-auto">
             <li class="nav-item">
-                <a class="nav-link" href="{% url "logout" %}">Logout</a>
+                <form method="POST" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button class="nav-item" type="submit">Logout</button>
+                </form>
+<!--                <a class="nav-item" href="{% url 'logout' %}">Logout</a>-->
             </li>
         </ul>
     </div>

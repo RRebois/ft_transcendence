@@ -7,6 +7,11 @@
 
 {% block body %}
 
+{% if user.is_authenticated %}
+    <h2>Already registered</h2>
+{% else %}
+
+
     <h2>Register</h2>
 
     {% if message%}
@@ -100,4 +105,5 @@
     <div class="padForm">
         Already have an account? <a href="{% url 'login' %}">Log In here.</a>
     </div>
+{% endif %}
 {% endblock %}

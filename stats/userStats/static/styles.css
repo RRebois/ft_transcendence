@@ -10,6 +10,16 @@
     width: 100vw;
 }
 
+.padForm {
+    padding: 10px;
+}
+
+.helper_txt {
+    font-family: arial;
+    font-size: 10px;
+    font-style: italic;
+}
+
 .play-regular {
     font-family: "Play", sans-serif;
     font-weight: 400;

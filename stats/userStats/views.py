@@ -24,22 +24,27 @@ from .models import *
 from .forms import *
 from .serializer import *
 
-@method_decorator(csrf_protect, name='dispatch')
+# @method_decorator(csrf_protect, name='dispatch')
 def authenticate_user(request):
+    print("Request in authenticate_user:", request)
     token = request.COOKIES.get('jwt')
+    print("Token:", token)
     if not token:
         raise AuthenticationFailed('Unauthenticated')
 
     secret = os.environ.get('SECRET_KEY')
+    print("Secret:", secret)
 
     try:
         payload = jwt.decode(token, secret, algorithms=['HS256'])
+        print("Payload:", payload)
     except jwt.ExpiredSignatureError:
-        raise AuthentificationFailed("Token expired, please log in again.")
+        raise AuthenticationFailed("Token expired, please log in again.")
     except jwt.InvalidTokenError:
-        raise AuthentificationFailed("Invalid token, please log in again.")
+        raise AuthenticationFailed("Invalid token, please log in again.")
 
     user_id = payload.get('id')
+    print("User ID:", user_id)
 
     try:
         user = User.objects.get(id=user_id)
@@ -56,7 +61,7 @@ def index(request):
         })
     return render(request, "pages/index.html")
 
-@method_decorator(csrf_protect, name='dispatch')
+# @method_decorator(csrf_protect, name='dispatch')
 class login_view(APIView):
     serializer_class = LoginSerializer
     def post(self, request):
@@ -85,29 +90,29 @@ class login_view(APIView):
         })
 
     def get(self, request):
-#         serializer = self.serializer_class()
-#         return render(request, "pages/login.html", {
-#             "form": serializer,
-#         })
         return HttpResponseRedirect(reverse("index"))
 
-@method_decorator(csrf_protect, name='dispatch')
+# @method_decorator(csrf_protect, name='dispatch')
 class logout_view(APIView):
-    def get(self, request):
+    def post(self, request):
         user = authenticate_user(request)
 
         user.status = "offline"
         user.save()
 
-        messages.success = "Logged out successfully."
+        messages.success(request, "Logged out successfully.")
         response = Response()
         response.delete_cookie('jwt')
+        response.delete_cookie('csrftoken')
         # logout(request)
         return HttpResponseRedirect(reverse("index"))
 
+    # def get(self, request):
+    #     return HttpResponseRedirect(reverse("index"))
+
 
 # https://www.django-rest-framework.org/api-guide/renderers/#templatehtmlrenderer
-@method_decorator(csrf_protect, name='dispatch')
+# @method_decorator(csrf_protect, name='dispatch')
 class register_view(APIView):
     serializer_class = RegisterSerializer
     def post(self, request):
