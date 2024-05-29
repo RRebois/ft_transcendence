@@ -44,6 +44,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         username = attrs.get('username', '')
         if not username.isalnum():
             raise serializers.ValidationError("Username must be alphanumeric only.")
+
         return attrs
 
     def create(self, validated_data):
@@ -116,7 +117,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate_image(self, value):
         # checking extension
-        valid_extension = ['jpg', 'jpeg', 'png']
+        valid_extension = ['jpg', 'jpeg', 'png', 'gif']
         ext = os.path.splitext(value.name)[1][1:].lower()
         if ext not in valid_extension:
             raise serializers.ValidationError("Only jpg/jpeg and png files are allowed")
@@ -125,9 +126,9 @@ class UserSerializer(serializers.ModelSerializer):
         try:
             img = Image.open(value)
             if img.format not in ['JPEG', 'PNG']:
-                raise serializers.ValidationError("Only jpg/jpeg and png images are allowed")
+                raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
         except Exception as e:
-            raise serializers.ValidationError("Only jpg/jpeg and png images are allowed")
+            raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
 
     def update(self, instance, validated_data):
         instance.username = validated_data.get('username', instance.username)

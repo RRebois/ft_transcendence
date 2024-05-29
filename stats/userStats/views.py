@@ -107,7 +107,7 @@ class logout_view(APIView):
 
 
 # https://www.django-rest-framework.org/api-guide/renderers/#templatehtmlrenderer
-# @method_decorator(csrf_protect, name='dispatch')
+@method_decorator(csrf_protect, name='dispatch')
 class register_view(APIView):
     serializer_class = RegisterSerializer
     def post(self, request):
@@ -115,15 +115,45 @@ class register_view(APIView):
         serializer = self.serializer_class(data=user_data)
         if serializer.is_valid():
             user = serializer.save()
+
+            if 'imageFile' in request.FILES:
+                image = request.FILES['imageFile']
+                valid_extension = ['jpg', 'jpeg', 'png', 'gif']
+                ext = os.path.splitext(image.name)[1][1:].lower()
+                if ext not in valid_extension:
+                    user.image = "profile_pics/default_pp.jpg"
+                    user.save()
+                    messages.success(request, "You have successfully registered. Check your emails to verify your account.")
+                    return render(request, "pages/index.html")
+
+            # checking file content, that it matches the format given
+                img = Image.open(image)
+                if img.format not in ['JPEG', 'PNG', 'GIF']:
+                    user.image = "profile_pics/default_pp.jpg"
+                    user.save()
+                    messages.success(request, "You have successfully registered. Check your emails to verify your account.")
+                    return render(request, "pages/index.html")
+
+                user.image = image
+                user.save()
+                messages.success(request, "You have successfully registered. Check your emails to verify your account.")
+                return render(request, "pages/index.html")
+            else:
+                user.image = "profile_pics/default_pp.jpg"
+                user.save()
+                messages.success(request, "You have successfully registered. Check your emails to verify your account.")
+                return render(request, "pages/index.html")
+
             #2fa
-            messages.success(request, "You have successfully registered. Check your emails to verify your account")
-            # login(request, user)
-            return redirect("index")
-        else:
-            return render(request, "pages/register.html", {
-                "form": serializer,
-                "errors": serializer.errors
-            })
+            # messages.success(request, "You have successfully registered. Check your emails to verify your account")
+            # # login(request, user)
+            # return redirect("index")
+        return Response(serializer.errors, status=400)
+        # else:
+        #     return render(request, "pages/register.html", {
+        #         "form": serializer,
+        #         "errors": serializer.errors
+        #     })
     def get(self, request):
         serializer = self.serializer_class()
         return render(request, "pages/register.html", {
