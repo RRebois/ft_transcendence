@@ -5,5 +5,5 @@ stats/env/*
 .idea
 .code
 
-stats/microUserStats/__pycache__/*
+stats/configFiles/__pycache__/*
 stats/userStats/migrations/*_initial.py

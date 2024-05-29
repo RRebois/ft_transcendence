@@ -69,6 +69,6 @@ Before pushing the final project, don't forget to:
 ```yml
     build: ./stats
     container_name: django_app
-#    command: gunicorn microUserStats.wsgi:application --bind 0.0.0.0:8000 --reload   # <-- Uncomment this line
+#    command: gunicorn configFiles.wsgi:application --bind 0.0.0.0:8000 --reload   # <-- Uncomment this line
     command: python manage.py runserver 0.0.0.0:8000          # Remove this line
 ```
