@@ -1,9 +1,9 @@
 .gitignore
-stats/env/*
+backend/env/*
 .env
 *.pyc
 .idea
 .code
 
-stats/configFiles/__pycache__/*
-stats/userStats/migrations/*_initial.py
+backend/configFiles/__pycache__/*
+backend/userManagement/migrations/*_initial.py

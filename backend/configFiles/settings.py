@@ -33,7 +33,7 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 # Application definition
 
 INSTALLED_APPS = [
-    'userStats',
+    'userManagement',
     'rest_framework',
     'corsheaders',
     'django.contrib.admin',
@@ -95,7 +95,7 @@ DATABASES = {
     }
 }
 
-AUTH_USER_MODEL = "userStats.User"
+AUTH_USER_MODEL = "userManagement.User"
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 

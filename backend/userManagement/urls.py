@@ -21,7 +21,7 @@ urlpatterns = [
     # path('disable_2FA', Disable2FAView.as_view()),
 
     # #API Routes
-    # path("backend/<str:username>", views.userStatsData, name="userStatsData")
+    # path("backend/<str:username>", views.userManagementData, name="userManagementData")
 ]
 
 

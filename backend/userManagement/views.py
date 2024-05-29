@@ -162,7 +162,7 @@ class register_view(APIView):
         })
 
 @method_decorator(csrf_protect, name='dispatch')
-def userStatsData(request, username):
+def userManagementData(request, username):
     # Query for requested post
     try:
         user = UserData.objects.get(username=username)

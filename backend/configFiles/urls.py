@@ -19,7 +19,7 @@ from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("", include("userStats.urls")),
+    path("", include("userManagement.urls")),
 ]
 
 from django.conf import settings
