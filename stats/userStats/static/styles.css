@@ -13,6 +13,10 @@
     margin: auto;
 }
 
+.marginBot {
+    margin-bottom: 0px;
+}
+
 .fullscreen {
     height: 100vh;
     width: 100vw;

@@ -114,7 +114,11 @@ class register_view(APIView):
         user_data = request.data
         serializer = self.serializer_class(data=user_data)
         if serializer.is_valid():
-            user = serializer.save()
+            try:
+                user = serializer.save()
+            except IntegrityError:
+                messages.error(request, "Username and/or email already taken.")
+                return render(request, "pages/register.html")
 
             if 'imageFile' in request.FILES:
                 image = request.FILES['imageFile']
@@ -123,37 +127,34 @@ class register_view(APIView):
                 if ext not in valid_extension:
                     user.image = "profile_pics/default_pp.jpg"
                     user.save()
+                    messages.info(request, "Image extension not valid. Profile picture set to default.")
                     messages.success(request, "You have successfully registered. Check your emails to verify your account.")
-                    return render(request, "pages/index.html")
+                    return HttpResponseRedirect(reverse("index"))
 
             # checking file content, that it matches the format given
                 img = Image.open(image)
                 if img.format not in ['JPEG', 'PNG', 'GIF']:
                     user.image = "profile_pics/default_pp.jpg"
                     user.save()
+                    messages.info(request, "Image format not valid. Profile picture set to default.")
                     messages.success(request, "You have successfully registered. Check your emails to verify your account.")
-                    return render(request, "pages/index.html")
+                    return HttpResponseRedirect(reverse("index"))
 
                 user.image = image
                 user.save()
                 messages.success(request, "You have successfully registered. Check your emails to verify your account.")
-                return render(request, "pages/index.html")
+                return HttpResponseRedirect(reverse("index"))
             else:
                 user.image = "profile_pics/default_pp.jpg"
                 user.save()
+                messages.info(request, "No profile image selected. Profile picture set to default.")
                 messages.success(request, "You have successfully registered. Check your emails to verify your account.")
-                return render(request, "pages/index.html")
+                return HttpResponseRedirect(reverse("index"))
 
-            #2fa
-            # messages.success(request, "You have successfully registered. Check your emails to verify your account")
-            # # login(request, user)
-            # return redirect("index")
-        return Response(serializer.errors, status=400)
-        # else:
-        #     return render(request, "pages/register.html", {
-        #         "form": serializer,
-        #         "errors": serializer.errors
-        #     })
+        return render(request, "pages/register.html", {
+            "form": serializer,
+            "errors": serializer.errors
+        })
     def get(self, request):
         serializer = self.serializer_class()
         return render(request, "pages/register.html", {

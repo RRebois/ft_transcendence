@@ -15,8 +15,13 @@
     <h2>Registration form</h2>
 
     {% if messages %}
-        <div class="colorRed">{{ message }}</div>
-    {% endif %}
+    <ul class="messages">
+        {% for message in messages %}
+            <div {% if message.tags %} class="alertSize alert alert-{{ message.tags }}"
+                {% else %} class="alertSize alert alert-secondary" {% endif %} role="alert">{{ message }}</div>
+        {% endfor %}
+    </ul>
+{% endif %}
 
     {% if errors.non_field_errors %}
         <ul>
@@ -30,7 +35,7 @@
         <form class="row g-3 needs-validation pad" enctype="multipart/form-data" action="{% url 'register' %}" method="post"  novalidate>
             {% csrf_token %}
             <div class="col-md-4">
-                    <label for="validation01" class="form-label">First name</label>
+                    <label for="validation01" class="form-label">First name*</label>
                     <input class="form-control" autofocus type="text" name="first_name" id="validation01"
                            pattern="[A-Za-z]+" required>
                     {% if errors.first_name %}
@@ -40,7 +45,7 @@
                     <div class="invalid-feedback invalidColor">Bad input!</div>
             </div>
             <div class="col-md-4">
-                <label for="validation02" class="form-label">Last name</label>
+                <label for="validation02" class="form-label">Last name*</label>
                 <input class="form-control" type="text" name="last_name" id="validation02"
                        pattern="[A-Za-z]+" required>
                 {% if errors.last_name %}
@@ -50,7 +55,7 @@
                 <div class="invalid-feedback invalidColor">Bad input!</div>
             </div>
             <div class="col-md-4">
-                <label for="validation03" class="form-label">Username</label>
+                <label for="validation03" class="form-label">Username*</label>
                 <input class="form-control" type="text" name="username" id="validation03" minlength="5"
                        maxlength="12" pattern="[A-Za-z0-9]+" required>
                 <span class="helper_txt">Username has to be 5 to 12 characters long and
@@ -62,7 +67,7 @@
                 <div class="invalid-feedback invalidColor">Bad input!</div>
             </div>
             <div class="col-md-4">
-                <label for="validation04" class="form-label">Email</label>
+                <label for="validation04" class="form-label">Email*</label>
                 <input class="form-control" type="email" name="email" id="validation04"
                        required>
                 <span class="helper_txt">example@example.com</span>
@@ -73,7 +78,7 @@
                 <div class="invalid-feedback invalidColor">Bad input!</div>
             </div>
             <div class="col-md-4">
-                <label for="password" class="form-label">Password</label>
+                <label for="password" class="form-label">Password*</label>
                 <input class="form-control" type="password" name="password" id="password"
                        minlength="8" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{5,12}"
                        required>
@@ -86,7 +91,7 @@
                 <div class="invalid-feedback invalidColor">Bad input!</div>
             </div>
             <div class="col-md-4">
-                <label for="password2" class="form-label">Password confirmation</label>
+                <label for="password2" class="form-label">Password confirmation*</label>
                 <input class="form-control" type="password" name="password2" id="password2"
                        minlength="8" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{5,12}"
                        required>
@@ -97,14 +102,19 @@
                 <div class="valid-feedback validColor">Looks good!</div>
                 <div class="invalid-feedback invalidColor">Bad input!</div>
             </div>
-            <div class="input-group mb-3">
+            <div class="input-group">
                 <label class="input-group-text" for="imageFile">Upload</label>
                 <input type="file" class="form-control" name="imageFile" id="imageFile" accept="image/*">
             </div>
-            <div class="col-12">
+                <span class="helper_txt">Profile picture. If none selected, default will be set.
+                    Can be changed later.</span>
+            <div class="col-12 mt-5">
                 <input class="btn btn-primary" type="submit" value="Register" id="submitRegistrationForm">
             </div>
         </form>
+    </div>
+    <div class="padForm helper_txt">
+        All * fields are mandatory.
     </div>
     <div class="padForm">
         Already have an account? <a href="{% url 'login' %}">Log In here.</a>
