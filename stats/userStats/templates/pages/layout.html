@@ -19,9 +19,9 @@
 {% if user.is_authenticated %}
 <nav class="navbar bg-body-tertiary sticky-top">
     <div class="container-fluid">
-        <ul class="nav">
+        <ul class="nav roundBorder">
             <li class="nav-item">
-                <img src="{{ user.image.url }}" width="60px" height="60px" alt="avatar">
+                <img src="{{ user.image.url }}" style="object-fit: contain; border-radius: 40%;" width="100%" height="100%" alt="avatar">
             </li>
         </ul>
         <ul class="nav me-auto">

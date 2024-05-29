@@ -66,26 +66,29 @@ def index(request):
 class login_view(APIView):
     serializer_class = LoginSerializer
     def post(self, request):
+        user_data = request.data
         serializer = self.serializer_class(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
 
-        if user.tfa_activated:
-            return Response({
-                'detail': 'OTP required for your account',
-                'otp_required': True,
-                'user_id': user.id
-            })
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            if user.tfa_activated:
+                return Response({
+                    'detail': 'OTP required for your account',
+                    'otp_required': True,
+                    'user_id': user.id
+                })
 
-        token = serializer.validated_data['token']
-        user.status = 'online'
-        user.save()
+            token = serializer.validated_data['token']
+            user.status = 'online'
+            user.save()
 
-        response = redirect('index')
-        response.set_cookie(key='jwt', value=token, httponly=True)
-        response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
-        login(request, user)
-        return response
+            response = redirect('index')
+            response.set_cookie(key='jwt', value=token, httponly=True)
+            response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
+            login(request, user)
+            return response
+        else:
+            return HttpResponseRedirect(reverse("index"))
 
     def get(self, request):
         return HttpResponseRedirect(reverse("index"))
