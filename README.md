@@ -32,7 +32,7 @@ If you want to change the ports, you can do it in the following files:
     build: ./nginx
     container_name: nginx
     volumes:
-      - static_volume:/home/stats/web/staticfiles
+      - static_volume:/home/backend/web/staticfiles
     ports:
       - 8080:80     # <-- Change the http port here
       - 8443:443    # <-- Change the https port here
@@ -67,7 +67,7 @@ Before pushing the final project, don't forget to:
 **docker-compose.yml**
 
 ```yml
-    build: ./stats
+    build: ./backend
     container_name: django_app
 #    command: gunicorn configFiles.wsgi:application --bind 0.0.0.0:8000 --reload   # <-- Uncomment this line
     command: python manage.py runserver 0.0.0.0:8000          # Remove this line
