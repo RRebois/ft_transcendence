@@ -32,7 +32,7 @@ class User(AbstractUser):
     objects = UserManager()
 
     def __str__(self):
-        return self.email
+        return self.username
 
     def get_username(self):
         return self.username
