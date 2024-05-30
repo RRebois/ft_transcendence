@@ -1,5 +1,6 @@
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.shortcuts import render, redirect
 from django.core.exceptions import ObjectDoesNotExist
@@ -111,7 +112,7 @@ class logout_view(APIView):
 
 # https://www.django-rest-framework.org/api-guide/renderers/#templatehtmlrenderer
 @method_decorator(csrf_protect, name='dispatch')
-class register_view(APIView):
+class RegisterView(APIView):
     serializer_class = RegisterSerializer
     def post(self, request):
         user_data = request.data
@@ -186,17 +187,20 @@ class register_view(APIView):
     # else:
     #     return JsonResponse({"Error": "Method not allowed"})
 
+
 @method_decorator(csrf_protect, name='dispatch')
-class userStatsData_view(APIView):
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class UserStatsDataView(APIView):
+
     def get(self, request, username):
         try:
-            stats_user = UserData.objects.get(user_id=User.objects.get(username=username))
+            user_stats = UserData.objects.get(user_id=User.objects.get(username=username))
         except User.DoesNotExist:
             raise Http404("error: User does not exists.")
         except UserData.DoesNotExist:
             raise Http404("error: User data does not exists.")
 
-        return Response(stats_user.serialize())
+        return JsonResponse(user_stats.serialize())
 
 
 #

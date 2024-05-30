@@ -5,10 +5,10 @@ from .views import *
 urlpatterns = [
     path("", views.index, name="index"),
     path("login", login_view.as_view(), name="login"),
-    path("register", register_view.as_view(), name="register"),
+    path("register", RegisterView.as_view(), name="register"),
     path("logout/", logout_view.as_view(), name="logout"),
 
-    path("stats/<str:username>", userStatsData_view.as_view(), name="userStatsData"),
+    path("stats/<str:username>", UserStatsDataView.as_view(), name="userStatsData"),
 
     # path('user', UpdateUserView.as_view()),
     # path('change_password', PasswordChangeView.as_view()),

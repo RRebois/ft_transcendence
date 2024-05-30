@@ -1,8 +1,14 @@
 {% extends "pages/layout.html" %}
+{% load static %}
 
 {% block title %}
 ft_transcendence
 {% endblock %}
+
+{% block script %}
+
+{% endblock %}
+
 
 {% block body %}
 
@@ -18,19 +24,7 @@ ft_transcendence
 {% if user.is_authenticated %}
 <div id="greetings">Hello {{user.username}} 😳👉👈</div>
 
-<div class="container" id="divData" hidden>
-    <div id="divDataWin">
-        Wins: {{user.win}}
-    </div>
-    <div>
-        Losses:{{user.losses}}
-    </div>
-    <div>
-        Winrate:{{user.winrate}}
-    </div>
-    <div id="divDataElo">
-        Elo:{{user.elo}}
-    </div>
+<div class="container" id="divUserStats" hidden>
 </div>
 
 {% else %}
