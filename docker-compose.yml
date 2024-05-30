@@ -1,15 +1,15 @@
 services:
   web:
-    build: ./backend
+    build: Pong
     container_name: django_app
 #    command: gunicorn configFiles.wsgi:application --bind 0.0.0.0:8000 --reload
     command: python manage.py runserver 0.0.0.0:8000          # <-- Add this line for hot reload
     expose:
       - 8000
     volumes:
-      - static_volume:/home/backend/web/staticfiles
-      - media_volume:/home/backend/web/mediafiles
-      - ./backend/:/home/backend/web/
+      - static_volume:/home/Pong/web/staticfiles
+      - media_volume:/home/Pong/web/mediafiles
+      - ./Pong/:/home/Pong/web/
     env_file:
       - ./.env
     depends_on:
@@ -39,8 +39,8 @@ services:
     build: ./nginx
     container_name: nginx
     volumes:
-      - static_volume:/home/backend/web/staticfiles
-      - media_volume:/home/backend/web/mediafiles
+      - static_volume:/home/Pong/web/staticfiles
+      - media_volume:/home/Pong/web/mediafiles
     ports:
       - 8080:80     # <-- Change the http port here
       - 8443:443    # <-- Change the https port here

@@ -1,9 +1,9 @@
 .gitignore
-backend/env/*
+Pong/env/*
 .env
 *.pyc
 .idea
 .code
 
-backend/configFiles/__pycache__/*
-backend/userManagement/migrations/*_initial.py
+Pong/configFiles/__pycache__/*
+Pong/userManagement/migrations/*_initial.py
