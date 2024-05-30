@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     {% block script %}
+        <script src="{% static 'userDataPage.js' %}"></script>
     {% endblock %}
 
 </head>
@@ -20,20 +21,20 @@
 <nav class="navbar bg-body-tertiary sticky-top">
     <div class="container-fluid">
         <ul class="nav roundBorder">
-            <li class="nav-item">
-                <img src="{{ user.image.url }}" style="object-fit: contain; border-radius: 40%;" width="100%" height="100%" alt="avatar">
+            <li class="nav-item roundBorder">
+                <img id="ownUsername" src="{{ user.image.url }}" alt="avatar">
             </li>
         </ul>
         <ul class="nav me-auto">
             <li class="nav-item">
-                <a class="nav-link" href=#>{{ user.username }}</a>
+                <a class="nav-link" href="{% url 'userStatsData' user.username %}">{{ user.username }}</a>
             </li>
         </ul>
         <ul class="nav ms-auto">
             <li class="nav-item">
                 <form method="POST" action="{% url 'logout' %}">
                     {% csrf_token %}
-                    <button class="nav-item" type="submit">Logout</button>
+                    <button class="nav-item buttonStyle" type="submit">Logout</button>
                 </form>
 <!--                <a class="nav-item" href="{% url 'logout' %}">Logout</a>-->
             </li>

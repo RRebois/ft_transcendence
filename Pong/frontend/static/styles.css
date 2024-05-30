@@ -5,16 +5,27 @@
 }
 
 .roundBorder {
-    border-radius: 30%;
+
     width: 60px;
     height: 60px;
-    border: 2px solid black;
+
 }
 
 .roundBorder > img {
-    border-radius: 40%;
     width: 100%;
     height: 100%;
+    border-radius: 40%;
+    border: 2px solid black;
+}
+
+.buttonStyle {
+    border-radius: 15%;
+    border: 2px solid #000000;
+}
+
+.buttonStyle:hover {
+    background-color: #696969;
+    border: 3px solid #000000;
 }
 
 .validColor {

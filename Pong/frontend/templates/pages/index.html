@@ -16,7 +16,23 @@ ft_transcendence
 {% endif %}
 
 {% if user.is_authenticated %}
-<p>Hello {{user.username}} 😳👉👈</p>
+<div id="greetings">Hello {{user.username}} 😳👉👈</div>
+
+<div class="container" id="divData" hidden>
+    <div id="divDataWin">
+        Wins: {{user.win}}
+    </div>
+    <div>
+        Losses:{{user.losses}}
+    </div>
+    <div>
+        Winrate:{{user.winrate}}
+    </div>
+    <div id="divDataElo">
+        Elo:{{user.elo}}
+    </div>
+</div>
+
 {% else %}
 <div class="w-100 h-100 d-flex justify-content-center align-items-center">
     <form action="{% url 'login' %}" method="post"

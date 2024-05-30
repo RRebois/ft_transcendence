@@ -7,6 +7,9 @@ urlpatterns = [
     path("login", login_view.as_view(), name="login"),
     path("register", register_view.as_view(), name="register"),
     path("logout/", logout_view.as_view(), name="logout"),
+
+    path("stats/<str:username>", userStatsData_view.as_view(), name="userStatsData"),
+
     # path('user', UpdateUserView.as_view()),
     # path('change_password', PasswordChangeView.as_view()),
     # path('reset_password', PasswordResetRequestView.as_view()),
@@ -21,7 +24,7 @@ urlpatterns = [
     # path('disable_2FA', Disable2FAView.as_view()),
 
     # #API Routes
-    # path("Pong/<str:username>", views.userManagementData, name="userManagementData")
+    # path("stats/<str:username>", views.userStatsData, name="userStatsData")
 ]
 
 
