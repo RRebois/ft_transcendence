@@ -1,11 +1,8 @@
 {% extends "pages/layout.html" %}
+{% load static %}
 
 {% block title %}
     ft_transcendence
-{% endblock %}
-
-{% block script %}
-    <script src="{% static 'userDataPage.js' %}"></script>
 {% endblock %}
 
 {% block body %}
@@ -20,7 +17,7 @@
     {% endif %}
 
 {% if user.is_authenticated %}
-<p>Hello {{user.username}} 😳👉👈</p>
+<p id="greetings">Hello {{user.username}} 😳👉👈</p>
 {% else %}
 <div class="w-100 h-100 d-flex justify-content-center align-items-center">
     <form action="{% url 'login' %}" method="post"

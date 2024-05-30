@@ -172,17 +172,17 @@ class register_view(APIView):
             "form": serializer
         })
 
-@method_decorator(csrf_protect, name='dispatch')
-class userStatsData_view(APIView):
-    def get(self, request, username):
-        try:
-            user = UserData.objects.get(user_id=User.objects.get(username=username))
-        except User.DoesNotExist:
-            return Response({"error": "User does not exists."}, status=404)
-        except UserData.DoesNotExist:
-            return Response({"error": "User data does not exists."}, status=404)
-
-        return Response(user.serialize())
+# @method_decorator(csrf_protect, name='dispatch')
+# class userStatsData_view(APIView):
+#     def get(self, request, username):
+#         try:
+#             user = UserData.objects.get(user_id=User.objects.get(username=username))
+#         except User.DoesNotExist:
+#             return Response({"error": "User does not exists."}, status=404)
+#         except UserData.DoesNotExist:
+#             return Response({"error": "User data does not exists."}, status=404)
+#
+#         return Response(user.serialize())
 
 # def userStatsData(request, username):
 #     # Query for requested post
