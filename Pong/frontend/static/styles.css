@@ -4,6 +4,19 @@
     color:  #99251B;
 }
 
+.roundBorder {
+    border-radius: 30%;
+    width: 60px;
+    height: 60px;
+    border: 2px solid black;
+}
+
+.roundBorder > img {
+    border-radius: 40%;
+    width: 100%;
+    height: 100%;
+}
+
 .validColor {
     color: #DAFF1F;
 }

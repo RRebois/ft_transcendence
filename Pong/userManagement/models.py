@@ -4,6 +4,7 @@ from django.core.validators import MinLengthValidator
 from rest_framework_simplejwt.tokens import RefreshToken
 from .manager import UserManager
 
+
 class User(AbstractUser):
     username = models.CharField(unique=True, max_length=100)
     email = models.EmailField(unique=True, max_length=100)
@@ -31,7 +32,7 @@ class User(AbstractUser):
     objects = UserManager()
 
     def __str__(self):
-        return self.email
+        return self.username
 
     def get_username(self):
         return self.username
@@ -57,6 +58,7 @@ class FriendRequest(models.Model):
 
     class Meta:
         unique_together = ['from_user', 'to_user']
+
 
 class UserData(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
