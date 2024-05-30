@@ -91,3 +91,7 @@ gap-1-5 {
 .gap-4 {
     gap: 1rem;
 }
+
+.hidden {
+    display: none;
+}

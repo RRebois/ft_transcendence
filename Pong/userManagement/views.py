@@ -26,18 +26,15 @@ from .serializer import *
 
 # @method_decorator(csrf_protect, name='dispatch')
 def authenticate_user(request):
-    print("Request in authenticate_user:", request)
     token = request.COOKIES.get('jwt')
-    print("Token:", token)
     if not token:
         raise AuthenticationFailed('Unauthenticated')
 
     secret = os.environ.get('SECRET_KEY')
-    print("Secret:", secret)
 
     try:
         payload = jwt.decode(token, secret, algorithms=['HS256'])
-        print("Payload:", payload)
+        # print("Payload:", payload)
     except jwt.ExpiredSignatureError:
         raise AuthenticationFailed("Token expired, please log in again.")
     except jwt.InvalidTokenError:
@@ -204,43 +201,43 @@ def userManagementData(request, username):
 #                             status=status.HTTP_200_OK)
 #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 #
-# @method_decorator(csrf_protect, name='dispatch')
-# class PasswordResetRequestView(APIView):
-#     serializer_class = PasswordResetRequestSerializer
-#
-#     def post(self, request):
-#         serializer = self.serializer_class(data=request.data, context={'request': request})
-#         serializer.is_valid(raise_exception=True)
-#         return Response({
-#             'detail': 'You have received a mail with a link to reset your password'},
-#             status=status.HTTP_200_OK)
-#
-#
-# @method_decorator(csrf_protect, name='dispatch')
-# class SetNewPasswordView(APIView):
-#     serializer_class = SetNewPasswordSerializer
-#
-#     def post(self, request):
-#         serializer = self.serializer_class(data=request.data, context={'request': request})
-#         serializer.is_valid(raise_exception=True)
-#         return Response({
-#             'detail': 'Password has been changed successfully'},
-#             status=status.HTTP_200_OK)
-#
-#
-# class PasswordResetConfirmedView(APIView):
-#     def get(self, request, uidb64, token):
-#         try:
-#             user_id = smart_str(urlsafe_base64_decode(uidb64))
-#             user = User.objects.get(id=user_id)
-#
-#             if not PasswordResetTokenGenerator().check_token(user, token):
-#                 return Response({'detail': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
-#             return Response({'detail': 'Token is valid, proceed to reset password.'}, status.HTTP_200_OK)
-#
-#         except DjangoUnicodeDecodeError as identifier:
-#             return Response({'detail': 'Token invalid or expired.'}, status=status.HTTP_401_UNAUTHORIZED)
-#
+@method_decorator(csrf_protect, name='dispatch')
+class PasswordResetRequestView(APIView):
+    serializer_class = PasswordResetRequestSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        response = redirect('index')
+        messages.success(request, "A mail to reset your password has been sent.")
+        return response
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class SetNewPasswordView(APIView):
+    serializer_class = SetNewPasswordSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        return Response({
+            'detail': 'Password has been changed successfully'},
+            status=status.HTTP_200_OK)
+
+
+class PasswordResetConfirmedView(APIView):
+    def get(self, request, uidb64, token):
+        try:
+            user_id = smart_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(id=user_id)
+
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                return Response({'detail': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'detail': 'Token is valid, proceed to reset password.'}, status.HTTP_200_OK)
+
+        except DjangoUnicodeDecodeError as identifier:
+            return Response({'detail': 'Token invalid or expired.'}, status=status.HTTP_401_UNAUTHORIZED)
+
 #
 # @method_decorator(csrf_protect, name='dispatch')
 # class Enable2FAView(APIView):

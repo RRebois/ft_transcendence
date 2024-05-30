@@ -21,7 +21,7 @@ ft_transcendence
 <div class="w-100 h-100 d-flex justify-content-center align-items-center">
     <form action="{% url 'login' %}" method="post"
           class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card"
-          style="--bs-bg-opacity: .5;">
+          style="--bs-bg-opacity: .5;" id="loginForm">
         {% csrf_token %}
         <h1 class="text-justify play-bold">ft_transcendence 🏓</h1>
         <div class="w-100">
@@ -46,7 +46,7 @@ ft_transcendence
                 </div>
             </div>
             <!-- TODO: create and link a "forgotten password" page-->
-            <a href="#" class="text-decoration-none">Forgot password?</a>
+            <a href="#" class="text-decoration-none" id="forgot">Forgot password?</a>
         </div>
         <button type="submit" class="btn btn-primary">Log in</button>
         {% if login_error %}
@@ -68,6 +68,36 @@ ft_transcendence
         <a href="{% url 'register' %}" class="text-decoration-none">Don't have an account? Register here.</a>
     </form>
 
+    <form action="{% url 'reset_password' %}" method="post"
+          class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card hidden"
+          style="--bs-bg-opacity: .5;" id="passwordResetSend">
+        {% csrf_token %}
+        <h1 class="text-justify play-bold">ft_transcendence 🏓</h1>
+        <div class="w-100">
+            <label for="email" class="visually-hidden">email</label>
+            <div class="input-group">
+                <div class="input-group-text">
+                    <i class="bi bi-person"></i>
+                </div>
+                <input type="text" name="email" id="email" class="form-control" placeholder="email"
+                       autofocus required/>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Send</button>
+        {% if login_error %}
+        <div class="alert alert-danger" role="alert">
+            {{ login_error }}
+        </div>
+        {% endif %}
+    </form>
+
+<script>
+    document.getElementById("forgot").onclick = function(event){
+        event.preventDefault();
+        document.getElementById("loginForm").style.display = "none";
+        document.getElementById("passwordResetSend").style.display = "flex";
+    }
+</script>
 </div>
 
 {% endif %}
