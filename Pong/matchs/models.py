@@ -3,8 +3,8 @@ from django.db import models
 
 
 class Match(models.Model):
-    players = models.ManyToManyField('userStats.User', related_name="players")
-    winner = models.ForeignKey('userStats.User', on_delete=models.CASCADE,
+    players = models.ManyToManyField('userManagement.User', related_name="players")
+    winner = models.ForeignKey('userManagement.User', on_delete=models.CASCADE,
                                blank=True, null=True)
     timeMatch = models.DateTimeField(auto_now_add=True)
     #timeMatchEnded?
