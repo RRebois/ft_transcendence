@@ -1,19 +1,23 @@
 {% extends "pages/layout.html" %}
 
 {% block title %}
-ft_transcendence
+    ft_transcendence
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'userDataPage.js' %}"></script>
 {% endblock %}
 
 {% block body %}
 
-{% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-            <div {% if message.tags %} class="alertSize alert alert-{{ message.tags }}"
-                {% else %} class="alertSize alert alert-secondary" {% endif %} role="alert">{{ message }}</div>
-        {% endfor %}
-    </ul>
-{% endif %}
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <div {% if message.tags %} class="alertSize alert alert-{{ message.tags }}"
+                    {% else %} class="alertSize alert alert-secondary" {% endif %} role="alert">{{ message }}</div>
+            {% endfor %}
+        </ul>
+    {% endif %}
 
 {% if user.is_authenticated %}
 <p>Hello {{user.username}} 😳👉👈</p>

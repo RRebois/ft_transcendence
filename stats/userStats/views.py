@@ -130,6 +130,8 @@ class register_view(APIView):
                 if ext not in valid_extension:
                     user.image = "profile_pics/default_pp.jpg"
                     user.save()
+                    user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+                    user_data.save()
                     messages.info(request, "Image extension not valid. Profile picture set to default.")
                     messages.success(request, "You have successfully registered. Check your emails to verify your account.")
                     return HttpResponseRedirect(reverse("index"))
@@ -139,17 +141,23 @@ class register_view(APIView):
                 if img.format not in ['JPEG', 'PNG', 'GIF']:
                     user.image = "profile_pics/default_pp.jpg"
                     user.save()
+                    user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+                    user_data.save()
                     messages.info(request, "Image format not valid. Profile picture set to default.")
                     messages.success(request, "You have successfully registered. Check your emails to verify your account.")
                     return HttpResponseRedirect(reverse("index"))
 
                 user.image = image
                 user.save()
+                user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+                user_data.save()
                 messages.success(request, "You have successfully registered. Check your emails to verify your account.")
                 return HttpResponseRedirect(reverse("index"))
             else:
                 user.image = "profile_pics/default_pp.jpg"
                 user.save()
+                user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+                user_data.save()
                 messages.info(request, "No profile image selected. Profile picture set to default.")
                 messages.success(request, "You have successfully registered. Check your emails to verify your account.")
                 return HttpResponseRedirect(reverse("index"))
@@ -165,17 +173,30 @@ class register_view(APIView):
         })
 
 @method_decorator(csrf_protect, name='dispatch')
-def userStatsData(request, username):
-    # Query for requested post
-    try:
-        user = UserData.objects.get(username=username)
-    except UserData.DoesNotExist:
-        return JsonResponse({"error": "User does not exists"}, status=404)
+class userStatsData_view(APIView):
+    def get(self, request, username):
+        try:
+            user = UserData.objects.get(user_id=User.objects.get(username=username))
+        except User.DoesNotExist:
+            return Response({"error": "User does not exists."}, status=404)
+        except UserData.DoesNotExist:
+            return Response({"error": "User data does not exists."}, status=404)
 
-    if request.method == "GET":
-        return JsonResponse(user.serialize())
-    else:
-        return JsonResponse({"Error": "Method not allowed"})
+        return Response(user.serialize())
+
+# def userStatsData(request, username):
+#     # Query for requested post
+#     try:
+#         user = UserData.objects.get(user_id=User.objects.get(username=username))
+#     except User.DoesNotExist:
+#         return JsonResponse({"error": "User does not exists."}, status=404)
+#     except UserData.DoesNotExist:
+#         return JsonResponse({"error": "User data does not exists."}, status=404)
+#
+#     if request.method == "GET":
+#         return JsonResponse(user.serialize())
+#     else:
+#         return JsonResponse({"Error": "Method not allowed"})
 
 #
 # @method_decorator(csrf_protect, name='dispatch')

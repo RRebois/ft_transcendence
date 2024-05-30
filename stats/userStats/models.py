@@ -34,8 +34,8 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
-    def get_username(self):
-        return self.username
+    # def get_username(self):
+    #     return self.username
 
     def token(self):
         refresh = RefreshToken.for_user(self)
@@ -70,6 +70,7 @@ class UserData(models.Model):
     def serialize(self):
         return {
             "id": self.id,
+            "user_id": self.user_id.pk,
             "wins": self.user_wins,
             "losses": self.user_losses,
             "winrate": self.user_winrate,
