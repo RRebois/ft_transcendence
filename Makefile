@@ -2,12 +2,13 @@ DOCKER_CONTAINERS	:=	nginx		\
 						django_app	\
 						postgreSQL
 
-DOCKER_IMAGES		:=	ft_transcendence_uniservice-nginx	\
-						ft_transcendence_uniservice-web		\
-						ft_transcendence_uniservice-db
+DOCKER_IMAGES		:=	ft_transcendence-nginx	\
+						ft_transcendence-web	\
+						ft_transcendence-db
 
-DOCKER_VOLUMES		:=	ft_transcendence_uniservice_postgres_data	\
-						ft_transcendence_uniservice_static_volume	\
+DOCKER_VOLUMES		:=	ft_transcendence_media_volume	\
+						ft_transcendence_postgres_data	\
+						ft_transcendence_static_volume
 
 DOCKER_NETWORKS		:=
 
@@ -19,19 +20,18 @@ up:
 	@nohup open https://localhost:8443 > /dev/null 2>&1 &
 
 down:
-	docker compose down -v
+	docker compose down
 
 restart: down up
 
 logs:
 	docker compose logs -f
 
-clean:
+clean: down
 	docker rm -f $(DOCKER_CONTAINERS)
 
 fclean: confirm_clean clean
 	docker volume rm $(DOCKER_VOLUMES)
-	docker network rm $(DOCKER_NETWORKS)
 	docker rmi $(DOCKER_IMAGES)
 
 re: down up
