@@ -7,7 +7,6 @@ from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth import authenticate, login, logout
-from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.db import IntegrityError
 from django.contrib import messages
@@ -220,9 +219,9 @@ class SetNewPasswordView(APIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        return Response({
-            'detail': 'Password has been changed successfully'},
-            status=status.HTTP_200_OK)
+        response = redirect('index')
+        messages.success(request, "Password reset successfully.")
+        return response
 
 
 class PasswordResetConfirmedView(APIView):
@@ -233,7 +232,7 @@ class PasswordResetConfirmedView(APIView):
 
             if not PasswordResetTokenGenerator().check_token(user, token):
                 return Response({'detail': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
-            return Response({'detail': 'Token is valid, proceed to reset password.'}, status.HTTP_200_OK)
+            return render(request, 'pages/passwordReset.html', {'uidb64': uidb64, 'token': token})
 
         except DjangoUnicodeDecodeError as identifier:
             return Response({'detail': 'Token invalid or expired.'}, status=status.HTTP_401_UNAUTHORIZED)

@@ -45,7 +45,6 @@ ft_transcendence
                            required/>
                 </div>
             </div>
-            <!-- TODO: create and link a "forgotten password" page-->
             <a href="#" class="text-decoration-none" id="forgot">Forgot password?</a>
         </div>
         <button type="submit" class="btn btn-primary">Log in</button>
@@ -59,7 +58,6 @@ ft_transcendence
             <span class="px-2">or</span>
             <hr class="flex-grow-1">
         </div>
-        <!-- TODO: create 42 login process -->
         <button type="button" class="btn btn-dark">
             <img height="32" width="32" src="https://cdn.simpleicons.org/42/fff" alt="42 school logo"
                  style="margin-right: 10px"/>
@@ -74,13 +72,12 @@ ft_transcendence
         {% csrf_token %}
         <h1 class="text-justify play-bold">ft_transcendence 🏓</h1>
         <div class="w-100">
-            <label for="email" class="visually-hidden">email</label>
+            <label for="email" class="visually-hidden">Email</label>
             <div class="input-group">
                 <div class="input-group-text">
                     <i class="bi bi-person"></i>
                 </div>
-                <input type="text" name="email" id="email" class="form-control" placeholder="email"
-                       autofocus required/>
+                <input type="email" name="email" id="email" class="form-control" placeholder="Email" autofocus required/>
             </div>
         </div>
         <button type="submit" class="btn btn-primary">Send</button>
@@ -90,15 +87,32 @@ ft_transcendence
         </div>
         {% endif %}
     </form>
+</div>
+
+<!--<script>-->
+<!--    document.getElementById("forgot").onclick = function(event){-->
+<!--        event.preventDefault();-->
+<!--        document.getElementById("loginForm").style.display = "none";-->
+<!--        document.getElementById("passwordResetSend").style.display = "flex";-->
+<!--    }-->
+<!--</script>-->
 
 <script>
-    document.getElementById("forgot").onclick = function(event){
+    document.getElementById("forgot").onclick = function(event) {
         event.preventDefault();
-        document.getElementById("loginForm").style.display = "none";
-        document.getElementById("passwordResetSend").style.display = "flex";
+        console.log("Forgot password link clicked"); // Debugging line
+        var loginForm = document.getElementById("loginForm");
+        var resetForm = document.getElementById("passwordResetSend");
+
+        if (loginForm && resetForm) {
+            console.log("Forms found"); // Debugging line
+            loginForm.style.display = "none";
+            resetForm.style.display = "flex";
+        } else {
+            console.error("Forms not found"); // Debugging line
+        }
     }
 </script>
-</div>
 
 {% endif %}
 {% endblock %}
