@@ -36,7 +36,7 @@
             </a>
             <div class="dropdown-menu dropdown-menu-end">
                 <a href="#" type="button" class="dropdown-item button">Profile</a>
-                <a href="" onClick="load_stats_page("{{ user.username }}")" class="dropdown-item ">Stats</a>
+                <a href="" onClick="load_stats_page("{{ user.username }}")" id="statsPage" class="dropdown-item ">Stats</a>
                 <hr class="dropdown-divider">
                 <form id="logout_form" method="POST" action="{% url 'logout' %}">
                     {% csrf_token %}
