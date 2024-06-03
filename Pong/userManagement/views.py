@@ -175,7 +175,7 @@ def userManagementData(request, username):
     else:
         return JsonResponse({"Error": "Method not allowed"})
 
-#
+
 # @method_decorator(csrf_protect, name='dispatch')
 # class UpdateUserView(APIView):
 #     serializer_class = UserSerializer
@@ -190,18 +190,26 @@ def userManagementData(request, username):
 #         return Response(serializer.errors, status=status.HTTP_403_FORBIDDEN)
 #
 #
-# @method_decorator(csrf_protect, name='dispatch')
-# class PasswordChangeView(APIView):
-#     serializer_class = PasswordChangeSerializer
-#     def post(self, request):
-#         user = authenticate_user(request)
-#         serializer = self.serializer_class(data=request.data, context={'user': user})
-#         if serializer.is_valid(raise_exception=True):
-#             serializer.save()
-#             return Response({"detail": "Password changed successfully"},
-#                             status=status.HTTP_200_OK)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#
+@method_decorator(csrf_protect, name='dispatch')
+class PasswordChangeView(APIView):
+    serializer_class = PasswordChangeSerializer
+    def post(self, request):
+        user = authenticate_user(request)
+        serializer = self.serializer_class(data=request.data, context={'user': user})
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            response = redirect('index')
+            messages.success(request, "Your password has been changed.")
+            return response
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request):
+        serializer = self.serializer_class()
+        return render(request, "pages/changePassword.html", {
+            "form": serializer
+        })
+
+
 @method_decorator(csrf_protect, name='dispatch')
 class PasswordResetRequestView(APIView):
     serializer_class = PasswordResetRequestSerializer

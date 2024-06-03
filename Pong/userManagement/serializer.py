@@ -195,7 +195,6 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         return super().validate(attrs)
 
 
-#TODO: NEEDS TESTS WITH FRONTEND TO CHECK TOKEN AND UIDB64
 class SetNewPasswordSerializer(serializers.Serializer):
     uidb64 = serializers.CharField(write_only=True, required=True)
     token = serializers.CharField(write_only=True, required=True)
@@ -214,7 +213,8 @@ class SetNewPasswordSerializer(serializers.Serializer):
             confirm_password = attrs.get('confirm_password')
             if new_password != confirm_password:
                 raise serializers.ValidationError("New passwords do not match")
-            user.set_password(attrs['new_password'])
+            validate_password(new_password, user)
+            # user.set_password(attrs['new_password'])
             user.save()
 
         except DjangoUnicodeDecodeError:
