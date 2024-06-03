@@ -1,3 +1,5 @@
+from typing import io
+
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
@@ -16,6 +18,7 @@ from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
 import pyotp
+import qrcode
 import jwt
 
 
@@ -256,52 +259,62 @@ class PasswordResetConfirmedView(APIView):
             return Response({'detail': 'Token invalid or expired.'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
-# @method_decorator(csrf_protect, name='dispatch')
-# class Enable2FAView(APIView):
-#     def post(self, request):
-#         user = authenticate_user(request)
-#
-#         if user.tfa_activated is True:
-#             return Response({"detail": "2FA already activated"}, status=status.HTTP_400_BAD_REQUEST)
-#         secret_key = pyotp.random_base32()
-#         user.totp = secret_key
-#         user.tfa_activated = True
-#         user.save()
-#
-#         qr_url = pyotp.totp.TOTP(secret_key).provisioning_uri(user.username)
-#         response = Response({"qr_url": qr_url}, status=status.HTTP_200_OK)
-#         return response
-#
-#
-# @method_decorator(csrf_protect, name='dispatch')
-# class VerifyOTPView(APIView):
-#     def post(self, request):
-#         serializer = VerifyOTPSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         token = serializer.validated_data['token']
-#         user = serializer.validated_data['user']
-#
-#         user.status = 'online'
-#         user.save()
-#
-#         response = Response({"token": token})
-#         response.set_cookie(key='jwt', value=token, httponly=True)
-#         return response
-#
-#
-# @method_decorator(csrf_protect, name='dispatch')
-# class Disable2FAView(APIView):
-#     def post(self, request):
-#         user = authenticate_user(request)
-#
-#         if user.tfa_activated is False:
-#             return Response({"detail": "2FA already deactivated"}, status=status.HTTP_400_BAD_REQUEST)
-#         user.totp = None
-#         user.tfa_activated = False
-#         user.save()
-#         return Response({"detail": "2FA disabled"}, status=status.HTTP_200_OK)
-#
-#
+@method_decorator(csrf_protect, name='dispatch')
+class Enable2FAView(APIView):
+    def post(self, request):
+        user = authenticate_user(request)
+
+        if user.tfa_activated is True:
+            return Response({"detail": "2FA already activated"}, status=status.HTTP_400_BAD_REQUEST)
+        secret_key = pyotp.random_base32()
+        user.totp = secret_key
+        user.tfa_activated = True
+        user.save()
+
+        qr_url = pyotp.totp.TOTP(secret_key).provisioning_uri(user.username)
+        qrCode = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L,
+                               box_size=10, border=4)
+        qrCode.add_data(qr_url)
+        qrCode.make(fit=True)
+
+        img = qrCode.make_image(fill='black', back_color='white')
+        buffer = io.BytesIO()
+        img.save(buffer, format='PNG')
+        buffer.seek(0)
+
+        response = Response({"qr_url": qr_url}, status=status.HTTP_200_OK)
+        return response
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class VerifyOTPView(APIView):
+    def post(self, request):
+        serializer = VerifyOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = serializer.validated_data['token']
+        user = serializer.validated_data['user']
+
+        user.status = 'online'
+        user.save()
+
+        response = Response({"token": token})
+        response.set_cookie(key='jwt', value=token, httponly=True)
+        return response
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class Disable2FAView(APIView):
+    def post(self, request):
+        user = authenticate_user(request)
+
+        if user.tfa_activated is False:
+            return Response({"detail": "2FA already deactivated"}, status=status.HTTP_400_BAD_REQUEST)
+        user.totp = None
+        user.tfa_activated = False
+        user.save()
+        return Response({"detail": "2FA disabled"}, status=status.HTTP_200_OK)
+
+
 # @method_decorator(csrf_protect, name='dispatch')
 # class SendFriendRequestView(APIView):
 #     def post(self, request):
