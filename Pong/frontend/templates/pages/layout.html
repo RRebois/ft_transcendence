@@ -31,16 +31,16 @@
         </div>
 
         <div class="dropdown">
-            <a data-bs-toggle="dropdown">
-                <img src="{{user.image.url}}" alt="user profile picture" style="width: 42px;">
+            <a data-bs-toggle="dropdown" class="roundBorder">
+                <img src="{{user.image.url}}" alt="user profile picture">
             </a>
             <div class="dropdown-menu dropdown-menu-end">
                 <a href="#" type="button" class="dropdown-item button">Profile</a>
-                <a href="#" class="dropdown-item ">Stats</a>
+                <a href="" onClick="load_stats_page("{{ user.username }}")" class="dropdown-item ">Stats</a>
                 <hr class="dropdown-divider">
                 <form id="logout_form" method="POST" action="{% url 'logout' %}">
                     {% csrf_token %}
-                    <a class="dropdown-item text-danger" onclick="document.getElementById('logout_form').submit()">Logout</a>
+                    <a class="dropdown-item buttonStyle text-danger" onclick="document.getElementById('logout_form').submit()">Logout</a>
                 </form>
             </div>
         </div>
