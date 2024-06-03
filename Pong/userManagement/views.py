@@ -213,6 +213,12 @@ class PasswordResetRequestView(APIView):
         messages.success(request, "A mail to reset your password has been sent.")
         return response
 
+    def get(self, request):
+        serializer = self.serializer_class()
+        return render(request, "pages/forgotPassword.html", {
+            "form": serializer
+        })
+
 
 @method_decorator(csrf_protect, name='dispatch')
 class SetNewPasswordView(APIView):

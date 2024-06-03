@@ -45,7 +45,7 @@ ft_transcendence
                            required/>
                 </div>
             </div>
-            <a href="#" class="text-decoration-none" id="forgot">Forgot password?</a>
+            <a href="{% url 'reset_password' %}" class="text-decoration-none">Forgot password?</a>
         </div>
         <button type="submit" class="btn btn-primary">Log in</button>
         {% if login_error %}
@@ -66,27 +66,7 @@ ft_transcendence
         <a href="{% url 'register' %}" class="text-decoration-none">Don't have an account? Register here.</a>
     </form>
 
-    <form action="{% url 'reset_password' %}" method="post"
-          class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card hidden"
-          style="--bs-bg-opacity: .5;" id="passwordResetSend">
-        {% csrf_token %}
-        <h1 class="text-justify play-bold">ft_transcendence 🏓</h1>
-        <div class="w-100">
-            <label for="email" class="visually-hidden">Email</label>
-            <div class="input-group">
-                <div class="input-group-text">
-                    <i class="bi bi-person"></i>
-                </div>
-                <input type="email" name="email" id="email" class="form-control" placeholder="Email" autofocus required/>
-            </div>
-        </div>
-        <button type="submit" class="btn btn-primary">Send</button>
-        {% if login_error %}
-        <div class="alert alert-danger" role="alert">
-            {{ login_error }}
-        </div>
-        {% endif %}
-    </form>
+
 </div>
 
 <!--<script>-->
@@ -97,22 +77,22 @@ ft_transcendence
 <!--    }-->
 <!--</script>-->
 
-<script>
-    document.getElementById("forgot").onclick = function(event) {
-        event.preventDefault();
-        console.log("Forgot password link clicked"); // Debugging line
-        var loginForm = document.getElementById("loginForm");
-        var resetForm = document.getElementById("passwordResetSend");
+<!--<script>-->
+<!--    document.getElementById("forgot").onclick = function(event) {-->
+<!--        event.preventDefault();-->
+<!--        console.log("Forgot password link clicked"); // Debugging line-->
+<!--        var loginForm = document.getElementById("loginForm");-->
+<!--        var resetForm = document.getElementById("passwordResetSend");-->
 
-        if (loginForm && resetForm) {
-            console.log("Forms found"); // Debugging line
-            loginForm.style.display = "none";
-            resetForm.style.display = "flex";
-        } else {
-            console.error("Forms not found"); // Debugging line
-        }
-    }
-</script>
+<!--        if (loginForm && resetForm) {-->
+<!--            console.log("Forms found"); // Debugging line-->
+<!--            loginForm.style.display = "none";-->
+<!--            resetForm.style.display = "flex";-->
+<!--        } else {-->
+<!--            console.error("Forms not found"); // Debugging line-->
+<!--        }-->
+<!--    }-->
+<!--</script>-->
 
 {% endif %}
 {% endblock %}
