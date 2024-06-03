@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', ()=>{
 
-    document.querySelector("#ownUsername").addEventListener('click', () =>{
+    document.querySelector("#statsPage").addEventListener('onClick', () =>{
         const user_connected = document.getElementById('ownUsername').textContent;
         fetch(`stats/${user_connected}`)
         .then(response => response.json())
@@ -14,6 +14,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     })
 })
+
+function load_stats_page(username) {
+    
+}
 
 function create_div(value) {
     const   stat = document.createElement('div');
