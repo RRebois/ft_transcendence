@@ -10,7 +10,7 @@ urlpatterns = [
     # path('user', UpdateUserView.as_view()),
     # path('change_password', PasswordChangeView.as_view(), name='change_password'),
     path('reset_password', PasswordResetRequestView.as_view(), name='reset_password'),
-    path('change_reset_password', SetNewPasswordView.as_view(), name='change_reset_password'),
+    path('change_reset_password/<uidb64>/<token>/', SetNewPasswordView.as_view(), name='change_reset_password'),
     path('reset_password_confirmed/<uidb64>/<token>/', PasswordResetConfirmedView.as_view(), name='reset_confirmed'),
     # path('send_friend', SendFriendRequestView.as_view(), name='send_friend'),
     # path('accept_friend', AcceptFriendRequestView.as_view(), name='accept_friend'),
@@ -24,15 +24,3 @@ urlpatterns = [
     # path("Pong/<str:username>", views.userManagementData, name="userManagementData")
 ]
 
-
-# path('register', RegisterView.as_view()),
-#     path('login', LoginView.as_view()),
-#     path('logout', LogoutView.as_view()),
-#     path('user', UpdateUserView.as_view()),
-#     path('send_friend', SendFriendRequestView.as_view()),
-#     path('accept_friend', AcceptFriendRequestView.as_view()),
-#     path('delete_friend', DeleteFriendView.as_view()),
-#     path('list_friends', ListFriendsView.as_view()),
-#     path('enable_2FA', Enable2FAView.as_view()),
-#     path('disable_2FA', Disable2FAView.as_view()),
-    # path('decline_friend', DeclineFriendRequestView.as_view()),

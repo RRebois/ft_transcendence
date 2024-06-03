@@ -58,6 +58,7 @@ def index(request):
         })
     return render(request, "pages/index.html")
 
+
 @method_decorator(csrf_protect, name='dispatch')
 class login_view(APIView):
     serializer_class = LoginSerializer
@@ -127,7 +128,7 @@ class register_view(APIView):
                     user.image = "profile_pics/default_pp.jpg"
                     user.save()
                     messages.info(request, "Image extension not valid. Profile picture set to default.")
-                    messages.success(request, "You have successfully registered. Check your emails to verify your account.")
+                    messages.success(request, "You have successfully registered.")
                     return HttpResponseRedirect(reverse("index"))
 
             # checking file content, that it matches the format given
@@ -136,24 +137,25 @@ class register_view(APIView):
                     user.image = "profile_pics/default_pp.jpg"
                     user.save()
                     messages.info(request, "Image format not valid. Profile picture set to default.")
-                    messages.success(request, "You have successfully registered. Check your emails to verify your account.")
+                    messages.success(request, "You have successfully registered.")
                     return HttpResponseRedirect(reverse("index"))
 
                 user.image = image
                 user.save()
-                messages.success(request, "You have successfully registered. Check your emails to verify your account.")
+                messages.success(request, "You have successfully registered.")
                 return HttpResponseRedirect(reverse("index"))
             else:
                 user.image = "profile_pics/default_pp.jpg"
                 user.save()
                 messages.info(request, "No profile image selected. Profile picture set to default.")
-                messages.success(request, "You have successfully registered. Check your emails to verify your account.")
+                messages.success(request, "You have successfully registered.")
                 return HttpResponseRedirect(reverse("index"))
 
         return render(request, "pages/register.html", {
             "form": serializer,
             "errors": serializer.errors
         })
+
     def get(self, request):
         serializer = self.serializer_class()
         return render(request, "pages/register.html", {
@@ -166,7 +168,7 @@ def userManagementData(request, username):
     try:
         user = UserData.objects.get(username=username)
     except UserData.DoesNotExist:
-        return JsonResponse({"error": "User does not exists"}, status=404)
+        return JsonResponse({"error": "User does not exist"}, status=404)
 
     if request.method == "GET":
         return JsonResponse(user.serialize())
@@ -216,12 +218,14 @@ class PasswordResetRequestView(APIView):
 class SetNewPasswordView(APIView):
     serializer_class = SetNewPasswordSerializer
 
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data, context={'request': request})
+    def post(self, request, uidb64, token):
+        data = request.data.copy()
+        data['uidb64'] = uidb64
+        data['token'] = token
+        serializer = self.serializer_class(data=data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        response = redirect('index')
         messages.success(request, "Password reset successfully.")
-        return response
+        return HttpResponseRedirect(reverse('index'))
 
 
 class PasswordResetConfirmedView(APIView):
@@ -237,7 +241,7 @@ class PasswordResetConfirmedView(APIView):
         except DjangoUnicodeDecodeError as identifier:
             return Response({'detail': 'Token invalid or expired.'}, status=status.HTTP_401_UNAUTHORIZED)
 
-#
+
 # @method_decorator(csrf_protect, name='dispatch')
 # class Enable2FAView(APIView):
 #     def post(self, request):

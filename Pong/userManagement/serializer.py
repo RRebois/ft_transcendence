@@ -214,11 +214,13 @@ class SetNewPasswordSerializer(serializers.Serializer):
             confirm_password = attrs.get('confirm_password')
             if new_password != confirm_password:
                 raise serializers.ValidationError("New passwords do not match")
-            user.set_password(attrs['password'])
+            user.set_password(attrs['new_password'])
             user.save()
 
         except DjangoUnicodeDecodeError:
             raise serializers.ValidationError({'detail': "Invalid token"})
+
+        return super().validate(attrs)
 
 
 class VerifyOTPSerializer(serializers.ModelSerializer):
