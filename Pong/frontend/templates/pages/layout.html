@@ -15,6 +15,9 @@
             crossorigin="anonymous"></script>
 
     <script src="{% static 'userDataPage.js' %}"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+    </script>
     {% block script %}
     {% endblock %}
 
@@ -39,7 +42,7 @@
             </a>
 
             <div class="dropdown-menu dropdown-menu-start">
-                <a class="dropdown-item button" href="#">Profile</a>
+                <a class="dropdown-item button" href="" id="profile">Profile</a>
                 <a class="dropdown-item button" href="" id="statsPage">Stats</a>
             </div>
         </div>

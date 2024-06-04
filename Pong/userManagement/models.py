@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinLengthValidator
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.postgres.fields import ArrayField
 from .manager import UserManager
 
 
@@ -65,7 +66,8 @@ class UserData(models.Model):
     user_wins = models.IntegerField(default=0)
     user_losses = models.IntegerField(default=0)
     user_winrate = models.FloatField(default=0)
-    user_elo = models.IntegerField(default=900)
+    user_elo = ArrayField(models.IntegerField(), default=[900])
+    user_highest = models.IntegerField(default=900)
 
     def serialize(self):
         return {
@@ -73,5 +75,6 @@ class UserData(models.Model):
             "wins": self.user_wins,
             "losses": self.user_losses,
             "winrate": self.user_winrate,
-            "elo": self.user_elo
+            "elo": self.user_elo,
+            "elo_highest": self.user_highest,
         }

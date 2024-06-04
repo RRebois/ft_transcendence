@@ -38,6 +38,21 @@
     text-decoration: none;
 }
 
+.title_div {
+    color: black;
+    font-size: 30px;
+    font-style: bold;
+    margin: 20px auto;
+    padding: 25px;
+    max-width: fit-content;
+    border: 2px solid black;
+    border-radius: 50%;
+    box-shadow: 10px 10px #100C08;
+    text-decoration: underline;
+}
+
+
+
 .marginBot {
     margin-bottom: 0px;
 }
