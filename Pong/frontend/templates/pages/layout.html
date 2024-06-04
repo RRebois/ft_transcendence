@@ -8,13 +8,14 @@
     <link href="{% static 'styles.css' %}" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
+    <script src="{% static 'userDataPage.js' %}"></script>
     {% block script %}
-    <!--    <script src="{% static 'userDataPage.js' %}"></script>-->
     {% endblock %}
 
 </head>
@@ -22,30 +23,47 @@
 
 <body class="bg-gradient fullscreen d-flex flex-column">
 {% if user.is_authenticated %}
-<nav class="navbar navbar-expand bg-body">
+<nav class="navbar bg-body-tertiary sticky-top">
     <div class="container-fluid">
-        <div>
-            <a class="navbar-brand" href="{% url 'index' %}">
-                <span class="play-bold">ft_transcendence 🏓</span>
-            </a>
-        </div>
+        <ul class="nav">
+            <li class="nav-item roundBorder">
+                <img src="{{ user.image.url }}" alt="avatar">
+            </li>
+        </ul>
 
-        <div class="dropdown">
-            <a data-bs-toggle="dropdown" class="roundBorder">
-                <img src="{{user.image.url}}" alt="user profile picture">
+
+        <div class="dropdown me-auto">
+            <a data-bs-toggle="dropdown" aria-expanded="false" id="ownUsername">
+                {{ user.username }}
+                <i class="fa fa-caret-down"></i>
             </a>
-            <div class="dropdown-menu dropdown-menu-end">
-                <a href="#" type="button" class="dropdown-item button">Profile</a>
-                <a href="" onClick="load_stats_page("{{ user.username }}")" id="statsPage" class="dropdown-item ">Stats</a>
-                <hr class="dropdown-divider">
-                <form id="logout_form" method="POST" action="{% url 'logout' %}">
-                    {% csrf_token %}
-                    <a class="dropdown-item buttonStyle text-danger" onclick="document.getElementById('logout_form').submit()">Logout</a>
-                </form>
+
+            <div class="dropdown-menu dropdown-menu-start">
+                <a class="dropdown-item button" href="#">Profile</a>
+                <a class="dropdown-item button" href="" id="statsPage">Stats</a>
             </div>
         </div>
+
+
+        <ul class="nav">
+            <a class="navbar-brand" href="{% url 'index' %}" id="mainPage">
+                <span class="play-bold nav-item">ft_transcendence 🏓</span>
+            </a>
+        </ul>
+
+
+        </ul>
+        <ul class="nav ms-auto">
+            <li class="nav-item">
+                <form method="POST" id="logout_form" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <span class="text-danger" onclick="document.getElementById('logout_form').submit()">Logout</span>
+                </form>
+            </li>
+        </ul>
     </div>
 </nav>
+
 {% endif %}
 
 <div id="content" class="h-100">
