@@ -39,6 +39,13 @@
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'change_password' %}">Change password</a>
             </li>
+        </ul> <ul class="nav me-auto">
+            <li class="nav-item">
+                <form method="GET" action="{% url 'enable_2FA' %}">
+                    {% csrf_token %}
+                    <button class="nav-item" type="submit">2FA</button>
+                </form>
+            </li>
         </ul>
         <ul class="nav ms-auto">
             <li class="nav-item">
@@ -46,7 +53,6 @@
                     {% csrf_token %}
                     <button class="nav-item" type="submit">Logout</button>
                 </form>
-<!--                <a class="nav-item" href="{% url 'logout' %}">Logout</a>-->
             </li>
         </ul>
     </div>

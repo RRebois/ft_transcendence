@@ -1,5 +1,5 @@
-from typing import io
-
+# from typing import io
+from io import BytesIO
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
@@ -265,26 +265,21 @@ class Enable2FAView(APIView):
         user = authenticate_user(request)
 
         if user.tfa_activated is True:
-            return Response({"detail": "2FA already activated"}, status=status.HTTP_400_BAD_REQUEST)
+            messages.error(request, "2FA already activated.")
+            response = redirect('index')
+            return response
+            # return Response({"detail": "2FA already activated"}, status=status.HTTP_400_BAD_REQUEST)
         secret_key = pyotp.random_base32()
         user.totp = secret_key
         user.tfa_activated = True
         user.save()
 
         qr_url = pyotp.totp.TOTP(secret_key).provisioning_uri(user.username)
-        qrCode = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L,
-                               box_size=10, border=4)
-        qrCode.add_data(qr_url)
-        qrCode.make(fit=True)
+        messages.success(request, "2FA activated, please scan the qrcode in authenticator to save your account code.")
+        return JsonResponse({"qr_url": qr_url})
 
-        img = qrCode.make_image(fill='black', back_color='white')
-        buffer = io.BytesIO()
-        img.save(buffer, format='PNG')
-        buffer.seek(0)
-
-        response = Response({"qr_url": qr_url}, status=status.HTTP_200_OK)
-        return response
-
+    def get(self, request):
+        return render(request, "pages/2FA.html")
 
 @method_decorator(csrf_protect, name='dispatch')
 class VerifyOTPView(APIView):
@@ -308,11 +303,15 @@ class Disable2FAView(APIView):
         user = authenticate_user(request)
 
         if user.tfa_activated is False:
-            return Response({"detail": "2FA already deactivated"}, status=status.HTTP_400_BAD_REQUEST)
+            messages.error(request, "2FA already deactivated.")
+            response = redirect('index')
+            return response
         user.totp = None
         user.tfa_activated = False
         user.save()
-        return Response({"detail": "2FA disabled"}, status=status.HTTP_200_OK)
+        messages.success(request, "2FA deactivated.")
+        response = redirect('index')
+        return response
 
 
 # @method_decorator(csrf_protect, name='dispatch')

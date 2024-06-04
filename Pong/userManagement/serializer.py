@@ -214,7 +214,7 @@ class SetNewPasswordSerializer(serializers.Serializer):
             if new_password != confirm_password:
                 raise serializers.ValidationError("New passwords do not match")
             validate_password(new_password, user)
-            # user.set_password(attrs['new_password'])
+            user.set_password(attrs['new_password'])
             user.save()
 
         except DjangoUnicodeDecodeError:
