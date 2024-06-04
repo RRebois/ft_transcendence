@@ -265,18 +265,17 @@ class Enable2FAView(APIView):
         user = authenticate_user(request)
 
         if user.tfa_activated is True:
-            messages.error(request, "2FA already activated.")
+            messages.success(request, "2FA already activated.")
             response = redirect('index')
             return response
-            # return Response({"detail": "2FA already activated"}, status=status.HTTP_400_BAD_REQUEST)
         secret_key = pyotp.random_base32()
         user.totp = secret_key
         user.tfa_activated = True
         user.save()
 
         qr_url = pyotp.totp.TOTP(secret_key).provisioning_uri(user.username)
-        messages.success(request, "2FA activated, please scan the qrcode in authenticator to save your account code.")
-        return JsonResponse({"qr_url": qr_url})
+        message = "2FA activated, please scan the QR-code in authenticator to save your account code."
+        return JsonResponse({"qr_url": qr_url, "message": message})
 
     def get(self, request):
         return render(request, "pages/2FA.html")
@@ -303,7 +302,7 @@ class Disable2FAView(APIView):
         user = authenticate_user(request)
 
         if user.tfa_activated is False:
-            messages.error(request, "2FA already deactivated.")
+            messages.success(request, "2FA already deactivated.")
             response = redirect('index')
             return response
         user.totp = None

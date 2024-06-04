@@ -3,11 +3,11 @@
 
 {% block script %}
     <script src="{% static 'scriptRegistration.js' %} https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
-"></script>
 {% endblock %}
 
 {% block body %}
 
+<div class="alertSize alert alert-{{ message.tags }}" id="message" style="margin-top: 0px;"></div>
 <div class="w-100 h-100 d-flex justify-content-center align-items-center">
     <form id="enable-form" class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card"
           style="--bs-bg-opacity: .5;">
@@ -37,6 +37,10 @@
                         var qrCodeDiv = $('#QRcode');
                         qrCodeDiv.html('<img src="https://api.qrserver.com/v1/create-qr-code/?data=' + encodeURIComponent(response.qr_url) + '&size=200x200" alt="QR Code" />');
                         qrCodeDiv.show();
+                    }
+                    if (response.message) {
+                        var messageDiv = $('#message');
+                        messageDiv.html('<div class="alert alert-success alert-{{ message.tags }}">' + response.message + '</div>');
                     }
                 },
                 error: function(response) {
