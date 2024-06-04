@@ -81,12 +81,12 @@ class LoginSerializer(serializers.ModelSerializer):
         if not user:
             raise AuthenticationFailed("Invalid credentials, please try again")
 
-        if user.tfa_activated:
-            if not otp:
-                raise AuthenticationFailed("OTP required for your account")
-            totp = pyotp.TOTP(user.totp)
-            if not totp.verify(otp):
-                raise AuthenticationFailed("Invalid OTP")
+        # if user.tfa_activated:
+        #     if not otp:
+        #         raise AuthenticationFailed("OTP required for your account")
+        #     totp = pyotp.TOTP(user.totp)
+        #     if not totp.verify(otp):
+        #         raise AuthenticationFailed("Invalid OTP")
 
         payload = {
             'id': user.id,

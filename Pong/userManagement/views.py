@@ -72,17 +72,16 @@ class login_view(APIView):
         if serializer.is_valid():
             user = serializer.validated_data['user']
             if user.tfa_activated:
-                return Response({
-                    'detail': 'OTP required for your account',
+                return JsonResponse({
                     'otp_required': True,
                     'user_id': user.id
-                })
+                }, status=status.HTTP_200_OK)
 
             token = serializer.validated_data['token']
             user.status = 'online'
             user.save()
 
-            response = redirect('index')
+            response = JsonResponse({'redirect': reverse('index')}, status=200)
             response.set_cookie(key='jwt', value=token, httponly=True)
             response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
             login(request, user)
@@ -92,6 +91,7 @@ class login_view(APIView):
 
     def get(self, request):
         return HttpResponseRedirect(reverse("index"))
+
 
 @method_decorator(csrf_protect, name='dispatch')
 class logout_view(APIView):
@@ -282,6 +282,7 @@ class Enable2FAView(APIView):
 
 @method_decorator(csrf_protect, name='dispatch')
 class VerifyOTPView(APIView):
+    serializer_class = VerifyOTPSerializer
     def post(self, request):
         serializer = VerifyOTPSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -291,9 +292,19 @@ class VerifyOTPView(APIView):
         user.status = 'online'
         user.save()
 
-        response = Response({"token": token})
+        login(request, user)
+        # response = Response({"token": token})
+        response = redirect('index')
         response.set_cookie(key='jwt', value=token, httponly=True)
         return response
+
+    def get(self, request):
+        user_id = request.GET.get('user_id')
+        serializer = self.serializer_class()
+        return render(request, "pages/otp.html", {
+            "user_id": user_id,
+            "form": serializer
+        })
 
 
 @method_decorator(csrf_protect, name='dispatch')

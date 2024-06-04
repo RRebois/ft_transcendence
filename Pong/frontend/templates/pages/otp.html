@@ -1,0 +1,56 @@
+{% extends "pages/layout.html" %}
+{% load static %}
+
+{% block script %}
+    <script src="{% static 'scriptRegistration.js' %}"></script>
+{% endblock %}
+
+{% block body %}
+
+<div class="w-100 h-100 d-flex justify-content-center align-items-center">
+    <form action="{% url 'verify_otp' %}" method="post"
+          class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card hidden"
+          style="--bs-bg-opacity: .5;" id="otpForm">
+        {% csrf_token %}
+        <h1 class="text-justify play-bold">ft_transcendence 🏓</h1>
+        <input type="hidden" name="user_id" id="user_id" value="{{ user_id }}">
+        <div class="w-100">
+            <label for="otp" class="visually-hidden">Authentication code</label>
+            <div class="input-group">
+                <div class="input-group-text">
+                    <i class="bi bi-lock"></i>
+                </div>
+                <input type="text" name="otp" id="otp" class="form-control" placeholder="Otp" autofocus required/>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#otpForm').on('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+            var formData = $(this).serializeArray(); // Serialize the form data
+            // const userId = $('#user_id').val();
+            // console.log("Sending user_id:", userId); // Debugging line
+            $.ajax({
+                type: 'POST',
+                url: '{% url "verify_otp" %}', // Make sure this URL matches your view's URL pattern
+                data: formData,
+                success: function(response) {
+                    // Handle successful OTP verification here
+                    // For example, redirecting the user or showing a message
+                    window.location.href = "{% url 'index' %}"; // Redirect to the index page or another appropriate page
+                },
+                error: function(response) {
+                    console.log("error:", response);
+                    alert('OTP verification failed. Please try again.');
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}

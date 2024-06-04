@@ -17,7 +17,7 @@ urlpatterns = [
     # path('delete_friend', DeleteFriendView.as_view(), name='delete_friend'),
     # path('list_friends', ListFriendsView.as_view(), name='list_friends'),
     path('enable_2FA', Enable2FAView.as_view(), name='enable_2FA'),
-    path('verifyotp', VerifyOTPView.as_view(), name='verifyotp'),
+    path('verifyotp', VerifyOTPView.as_view(), name='verify_otp'),
     path('disable_2FA', Disable2FAView.as_view(), name='disable_2FA'),
 
     # #API Routes
