@@ -20,11 +20,13 @@ from rest_framework.views import APIView
 import pyotp
 import qrcode
 import jwt
+import requests
 
 from .models import *
 from .forms import *
 from .serializer import *
 
+external_url_complete = "https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-d84d677952f386d4f0644523934d56521d6bd3a309e6bb552486f144a0f42d7f&redirect_uri=https%3A%2F%2Flocalhost%3A8443%2Flogin42%2Fredirect&response_type=code"
 
 # @method_decorator(csrf_protect, name='dispatch')
 def authenticate_user(request):
@@ -92,6 +94,60 @@ class LoginView(APIView):
     def get(self, request):
         return HttpResponseRedirect(reverse("index"))
 
+@method_decorator(csrf_protect, name='dispatch')
+class Login42View(APIView):
+    
+    
+    # external_url = "https://api.intra.42.fr/oauth/authorize"
+    # params = {
+    #     "client_id" : "u-s4t2ud-d84d677952f386d4f0644523934d56521d6bd3a309e6bb552486f144a0f42d7f",
+    #     "redirect_uri" : 'https%3A%2F%2Flocalhost%3A8443%2Flogin42',
+    #     "response_type" : "code",
+    # }
+
+    def post(self, request):
+
+        return HttpResponseRedirect(reverse("index"))
+
+    def get(self, request):
+        return redirect(external_url_complete)
+        # try:
+        #     response = requests.get(external_url, params)
+        #     if response.status_code == 200:
+        #         return HttpResponseRedirect(reverse("index"))
+        #     else:
+        #         return HttpResponseRedirect(reverse("register"))
+        # except:
+        #     return HttpResponseRedirect(reverse("register"))
+
+def exchangeToken(code):
+    data = {
+        "grant_type" : "authorization_code",
+        "client_id" : "u-s4t2ud-d84d677952f386d4f0644523934d56521d6bd3a309e6bb552486f144a0f42d7f",
+        "client_secret" : "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",
+        "code" : code,
+        "redirect_uri" : "https://localhost:8443/login42/redirect",
+    }
+    response = requests.post("https://api.intra.42.fr/oauth/token", data=data)
+    credentials = response.json()
+    token = credentials['access_token']
+    user = requests.get("https://api.intra.42.fr/v2/me", headers={
+        "Authorization" : f"Bearer {token}"
+    }).json()
+    return user
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class Login42RedirectView(APIView):
+
+    def post(self, request):
+
+        return HttpResponseRedirect(reverse("register"))
+
+    def get(self, request):
+        code = request.GET.get('code')
+        user = exchangeToken(code)
+        return JsonResponse({"user" : user})
 
 @method_decorator(csrf_protect, name='dispatch')
 class LogoutView(APIView):
