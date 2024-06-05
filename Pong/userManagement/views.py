@@ -1,7 +1,7 @@
-# from typing import io
 from io import BytesIO
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.shortcuts import render, redirect
 from django.core.exceptions import ObjectDoesNotExist
@@ -12,7 +12,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.db import IntegrityError
 from django.contrib import messages
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
@@ -130,6 +130,8 @@ class register_view(APIView):
                 if ext not in valid_extension:
                     user.image = "profile_pics/default_pp.jpg"
                     user.save()
+                    user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+                    user_data.save()
                     messages.info(request, "Image extension not valid. Profile picture set to default.")
                     messages.success(request, "You have successfully registered.")
                     return HttpResponseRedirect(reverse("index"))
@@ -139,17 +141,23 @@ class register_view(APIView):
                 if img.format not in ['JPEG', 'PNG', 'GIF']:
                     user.image = "profile_pics/default_pp.jpg"
                     user.save()
+                    user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+                    user_data.save()
                     messages.info(request, "Image format not valid. Profile picture set to default.")
                     messages.success(request, "You have successfully registered.")
                     return HttpResponseRedirect(reverse("index"))
 
                 user.image = image
                 user.save()
+                user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+                user_data.save()
                 messages.success(request, "You have successfully registered.")
                 return HttpResponseRedirect(reverse("index"))
             else:
                 user.image = "profile_pics/default_pp.jpg"
                 user.save()
+                user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+                user_data.save()
                 messages.info(request, "No profile image selected. Profile picture set to default.")
                 messages.success(request, "You have successfully registered.")
                 return HttpResponseRedirect(reverse("index"))
@@ -166,17 +174,19 @@ class register_view(APIView):
         })
 
 @method_decorator(csrf_protect, name='dispatch')
-def userManagementData(request, username):
-    # Query for requested post
-    try:
-        user = UserData.objects.get(username=username)
-    except UserData.DoesNotExist:
-        return JsonResponse({"error": "User does not exist"}, status=404)
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class UserStatsDataView(APIView):
 
-    if request.method == "GET":
-        return JsonResponse(user.serialize())
-    else:
-        return JsonResponse({"Error": "Method not allowed"})
+    def get(self, request, username):
+        try:
+            user_stats = UserData.objects.get(user_id=User.objects.get(username=username))
+        except User.DoesNotExist:
+            raise Http404("error: User does not exists.")
+        except UserData.DoesNotExist:
+            raise Http404("error: User data does not exists.")
+
+        return JsonResponse(user_stats.serialize())
+
 
 
 # @method_decorator(csrf_protect, name='dispatch')

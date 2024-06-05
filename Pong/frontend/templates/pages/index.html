@@ -1,8 +1,14 @@
 {% extends "pages/layout.html" %}
+{% load static %}
 
 {% block title %}
 ft_transcendence
 {% endblock %}
+
+{% block script %}
+
+{% endblock %}
+
 
 {% block body %}
 
@@ -16,7 +22,14 @@ ft_transcendence
 {% endif %}
 
 {% if user.is_authenticated %}
-<p>Hello {{user.username}} 😳👉👈</p>
+<div id="greetings">Hello {{user.username}} 😳👉👈</div>
+
+<div class="container" id="divUserStats">
+</div>
+
+<div class="container" id="divProfile">
+</div>
+
 {% else %}
 <div class="w-100 h-100 d-flex justify-content-center align-items-center">
     <form action="{% url 'login' %}" method="post"

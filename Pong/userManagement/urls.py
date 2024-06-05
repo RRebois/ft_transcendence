@@ -5,8 +5,11 @@ from .views import *
 urlpatterns = [
     path("", views.index, name="index"),
     path("login", login_view.as_view(), name="login"),
-    path("register", register_view.as_view(), name="register"),
+    path("register", RegisterView.as_view(), name="register"),
     path("logout/", logout_view.as_view(), name="logout"),
+
+    path("stats/<str:username>", UserStatsDataView.as_view(), name="userStatsData"),
+
     # path('user', UpdateUserView.as_view()),
     path('change_password', PasswordChangeView.as_view(), name='change_password'),
     path('reset_password', PasswordResetRequestView.as_view(), name='reset_password'),
@@ -21,6 +24,6 @@ urlpatterns = [
     path('disable_2FA', Disable2FAView.as_view(), name='disable_2FA'),
 
     # #API Routes
-    # path("Pong/<str:username>", views.userManagementData, name="userManagementData")
+    # path("stats/<str:username>", views.userStatsData, name="userStatsData")
 ]
 
