@@ -41,29 +41,23 @@
                 <i class="fa fa-caret-down"></i>
             </a>
 
+
             <div class="dropdown-menu dropdown-menu-start">
                 <a class="dropdown-item button" href="" id="profile">Profile</a>
-                <a class="dropdown-item button" href="" id="statsPage">Stats</a>
+                <a class="dropdown-item button" onclick="load_stats_page('{{ user.username }}')" href="" id="statsPage">Stats</a>
+                <a class="dropdown-item button" href="" id="friendsPage">Friends</a>
             </div>
         </div>
 
 
         <ul class="nav">
             <a class="navbar-brand" href="{% url 'index' %}" id="mainPage">
-                <span class="play-bold nav-item" style="margin-left:auto; margin-right:auto;">ft_transcendence 🏓</span>
+                <span class="play-bold nav-item">ft_transcendence 🏓</span>
             </a>
         </ul>
 
 
         <ul class="nav me-auto">
-            <li class="nav-item">
-                <a class="nav-link" href=#>{{ user.username }}</a>
-            </li>
-        </ul> <ul class="nav me-auto">
-            <li class="nav-item">
-                <a class="nav-link" href=#>Friends</a>
-            </li>
-        </ul> <ul class="nav me-auto">
             <li class="nav-item">
                 <a class="nav-link" href=#>Settings</a>
             </li>

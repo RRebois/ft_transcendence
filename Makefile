@@ -20,7 +20,7 @@ up:
 	@nohup open https://localhost:8443 > /dev/null 2>&1 &
 
 down:
-	docker compose down
+	docker compose down -v
 
 restart: down up
 
