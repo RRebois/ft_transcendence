@@ -47,6 +47,11 @@ function load_stats_page(username) {
 
         document.querySelector('#divUserStats').append(stat);
 
+        fetch(`matchs/${username}`)
+        .then(response => response.json())
+        .then(history => {
+            console.log(history);
+        })
     })
     .catch(error => console.error('Error:', error));
 
