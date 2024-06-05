@@ -52,15 +52,13 @@
 }
 
 .divElo {
-    color: black
+    color: black;
     font-size: 15px;
     margin: 5px auto;
     padding: 5px;
     max-width: fit-content;
     border-bottom: 1px solid black;
 }
-
-
 
 .marginBot {
     margin-bottom: 0px;

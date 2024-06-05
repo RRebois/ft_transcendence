@@ -290,6 +290,7 @@ class Enable2FAView(APIView):
     def get(self, request):
         return render(request, "pages/2FA.html")
 
+
 @method_decorator(csrf_protect, name='dispatch')
 class VerifyOTPView(APIView):
     serializer_class = VerifyOTPSerializer
