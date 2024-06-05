@@ -37,23 +37,22 @@ function load_stats_page(username) {
     fetch(`stats/${username}`)
     .then(response => response.json())
     .then(data => {
-        create_stats_div(data);
-//        console.log(data);
+        console.log(data);
+        const stat = document.createElement('div');
+        const statElo = document.createElement('div');
+        statElo.classList.add("divElo");
+
+        statElo.innerHTML = "Current elo / highest: " + data['elo'] + " / " + data['elo_highest'];
+        stat.append(statElo);
+
+        document.querySelector('#divUserStats').append(stat);
+
     })
     .catch(error => console.error('Error:', error));
 
     event.preventDefault();
 }
 
-function create_stats_div(data) {
-    console.log(data);
-    const stat = document.createElement('div');
-    const spanStat = document.createElement('span');
-    spanStat.innerHTML = "Elo: " + data['elo'] + " Highest elo: " + data['elo_highest'];
-
-    document.querySelector('#stat').append(spanStats);
-    document.querySelector('#divUserStats').append(stat);
-}
 
 function load_profile_page(username)
 {
