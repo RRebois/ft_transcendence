@@ -21,10 +21,10 @@ import pyotp
 import qrcode
 import jwt
 
-
 from .models import *
 from .forms import *
 from .serializer import *
+
 
 # @method_decorator(csrf_protect, name='dispatch')
 def authenticate_user(request):
@@ -63,7 +63,7 @@ def index(request):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-class login_view(APIView):
+class LoginView(APIView):
     serializer_class = LoginSerializer
     def post(self, request):
         user_data = request.data
@@ -94,7 +94,7 @@ class login_view(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-class logout_view(APIView):
+class LogoutView(APIView):
     def post(self, request):
         user = authenticate_user(request)
 
@@ -111,7 +111,7 @@ class logout_view(APIView):
 
 # https://www.django-rest-framework.org/api-guide/renderers/#templatehtmlrenderer
 @method_decorator(csrf_protect, name='dispatch')
-class register_view(APIView):
+class RegisterView(APIView):
     serializer_class = RegisterSerializer
     def post(self, request):
         user_data = request.data
