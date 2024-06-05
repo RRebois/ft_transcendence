@@ -1,8 +1,14 @@
 {% extends "pages/layout.html" %}
+{% load static %}
 
 {% block title %}
 ft_transcendence
 {% endblock %}
+
+{% block script %}
+
+{% endblock %}
+
 
 {% block body %}
 
@@ -16,12 +22,19 @@ ft_transcendence
 {% endif %}
 
 {% if user.is_authenticated %}
-<p>Hello {{user.username}} 😳👉👈</p>
+<div id="greetings">Hello {{user.username}} 😳👉👈</div>
+
+<div class="container" id="divUserStats">
+</div>
+
+<div class="container" id="divProfile">
+</div>
+
 {% else %}
 <div class="w-100 h-100 d-flex justify-content-center align-items-center">
     <form action="{% url 'login' %}" method="post"
           class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card"
-          style="--bs-bg-opacity: .5;">
+          style="--bs-bg-opacity: .5;" id="loginForm">
         {% csrf_token %}
         <h1 class="text-justify play-bold">ft_transcendence 🏓</h1>
         <div class="w-100">
@@ -45,8 +58,7 @@ ft_transcendence
                            required/>
                 </div>
             </div>
-            <!-- TODO: create and link a "forgotten password" page-->
-            <a href="#" class="text-decoration-none">Forgot password?</a>
+            <a href="{% url 'reset_password' %}" class="text-decoration-none">Forgot password?</a>
         </div>
         <button type="submit" class="btn btn-primary">Log in</button>
         {% if login_error %}
@@ -59,7 +71,6 @@ ft_transcendence
             <span class="px-2">or</span>
             <hr class="flex-grow-1">
         </div>
-        <!-- TODO: create 42 login process -->
         <button type="button" class="btn btn-dark">
             <img height="32" width="32" src="https://cdn.simpleicons.org/42/fff" alt="42 school logo"
                  style="margin-right: 10px"/>
@@ -68,7 +79,36 @@ ft_transcendence
         <a href="{% url 'register' %}" class="text-decoration-none">Don't have an account? Register here.</a>
     </form>
 
+
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#loginForm').on('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'login' %}", // Ensure this URL matches your login view's URL pattern
+                data: $(this).serialize(), // Serialize the form data
+                success: function(response) {
+                    console.log("Success:", response);
+                    if (response.otp_required) { // Check if an OTP is required
+                        // Redirect to the OTP page with the necessary parameters
+                        window.location.href = "{% url 'verify_otp' %}?user_id=" + response.user_id;
+                    } else {
+                        // Redirect to the index page or another appropriate page on successful login
+                        window.location.href = "{% url 'index' %}";
+                    }
+                },
+                error: function(response) {
+                    console.log("error:", response);
+                    alert('Login failed. Please try again.');
+                }
+            });
+        });
+    });
+</script>
 
 {% endif %}
 {% endblock %}

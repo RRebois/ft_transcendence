@@ -1,5 +1,7 @@
+from io import BytesIO
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.shortcuts import render, redirect
 from django.core.exceptions import ObjectDoesNotExist
@@ -7,37 +9,34 @@ from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth import authenticate, login, logout
-from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.db import IntegrityError
 from django.contrib import messages
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
 import pyotp
+import qrcode
 import jwt
-
 
 from .models import *
 from .forms import *
 from .serializer import *
 
+
 # @method_decorator(csrf_protect, name='dispatch')
 def authenticate_user(request):
-    print("Request in authenticate_user:", request)
     token = request.COOKIES.get('jwt')
-    print("Token:", token)
     if not token:
         raise AuthenticationFailed('Unauthenticated')
 
     secret = os.environ.get('SECRET_KEY')
-    print("Secret:", secret)
 
     try:
         payload = jwt.decode(token, secret, algorithms=['HS256'])
-        print("Payload:", payload)
+        # print("Payload:", payload)
     except jwt.ExpiredSignatureError:
         raise AuthenticationFailed("Token expired, please log in again.")
     except jwt.InvalidTokenError:
@@ -62,8 +61,9 @@ def index(request):
         })
     return render(request, "pages/index.html")
 
+
 @method_decorator(csrf_protect, name='dispatch')
-class login_view(APIView):
+class LoginView(APIView):
     serializer_class = LoginSerializer
     def post(self, request):
         user_data = request.data
@@ -72,17 +72,16 @@ class login_view(APIView):
         if serializer.is_valid():
             user = serializer.validated_data['user']
             if user.tfa_activated:
-                return Response({
-                    'detail': 'OTP required for your account',
+                return JsonResponse({
                     'otp_required': True,
                     'user_id': user.id
-                })
+                }, status=status.HTTP_200_OK)
 
             token = serializer.validated_data['token']
             user.status = 'online'
             user.save()
 
-            response = redirect('index')
+            response = JsonResponse({'redirect': reverse('index')}, status=200)
             response.set_cookie(key='jwt', value=token, httponly=True)
             response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
             login(request, user)
@@ -93,8 +92,9 @@ class login_view(APIView):
     def get(self, request):
         return HttpResponseRedirect(reverse("index"))
 
+
 @method_decorator(csrf_protect, name='dispatch')
-class logout_view(APIView):
+class LogoutView(APIView):
     def post(self, request):
         user = authenticate_user(request)
 
@@ -111,7 +111,7 @@ class logout_view(APIView):
 
 # https://www.django-rest-framework.org/api-guide/renderers/#templatehtmlrenderer
 @method_decorator(csrf_protect, name='dispatch')
-class register_view(APIView):
+class RegisterView(APIView):
     serializer_class = RegisterSerializer
     def post(self, request):
         user_data = request.data
@@ -130,8 +130,10 @@ class register_view(APIView):
                 if ext not in valid_extension:
                     user.image = "profile_pics/default_pp.jpg"
                     user.save()
+                    user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+                    user_data.save()
                     messages.info(request, "Image extension not valid. Profile picture set to default.")
-                    messages.success(request, "You have successfully registered. Check your emails to verify your account.")
+                    messages.success(request, "You have successfully registered.")
                     return HttpResponseRedirect(reverse("index"))
 
             # checking file content, that it matches the format given
@@ -139,25 +141,32 @@ class register_view(APIView):
                 if img.format not in ['JPEG', 'PNG', 'GIF']:
                     user.image = "profile_pics/default_pp.jpg"
                     user.save()
+                    user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+                    user_data.save()
                     messages.info(request, "Image format not valid. Profile picture set to default.")
-                    messages.success(request, "You have successfully registered. Check your emails to verify your account.")
+                    messages.success(request, "You have successfully registered.")
                     return HttpResponseRedirect(reverse("index"))
 
                 user.image = image
                 user.save()
-                messages.success(request, "You have successfully registered. Check your emails to verify your account.")
+                user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+                user_data.save()
+                messages.success(request, "You have successfully registered.")
                 return HttpResponseRedirect(reverse("index"))
             else:
                 user.image = "profile_pics/default_pp.jpg"
                 user.save()
+                user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+                user_data.save()
                 messages.info(request, "No profile image selected. Profile picture set to default.")
-                messages.success(request, "You have successfully registered. Check your emails to verify your account.")
+                messages.success(request, "You have successfully registered.")
                 return HttpResponseRedirect(reverse("index"))
 
         return render(request, "pages/register.html", {
             "form": serializer,
             "errors": serializer.errors
         })
+
     def get(self, request):
         serializer = self.serializer_class()
         return render(request, "pages/register.html", {
@@ -165,19 +174,21 @@ class register_view(APIView):
         })
 
 @method_decorator(csrf_protect, name='dispatch')
-def userManagementData(request, username):
-    # Query for requested post
-    try:
-        user = UserData.objects.get(username=username)
-    except UserData.DoesNotExist:
-        return JsonResponse({"error": "User does not exists"}, status=404)
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class UserStatsDataView(APIView):
 
-    if request.method == "GET":
-        return JsonResponse(user.serialize())
-    else:
-        return JsonResponse({"Error": "Method not allowed"})
+    def get(self, request, username):
+        try:
+            user_stats = UserData.objects.get(user_id=User.objects.get(username=username))
+        except User.DoesNotExist:
+            raise Http404("error: User does not exists.")
+        except UserData.DoesNotExist:
+            raise Http404("error: User data does not exists.")
 
-#
+        return JsonResponse(user_stats.serialize())
+
+
+
 # @method_decorator(csrf_protect, name='dispatch')
 # class UpdateUserView(APIView):
 #     serializer_class = UserSerializer
@@ -192,102 +203,138 @@ def userManagementData(request, username):
 #         return Response(serializer.errors, status=status.HTTP_403_FORBIDDEN)
 #
 #
-# @method_decorator(csrf_protect, name='dispatch')
-# class PasswordChangeView(APIView):
-#     serializer_class = PasswordChangeSerializer
-#     def post(self, request):
-#         user = authenticate_user(request)
-#         serializer = self.serializer_class(data=request.data, context={'user': user})
-#         if serializer.is_valid(raise_exception=True):
-#             serializer.save()
-#             return Response({"detail": "Password changed successfully"},
-#                             status=status.HTTP_200_OK)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#
-# @method_decorator(csrf_protect, name='dispatch')
-# class PasswordResetRequestView(APIView):
-#     serializer_class = PasswordResetRequestSerializer
-#
-#     def post(self, request):
-#         serializer = self.serializer_class(data=request.data, context={'request': request})
-#         serializer.is_valid(raise_exception=True)
-#         return Response({
-#             'detail': 'You have received a mail with a link to reset your password'},
-#             status=status.HTTP_200_OK)
-#
-#
-# @method_decorator(csrf_protect, name='dispatch')
-# class SetNewPasswordView(APIView):
-#     serializer_class = SetNewPasswordSerializer
-#
-#     def post(self, request):
-#         serializer = self.serializer_class(data=request.data, context={'request': request})
-#         serializer.is_valid(raise_exception=True)
-#         return Response({
-#             'detail': 'Password has been changed successfully'},
-#             status=status.HTTP_200_OK)
-#
-#
-# class PasswordResetConfirmedView(APIView):
-#     def get(self, request, uidb64, token):
-#         try:
-#             user_id = smart_str(urlsafe_base64_decode(uidb64))
-#             user = User.objects.get(id=user_id)
-#
-#             if not PasswordResetTokenGenerator().check_token(user, token):
-#                 return Response({'detail': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
-#             return Response({'detail': 'Token is valid, proceed to reset password.'}, status.HTTP_200_OK)
-#
-#         except DjangoUnicodeDecodeError as identifier:
-#             return Response({'detail': 'Token invalid or expired.'}, status=status.HTTP_401_UNAUTHORIZED)
-#
-#
-# @method_decorator(csrf_protect, name='dispatch')
-# class Enable2FAView(APIView):
-#     def post(self, request):
-#         user = authenticate_user(request)
-#
-#         if user.tfa_activated is True:
-#             return Response({"detail": "2FA already activated"}, status=status.HTTP_400_BAD_REQUEST)
-#         secret_key = pyotp.random_base32()
-#         user.totp = secret_key
-#         user.tfa_activated = True
-#         user.save()
-#
-#         qr_url = pyotp.totp.TOTP(secret_key).provisioning_uri(user.username)
-#         response = Response({"qr_url": qr_url}, status=status.HTTP_200_OK)
-#         return response
-#
-#
-# @method_decorator(csrf_protect, name='dispatch')
-# class VerifyOTPView(APIView):
-#     def post(self, request):
-#         serializer = VerifyOTPSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         token = serializer.validated_data['token']
-#         user = serializer.validated_data['user']
-#
-#         user.status = 'online'
-#         user.save()
-#
-#         response = Response({"token": token})
-#         response.set_cookie(key='jwt', value=token, httponly=True)
-#         return response
-#
-#
-# @method_decorator(csrf_protect, name='dispatch')
-# class Disable2FAView(APIView):
-#     def post(self, request):
-#         user = authenticate_user(request)
-#
-#         if user.tfa_activated is False:
-#             return Response({"detail": "2FA already deactivated"}, status=status.HTTP_400_BAD_REQUEST)
-#         user.totp = None
-#         user.tfa_activated = False
-#         user.save()
-#         return Response({"detail": "2FA disabled"}, status=status.HTTP_200_OK)
-#
-#
+@method_decorator(csrf_protect, name='dispatch')
+class PasswordChangeView(APIView):
+    serializer_class = PasswordChangeSerializer
+    def post(self, request):
+        user = authenticate_user(request)
+        serializer = self.serializer_class(data=request.data, context={'user': user})
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            response = redirect('index')
+            messages.success(request, "Your password has been changed.")
+            return response
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request):
+        serializer = self.serializer_class()
+        return render(request, "pages/changePassword.html", {
+            "form": serializer
+        })
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class PasswordResetRequestView(APIView):
+    serializer_class = PasswordResetRequestSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        response = redirect('index')
+        messages.success(request, "A mail to reset your password has been sent.")
+        return response
+
+    def get(self, request):
+        serializer = self.serializer_class()
+        return render(request, "pages/forgotPassword.html", {
+            "form": serializer
+        })
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class SetNewPasswordView(APIView):
+    serializer_class = SetNewPasswordSerializer
+
+    def post(self, request, uidb64, token):
+        data = request.data.copy()
+        data['uidb64'] = uidb64
+        data['token'] = token
+        serializer = self.serializer_class(data=data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        messages.success(request, "Password reset successfully.")
+        return HttpResponseRedirect(reverse('index'))
+
+
+class PasswordResetConfirmedView(APIView):
+    def get(self, request, uidb64, token):
+        try:
+            user_id = smart_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(id=user_id)
+
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                return Response({'detail': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+            return render(request, 'pages/passwordReset.html', {'uidb64': uidb64, 'token': token})
+
+        except DjangoUnicodeDecodeError as identifier:
+            return Response({'detail': 'Token invalid or expired.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class Enable2FAView(APIView):
+    def post(self, request):
+        user = authenticate_user(request)
+
+        if user.tfa_activated is True:
+            messages.success(request, "2FA already activated.")
+            response = redirect('index')
+            return response
+        secret_key = pyotp.random_base32()
+        user.totp = secret_key
+        user.tfa_activated = True
+        user.save()
+
+        qr_url = pyotp.totp.TOTP(secret_key).provisioning_uri(user.username)
+        message = "2FA activated, please scan the QR-code in authenticator to save your account code."
+        return JsonResponse({"qr_url": qr_url, "message": message})
+
+    def get(self, request):
+        return render(request, "pages/2FA.html")
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class VerifyOTPView(APIView):
+    serializer_class = VerifyOTPSerializer
+    def post(self, request):
+        serializer = VerifyOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = serializer.validated_data['token']
+        user = serializer.validated_data['user']
+
+        user.status = 'online'
+        user.save()
+
+        login(request, user)
+        # response = Response({"token": token})
+        response = redirect('index')
+        response.set_cookie(key='jwt', value=token, httponly=True)
+        return response
+
+    def get(self, request):
+        user_id = request.GET.get('user_id')
+        serializer = self.serializer_class()
+        return render(request, "pages/otp.html", {
+            "user_id": user_id,
+            "form": serializer
+        })
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class Disable2FAView(APIView):
+    def post(self, request):
+        user = authenticate_user(request)
+
+        if user.tfa_activated is False:
+            messages.success(request, "2FA already deactivated.")
+            response = redirect('index')
+            return response
+        user.totp = None
+        user.tfa_activated = False
+        user.save()
+        messages.success(request, "2FA deactivated.")
+        response = redirect('index')
+        return response
+
+
 # @method_decorator(csrf_protect, name='dispatch')
 # class SendFriendRequestView(APIView):
 #     def post(self, request):

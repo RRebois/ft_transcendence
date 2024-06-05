@@ -81,12 +81,12 @@ class LoginSerializer(serializers.ModelSerializer):
         if not user:
             raise AuthenticationFailed("Invalid credentials, please try again")
 
-        if user.tfa_activated:
-            if not otp:
-                raise AuthenticationFailed("OTP required for your account")
-            totp = pyotp.TOTP(user.totp)
-            if not totp.verify(otp):
-                raise AuthenticationFailed("Invalid OTP")
+        # if user.tfa_activated:
+        #     if not otp:
+        #         raise AuthenticationFailed("OTP required for your account")
+        #     totp = pyotp.TOTP(user.totp)
+        #     if not totp.verify(otp):
+        #         raise AuthenticationFailed("Invalid OTP")
 
         payload = {
             'id': user.id,
@@ -179,9 +179,9 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
             request = self.context.get('request')
-            relative_link = reverse('reset-confirmed', kwargs={'uidb64': uidb64, 'token': token})
+            relative_link = reverse('reset_confirmed', kwargs={'uidb64': uidb64, 'token': token})
             current_site = get_current_site(request).domain
-            abslink = f"http://{current_site}{relative_link}"
+            abslink = f"http://{current_site}:8080{relative_link}"
             content = f"Hello {user.username}, use this link to reset your password: {abslink}"
             data = {
                 'email_body': content,
@@ -195,7 +195,6 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         return super().validate(attrs)
 
 
-#TODO: NEEDS TESTS WITH FRONTEND TO CHECK TOKEN AND UIDB64
 class SetNewPasswordSerializer(serializers.Serializer):
     uidb64 = serializers.CharField(write_only=True, required=True)
     token = serializers.CharField(write_only=True, required=True)
@@ -214,11 +213,14 @@ class SetNewPasswordSerializer(serializers.Serializer):
             confirm_password = attrs.get('confirm_password')
             if new_password != confirm_password:
                 raise serializers.ValidationError("New passwords do not match")
-            user.set_password(attrs['password'])
+            validate_password(new_password, user)
+            user.set_password(attrs['new_password'])
             user.save()
 
         except DjangoUnicodeDecodeError:
             raise serializers.ValidationError({'detail': "Invalid token"})
+
+        return super().validate(attrs)
 
 
 class VerifyOTPSerializer(serializers.ModelSerializer):
