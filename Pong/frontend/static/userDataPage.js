@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     document.addEventListener('click', event => {
         const element = event.target;
-        if (element.className.contains('matchDisplay') {
-            const addDiv = document.createElement('div');
+        if (element.classList.contains('matchDisplay')) {
+            const addDiv = document.createElement('div');//setAttribute('id', 'test')
             addDiv.innerHTML = "clicked!";
             element.append(addDiv);
 
