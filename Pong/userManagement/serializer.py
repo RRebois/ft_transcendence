@@ -58,6 +58,50 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+class Register42Serializer(serializers.ModelSerializer):
+    # password = serializers.CharField(max_length=100, min_length=8, write_only=True)
+    # password2 = serializers.CharField(max_length=100, min_length=8, write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['email', 'first_name', 'last_name', 'username', 'password']
+
+    def validate(self, attrs):
+        password = attrs.get('password', '')
+        if password:
+            raise serializers.ValidationError("Password must be empty")
+        # password2 = attrs.get('password2', '')
+        # if not password.isalnum() or password.islower() or password.isupper():
+        #     raise serializers.ValidationError("passwords must contain at least 1 digit, 1 lowercase and 1 uppercase character.")
+        # if password != password2:
+        #     raise serializers.ValidationError("passwords don't match.")
+
+        first = attrs.get('first_name', '')
+        if not first.isalpha():
+            raise serializers.ValidationError("All characters of first name must be alphabetic characters.")
+
+        last = attrs.get('last_name', '')
+        if not last.isalpha():
+            raise serializers.ValidationError("All characters of last name must be alphabetic characters.")
+
+        username = attrs.get('username', '')
+        if not username.isalnum():
+            raise serializers.ValidationError("Username must be alphanumeric only.")
+
+        return attrs
+
+    def create(self, validated_data):
+        user = User.objects.create_42user(
+            email=validated_data['email'],
+            first_name=validated_data.get('first_name'),
+            last_name=validated_data.get('last_name'),
+            username=validated_data.get('username'),
+            password=validated_data.get('password'),
+        )
+        return user
+
+
+
 class LoginSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length=100)
     password = serializers.CharField(max_length=50, write_only=True)

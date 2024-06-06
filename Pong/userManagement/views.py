@@ -28,6 +28,7 @@ from .serializer import *
 
 external_url_complete = "https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-d84d677952f386d4f0644523934d56521d6bd3a309e6bb552486f144a0f42d7f&redirect_uri=https%3A%2F%2Flocalhost%3A8443%2Flogin42%2Fredirect&response_type=code"
 
+
 # @method_decorator(csrf_protect, name='dispatch')
 def authenticate_user(request):
     token = request.COOKIES.get('jwt')
@@ -134,20 +135,65 @@ def exchangeToken(code):
     user = requests.get("https://api.intra.42.fr/v2/me", headers={
         "Authorization" : f"Bearer {token}"
     }).json()
-    return user
-
+    # user['username'] = user['login']
+    # user['image'] = user['image']['link']
+    return {
+        "email" : user['email'],
+        "username" : user['login'],
+        "image" : user['image']['link'],
+        "first_name" : user['first_name'],
+        "last_name" : user['last_name'],
+        "password" : "",
+        "language_id" : user["languages_users"][0]['language_id'],
+    }
+    # return user
 
 @method_decorator(csrf_protect, name='dispatch')
 class Login42RedirectView(APIView):
-
+    serializer_class = Register42Serializer
     def post(self, request):
 
         return HttpResponseRedirect(reverse("register"))
 
     def get(self, request):
         code = request.GET.get('code')
-        user = exchangeToken(code)
-        return JsonResponse({"user" : user})
+        user42 = exchangeToken(code)
+        try:
+            user = User.objects.get(email=user42["email"])
+        except User.DoesNotExist:
+            serializer = self.serializer_class(user42)
+            # serializer.validate()
+            user = serializer.create(validated_data=user42)
+            # if serializer.is_valid():
+            #     try:
+            #         user = serializer.save()
+            #     except IntegrityError:
+            #         messages.error(request, "Username and/or email already taken.")
+            #         return render(request, "pages/register.html")
+            # user = serializer.save()
+            # return JsonResponse(user42)
+        user.status = 'online'
+        user.save()
+        payload = {
+            'id': user.id,
+            'exp': datetime.now(timezone.utc) + timedelta(hours=1),  # time before expiration
+            'iat': datetime.now(timezone.utc),  # Issued AT
+        }
+        secret = os.environ.get('SECRET_KEY')
+        token = jwt.encode(payload, secret, algorithm='HS256')
+        test = reverse('index')
+        response = redirect('index')
+        # response = JsonResponse({'redirect': reverse('index')}, status=200)
+        response.set_cookie(key='jwt', value=token, httponly=True)
+        response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
+        login(request, user)
+        return response
+        # return render(request, "pages/index.html", {
+        #     "user": user,
+        # })
+        # return render(request, response, {
+        #     "user": user,
+        # })
 
 @method_decorator(csrf_protect, name='dispatch')
 class LogoutView(APIView):
