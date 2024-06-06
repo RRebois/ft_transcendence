@@ -17,7 +17,17 @@ class MatchHistoryView(APIView):
             matchs = Match.objects.filter(players=User.objects.get(username=username))
         except User.DoesNotExist:
             raise Http404("error: User does not exists.")
-        except Match.DoesNotExist:
-            raise Http404("error: User data does not exists.")
 
         return JsonResponse([match.serialize() for match in matchs], safe=False)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class MatchScoreView(APIView):
+    def get(selfself, request, match_id):
+        try:
+            game = Match.objects.get(pk=match_id)
+        except Match.DoesNotExist:
+            raise Http404("Error: Match does not exists.")
+
+        return JsonResponse(game.serialize())

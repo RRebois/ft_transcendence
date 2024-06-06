@@ -12,23 +12,44 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     document.addEventListener('click', event => {
         const element = event.target;
-        if (element.classList.contains('matchDisplay')) {
-            const addDiv = document.createElement('div');//setAttribute('id', 'test')
-            addDiv.innerHTML = "clicked!";
-            element.append(addDiv);
+        if (element.classList.contains('expander')) {
+            const addDiv = document.createElement('div');
+            addDiv.setAttribute('id', element.parentElement.id + 'expand');
+
+            // fetch for the scoreboard
+            fetch(`match/${element.parentElement.id}`)
+            .then(response => response.json())
+            .then(data => { // if we do 3v3 and or 4v4 create API to display all games, or only 3v3 or 4v4
+                let j = Math.round((100 / data.players.length));
+                for (let i = 0; i < data.players.length; i++)
+                {
+                    const subDiv = document.createElement('div');
+                    subDiv.innerHTML = `<a href="" onclick='load_stats_page(${JSON.stringify(data.players[i])})'>
+                        ${data.players[i]} </a> <br /> ${data.score[i]}`;
+                    if (`${data.players[i]}` === `${data.winner}`) {
+                        subDiv.classList.add("matchWonSub");
+                        subDiv.style.width = `${j}%`;
+                    }
+                    else {
+                        subDiv.classList.add("matchLostSub");
+                        subDiv.style.width = `${j}%`;
+                    }
+                    addDiv.append(subDiv);
+                }
+            })
 
             if (element.classList.contains("shrink"))
             {
-                element.classList.remove("shrink");
-                element.classList.add("expand");
-                addDiv.style.display = "block";
+                element.className = "fa-solid fa-eye-slash expander";
+                element.parentElement.append(addDiv);
             }
             else {
-                element.classList.add("shrink");
-                element.classList.remove("expand");
-                addDiv.style.display = "none";
+                element.className = "fa-solid fa-eye expander shrink";
+                const test = document.getElementById(element.parentElement.id + 'expand')
+                test.remove();
             }
         }
+        event.preventDefault();
     });
 
     document.getElementById('mainPage').addEventListener('click', () => {
@@ -80,9 +101,15 @@ function load_stats_page(username) {
         fetch(`matchs/${username}`)
         .then(response => response.json())
         .then(matches => {
-            console.log(matches);
-            for (let i = 0; i < matches.length; i++)
-                create_div(matches[i], matchHistory, username);
+            if (matches.length > 0)
+                for (let i = 0; i < matches.length; i++)
+                    create_div(matches[i], matchHistory, username);
+            else {
+                const   tmp = document.createElement('div');
+                tmp.innerHTML = "No game played yet!"
+                matchHistory.append(tmp);
+            }
+
         })
         document.querySelector('#divUserStats').append(matchHistory);
     })
@@ -118,20 +145,23 @@ function load_main_page() {
 
 function create_div(match, matchHistory, username) {
     const   tmp = document.createElement('div');
-    tmp.classList.add("matchDisplay", "shrink");
+    tmp.classList.add("matchDisplay");
     tmp.setAttribute('id', `${match.id}`);
-    var     txt = "";
-    let     i = 0;
 
-    for (i; i < match.players.length - 1; i++)
-        txt += `${match.players[i]} VS `;
-    txt += `${match.players[i]}`;
+    var txt = `${match.players.length} players game played on ${match.timestamp}.`;
     tmp.innerHTML = txt;
 
     if (username == `${match.winner}`)
         tmp.classList.add("matchWon");
     else
         tmp.classList.add("matchLost");
+
+//    const eyeDiv = document.createElement('div');
+    const eye = document.createElement('div');
+//    eyeDiv.classList.add("expander", "shrink");
+    eye.className = "fa-solid fa-eye expander shrink";
+//    eyeDiv.append(eye);
+    tmp.append(eye);
     matchHistory.append(tmp);
 }
 

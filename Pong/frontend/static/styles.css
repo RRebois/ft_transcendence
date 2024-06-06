@@ -77,6 +77,10 @@
     border-bottom: 2px solid black;
 }
 
+.expander {
+    display: inline-block;
+}
+
 .matchDisplay {
     margin: 10px auto;
     text-align: center;
@@ -85,7 +89,6 @@
     width: 90%;
     height: fit-content;
     border: 1px solid black;
-    text-decoration: underline;
 }
 
 .matchWon {
@@ -94,6 +97,25 @@
 
 .matchLost {
     background-color: #ED2939;
+}
+
+.matchWonSub {
+    background-color: #209920;
+    height: 60px;
+    text-align: center;
+    display: inline-block;
+    font-size: 18px;
+    font-weight: bold;
+    border-top: 2px solid black;
+}
+
+.matchLostSub {
+    background-color: #ED2939;
+    height: 60px;
+    text-align: center;
+    display: inline-block;
+    font-size: 18px;
+    border-top: 2px solid black;
 }
 
 .marginBot {

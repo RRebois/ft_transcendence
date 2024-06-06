@@ -9,7 +9,7 @@ class Match(models.Model):
                                blank=True, null=True)
     score = ArrayField(models.IntegerField(), default=[])
     timeMatch = models.DateTimeField(auto_now_add=True)
-    #timeMatchEnded?
+    #timeMatchEnded?changethe auto now to blank = null and value will be added when match ends
 
     class Meta:
         ordering = ['-timeMatch']
