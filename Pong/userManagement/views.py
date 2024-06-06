@@ -17,6 +17,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import AccessToken
 import pyotp
 import qrcode
 import jwt
@@ -28,7 +30,12 @@ from .serializer import *
 
 # @method_decorator(csrf_protect, name='dispatch')
 def authenticate_user(request):
-    token = request.COOKIES.get('jwt')
+    auth_header = request.headers.get('Authorization')
+    token = None
+    if auth_header and auth_header.startswith('Bearer '):
+        token = auth_header.split(' ')[1]
+    if not token:
+        token = request.COOKIES.get('jwt_access')
     if not token:
         raise AuthenticationFailed('Unauthenticated')
 
@@ -36,14 +43,15 @@ def authenticate_user(request):
 
     try:
         payload = jwt.decode(token, secret, algorithms=['HS256'])
-        # print("Payload:", payload)
     except jwt.ExpiredSignatureError:
-        raise AuthenticationFailed("Token expired, please log in again.")
+        refresh_token = request.COOKIES.get('jwt_refresh')
+        if not refresh_token:
+            raise AuthenticationFailed("Token expired, please log in again.")
+        return refresh_token_user(refresh_token, request)
     except jwt.InvalidTokenError:
         raise AuthenticationFailed("Invalid token, please log in again.")
 
     user_id = payload.get('id')
-    print("User ID:", user_id)
 
     try:
         user = User.objects.get(id=user_id)
@@ -51,6 +59,7 @@ def authenticate_user(request):
         raise AuthenticationFailed('User not found')
 
     return user
+
 
 # @method_decorator(csrf_protect, name='dispatch')
 def index(request):
@@ -60,6 +69,15 @@ def index(request):
             "user": user,
         })
     return render(request, "pages/index.html")
+
+
+def get_user_in_token(access_token):
+    try:
+        token = AccessToken(access_token)
+        user = User.objects.get(id=token['user_id'])
+        return user
+    except User.DoesNotExist:
+        raise AuthenticationFailed('User not found')
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -77,14 +95,27 @@ class LoginView(APIView):
                     'user_id': user.id
                 }, status=status.HTTP_200_OK)
 
-            token = serializer.validated_data['token']
+        # view = MyTokenObtainPairView.as_view()
+        # response = view(request)
+        # if response.status_code == status.HTTP_200_OK:
+        #     data = response.data
+        #
+        #     access_token = data['access']
+        #     refresh_token = data['refresh']
+        #     response.set_cookie(key='access', value=access_token, httponly=True)
+        #     response.set_cookie(key='refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True)
+
+            # user = User.objects.get(id=data['user_id'])
+            access_token = serializer.validated_data['jwt_access']
+            refresh_token = serializer.validated_data['jwt_refresh']
             user.status = 'online'
             user.save()
 
             response = JsonResponse({'redirect': reverse('index')}, status=200)
-            response.set_cookie(key='jwt', value=token, httponly=True)
+            response.set_cookie(key='jwt_access', value=access_token, httponly=True)
+            response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True)
             response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
-            login(request, user)
+            # login(request, user)
             return response
         else:
             return HttpResponseRedirect(reverse("index"))
@@ -103,9 +134,10 @@ class LogoutView(APIView):
 
         messages.success(request, "Logged out successfully.")
         response = redirect('index')
-        response.delete_cookie('jwt')
+        response.delete_cookie('jwt_access')
+        response.delete_cookie('jwt_refresh')
         response.delete_cookie('csrftoken')
-        logout(request)
+        # logout(request)
         return response
 
 
@@ -186,7 +218,6 @@ class UserStatsDataView(APIView):
             raise Http404("error: User data does not exists.")
 
         return JsonResponse(user_stats.serialize())
-
 
 
 # @method_decorator(csrf_protect, name='dispatch')
@@ -304,7 +335,6 @@ class VerifyOTPView(APIView):
         user.save()
 
         login(request, user)
-        # response = Response({"token": token})
         response = redirect('index')
         response.set_cookie(key='jwt', value=token, httponly=True)
         return response

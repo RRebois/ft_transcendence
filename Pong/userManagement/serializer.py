@@ -7,7 +7,10 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.urls import reverse
+from django.http import JsonResponse
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 from PIL import Image
 import jwt
 import pyotp
@@ -15,6 +18,49 @@ import os
 from datetime import datetime, timedelta, timezone
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.password_validation import validate_password
+
+
+def generate_JWT(user):
+    payload = {
+        'id': user.id,
+        'exp': datetime.now(timezone.utc) + timedelta(minutes=2),  # time before expiration
+        'iat': datetime.now(timezone.utc),  # Issued AT
+    }
+    secret = os.environ.get('SECRET_KEY')
+    token = jwt.encode(payload, secret, algorithm='HS256')
+    return token
+
+
+def generate_refresh_JWT(user):
+    payload = {
+        'id': user.id,
+        'exp': datetime.utcnow() + timedelta(minutes=15),  # Refresh token expiration
+        'iat': datetime.utcnow()
+    }
+    secret = os.environ.get('REFRESH_SECRET_KEY')
+    refresh = jwt.encode(payload, secret, algorithm='HS256')
+    return refresh
+
+
+def refresh_token_user(refresh_token, request):
+    secret_refresh = os.environ.get('REFRESH_SECRET_KEY')
+    try:
+        payload = jwt.decode(refresh_token, secret_refresh, algorithms=['HS256'])
+    except jwt.ExpiredSignatureError:
+        raise AuthenticationFailed("Refresh token expired, please log in again.")
+
+    user_id = payload.get('id')
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        raise AuthenticationFailed('User not found')
+
+    new_token = generate_JWT(user)
+
+    response = JsonResponse({'token': new_token})
+    response.set_cookie(key='jwt', value=new_token, httponly=True)
+
+    return user
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -81,24 +127,13 @@ class LoginSerializer(serializers.ModelSerializer):
         if not user:
             raise AuthenticationFailed("Invalid credentials, please try again")
 
-        # if user.tfa_activated:
-        #     if not otp:
-        #         raise AuthenticationFailed("OTP required for your account")
-        #     totp = pyotp.TOTP(user.totp)
-        #     if not totp.verify(otp):
-        #         raise AuthenticationFailed("Invalid OTP")
-
-        payload = {
-            'id': user.id,
-            'exp': datetime.now(timezone.utc) + timedelta(hours=1),  # time before expiration
-            'iat': datetime.now(timezone.utc),  # Issued AT
-        }
-        secret = os.environ.get('SECRET_KEY')
-        token = jwt.encode(payload, secret, algorithm='HS256')
+        token = generate_JWT(user)
+        refresh = generate_refresh_JWT(user)
 
         return {
             'user': user,
-            'token': token
+            'jwt_access': token,
+            'jwt_refresh': refresh
         }
 
 

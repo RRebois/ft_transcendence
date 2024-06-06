@@ -7,9 +7,9 @@
 
 {% block body %}
 
-{% if user.is_authenticated %}
-    <h2>Already registered</h2>
-{% else %}
+<!--{% if user.is_authenticated %}-->
+<!--    <h2>Already registered</h2>-->
+<!--{% else %}-->
 
 
     <h2>Registration form</h2>
@@ -21,7 +21,7 @@
                 {% else %} class="alertSize alert alert-secondary" {% endif %} role="alert">{{ message }}</div>
         {% endfor %}
     </ul>
-{% endif %}
+    {% endif %}
 
     {% if errors.non_field_errors %}
         <ul>
@@ -119,5 +119,5 @@
     <div class="padForm">
         Already have an account? <a href="{% url 'login' %}">Log In here.</a>
     </div>
-{% endif %}
+<!--{% endif %}-->
 {% endblock %}
