@@ -7,6 +7,17 @@
 
 {% block body %}
 
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <div {% if message.tags %} class="alertSize alert alert-{{ message.tags }}"
+                {% else %} class="alertSize alert alert-secondary" {% endif %} role="alert">{{ message }}</div>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% if user.is_authenticated %}
+
 <div class="alertSize alert alert-{{ message.tags }}" id="message" style="margin-top: 0px;"></div>
 <div class="w-100 h-100 d-flex justify-content-center align-items-center">
     <form id="enable-form" class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card"
@@ -51,4 +62,5 @@
     });
 </script>
 
+{% endif %}
 {% endblock %}

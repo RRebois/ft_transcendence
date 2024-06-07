@@ -19,10 +19,9 @@ ft_transcendence
     </ul>
 {% endif %}
 
-<p>Authenticated: {{ user.is_authenticated }}</p>
-<p>User: {{ user }}</p>
 
 {% if user.is_authenticated %}
+
 <div id="greetings">Hello {{user.username}} 😳👉👈</div>
 
 <div class="container" id="divUserStats">
