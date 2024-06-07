@@ -145,8 +145,12 @@ class Login42RedirectView(APIView):
         try:
             user = User.objects.get(email=user42["email"])
         except User.DoesNotExist:
-            serializer = self.serializer_class(user42)
-            user = serializer.create(validated_data=user42)
+            try:
+                serializer = self.serializer_class(user42)
+                user = serializer.create(validated_data=user42)
+            except:
+                messages.warning(request, "Username already taken.")
+                return HttpResponseRedirect(reverse("index"))
         user.status = 'online'
         user.save()
         token = get_user_token(user.id)

@@ -36,7 +36,7 @@ def validate_image(image_path):
     if not image_path:
         return "profile_pics/default_pp.jpg"
     image = image_path
-    ext = os.path.splitext(image)[1][1:].lower()
+    ext = os.path.splitext(image.name)[1][1:].lower()
 
     # checking file extension, that it matches the chosen format
     if ext not in valid_extension:
