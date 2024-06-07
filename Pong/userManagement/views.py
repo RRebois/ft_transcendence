@@ -1,10 +1,8 @@
-from io import BytesIO
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.shortcuts import render, redirect
-from django.core.exceptions import ObjectDoesNotExist
 from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -17,10 +15,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
-from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import AccessToken
 import pyotp
-import qrcode
 import jwt
 
 from .models import *
@@ -95,17 +91,6 @@ class LoginView(APIView):
                     'user_id': user.id
                 }, status=status.HTTP_200_OK)
 
-        # view = MyTokenObtainPairView.as_view()
-        # response = view(request)
-        # if response.status_code == status.HTTP_200_OK:
-        #     data = response.data
-        #
-        #     access_token = data['access']
-        #     refresh_token = data['refresh']
-        #     response.set_cookie(key='access', value=access_token, httponly=True)
-        #     response.set_cookie(key='refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True)
-
-            # user = User.objects.get(id=data['user_id'])
             access_token = serializer.validated_data['jwt_access']
             refresh_token = serializer.validated_data['jwt_refresh']
             user.status = 'online'
@@ -328,15 +313,18 @@ class VerifyOTPView(APIView):
     def post(self, request):
         serializer = VerifyOTPSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        token = serializer.validated_data['token']
         user = serializer.validated_data['user']
 
+        access_token = serializer.validated_data['jwt_access']
+        refresh_token = serializer.validated_data['jwt_refresh']
         user.status = 'online'
         user.save()
 
-        login(request, user)
-        response = redirect('index')
-        response.set_cookie(key='jwt', value=token, httponly=True)
+        response = JsonResponse({'redirect': reverse('index')}, status=200)
+        response.set_cookie(key='jwt_access', value=access_token, httponly=True)
+        response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True)
+        response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
+
         return response
 
     def get(self, request):
