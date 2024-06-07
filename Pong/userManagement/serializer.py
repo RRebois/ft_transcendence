@@ -1,5 +1,5 @@
 from .models import User
-from .utils import send_email
+from .utils import *
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -15,50 +15,6 @@ from PIL import Image
 import jwt
 import pyotp
 import os
-from datetime import datetime, timedelta, timezone
-
-
-def generate_JWT(user):
-    payload = {
-        'id': user.id,
-        'exp': datetime.now(timezone.utc) + timedelta(minutes=2),  # time before expiration
-        'iat': datetime.now(timezone.utc),  # Issued AT
-    }
-    secret = os.environ.get('SECRET_KEY')
-    token = jwt.encode(payload, secret, algorithm='HS256')
-    return token
-
-
-def generate_refresh_JWT(user):
-    payload = {
-        'id': user.id,
-        'exp': datetime.utcnow() + timedelta(minutes=15),  # Refresh token expiration
-        'iat': datetime.utcnow()
-    }
-    secret = os.environ.get('REFRESH_SECRET_KEY')
-    refresh = jwt.encode(payload, secret, algorithm='HS256')
-    return refresh
-
-
-def refresh_token_user(refresh_token, request):
-    secret_refresh = os.environ.get('REFRESH_SECRET_KEY')
-    try:
-        payload = jwt.decode(refresh_token, secret_refresh, algorithms=['HS256'])
-    except jwt.ExpiredSignatureError:
-        raise AuthenticationFailed("Refresh token expired, please log in again.")
-
-    user_id = payload.get('id')
-    try:
-        user = User.objects.get(id=user_id)
-    except User.DoesNotExist:
-        raise AuthenticationFailed('User not found')
-
-    new_token = generate_JWT(user)
-
-    response = JsonResponse({'token': new_token})
-    response.set_cookie(key='jwt', value=new_token, httponly=True)
-
-    return user
 
 
 class RegisterSerializer(serializers.ModelSerializer):

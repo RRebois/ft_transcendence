@@ -6,9 +6,7 @@ ft_transcendence
 {% endblock %}
 
 {% block script %}
-
 {% endblock %}
-
 
 {% block body %}
 
@@ -20,6 +18,9 @@ ft_transcendence
         {% endfor %}
     </ul>
 {% endif %}
+
+<p>Authenticated: {{ user.is_authenticated }}</p>
+<p>User: {{ user }}</p>
 
 {% if user.is_authenticated %}
 <div id="greetings">Hello {{user.username}} 😳👉👈</div>
@@ -89,15 +90,15 @@ ft_transcendence
             event.preventDefault(); // Prevent the default form submission
             $.ajax({
                 type: 'POST',
-                url: "{% url 'login' %}", // Ensure this URL matches your login view's URL pattern
+                url: "{% url 'login' %}",
                 data: $(this).serialize(), // Serialize the form data
                 success: function(response) {
                     console.log("Success:", response);
                     if (response.otp_required) { // Check if an OTP is required
-                        // Redirect to the OTP page with the necessary parameters
+                        // Redirect to the OTP
                         window.location.href = "{% url 'verify_otp' %}?user_id=" + response.user_id;
                     } else {
-                        // Redirect to the index page or another appropriate page on successful login
+                        // Redirect to the index page on successful login
                         window.location.href = "{% url 'index' %}";
                     }
                 },

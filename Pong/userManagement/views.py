@@ -15,13 +15,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import AccessToken
 import pyotp
 import jwt
 
 from .models import *
 from .forms import *
 from .serializer import *
+from .utils import *
 
 
 # @method_decorator(csrf_protect, name='dispatch')
@@ -56,6 +56,13 @@ def authenticate_user(request):
 
     return user
 
+def jwt_required(view_func):
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Unauthorized'}, status=401)
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
 
 # @method_decorator(csrf_protect, name='dispatch')
 def index(request):
@@ -65,15 +72,6 @@ def index(request):
             "user": user,
         })
     return render(request, "pages/index.html")
-
-
-def get_user_in_token(access_token):
-    try:
-        token = AccessToken(access_token)
-        user = User.objects.get(id=token['user_id'])
-        return user
-    except User.DoesNotExist:
-        raise AuthenticationFailed('User not found')
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -97,10 +95,9 @@ class LoginView(APIView):
             user.save()
 
             response = JsonResponse({'redirect': reverse('index')}, status=200)
-            response.set_cookie(key='jwt_access', value=access_token, httponly=True)
-            response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True)
-            response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
-            # login(request, user)
+            response.set_cookie(key='jwt_access', value=access_token, httponly=True,  samesite='Lax', secure=True, path='/')
+            response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True, path='/')
+            response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True, path='/')
             return response
         else:
             return HttpResponseRedirect(reverse("index"))
@@ -122,7 +119,6 @@ class LogoutView(APIView):
         response.delete_cookie('jwt_access')
         response.delete_cookie('jwt_refresh')
         response.delete_cookie('csrftoken')
-        # logout(request)
         return response
 
 
@@ -233,9 +229,11 @@ class PasswordChangeView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
+        user = authenticate_user(request)
         serializer = self.serializer_class()
         return render(request, "pages/changePassword.html", {
-            "form": serializer
+            "form": serializer,
+            "user": user
         })
 
 
@@ -304,7 +302,8 @@ class Enable2FAView(APIView):
         return JsonResponse({"qr_url": qr_url, "message": message})
 
     def get(self, request):
-        return render(request, "pages/2FA.html")
+        user = authenticate_user(request)
+        return render(request, "pages/2FA.html", {"user": user})
 
 
 @method_decorator(csrf_protect, name='dispatch')
