@@ -27,8 +27,6 @@ from .forms import *
 from .serializer import *
 from .utils import *
 
-external_url_complete = "https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-d84d677952f386d4f0644523934d56521d6bd3a309e6bb552486f144a0f42d7f&redirect_uri=https%3A%2F%2Flocalhost%3A8443%2Flogin42%2Fredirect&response_type=code"
-
 
 # @method_decorator(csrf_protect, name='dispatch')
 def authenticate_user(request):
@@ -104,15 +102,15 @@ class Login42View(APIView):
         return HttpResponseRedirect(reverse("index"))
 
     def get(self, request):
-        return redirect(external_url_complete)
+        return redirect(os.environ.get('API_42_CALL'))
 
 def exchange_token(code):
     data = {
         "grant_type" : "authorization_code",
-        "client_id" : "u-s4t2ud-d84d677952f386d4f0644523934d56521d6bd3a309e6bb552486f144a0f42d7f",
-        "client_secret" : "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",
+        "client_id" : os.environ.get('CLIENT42_ID'),
+        "client_secret" : os.environ.get('CLIENT42_SECRET'),
         "code" : code,
-        "redirect_uri" : "https://localhost:8443/login42/redirect",
+        "redirect_uri" : os.environ.get('REDIRECT_42URI'),
     }
     response = requests.post("https://api.intra.42.fr/oauth/token", data=data)
     credentials = response.json()
@@ -127,7 +125,6 @@ def exchange_token(code):
         "image" : user['image']['link'],
         "first_name" : user['first_name'],
         "last_name" : user['last_name'],
-        "password" : "",
         "language_id" : user["languages_users"][0]['language_id'],
     }
 
@@ -140,7 +137,11 @@ class Login42RedirectView(APIView):
 
     def get(self, request):
         code = request.GET.get('code')
-        user42 = exchange_token(code)
+        try:
+            user42 = exchange_token(code)
+        except:
+            messages.warning(request, "The connexion with 42 failed")
+            return HttpResponseRedirect(reverse("index"))
         try:
             user = User.objects.get(email=user42["email"])
         except User.DoesNotExist:

@@ -96,15 +96,9 @@ class Register42Serializer(serializers.ModelSerializer):
             first_name=validated_data.get('first_name'),
             last_name=validated_data.get('last_name'),
             username=validated_data.get('username'),
-            password=validated_data.get('password'),
             image_url=validated_data.get('image'),
         )
-        # token = get_user_token(user.id)
         return user
-        # return {
-        #     "user" : user,
-        #     "token" : token
-        #     }
 
 
 
