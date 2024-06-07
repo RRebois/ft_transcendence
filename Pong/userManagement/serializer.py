@@ -1,5 +1,5 @@
 from .models import User
-from .utils import send_email
+from .utils import *
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -97,8 +97,14 @@ class Register42Serializer(serializers.ModelSerializer):
             last_name=validated_data.get('last_name'),
             username=validated_data.get('username'),
             password=validated_data.get('password'),
+            image_url=validated_data.get('image'),
         )
+        # token = get_user_token(user.id)
         return user
+        # return {
+        #     "user" : user,
+        #     "token" : token
+        #     }
 
 
 
@@ -132,13 +138,14 @@ class LoginSerializer(serializers.ModelSerializer):
         #     if not totp.verify(otp):
         #         raise AuthenticationFailed("Invalid OTP")
 
-        payload = {
-            'id': user.id,
-            'exp': datetime.now(timezone.utc) + timedelta(hours=1),  # time before expiration
-            'iat': datetime.now(timezone.utc),  # Issued AT
-        }
-        secret = os.environ.get('SECRET_KEY')
-        token = jwt.encode(payload, secret, algorithm='HS256')
+        # payload = {
+        #     'id': user.id,
+        #     'exp': datetime.now(timezone.utc) + timedelta(hours=1),  # time before expiration
+        #     'iat': datetime.now(timezone.utc),  # Issued AT
+        # }
+        # secret = os.environ.get('SECRET_KEY')
+        # token = jwt.encode(payload, secret, algorithm='HS256')
+        token = get_user_token(user.id)
 
         return {
             'user': user,

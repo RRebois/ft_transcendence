@@ -10,6 +10,7 @@ class User(AbstractUser):
     username = models.CharField(unique=True, max_length=100)
     email = models.EmailField(unique=True, max_length=100)
     password = models.CharField(max_length=100, blank=True)
+    image_url = models.URLField(blank=True)
     image = models.ImageField(default='profile_pics/default_pp.jpg', upload_to='profile_pics/')
     friends = models.ManyToManyField("self", blank=True)
     status_choices = [
@@ -38,7 +39,7 @@ class User(AbstractUser):
 
     def get_username(self):
         return self.username
-
+    
     def token(self):
         refresh = RefreshToken.for_user(self)
         return {
