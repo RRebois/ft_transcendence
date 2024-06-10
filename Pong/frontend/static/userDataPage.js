@@ -78,18 +78,60 @@ function load_stats_page(username) {
     // Fetch user stat data + create div element for each data:
     fetch(`stats/${username}`)
     .then(response => response.json())
-    .then(data => {
-        console.log(data);
+    .then(values => {
+        console.log(values);
         const stat = document.createElement('div');
         const statElo = document.createElement('div');
         statElo.classList.add("divElo");
 
-        statElo.innerHTML = "Current elo / highest: " + data['elo'] + " / " + data['elo_highest'];
+        statElo.innerHTML = "Current elo / highest: " + values['elo'] + " / " + values['elo_highest'];
         stat.append(statElo);
 
         document.querySelector('#divUserStats').append(stat);
 
+        // Create pie chart to display winrate
+        const chart = document.createElement('div');
+        if (`${values.losses}` == 0 && `${values.wins}` == 0) {
+            chart.innerHTML = "Pie chart not available yet!";
+            chart.style.textAlign = "center";
+            document.querySelector('#divUserStats').append(chart);
+        }
+        else {
+            const pieChart = document.createElement('canvas');
+            pieChart.setAttribute('id', 'winratePie');
+            chart.append(pieChart);
+            document.querySelector('#divUserStats').append(chart);
 
+            const winrateData = {
+                labels: [`Defeats (${values.losses})`, `Victories (${values.wins})`],
+                datasets: [{
+                    label: "Winrate",
+                    data: [`${values.losses}`, `${values.wins}`],
+                    backgroundColor: ["rgb(255,99,132)", "rgb(0,128,0)"],
+                    borderColor: "black",
+                    hoverOffset: 4,
+                    pointBorderWidth: 1,
+                    pointHoverBorderWidth: 2
+                }]
+            };
+
+            new Chart("winratePie", {
+                type: "pie",
+                data: winrateData,
+                options: {
+                    title: {
+                        display: true,
+                        text: `Winrate ${values.winrate}`,
+                    },
+                    legend: {
+                        position: "chartArea",
+                    }
+                }
+            });
+        }
+
+
+        // Create history matchs for current user
         const matchHistory = document.createElement('div');
         matchHistory.classList.add("matchHistoryDiv");
 
