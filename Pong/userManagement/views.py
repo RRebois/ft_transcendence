@@ -231,7 +231,6 @@ class RegisterView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class UserStatsDataView(APIView):
-
     def get(self, request, username):
         try:
             user_stats = UserData.objects.get(user_id=User.objects.get(username=username))
@@ -241,7 +240,6 @@ class UserStatsDataView(APIView):
             raise Http404("error: User data does not exists.")
 
         return JsonResponse(user_stats.serialize())
-
 
 
 # @method_decorator(csrf_protect, name='dispatch')
