@@ -28,7 +28,11 @@
     <div class="container-fluid">
         <ul class="nav">
             <li class="nav-item roundBorder">
-                <img src={% if user.image_url %} "{{ user.image_url}}" {% else %} "{{ user.image.url }}" {% endif %} alt="avatar">
+                {% if user.image_url %}
+                    <img src="{{ user.image_url}}" alt="avatar">
+                {% else %}
+                    <img src="{{ user.image.url }}" alt="avatar">
+                {% endif %}
             </li>
         </ul>
 
