@@ -98,8 +98,7 @@ class LoginView(APIView):
 class Login42View(APIView):
     
     def post(self, request):
-
-        return HttpResponseRedirect(reverse("index"))
+        return redirect(os.environ.get('API_42_CALL'))
 
     def get(self, request):
         return redirect(os.environ.get('API_42_CALL'))
@@ -130,10 +129,10 @@ def exchange_token(code):
 
 @method_decorator(csrf_protect, name='dispatch')
 class Login42RedirectView(APIView):
+
     serializer_class = Register42Serializer
     def post(self, request):
-
-        return HttpResponseRedirect(reverse("register"))
+        return HttpResponseRedirect(reverse("index"))
 
     def get(self, request):
         code = request.GET.get('code')
@@ -147,7 +146,7 @@ class Login42RedirectView(APIView):
         except User.DoesNotExist:
             try:
                 serializer = self.serializer_class(user42)
-                user = serializer.create(validated_data=user42)
+                user = serializer.create(data=user42)
             except:
                 messages.warning(request, "Username already taken.")
                 return HttpResponseRedirect(reverse("index"))

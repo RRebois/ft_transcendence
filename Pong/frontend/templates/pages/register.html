@@ -37,7 +37,7 @@
             <div class="col-md-4">
                     <label for="validation01" class="form-label">First name*</label>
                     <input class="form-control" autofocus type="text" name="first_name" id="validation01"
-                           pattern="[A-Za-z]+" required>
+                           pattern="[- 'A-Za-z]+" required>
                     {% if errors.first_name %}
                         <p class="invalidColor">{{ errors.first_name.0 }}</p>
                     {% endif %}
@@ -47,7 +47,7 @@
             <div class="col-md-4">
                 <label for="validation02" class="form-label">Last name*</label>
                 <input class="form-control" type="text" name="last_name" id="validation02"
-                       pattern="[A-Za-z]+" required>
+                       pattern="[- 'A-Za-z]+" required>
                 {% if errors.last_name %}
                     <p class="invalidColor">{{ errors.last_name.0 }}</p>
                 {% endif %}
@@ -57,7 +57,7 @@
             <div class="col-md-4">
                 <label for="validation03" class="form-label">Username*</label>
                 <input class="form-control" type="text" name="username" id="validation03" minlength="5"
-                       maxlength="12" pattern="[A-Za-z0-9]+" required>
+                       maxlength="12" pattern="[-A-Za-z0-9]+" required>
                 <span class="helper_txt">Username has to be 5 to 12 characters long and
                     composed only by letters and digits!</span>
                 {% if errors.username %}

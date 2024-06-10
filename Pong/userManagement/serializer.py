@@ -12,6 +12,7 @@ from PIL import Image
 import jwt
 import pyotp
 import os
+import re
 from datetime import datetime, timedelta, timezone
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.password_validation import validate_password
@@ -26,6 +27,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['email', 'first_name', 'last_name', 'username', 'password', 'password2']
 
     def validate(self, attrs):
+        pattern = re.compile("^[a-zA-Z]+([ '-][a-zA-Z]+)*$")
+        pattern_username = re.compile("^[a-zA-Z0-9]+([-][a-zA-Z0-9]+)*$")
         password = attrs.get('password', '')
         password2 = attrs.get('password2', '')
         if not password.isalnum() or password.islower() or password.isupper():
@@ -34,16 +37,16 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("passwords don't match.")
 
         first = attrs.get('first_name', '')
-        if not first.isalpha():
-            raise serializers.ValidationError("All characters of first name must be alphabetic characters.")
+        if not pattern.match(first):
+            raise serializers.ValidationError("All characters of first name must be alphabetic characters. Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
 
         last = attrs.get('last_name', '')
-        if not last.isalpha():
-            raise serializers.ValidationError("All characters of last name must be alphabetic characters.")
+        if not pattern.match(last):
+            raise serializers.ValidationError("All characters of last name must be alphabetic characters. Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
 
         username = attrs.get('username', '')
-        if not username.isalnum():
-            raise serializers.ValidationError("Username must be alphanumeric only.")
+        if not pattern_username.match(username):
+            raise serializers.ValidationError("Username must be alphanumeric only. Hyphens are allowed, if it's in the middle and with no repetitions.")
 
         return attrs
 
@@ -59,44 +62,14 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class Register42Serializer(serializers.ModelSerializer):
-    # password = serializers.CharField(max_length=100, min_length=8, write_only=True)
-    # password2 = serializers.CharField(max_length=100, min_length=8, write_only=True)
 
-    class Meta:
-        model = User
-        fields = ['email', 'first_name', 'last_name', 'username', 'password']
-
-    def validate(self, attrs):
-        password = attrs.get('password', '')
-        if password:
-            raise serializers.ValidationError("Password must be empty")
-        # password2 = attrs.get('password2', '')
-        # if not password.isalnum() or password.islower() or password.isupper():
-        #     raise serializers.ValidationError("passwords must contain at least 1 digit, 1 lowercase and 1 uppercase character.")
-        # if password != password2:
-        #     raise serializers.ValidationError("passwords don't match.")
-
-        first = attrs.get('first_name', '')
-        if not first.isalpha():
-            raise serializers.ValidationError("All characters of first name must be alphabetic characters.")
-
-        last = attrs.get('last_name', '')
-        if not last.isalpha():
-            raise serializers.ValidationError("All characters of last name must be alphabetic characters.")
-
-        username = attrs.get('username', '')
-        if not username.isalnum():
-            raise serializers.ValidationError("Username must be alphanumeric only.")
-
-        return attrs
-
-    def create(self, validated_data):
+    def create(self, data):
         user = User.objects.create_42user(
-            email=validated_data['email'],
-            first_name=validated_data.get('first_name'),
-            last_name=validated_data.get('last_name'),
-            username=validated_data.get('username'),
-            image_url=validated_data.get('image'),
+            email=data['email'],
+            first_name=data.get('first_name'),
+            last_name=data.get('last_name'),
+            username=data.get('username'),
+            image_url=data.get('image'),
         )
         return user
 
@@ -132,13 +105,6 @@ class LoginSerializer(serializers.ModelSerializer):
         #     if not totp.verify(otp):
         #         raise AuthenticationFailed("Invalid OTP")
 
-        # payload = {
-        #     'id': user.id,
-        #     'exp': datetime.now(timezone.utc) + timedelta(hours=1),  # time before expiration
-        #     'iat': datetime.now(timezone.utc),  # Issued AT
-        # }
-        # secret = os.environ.get('SECRET_KEY')
-        # token = jwt.encode(payload, secret, algorithm='HS256')
         token = get_user_token(user.id)
 
         return {

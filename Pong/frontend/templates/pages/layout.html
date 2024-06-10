@@ -68,9 +68,11 @@
                 <a class="nav-link" href=#>Settings</a>
             </li>
         </ul> <ul class="nav me-auto">
+            {% if not user.stud42 %}
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'change_password' %}">Change password</a>
             </li>
+            {% endif %}
         </ul> <ul class="nav me-auto">
             <li class="nav-item">
                 <form method="GET" action="{% url 'enable_2FA' %}">

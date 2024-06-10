@@ -15,7 +15,6 @@ class UserManager(BaseUserManager):
             stud42=True,
             **extra_fields
         )
-        
         user.save(using=self._db)
         return user
 

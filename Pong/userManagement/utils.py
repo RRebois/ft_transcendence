@@ -17,7 +17,6 @@ def send_email(data):
     email.send()
 
 
-
 def get_user_token(id):
 
     payload = {
@@ -29,6 +28,7 @@ def get_user_token(id):
     token = jwt.encode(payload, secret, algorithm='HS256')
     
     return token
+
 
 def validate_image(image_path):
      
