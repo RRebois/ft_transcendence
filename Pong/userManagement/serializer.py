@@ -15,6 +15,8 @@ from PIL import Image
 import jwt
 import pyotp
 import os
+import re
+from datetime import datetime, timedelta, timezone
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -26,6 +28,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['email', 'first_name', 'last_name', 'username', 'password', 'password2']
 
     def validate(self, attrs):
+        pattern = re.compile("^[a-zA-Z]+([ '-][a-zA-Z]+)*$")
+        pattern_username = re.compile("^[a-zA-Z0-9]+([-][a-zA-Z0-9]+)*$")
         password = attrs.get('password', '')
         password2 = attrs.get('password2', '')
         if not password.isalnum() or password.islower() or password.isupper():
@@ -34,16 +38,16 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("passwords don't match.")
 
         first = attrs.get('first_name', '')
-        if not first.isalpha():
-            raise serializers.ValidationError("All characters of first name must be alphabetic characters.")
+        if not pattern.match(first):
+            raise serializers.ValidationError("All characters of first name must be alphabetic characters. Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
 
         last = attrs.get('last_name', '')
-        if not last.isalpha():
-            raise serializers.ValidationError("All characters of last name must be alphabetic characters.")
+        if not pattern.match(last):
+            raise serializers.ValidationError("All characters of last name must be alphabetic characters. Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
 
         username = attrs.get('username', '')
-        if not username.isalnum():
-            raise serializers.ValidationError("Username must be alphanumeric only.")
+        if not pattern_username.match(username):
+            raise serializers.ValidationError("Username must be alphanumeric only. Hyphens are allowed, if it's in the middle and with no repetitions.")
 
         return attrs
 
@@ -56,6 +60,20 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data.get('password'),
         )
         return user
+
+
+class Register42Serializer(serializers.ModelSerializer):
+
+    def create(self, data):
+        user = User.objects.create_42user(
+            email=data['email'],
+            first_name=data.get('first_name'),
+            last_name=data.get('last_name'),
+            username=data.get('username'),
+            image_url=data.get('image'),
+        )
+        return user
+
 
 
 class LoginSerializer(serializers.ModelSerializer):
@@ -75,6 +93,7 @@ class LoginSerializer(serializers.ModelSerializer):
         password = attrs.get('password')
         request = self.context.get('request')
 
+        # user = User.objects.all(username=username)
         user = authenticate(request, username=username, password=password)
         if not user:
             raise AuthenticationFailed("Invalid credentials, please try again")

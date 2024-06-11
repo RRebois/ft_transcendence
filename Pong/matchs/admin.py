@@ -13,7 +13,7 @@ class MatchAdmin(admin.ModelAdmin):
             User.username for User in obj.players.all()
         ])
     players_display.short_description = "Players"
-    list_display = ("pk", "winner", "timeMatch", "players_display")
+    list_display = ("pk", "winner", "players_display", "score", "timeMatch")
     filter_horizontal = ("players",)
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):

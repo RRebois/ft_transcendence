@@ -17,6 +17,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
 import pyotp
 import jwt
+import requests
 
 from .models import *
 from .forms import *
@@ -105,6 +106,70 @@ class LoginView(APIView):
     def get(self, request):
         return HttpResponseRedirect(reverse("index"))
 
+@method_decorator(csrf_protect, name='dispatch')
+class Login42View(APIView):
+    
+    def post(self, request):
+        return redirect(os.environ.get('API_42_CALL'))
+
+    def get(self, request):
+        return redirect(os.environ.get('API_42_CALL'))
+
+def exchange_token(code):
+    data = {
+        "grant_type" : "authorization_code",
+        "client_id" : os.environ.get('CLIENT42_ID'),
+        "client_secret" : os.environ.get('CLIENT42_SECRET'),
+        "code" : code,
+        "redirect_uri" : os.environ.get('REDIRECT_42URI'),
+    }
+    response = requests.post("https://api.intra.42.fr/oauth/token", data=data)
+    credentials = response.json()
+    token = credentials['access_token']
+    user = requests.get("https://api.intra.42.fr/v2/me", headers={
+        "Authorization" : f"Bearer {token}"
+    }).json()
+
+    return {
+        "email" : user['email'],
+        "username" : user['login'],
+        "image" : user['image']['link'],
+        "first_name" : user['first_name'],
+        "last_name" : user['last_name'],
+        "language_id" : user["languages_users"][0]['language_id'],
+    }
+
+@method_decorator(csrf_protect, name='dispatch')
+class Login42RedirectView(APIView):
+
+    serializer_class = Register42Serializer
+    def post(self, request):
+        return HttpResponseRedirect(reverse("index"))
+
+    def get(self, request):
+        code = request.GET.get('code')
+        try:
+            user42 = exchange_token(code)
+        except:
+            messages.warning(request, "The connexion with 42 failed")
+            return HttpResponseRedirect(reverse("index"))
+        try:
+            user = User.objects.get(email=user42["email"])
+        except User.DoesNotExist:
+            try:
+                serializer = self.serializer_class(user42)
+                user = serializer.create(data=user42)
+            except:
+                messages.warning(request, "Username already taken.")
+                return HttpResponseRedirect(reverse("index"))
+        user.status = 'online'
+        user.save()
+        token = get_user_token(user.id)
+        response = redirect('index')
+        response.set_cookie(key='jwt', value=token, httponly=True)
+        response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
+        login(request, user)
+        return response
 
 @method_decorator(csrf_protect, name='dispatch')
 class LogoutView(APIView):
@@ -137,21 +202,16 @@ class RegisterView(APIView):
                 return render(request, "pages/register.html")
 
             if 'imageFile' in request.FILES:
-                image = request.FILES['imageFile']
-                valid_extension = ['jpg', 'jpeg', 'png', 'gif']
-                ext = os.path.splitext(image.name)[1][1:].lower()
-                if ext not in valid_extension:
-                    user.image = "profile_pics/default_pp.jpg"
+                try:
+                    image = validate_image(request.FILES['imageFile'])
+                    user.image = image
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
-                    messages.info(request, "Image extension not valid. Profile picture set to default.")
                     messages.success(request, "You have successfully registered.")
                     return HttpResponseRedirect(reverse("index"))
 
-            # checking file content, that it matches the format given
-                img = Image.open(image)
-                if img.format not in ['JPEG', 'PNG', 'GIF']:
+                except :
                     user.image = "profile_pics/default_pp.jpg"
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
@@ -160,12 +220,6 @@ class RegisterView(APIView):
                     messages.success(request, "You have successfully registered.")
                     return HttpResponseRedirect(reverse("index"))
 
-                user.image = image
-                user.save()
-                user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
-                user_data.save()
-                messages.success(request, "You have successfully registered.")
-                return HttpResponseRedirect(reverse("index"))
             else:
                 user.image = "profile_pics/default_pp.jpg"
                 user.save()
@@ -189,7 +243,6 @@ class RegisterView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class UserStatsDataView(APIView):
-
     def get(self, request, username):
         try:
             user_stats = UserData.objects.get(user_id=User.objects.get(username=username))

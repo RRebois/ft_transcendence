@@ -9,7 +9,8 @@ from .manager import UserManager
 class User(AbstractUser):
     username = models.CharField(unique=True, max_length=100)
     email = models.EmailField(unique=True, max_length=100)
-    password = models.CharField(max_length=100, validators=[MinLengthValidator(8)])
+    password = models.CharField(max_length=100, blank=True)
+    image_url = models.URLField(blank=True)
     image = models.ImageField(default='profile_pics/default_pp.jpg', upload_to='profile_pics/')
     friends = models.ManyToManyField("self", blank=True)
     status_choices = [
@@ -19,6 +20,7 @@ class User(AbstractUser):
     status = models.CharField(max_length=50, choices=status_choices, default='offline')
     totp = models.CharField(max_length=100, blank=True, null=True)
     tfa_activated = models.BooleanField(default=False)
+    stud42 = models.BooleanField(default=False)
 
     # def save(self, *args, **kwargs):
     #     super().save(*args, **kwargs)
@@ -37,7 +39,7 @@ class User(AbstractUser):
 
     def get_username(self):
         return self.username
-
+    
     def token(self):
         refresh = RefreshToken.for_user(self)
         return {

@@ -41,7 +41,7 @@
 .title_div {
     color: black;
     font-size: 30px;
-    font-style: bold;
+    font-weight: bold;
     margin: 20px auto 50px auto;
     padding: 25px;
     max-width: fit-content;
@@ -58,6 +58,72 @@
     padding: 5px;
     max-width: fit-content;
     border-bottom: 1px solid black;
+}
+
+.matchHistoryDiv {
+    width: 80%;
+    margin: 50px auto;
+}
+
+.headerMatchHistory{
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    font-style: italic;
+    font-family: Arial, Helvetica, sans-serif;
+    width: 100%;
+    margin-bottom: 10px;
+    border-top: 2px solid black;
+    border-bottom: 2px solid black;
+}
+
+.expander {
+    display: inline-block;
+}
+
+.matchDisplay {
+    margin: 10px auto;
+    text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    width: 90%;
+    height: fit-content;
+    border: 1px solid black;
+}
+
+.matchWon {
+    background-color: #209920;
+}
+
+.matchLost {
+    background-color: #ED2939;
+}
+
+.matchWonSub {
+    background-color: #209920;
+    height: 60px;
+    text-align: center;
+    display: inline-block;
+    font-size: 20px;
+    font-weight: bold;
+    border-top: 2px solid black;
+}
+
+.matchWonSub > a {
+    color: black;
+}
+
+.matchLostSub {
+    background-color: #ED2939;
+    height: 60px;
+    text-align: center;
+    display: inline-block;
+    font-size: 20px;
+    border-top: 2px solid black;
+}
+
+.matchLostSub  > a {
+    color: black;
 }
 
 .marginBot {
