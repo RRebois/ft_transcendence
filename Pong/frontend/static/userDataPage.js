@@ -42,8 +42,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
                 const test = document.getElementById(element.parentElement.id + 'expand')
                 test.remove();
             }
-        }
         event.preventDefault();
+        }
     });
 
     const mainPage = document.getElementById('mainPage');
