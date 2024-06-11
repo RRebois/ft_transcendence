@@ -1,9 +1,4 @@
 document.addEventListener('DOMContentLoaded', ()=>{
-    document.getElementById('profile').addEventListener('click', () => {
-        const user_connected = document.querySelector('#ownUsername').textContent.trim();
-        load_profile_page(user_connected);
-    });
-
     document.addEventListener('click', event => {
         const element = event.target;
         if (element.classList.contains('expander')) {
@@ -46,9 +41,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
         event.preventDefault();
     });
 
-    document.getElementById('mainPage').addEventListener('click', () => {
-        load_main_page();
-    });
+    const mainPage = document.getElementById('mainPage');
+    if (mainPage != null)
+        mainPage.addEventListener('click', () => {
+            load_main_page();
+        });
 })
 
 function create_div_title(username, str, divName) {

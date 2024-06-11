@@ -152,6 +152,8 @@ class Login42RedirectView(APIView):
                 return HttpResponseRedirect(reverse("index"))
         user.status = 'online'
         user.save()
+        user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+        user_data.save()
         token = get_user_token(user.id)
         response = redirect('index')
         response.set_cookie(key='jwt', value=token, httponly=True)
