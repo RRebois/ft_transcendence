@@ -195,3 +195,7 @@ gap-1-5 {
 .hidden {
     display: none;
 }
+
+.messages {
+    text-align: center;
+}

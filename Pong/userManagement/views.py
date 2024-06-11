@@ -12,6 +12,7 @@ from django.db import IntegrityError
 from django.contrib import messages
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from rest_framework.response import Response
+from rest_framework import serializers
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
@@ -57,15 +58,7 @@ def authenticate_user(request):
 
     return user
 
-def jwt_required(view_func):
-    def _wrapped_view(request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return JsonResponse({'error': 'Unauthorized'}, status=401)
-        return view_func(request, *args, **kwargs)
-    return _wrapped_view
 
-
-# @method_decorator(csrf_protect, name='dispatch')
 def index(request):
     if request.user.is_authenticated:
         user = request.user
@@ -78,11 +71,11 @@ def index(request):
 @method_decorator(csrf_protect, name='dispatch')
 class LoginView(APIView):
     serializer_class = LoginSerializer
-    def post(self, request):
-        user_data = request.data
-        serializer = self.serializer_class(data=request.data, context={'request': request})
 
-        if serializer.is_valid():
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        try:
+            serializer.is_valid(raise_exception=True)
             user = serializer.validated_data['user']
             if user.tfa_activated:
                 return JsonResponse({
@@ -100,11 +93,14 @@ class LoginView(APIView):
             response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True, path='/')
             response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True, path='/')
             return response
-        else:
+        except serializers.ValidationError as e:
+            error_message = e.detail.get('non_field_errors', [str(e)])[0]
+            messages.warning(request, error_message)
             return HttpResponseRedirect(reverse("index"))
 
     def get(self, request):
         return HttpResponseRedirect(reverse("index"))
+
 
 @method_decorator(csrf_protect, name='dispatch')
 class Login42View(APIView):
@@ -114,6 +110,7 @@ class Login42View(APIView):
 
     def get(self, request):
         return redirect(os.environ.get('API_42_CALL'))
+
 
 def exchange_token(code):
     data = {
@@ -139,6 +136,7 @@ def exchange_token(code):
         "language_id" : user["languages_users"][0]['language_id'],
     }
 
+
 @method_decorator(csrf_protect, name='dispatch')
 class Login42RedirectView(APIView):
 
@@ -162,14 +160,17 @@ class Login42RedirectView(APIView):
             except:
                 messages.warning(request, "Username already taken.")
                 return HttpResponseRedirect(reverse("index"))
+
         user.status = 'online'
         user.save()
-        token = get_user_token(user.id)
+        token = generate_JWT(user)
+        refresh = generate_refresh_JWT(user)
         response = redirect('index')
-        response.set_cookie(key='jwt', value=token, httponly=True)
+        response.set_cookie(key='jwt_access', value=token, httponly=True)
+        response.set_cookie(key='jwt_refresh', value=refresh, httponly=True)
         response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
-        login(request, user)
         return response
+
 
 @method_decorator(csrf_protect, name='dispatch')
 class LogoutView(APIView):
@@ -240,6 +241,7 @@ class RegisterView(APIView):
             "form": serializer
         })
 
+
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class UserStatsDataView(APIView):
@@ -271,18 +273,30 @@ class UserStatsDataView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 class PasswordChangeView(APIView):
     serializer_class = PasswordChangeSerializer
+
     def post(self, request):
         user = authenticate_user(request)
         serializer = self.serializer_class(data=request.data, context={'user': user})
-        if serializer.is_valid(raise_exception=True):
+        try:
+            serializer.is_valid(raise_exception=True)
             serializer.save()
             response = redirect('index')
             messages.success(request, "Your password has been changed.")
             return response
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except serializers.ValidationError as e:
+            error_message = e.detail.get('non_field_errors', [str(e)])[0]
+            messages.warning(request, error_message)
+            return render(request, "pages/changePassword.html", {
+                "form": serializer,
+                "user": user
+            })
 
     def get(self, request):
         user = authenticate_user(request)
+        if user.stud42:
+            response = redirect('index')
+            messages.warning(request, "You can't change your password when using a 42 account.")
+            return response
         serializer = self.serializer_class()
         return render(request, "pages/changePassword.html", {
             "form": serializer,
@@ -296,10 +310,15 @@ class PasswordResetRequestView(APIView):
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        response = redirect('index')
-        messages.success(request, "A mail to reset your password has been sent.")
-        return response
+        try:
+            serializer.is_valid(raise_exception=True)
+            response = redirect('index')
+            messages.success(request, "A mail to reset your password has been sent.")
+            return response
+        except serializers.ValidationError as e:
+            error_message = e.detail.get('non_field_errors', [str(e)])[0]
+            messages.warning(request, error_message)
+            return render(request, "pages/forgotPassword.html")
 
     def get(self, request):
         serializer = self.serializer_class()
@@ -323,6 +342,7 @@ class SetNewPasswordView(APIView):
 
 
 class PasswordResetConfirmedView(APIView):
+
     def get(self, request, uidb64, token):
         try:
             user_id = smart_str(urlsafe_base64_decode(uidb64))
@@ -342,7 +362,7 @@ class Enable2FAView(APIView):
         user = authenticate_user(request)
 
         if user.tfa_activated is True:
-            messages.success(request, "2FA already activated.")
+            messages.warning(request, "2FA already activated.")
             response = redirect('index')
             return response
         secret_key = pyotp.random_base32()
@@ -362,6 +382,7 @@ class Enable2FAView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 class VerifyOTPView(APIView):
     serializer_class = VerifyOTPSerializer
+
     def post(self, request):
         serializer = VerifyOTPSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -390,11 +411,12 @@ class VerifyOTPView(APIView):
 
 @method_decorator(csrf_protect, name='dispatch')
 class Disable2FAView(APIView):
+
     def post(self, request):
         user = authenticate_user(request)
 
         if user.tfa_activated is False:
-            messages.success(request, "2FA already deactivated.")
+            messages.warning(request, "2FA already deactivated.")
             response = redirect('index')
             return response
         user.totp = None

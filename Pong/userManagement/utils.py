@@ -35,8 +35,8 @@ def generate_JWT(user):
 def generate_refresh_JWT(user):
     payload = {
         'id': user.id,
-        'exp': datetime.utcnow() + timedelta(minutes=15),  # Refresh token expiration
-        'iat': datetime.utcnow()
+        'exp': datetime.now(timezone.utc) + timedelta(minutes=15),  # Refresh token expiration
+        'iat': datetime.now(timezone.utc)
     }
     secret = os.environ.get('REFRESH_SECRET_KEY')
     refresh = jwt.encode(payload, secret, algorithm='HS256')
@@ -62,27 +62,6 @@ def refresh_token_user(refresh_token, request):
     response.set_cookie(key='jwt', value=new_token, httponly=True)
 
     return user
-
-
-def get_user_in_token(access_token):
-    try:
-        token = AccessToken(access_token)
-        user = User.objects.get(id=token['user_id'])
-        return user
-    except User.DoesNotExist:
-        raise AuthenticationFailed('User not found')
-
-def get_user_token(id):
-
-    payload = {
-            'id': id,
-            'exp': datetime.now(timezone.utc) + timedelta(hours=1),  # time before expiration
-            'iat': datetime.now(timezone.utc),  # Issued AT
-        }
-    secret = os.environ.get('SECRET_KEY')
-    token = jwt.encode(payload, secret, algorithm='HS256')
-
-    return token
 
 
 def validate_image(image_path):

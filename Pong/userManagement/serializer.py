@@ -33,9 +33,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         password = attrs.get('password', '')
         password2 = attrs.get('password2', '')
         if not password.isalnum() or password.islower() or password.isupper():
-            raise serializers.ValidationError("passwords must contain at least 1 digit, 1 lowercase and 1 uppercase character.")
+            raise serializers.ValidationError("Passwords must contain at least 1 digit, 1 lowercase and 1 uppercase character.")
         if password != password2:
-            raise serializers.ValidationError("passwords don't match.")
+            raise serializers.ValidationError("Passwords don't match.")
 
         first = attrs.get('first_name', '')
         if not pattern.match(first):
@@ -75,7 +75,6 @@ class Register42Serializer(serializers.ModelSerializer):
         return user
 
 
-
 class LoginSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length=100)
     password = serializers.CharField(max_length=50, write_only=True)
@@ -93,7 +92,6 @@ class LoginSerializer(serializers.ModelSerializer):
         password = attrs.get('password')
         request = self.context.get('request')
 
-        # user = User.objects.all(username=username)
         user = authenticate(request, username=username, password=password)
         if not user:
             raise AuthenticationFailed("Invalid credentials, please try again")
@@ -182,6 +180,8 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         email = attrs.get('email')
         if User.objects.filter(email=email).exists():
             user = User.objects.get(email=attrs.get('email'))
+            if user.stud42:
+                raise serializers.ValidationError("This email is associated to a 42 account, you can't change the password.")
             uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
             request = self.context.get('request')
