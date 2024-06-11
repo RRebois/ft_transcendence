@@ -46,9 +46,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
         event.preventDefault();
     });
 
-    document.getElementById('mainPage').addEventListener('click', () => {
-        load_main_page();
-    });
+    const mainPage = document.getElementById('mainPage');
+
+    if (mainPage != null)
+        mainPage.addEventListener('click', () => {
+            load_main_page();
+        });
 })
 
 function create_div_title(username, str, divName) {
