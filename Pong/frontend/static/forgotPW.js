@@ -1,7 +1,3 @@
-//document.addEventListener('DOMContentLoaded', ()=>{
-//
-//)};
-
 function reset_password() {
     var parent = document.getElementById("divLoginForm");
     var parentForm = document.getElementById("loginForm");

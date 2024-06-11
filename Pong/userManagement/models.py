@@ -39,6 +39,15 @@ class User(AbstractUser):
             "access": str(refresh.access_token)
         }
 
+    def serialize(self):
+        return {
+            "first": self.first_name,
+            "last": self.last_name,
+            "email": self.email,
+            "user": self.username,
+            "stud42": self.stud42
+        }
+
 
 class FriendRequest(models.Model):
     from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='from_user')

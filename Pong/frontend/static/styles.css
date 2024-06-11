@@ -65,7 +65,7 @@
     margin: 50px auto;
 }
 
-.headerMatchHistory{
+.txtSectionDiv {
     text-align: center;
     font-size: 20px;
     font-weight: bold;
@@ -143,6 +143,10 @@
     font-family: arial;
     font-size: 10px;
     font-style: italic;
+}
+
+#mainDiv {
+    border: 2px dotted black;
 }
 
 .play-regular {
