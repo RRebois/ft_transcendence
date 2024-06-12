@@ -254,9 +254,9 @@ class UserStatsDataView(APIView):
         try:
             user_stats = UserData.objects.get(user_id=User.objects.get(username=username))
         except User.DoesNotExist:
-            raise Http404("error: User does not exists.")
+            raise Http404("error: User does not exist.")
         except UserData.DoesNotExist:
-            raise Http404("error: User data does not exists.")
+            raise Http404("error: User data does not exist.")
 
         return JsonResponse(user_stats.serialize())
 
@@ -297,7 +297,14 @@ class PasswordChangeView(APIView):
             messages.success(request, "Your password has been changed.")
             return response
         except serializers.ValidationError as e:
-            error_message = e.detail.get('non_field_errors', [str(e)])[0]
+            error_messages = []
+            for field, errors in e.detail.items():
+                for error in errors:
+                    if field == 'non_field_errors':
+                        error_messages.append(f"{error}")
+                    else:
+                        error_messages.append(f"{field}: {error}")
+            error_message = " | ".join(error_messages)
             messages.warning(request, error_message)
             return render(request, "pages/changePassword.html", {
                 "form": serializer,
@@ -353,9 +360,21 @@ class SetNewPasswordView(APIView):
         data['uidb64'] = uidb64
         data['token'] = token
         serializer = self.serializer_class(data=data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        messages.success(request, "Password reset successfully.")
-        return HttpResponseRedirect(reverse('index'))
+        try:
+            serializer.is_valid(raise_exception=True)
+            messages.success(request, "Password reset successfully.")
+            return HttpResponseRedirect(reverse('index'))
+        except serializers.ValidationError as e:
+            error_messages = []
+            for field, errors in e.detail.items():
+                for error in errors:
+                    if field == 'non_field_errors':
+                        error_messages.append(f"{error}")
+                    else:
+                        error_messages.append(f"{field}: {error}")
+            error_message = " | ".join(error_messages)
+            messages.warning(request, error_message)
+            return HttpResponseRedirect(reverse('index'))
 
 
 class PasswordResetConfirmedView(APIView):
@@ -366,11 +385,15 @@ class PasswordResetConfirmedView(APIView):
             user = User.objects.get(id=user_id)
 
             if not PasswordResetTokenGenerator().check_token(user, token):
-                return Response({'detail': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+                error_message = "Invalid or expired reset password token."
+                messages.warning(request, error_message)
+                return HttpResponseRedirect(reverse('index'))
             return render(request, 'pages/passwordReset.html', {'uidb64': uidb64, 'token': token})
 
         except DjangoUnicodeDecodeError as identifier:
-            return Response({'detail': 'Token invalid or expired.'}, status=status.HTTP_401_UNAUTHORIZED)
+            error_message = "Invalid or expired reset password token."
+            messages.warning(request, error_message)
+            return HttpResponseRedirect(reverse('index'))
 
 
 @method_decorator(csrf_protect, name='dispatch')
