@@ -149,6 +149,29 @@
     border: 2px dotted black;
 }
 
+.displayAnim  {
+    animation-name: display;
+    animation-duration: 2s;
+    animation-fill-mode: forwards;
+}
+
+.displayAnimImg {
+    animation-name: displayImg;
+    animation-duration: 2s;
+    animation-fill-mode: forwards;
+}
+
+.rmAnim {
+    animation-name: display;
+    animation-duration: 2s;
+    animation-fill-mode: backwards;
+    animation-play-state: paused;
+}
+
+.infoDiv {
+
+}
+
 .play-regular {
     font-family: "Play", sans-serif;
     font-weight: 400;

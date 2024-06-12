@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', ()=>{
-    document.getElementById('Alzheimer').addEventListener('click', reset_password);
+    const   alz = document.getElementById('Alzheimer');
+    if (alz != null)
+        alz.addEventListener('click', reset_password);
 
     const   formForgotPW = document.getElementById('formForgotPW');
     const   btnForgotPW = document.getElementById('submitForgotPW');

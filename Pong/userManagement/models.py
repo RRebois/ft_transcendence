@@ -41,10 +41,10 @@ class User(AbstractUser):
 
     def serialize(self):
         return {
-            "first": self.first_name,
-            "last": self.last_name,
-            "email": self.email,
-            "user": self.username,
+            "First name": self.first_name,
+            "Last name": self.last_name,
+            "Email": self.email,
+            "Username": self.username,
             "stud42": self.stud42
         }
 
