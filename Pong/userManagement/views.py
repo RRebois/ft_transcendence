@@ -88,7 +88,7 @@ class LoginView(APIView):
             user.status = 'online'
             user.save()
 
-            response = JsonResponse({'redirect': reverse('index')}, status=200)
+            response = HttpResponseRedirect(reverse("index"))
             response.set_cookie(key='jwt_access', value=access_token, httponly=True,  samesite='Lax', secure=True, path='/')
             response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True, path='/')
             response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True, path='/')
@@ -339,13 +339,8 @@ class PasswordResetRequestView(APIView):
         except serializers.ValidationError as e:
             error_message = e.detail.get('non_field_errors', [str(e)])[0]
             messages.warning(request, error_message)
-            return render(request, "pages/forgotPassword.html")
+            return HttpResponseRedirect(reverse("index"))
 
-    def get(self, request):
-        serializer = self.serializer_class()
-        return render(request, "pages/forgotPassword.html", {
-            "form": serializer
-        })
 
 @method_decorator(csrf_protect, name='dispatch')
 class SetNewPasswordView(APIView):

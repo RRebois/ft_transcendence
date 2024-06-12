@@ -55,8 +55,8 @@ ft_transcendence
                            required/>
                 </div>
             </div>
-            <a href="{% url 'reset_password' %}" class="text-decoration-none">Forgot password?</a>
-<!--            <a href="" onclick="reset_password()" class="text-decoration-none">Forgot password?</a>-->
+<!--            <a href="{% url 'reset_password' %}" class="text-decoration-none">Forgot password?</a>-->
+            <a href="" class="text-decoration-none" id="Alzheimer">Forgot password?</a>
         </div>
         <button type="submit" class="btn btn-primary">Log in</button>
         {% if login_error %}
@@ -81,34 +81,5 @@ ft_transcendence
 
 
 </div>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $('#loginForm').on('submit', function(event) {
-            event.preventDefault(); // Prevent the default form submission
-            $.ajax({
-                type: 'POST',
-                url: "{% url 'login' %}",
-                data: $(this).serialize(), // Serialize the form data
-                success: function(response) {
-                    console.log("Success:", response);
-                    if (response.otp_required) { // Check if an OTP is required
-                        // Redirect to the OTP
-                        window.location.href = "{% url 'verify_otp' %}?user_id=" + response.user_id;
-                    } else {
-                        // Redirect to the index page on successful login
-                        window.location.href = "{% url 'index' %}";
-                    }
-                },
-                error: function(response) {
-                    console.log("error:", response);
-                    alert('Login failed. Please try again.');
-                }
-            });
-        });
-    });
-</script>
-
 {% endif %}
 {% endblock %}

@@ -1,7 +1,22 @@
+document.addEventListener('DOMContentLoaded', ()=>{
+    document.getElementById('Alzheimer').addEventListener('click', reset_password);
+
+    const   formForgotPW = document.getElementById('formForgotPW');
+    const   btnForgotPW = document.getElementById('submitForgotPW');
+
+    if (btnForgotPW != null) {
+        btnForgotPW.addEventListener('click', () => {
+            formForgotPW.submit();
+            formForgotPW.id = "loginForm";
+        });
+    }
+})
+
 function reset_password() {
     var parent = document.getElementById("divLoginForm");
     var parentForm = document.getElementById("loginForm");
 
+    parentForm.id = "formForgotPW";
     parentForm.action = "/reset_password"
     parent.querySelectorAll('div').forEach(child => child.remove());
     parent.querySelectorAll('button').forEach(child => child.remove());
@@ -15,13 +30,13 @@ function reset_password() {
     var newInput = document.createElement('input');
 
     // Assign new div content + classes + add them to main div
-    newDiv1.innerHTML = "Enter your email address, a password reset link will be sent to you"
+    newDiv1.innerHTML = "Enter your email address, a password reset link will be sent to you."
     parentForm.append(newDiv1);
 
     newDiv2.classList.add("w-100");
     newLabel.classList.add("visually-hidden");
     newLabel.innerHTML = "Email";
-    newLabel.setAttribute("for", "emailInput");
+    newLabel.setAttribute("for", "email");
     newDiv2.append(newLabel);
 
     newDiv4.classList.add("input-group-text");
@@ -30,7 +45,8 @@ function reset_password() {
 
     newInput.classList.add("form-control");
     newInput.setAttribute("type", "email");
-    newInput.setAttribute("id", "emailInput");
+    newInput.setAttribute("name", "email");
+    newInput.setAttribute("id", "email");
     newInput.setAttribute("placeholder", "Enter your email");
     newInput.autofocus = true;
     newInput.required = true;
@@ -43,6 +59,7 @@ function reset_password() {
     var newBut = document.createElement('button');
     newBut.setAttribute('class', "btn btn-primary");
     newBut.setAttribute('type', "submit");
+    newBut.setAttribute('id', 'submitForgotPW');
     newBut.textContent = "Send";
     parentForm.append(newBut);
 
