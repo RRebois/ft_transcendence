@@ -35,7 +35,7 @@ def authenticate_user(request):
     if not token:
         token = request.COOKIES.get('jwt_access')
     if not token:
-        raise AuthenticationFailed('Unauthenticated')
+        raise AuthenticationFailed('No JWT were found, please login.')
 
     secret = os.environ.get('SECRET_KEY')
 
@@ -44,7 +44,7 @@ def authenticate_user(request):
     except jwt.ExpiredSignatureError:
         refresh_token = request.COOKIES.get('jwt_refresh')
         if not refresh_token:
-            raise AuthenticationFailed("Token expired, please log in again.")
+            raise AuthenticationFailed("Access token expired and refresh token not found, please log in again.")
         return refresh_token_user(refresh_token, request)
     except jwt.InvalidTokenError:
         raise AuthenticationFailed("Invalid token, please log in again.")
@@ -88,6 +88,7 @@ class LoginView(APIView):
             user.status = 'online'
             user.save()
 
+            # response = HttpResponseRedirect(reverse("index"))
             response = JsonResponse({'redirect': reverse('index')}, status=200)
             response.set_cookie(key='jwt_access', value=access_token, httponly=True,  samesite='Lax', secure=True, path='/')
             response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True, path='/')
@@ -175,7 +176,11 @@ class Login42RedirectView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 class LogoutView(APIView):
     def post(self, request):
-        user = authenticate_user(request)
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return redirect('index')
 
         user.status = "offline"
         user.save()
@@ -260,7 +265,11 @@ class UserStatsDataView(APIView):
 # class UpdateUserView(APIView):
 #     serializer_class = UserSerializer
 #     def put(self, request):
-#         user = authenticate_user(request)
+#          try:
+#             user = authenticate_user(request)
+#         except AuthenticationFailed as e:
+#             messages.warning(request, str(e))
+#             return redirect('index')
 #
 #         serializer = self.serializer_class(user, data=request.data, partial=True)
 #         if serializer.is_valid(raise_exception=True):
@@ -275,7 +284,11 @@ class PasswordChangeView(APIView):
     serializer_class = PasswordChangeSerializer
 
     def post(self, request):
-        user = authenticate_user(request)
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return redirect('index')
         serializer = self.serializer_class(data=request.data, context={'user': user})
         try:
             serializer.is_valid(raise_exception=True)
@@ -292,7 +305,11 @@ class PasswordChangeView(APIView):
             })
 
     def get(self, request):
-        user = authenticate_user(request)
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return redirect('index')
         if user.stud42:
             response = redirect('index')
             messages.warning(request, "You can't change your password when using a 42 account.")
@@ -359,7 +376,11 @@ class PasswordResetConfirmedView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 class Enable2FAView(APIView):
     def post(self, request):
-        user = authenticate_user(request)
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return redirect('index')
 
         if user.tfa_activated is True:
             messages.warning(request, "2FA already activated.")
@@ -375,7 +396,11 @@ class Enable2FAView(APIView):
         return JsonResponse({"qr_url": qr_url, "message": message})
 
     def get(self, request):
-        user = authenticate_user(request)
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return redirect('index')
         return render(request, "pages/2FA.html", {"user": user})
 
 
@@ -413,7 +438,11 @@ class VerifyOTPView(APIView):
 class Disable2FAView(APIView):
 
     def post(self, request):
-        user = authenticate_user(request)
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return redirect('index')
 
         if user.tfa_activated is False:
             messages.warning(request, "2FA already deactivated.")
@@ -430,7 +459,11 @@ class Disable2FAView(APIView):
 # @method_decorator(csrf_protect, name='dispatch')
 # class SendFriendRequestView(APIView):
 #     def post(self, request):
-#         user = authenticate_user(request)
+#          try:
+#             user = authenticate_user(request)
+#         except AuthenticationFailed as e:
+#             messages.warning(request, str(e))
+#             return redirect('index')
 #         to_user_id = request.data.get('to_id')
 #
 #         try:
@@ -459,7 +492,11 @@ class Disable2FAView(APIView):
 # @method_decorator(csrf_protect, name='dispatch')
 # class AcceptFriendRequestView(APIView):
 #     def post(self, request):
-#         user = authenticate_user(request)
+#          try:
+#             user = authenticate_user(request)
+#         except AuthenticationFailed as e:
+#             messages.warning(request, str(e))
+#             return redirect('index')
 #         friend_request_user_id = request.data.get('from_id')
 #         try:
 #             friend_request = FriendRequest.objects.get(from_user_id=friend_request_user_id, to_user_id=user)
@@ -504,7 +541,11 @@ class Disable2FAView(APIView):
 # @method_decorator(csrf_protect, name='dispatch')
 # class DeleteFriendView(APIView):
 #     def post(self, request):
-#         user = authenticate_user(request)
+#          try:
+#             user = authenticate_user(request)
+#         except AuthenticationFailed as e:
+#             messages.warning(request, str(e))
+#             return redirect('index')
 #         friend_id = request.data.get('to_id')
 #         try:
 #             friend = User.objects.get(id=friend_id)
@@ -534,7 +575,11 @@ class Disable2FAView(APIView):
 # @method_decorator(csrf_protect, name='dispatch')
 # class ListFriendsView(APIView):
 #     def post(self, request):
-#         user = authenticate_user(request)
+#          try:
+#             user = authenticate_user(request)
+#         except AuthenticationFailed as e:
+#             messages.warning(request, str(e))
+#             return redirect('index')
 #         friends = user.friends.all()
 #         friends_data = []
 #         if friends:

@@ -24,7 +24,7 @@ def send_email(data):
 def generate_JWT(user):
     payload = {
         'id': user.id,
-        'exp': datetime.now(timezone.utc) + timedelta(minutes=2),  # time before expiration
+        'exp': datetime.now(timezone.utc) + timedelta(seconds=15),  # time before expiration
         'iat': datetime.now(timezone.utc),  # Issued AT
     }
     secret = os.environ.get('SECRET_KEY')
@@ -35,7 +35,7 @@ def generate_JWT(user):
 def generate_refresh_JWT(user):
     payload = {
         'id': user.id,
-        'exp': datetime.now(timezone.utc) + timedelta(minutes=15),  # Refresh token expiration
+        'exp': datetime.now(timezone.utc) + timedelta(seconds=30),  # Refresh token expiration
         'iat': datetime.now(timezone.utc)
     }
     secret = os.environ.get('REFRESH_SECRET_KEY')
