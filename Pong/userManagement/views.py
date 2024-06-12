@@ -35,7 +35,7 @@ def authenticate_user(request):
     if not token:
         token = request.COOKIES.get('jwt_access')
     if not token:
-        raise AuthenticationFailed('Unauthenticated')
+        raise AuthenticationFailed('No JWT were found, please login.')
 
     secret = os.environ.get('SECRET_KEY')
 
@@ -44,7 +44,7 @@ def authenticate_user(request):
     except jwt.ExpiredSignatureError:
         refresh_token = request.COOKIES.get('jwt_refresh')
         if not refresh_token:
-            raise AuthenticationFailed("Token expired, please log in again.")
+            raise AuthenticationFailed("Access token expired and refresh token not found, please log in again.")
         return refresh_token_user(refresh_token, request)
     except jwt.InvalidTokenError:
         raise AuthenticationFailed("Invalid token, please log in again.")
@@ -177,7 +177,11 @@ class Login42RedirectView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 class LogoutView(APIView):
     def post(self, request):
-        user = authenticate_user(request)
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return redirect('index')
 
         user.status = "offline"
         user.save()
@@ -251,9 +255,9 @@ class UserStatsDataView(APIView):
         try:
             user_stats = UserData.objects.get(user_id=User.objects.get(username=username))
         except User.DoesNotExist:
-            raise Http404("error: User does not exists.")
+            raise Http404("error: User does not exist.")
         except UserData.DoesNotExist:
-            raise Http404("error: User data does not exists.")
+            raise Http404("error: User data does not exist.")
 
         return JsonResponse(user_stats.serialize())
 
@@ -281,7 +285,11 @@ class UserPersonalInformationView(APIView):
 # class UpdateUserView(APIView):
 #     serializer_class = UserSerializer
 #     def put(self, request):
-#         user = authenticate_user(request)
+#          try:
+#             user = authenticate_user(request)
+#         except AuthenticationFailed as e:
+#             messages.warning(request, str(e))
+#             return redirect('index')
 #
 #         serializer = self.serializer_class(user, data=request.data, partial=True)
 #         if serializer.is_valid(raise_exception=True):
@@ -296,7 +304,11 @@ class PasswordChangeView(APIView):
     serializer_class = PasswordChangeSerializer
 
     def post(self, request):
-        user = authenticate_user(request)
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return redirect('index')
         serializer = self.serializer_class(data=request.data, context={'user': user})
         try:
             serializer.is_valid(raise_exception=True)
@@ -305,7 +317,14 @@ class PasswordChangeView(APIView):
             messages.success(request, "Your password has been changed.")
             return response
         except serializers.ValidationError as e:
-            error_message = e.detail.get('non_field_errors', [str(e)])[0]
+            error_messages = []
+            for field, errors in e.detail.items():
+                for error in errors:
+                    if field == 'non_field_errors':
+                        error_messages.append(f"{error}")
+                    else:
+                        error_messages.append(f"{field}: {error}")
+            error_message = " | ".join(error_messages)
             messages.warning(request, error_message)
             return render(request, "pages/changePassword.html", {
                 "form": serializer,
@@ -313,7 +332,11 @@ class PasswordChangeView(APIView):
             })
 
     def get(self, request):
-        user = authenticate_user(request)
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return redirect('index')
         if user.stud42:
             response = redirect('index')
             messages.warning(request, "You can't change your password when using a 42 account.")
@@ -351,9 +374,21 @@ class SetNewPasswordView(APIView):
         data['uidb64'] = uidb64
         data['token'] = token
         serializer = self.serializer_class(data=data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        messages.success(request, "Password reset successfully.")
-        return HttpResponseRedirect(reverse('index'))
+        try:
+            serializer.is_valid(raise_exception=True)
+            messages.success(request, "Password reset successfully.")
+            return HttpResponseRedirect(reverse('index'))
+        except serializers.ValidationError as e:
+            error_messages = []
+            for field, errors in e.detail.items():
+                for error in errors:
+                    if field == 'non_field_errors':
+                        error_messages.append(f"{error}")
+                    else:
+                        error_messages.append(f"{field}: {error}")
+            error_message = " | ".join(error_messages)
+            messages.warning(request, error_message)
+            return HttpResponseRedirect(reverse('index'))
 
 
 class PasswordResetConfirmedView(APIView):
@@ -364,17 +399,25 @@ class PasswordResetConfirmedView(APIView):
             user = User.objects.get(id=user_id)
 
             if not PasswordResetTokenGenerator().check_token(user, token):
-                return Response({'detail': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+                error_message = "Invalid or expired reset password token."
+                messages.warning(request, error_message)
+                return HttpResponseRedirect(reverse('index'))
             return render(request, 'pages/passwordReset.html', {'uidb64': uidb64, 'token': token})
 
         except DjangoUnicodeDecodeError as identifier:
-            return Response({'detail': 'Token invalid or expired.'}, status=status.HTTP_401_UNAUTHORIZED)
+            error_message = "Invalid or expired reset password token."
+            messages.warning(request, error_message)
+            return HttpResponseRedirect(reverse('index'))
 
 
 @method_decorator(csrf_protect, name='dispatch')
 class Enable2FAView(APIView):
     def post(self, request):
-        user = authenticate_user(request)
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return redirect('index')
 
         if user.tfa_activated is True:
             messages.warning(request, "2FA already activated.")
@@ -390,7 +433,11 @@ class Enable2FAView(APIView):
         return JsonResponse({"qr_url": qr_url, "message": message})
 
     def get(self, request):
-        user = authenticate_user(request)
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return redirect('index')
         return render(request, "pages/2FA.html", {"user": user})
 
 
@@ -428,7 +475,11 @@ class VerifyOTPView(APIView):
 class Disable2FAView(APIView):
 
     def post(self, request):
-        user = authenticate_user(request)
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return redirect('index')
 
         if user.tfa_activated is False:
             messages.warning(request, "2FA already deactivated.")
@@ -445,7 +496,11 @@ class Disable2FAView(APIView):
 # @method_decorator(csrf_protect, name='dispatch')
 # class SendFriendRequestView(APIView):
 #     def post(self, request):
-#         user = authenticate_user(request)
+#          try:
+#             user = authenticate_user(request)
+#         except AuthenticationFailed as e:
+#             messages.warning(request, str(e))
+#             return redirect('index')
 #         to_user_id = request.data.get('to_id')
 #
 #         try:
@@ -474,7 +529,11 @@ class Disable2FAView(APIView):
 # @method_decorator(csrf_protect, name='dispatch')
 # class AcceptFriendRequestView(APIView):
 #     def post(self, request):
-#         user = authenticate_user(request)
+#          try:
+#             user = authenticate_user(request)
+#         except AuthenticationFailed as e:
+#             messages.warning(request, str(e))
+#             return redirect('index')
 #         friend_request_user_id = request.data.get('from_id')
 #         try:
 #             friend_request = FriendRequest.objects.get(from_user_id=friend_request_user_id, to_user_id=user)
@@ -519,7 +578,11 @@ class Disable2FAView(APIView):
 # @method_decorator(csrf_protect, name='dispatch')
 # class DeleteFriendView(APIView):
 #     def post(self, request):
-#         user = authenticate_user(request)
+#          try:
+#             user = authenticate_user(request)
+#         except AuthenticationFailed as e:
+#             messages.warning(request, str(e))
+#             return redirect('index')
 #         friend_id = request.data.get('to_id')
 #         try:
 #             friend = User.objects.get(id=friend_id)
@@ -549,7 +612,11 @@ class Disable2FAView(APIView):
 # @method_decorator(csrf_protect, name='dispatch')
 # class ListFriendsView(APIView):
 #     def post(self, request):
-#         user = authenticate_user(request)
+#          try:
+#             user = authenticate_user(request)
+#         except AuthenticationFailed as e:
+#             messages.warning(request, str(e))
+#             return redirect('index')
 #         friends = user.friends.all()
 #         friends_data = []
 #         if friends:

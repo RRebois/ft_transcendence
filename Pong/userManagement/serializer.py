@@ -213,7 +213,7 @@ class SetNewPasswordSerializer(serializers.Serializer):
             user = User.objects.get(id=user_id)
 
             if not PasswordResetTokenGenerator().check_token(user, attrs['token']):
-                raise serializers.ValidationError({'detail': "Invalid or expired token"})
+                raise serializers.ValidationError("Invalid or expired reset password token")
 
             new_password = attrs.get('new_password')
             confirm_password = attrs.get('confirm_password')
@@ -224,7 +224,7 @@ class SetNewPasswordSerializer(serializers.Serializer):
             user.save()
 
         except DjangoUnicodeDecodeError:
-            raise serializers.ValidationError({'detail': "Invalid token"})
+            raise serializers.ValidationError("Invalid reset password token")
 
         return super().validate(attrs)
 
