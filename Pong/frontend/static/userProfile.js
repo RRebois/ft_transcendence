@@ -1,10 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', event => {
         const element = event.target;
-        if (element.classList.contains("checkInfo"))
+        if (element.classList.contains("fa-square-caret-down"))
         {
             // Create expand div
             const   exDiv = document.createElement('div');
+            exDiv.classList.add("displayAnim");
             exDiv.setAttribute("id", element.parentElement.parentElement.id + "Child");
 
             if (element.id === "info") {
@@ -15,52 +16,53 @@ document.addEventListener('DOMContentLoaded', () => {
                     .then(response => response.json())
                     .then(user_info => {
                         console.log(user_info);
-//                        exDiv.classList.add("infoDiv");
+
+                        // Change arrow down to arrow up
+                        element.classList.remove("fa-square-caret-down");
+                        element.classList.add("fa-square-caret-up");
+
+                        // Add img to edit info
+                        const   img = document.createElement('span');
+                        img.className = "fa-solid fa-user-pen displayAnimImg";
+                        img.setAttribute("id", element.parentElement.parentElement.id + "img")
+                        element.parentElement.append(img);
 
                         // Create span with all data fetched
                         for (const key in user_info)
                             if (key != "stud42")
                                 append_info(exDiv, key, user_info[key]);
                     });
-
+                    element.parentElement.parentElement.append(exDiv);
+                    exDiv.addEventListener("animationend", (event) => {
+                        exDiv.classList.remove("displayAnim");
+                        exDiv.classList.add("rmAnim");
+                    });
                 });
             } else if (element.id === "security") {
                 console.log("security");
             }
+        }
+        else if (element.classList.contains("fa-square-caret-up"))
+        {
+            // Select div displaying infos
+            var   divRM = document.getElementById(element.parentElement.parentElement.id + "Child");
 
-            // Change arrow down to arrow up
-            if (element.classList.contains("fa-square-caret-down")) {
-                element.classList.remove("fa-square-caret-down");
-                element.classList.add("fa-square-caret-up");
-
-                exDiv.classList.add("displayAnim");
-                exDiv.classList.remove("rmAnim");
-
-                element.parentElement.parentElement.append(exDiv);
-
-                // Add img to edit info
-                const   img = document.createElement('span');
-                img.className = "fa-solid fa-user-pen displayAnimImg";
-                img.setAttribute("id", element.parentElement.parentElement.id + "img")
-                element.parentElement.append(img);
-            }
-            else {
-                element.classList.add("fa-square-caret-down");
-                element.classList.remove("fa-square-caret-up");
-
-                var   divRM = document.getElementById(element.parentElement.parentElement.id + "Child");
-                divRM.classList.remove("displayAnim");
-                divRM.classList.add("rmAnim");
-
-                element.addEventListener('onclick')
-
+            element.classList.add("fa-square-caret-down");
+            element.classList.remove("fa-square-caret-up");
+console.log("Before animation");
+            if (divRM != null)
+            {
                 if (divRM.style.animationPlayState == "paused")
                     divRM.style.animationPlayState == "running";
 
-                divRM.remove();
-                const   img = document.getElementById(element.parentElement.parentElement.id + "img");
-                img.remove();
             }
+            divRM.style.display = "none";
+            divRM.addEventListener("animationend", (event) => {
+                divRM.remove();console.log("animation ended");
+            });
+            console.log("After animation ended");
+            const   img = document.getElementById(element.parentElement.parentElement.id + "img");
+            img.remove();
         }
     });
 })
@@ -98,10 +100,10 @@ function load_profile_page(username) {
     const   arrowSpan1 = document.createElement('span');
     const   arrowSpan2 = document.createElement('span');
 
-    arrowSpan1.className = "fa-regular fa-square-caret-down checkInfo";
+    arrowSpan1.className = "fa-regular fa-square-caret-down";
     arrowSpan1.setAttribute("id", "info");
     arrowSpan1.style.margin = "0 10px";
-    arrowSpan2.className = "fa-regular fa-square-caret-down checkInfo";
+    arrowSpan2.className = "fa-regular fa-square-caret-down";
     arrowSpan2.setAttribute("id", "security");
     arrowSpan2.style.margin = "0 10px";
 

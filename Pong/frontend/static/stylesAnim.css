@@ -23,13 +23,10 @@
 }
 
 @keyframes displayImg {
-    0% {
+    from {
         opacity: 0;
     }
-    75% {
-        opacity: 0.75;
-    }
-    100% {
+    to {
         opacity: 1;
     }
 }

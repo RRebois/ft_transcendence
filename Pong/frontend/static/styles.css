@@ -165,7 +165,7 @@
     animation-name: display;
     animation-duration: 2s;
     animation-fill-mode: backwards;
-    animation-play-state: paused;
+    animation-play-state: "paused";
 }
 
 .infoDiv {
