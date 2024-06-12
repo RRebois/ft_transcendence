@@ -54,13 +54,6 @@ def authenticate_user(request):
 
     return user
 
-@method_decorator(csrf_protect, name='dispatch')
-@method_decorator(login_required(login_url='login'), name='dispatch')
-class UserGetUsernameView(APIView):
-    def get(self, request):
-        user = authenticate_user(request)
-        return Response(user.get_username())
-
 
 # @method_decorator(csrf_protect, name='dispatch')
 def index(request):
@@ -250,6 +243,14 @@ class UserStatsDataView(APIView):
             raise Http404("error: User data does not exists.")
 
         return JsonResponse(user_stats.serialize())
+
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class UserGetUsernameView(APIView):
+    def get(self, request):
+        user = authenticate_user(request)
+        return JsonResponse(user.get_username(), safe=False)
 
 
 @method_decorator(csrf_protect, name='dispatch')

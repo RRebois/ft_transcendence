@@ -50,12 +50,27 @@ document.addEventListener('DOMContentLoaded', ()=>{
                     .then(user_info => {
                         console.log(user_info);
 
+                        // Change arrow down to arrow up
+                        element.classList.remove("fa-square-caret-down")
+                        element.classList.add("fa-square-caret-up")
+
+                        // Create personal information expand div
+                        const   exDiv = document.createElement('div');
+                        exDiv.setAttribute("id", element.parent.id + "Child");
+
+                        exDiv.classList.add("matchWonSub");
+                        exDiv.innerHTML = "test";
+                        element.append(exDiv);
+
                     });
 
                 });
             } else if (element.id === "security") {
                 console.log("security");
             }
+
+            // Change arrow down to arrow up
+//            if
         }
     });
 
