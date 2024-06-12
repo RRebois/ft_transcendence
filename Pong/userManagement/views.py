@@ -163,6 +163,8 @@ class Login42RedirectView(APIView):
 
         user.status = 'online'
         user.save()
+        user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+        user_data.save()
         token = generate_JWT(user)
         refresh = generate_refresh_JWT(user)
         response = redirect('index')
@@ -256,6 +258,25 @@ class UserStatsDataView(APIView):
         return JsonResponse(user_stats.serialize())
 
 
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class UserGetUsernameView(APIView):
+    def get(self, request):
+        user = authenticate_user(request)
+        return JsonResponse(user.get_username(), safe=False)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class UserPersonalInformationView(APIView):
+    def get(self, request, username):
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise Http404("error: User does not exists.")
+        return JsonResponse(user.serialize())
+
+
 # @method_decorator(csrf_protect, name='dispatch')
 # class UpdateUserView(APIView):
 #     serializer_class = UserSerializer
@@ -325,7 +346,6 @@ class PasswordResetRequestView(APIView):
         return render(request, "pages/forgotPassword.html", {
             "form": serializer
         })
-
 
 @method_decorator(csrf_protect, name='dispatch')
 class SetNewPasswordView(APIView):

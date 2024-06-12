@@ -6,6 +6,7 @@ ft_transcendence
 {% endblock %}
 
 {% block script %}
+    <script src="{% static 'forgotPW.js' %}"></script>
 {% endblock %}
 
 {% block body %}
@@ -19,24 +20,20 @@ ft_transcendence
     </ul>
 {% endif %}
 
-
 {% if user.is_authenticated %}
 
 <div id="greetings">Hello {{user.username}} 😳👉👈</div>
 
-<div class="container" id="divUserStats">
-</div>
-
-<div class="container" id="divProfile">
+<div class="container" id="mainDiv">
 </div>
 
 {% else %}
-<div class="w-100 h-100 d-flex justify-content-center align-items-center">
+<div class="w-100 h-100 d-flex justify-content-center align-items-center" id="divLoginForm">
     <form action="{% url 'login' %}" method="post"
           class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card"
           style="--bs-bg-opacity: .5;" id="loginForm">
         {% csrf_token %}
-        <h1 class="text-justify play-bold">ft_transcendence 🏓</h1>
+        <h1><a class="text-justify play-bold" href="{% url 'index' %}" >ft_transcendence 🏓</a></h1>
         <div class="w-100">
             <label for="login-username" class="visually-hidden">Username</label>
             <div class="input-group">
@@ -59,6 +56,7 @@ ft_transcendence
                 </div>
             </div>
             <a href="{% url 'reset_password' %}" class="text-decoration-none">Forgot password?</a>
+<!--            <a href="" onclick="reset_password()" class="text-decoration-none">Forgot password?</a>-->
         </div>
         <button type="submit" class="btn btn-primary">Log in</button>
         {% if login_error %}

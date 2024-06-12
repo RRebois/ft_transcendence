@@ -22,14 +22,6 @@ class User(AbstractUser):
     tfa_activated = models.BooleanField(default=False)
     stud42 = models.BooleanField(default=False)
 
-    # def save(self, *args, **kwargs):
-    #     super().save(*args, **kwargs)
-    #     img = Image.open(self.image.path)
-    #     if img.height > 200 or img.width > 200:
-    #         new_img = (200, 200)
-    #         img.thumbnail(new_img)
-    #         img.save(self.image.path)
-
     REQUIRED_FIELDS = ['email']
 
     objects = UserManager()
@@ -45,6 +37,15 @@ class User(AbstractUser):
         return {
             "refresh": str(refresh),
             "access": str(refresh.access_token)
+        }
+
+    def serialize(self):
+        return {
+            "first": self.first_name,
+            "last": self.last_name,
+            "email": self.email,
+            "user": self.username,
+            "stud42": self.stud42
         }
 
 
@@ -80,3 +81,6 @@ class UserData(models.Model):
             "elo": self.user_elo,
             "elo_highest": self.user_highest,
         }
+
+    def get_username(self):
+        return self.user_id.username

@@ -1,9 +1,4 @@
 document.addEventListener('DOMContentLoaded', ()=>{
-    document.getElementById('profile').addEventListener('click', () => {
-        const user_connected = document.querySelector('#ownUsername').textContent.trim();
-        load_profile_page(user_connected);
-    });
-
     document.addEventListener('click', event => {
         const element = event.target;
         if (element.classList.contains('expander')) {
@@ -42,12 +37,44 @@ document.addEventListener('DOMContentLoaded', ()=>{
                 const test = document.getElementById(element.parentElement.id + 'expand')
                 test.remove();
             }
-        event.preventDefault();
+            event.preventDefault();
+        }
+        else if (element.classList.contains("fa-square-caret-down"))
+        {
+            if (element.id === "info") {
+                fetch("getUsernameConnected")
+                .then(response => response.json())
+                .then(user_connected => {
+                    fetch(`user/${user_connected}/information`)
+                    .then(response => response.json())
+                    .then(user_info => {
+                        console.log(user_info);
+
+                        // Change arrow down to arrow up
+                        element.classList.remove("fa-square-caret-down")
+                        element.classList.add("fa-square-caret-up")
+
+                        // Create personal information expand div
+                        const   exDiv = document.createElement('div');
+                        exDiv.setAttribute("id", element.parent.id + "Child");
+
+                        exDiv.classList.add("matchWonSub");
+                        exDiv.innerHTML = "test";
+                        element.append(exDiv);
+
+                    });
+
+                });
+            } else if (element.id === "security") {
+                console.log("security");
+            }
+
+            // Change arrow down to arrow up
+//            if
         }
     });
 
     const mainPage = document.getElementById('mainPage');
-
     if (mainPage != null)
         mainPage.addEventListener('click', () => {
             load_main_page();
@@ -62,15 +89,16 @@ function create_div_title(username, str, divName) {
     // Add CSS to created div
     title.classList.add("title_div")
     document.querySelector(`#${divName}`).append(title);
+
+    event.preventDefault();
 }
 
 function load_stats_page(username) {
-    create_div_title(username, "game stats", "divUserStats");
+    create_div_title(username, "game stats", "mainDiv");
 
     // Hides main page elements and display user stats elements:
     document.getElementById('greetings').style.display = 'none';
-    document.getElementById('divProfile').style.display = 'none';
-    document.getElementById('divUserStats').style.display = 'block';
+    document.getElementById('mainDiv').style.display = 'block';
 
     // Fetch user stat data + create div element for each data:
     fetch(`stats/${username}`)
@@ -84,20 +112,25 @@ function load_stats_page(username) {
         statElo.innerHTML = "Current elo / highest: " + values['elo'] + " / " + values['elo_highest'];
         stat.append(statElo);
 
-        document.querySelector('#divUserStats').append(stat);
+        document.querySelector('#mainDiv').append(stat);
 
         // Create pie chart to display winrate
         const chart = document.createElement('div');
         if (`${values.losses}` == 0 && `${values.wins}` == 0) {
             chart.innerHTML = "Pie chart not available yet!";
             chart.style.textAlign = "center";
-            document.querySelector('#divUserStats').append(chart);
+            document.querySelector('#mainDiv').append(chart);
         }
         else {
             const pieChart = document.createElement('canvas');
             pieChart.setAttribute('id', 'winratePie');
+            chart.style.maxWidth = "100vh";
+            chart.style.maxHeight = "100vh";
+            chart.style.minWidth = "30vh";
+            chart.style.minHeight = "30vh";
+            chart.style.margin = "0px auto";
             chart.append(pieChart);
-            document.querySelector('#divUserStats').append(chart);
+            document.querySelector('#mainDiv').append(chart);
 
             const winrateData = {
                 labels: [`Defeats (${values.losses})`, `Victories (${values.wins})`],
@@ -120,9 +153,6 @@ function load_stats_page(username) {
                         display: true,
                         text: `Winrate ${values.winrate}`,
                     },
-                    legend: {
-                        position: "chartArea",
-                    }
                 }
             });
         }
@@ -134,7 +164,7 @@ function load_stats_page(username) {
 
         const header = document.createElement('div');
         header.innerHTML = "Match history";
-        header.classList.add("headerMatchHistory");
+        header.classList.add("txtSectionDiv");
         matchHistory.append(header);
 
         fetch(`matchs/${username}`)
@@ -150,36 +180,17 @@ function load_stats_page(username) {
             }
 
         })
-        document.querySelector('#divUserStats').append(matchHistory);
+        document.querySelector('#mainDiv').append(matchHistory);
     })
     .catch(error => console.error('Error:', error));
-    event.preventDefault();
-}
-
-
-function load_profile_page(username)
-{
-    document.getElementById('greetings').style.display = 'none';
-    document.getElementById('divUserStats').style.display = 'none';
-    document.getElementById('divUserStats').innerHTML = "";
-
-    document.getElementById('divProfile').style.display = 'block';
-
-    create_div_title(username, "profile", "divProfile");
-
-    // Fetch user data:
-//    fetch(``) api route not created
-
     event.preventDefault();
 }
 
 function load_main_page() {
     document.getElementById('greetings').style.display = 'block';
 
-    document.getElementById('divUserStats').style.display = 'none';
-    document.getElementById('divUserStats').innerHTML = "";
-    document.getElementById('divProfile').style.display = 'none';
-    document.getElementById('divProfile').innerHTML = "";
+    document.getElementById('mainDiv').style.display = 'none';
+    document.getElementById('mainDiv').innerHTML = "";
 }
 
 function create_div(match, matchHistory, username) {
@@ -203,7 +214,3 @@ function create_div(match, matchHistory, username) {
     tmp.append(eye);
     matchHistory.append(tmp);
 }
-
-//for (const key in data)
-//        if (key != 'id')
-//        {}

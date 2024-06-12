@@ -14,6 +14,7 @@
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossorigin="anonymous"></script>
 
+    <script src="{% static 'userProfile.js' %}"></script>
     <script src="{% static 'userDataPage.js' %}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
     {% block script %}
@@ -28,7 +29,11 @@
     <div class="container-fluid">
         <ul class="nav">
             <li class="nav-item roundBorder">
-                <img src={% if user.image_url %} "{{ user.image_url}}" {% else %} "{{ user.image.url }}" {% endif %} alt="avatar">
+                {% if user.image_url %}
+                    <img src="{{ user.image_url}}" alt="avatar">
+                {% else %}
+                    <img src="{{ user.image.url }}" alt="avatar">
+                {% endif %}
             </li>
         </ul>
 
@@ -41,7 +46,7 @@
 
 
             <div class="dropdown-menu dropdown-menu-start">
-                <a class="dropdown-item button" href="" id="profile">Profile</a>
+                <a class="dropdown-item button" onclick="load_profile_page('{{ user.username }}')" href="" id="profile">Profile</a>
                 <a class="dropdown-item button" onclick="load_stats_page('{{ user.username }}')" href="" id="statsPage">Stats</a>
                 <a class="dropdown-item button" href="" id="friendsPage">Friends</a>
             </div>
