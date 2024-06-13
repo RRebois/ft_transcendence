@@ -1,0 +1,46 @@
+{% extends "pages/layout.html" %}
+{% load static %}
+
+{% block script %}
+    <script src="{% static 'scriptRegistration.js' %}"></script>
+{% endblock %}
+
+{% block body %}
+
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <div {% if message.tags %} class="alertSize alert alert-{{ message.tags }}"
+                {% else %} class="alertSize alert alert-secondary" {% endif %} role="alert">{{ message }}</div>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <h2>Recuperar Nomes e Números</h2>
+    <form id="myForm" method="post" action="{% url 'another_game' %}">
+        {% csrf_token %}
+        <div id="entries">
+            <div class="entry">
+                <label>Username: <input type="text" name="username[]"></label>
+                <label>Quantity: <input type="number" name="quantity[]"></label>
+                <label>Guess: <input type="number" name="guess[]"></label>
+            </div>
+        </div>
+        <button type="button" onclick="addEntry()">Adicionar Mais</button>
+        <button type="submit">Enviar</button>
+    </form>
+
+    <script>
+        function addEntry() {
+            const entriesDiv = document.getElementById('entries');
+            const newEntry = document.createElement('div');
+            newEntry.classList.add('entry');
+            newEntry.innerHTML = `
+                <label>Username: <input type="text" name="username[]"></label>
+                <label>Quantity: <input type="number" name="quantity[]"></label>
+                <label>Guess: <input type="number" name="guess[]"></label>
+            `;
+            entriesDiv.appendChild(newEntry);
+        }
+    </script>
+    
+{% endblock %}
