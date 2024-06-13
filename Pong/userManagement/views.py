@@ -93,9 +93,8 @@ class LoginView(APIView):
             response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True, path='/')
             response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True, path='/')
             return response
-        except serializers.ValidationError as e:
-            error_message = e.detail.get('non_field_errors', [str(e)])[0]
-            messages.warning(request, error_message)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
             return HttpResponseRedirect(reverse("index"))
 
     def get(self, request):

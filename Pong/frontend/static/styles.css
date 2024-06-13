@@ -227,4 +227,14 @@ gap-1-5 {
 
 .messages {
     text-align: center;
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
 }
