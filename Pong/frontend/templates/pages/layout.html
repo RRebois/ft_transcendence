@@ -49,7 +49,8 @@
             <div class="dropdown-menu dropdown-menu-start">
                 <a class="dropdown-item button" onclick="load_profile_page('{{ user.username }}')" href="" id="profile">Profile</a>
                 <a class="dropdown-item button" onclick="load_stats_page('{{ user.username }}')" href="" id="statsPage">Stats</a>
-                <a class="dropdown-item button" href="" id="friendsPage">Friends</a>
+                <a class="dropdown-item button" href="{% url 'send_friend' %}" id="friendsPage">Friends</a>
+<!--                <a class="dropdown-item button" onclick="load_friends_page('{{ user.username }}')" href="" id="friendsPage">Friends</a>-->
             </div>
         </div>
 

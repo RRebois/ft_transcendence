@@ -6,7 +6,6 @@ from django.shortcuts import render, redirect
 from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.db import IntegrityError
 from django.contrib import messages
@@ -492,67 +491,91 @@ class Disable2FAView(APIView):
         return response
 
 
-# @method_decorator(csrf_protect, name='dispatch')
-# class SendFriendRequestView(APIView):
-#     def post(self, request):
-#          try:
-#             user = authenticate_user(request)
-#         except AuthenticationFailed as e:
-#             messages.warning(request, str(e))
-#             return redirect('index')
-#         to_user_id = request.data.get('to_id')
-#
-#         try:
-#             to_user = User.objects.get(pk=to_user_id)
-#         except User.DoesNotExist:
-#             return Response({'detail': 'User does not exist.'}, status=status.HTTP_404_NOT_FOUND)
-#
-#         if user == to_user:
-#             return Response({'detail': 'You cannot send a friend request to yourself.'},
-#                             status=status.HTTP_400_BAD_REQUEST)
-#
-#         if user.friends.filter(id=to_user_id).exists():
-#             return Response({'detail': 'This user is already your friend.'}, status=status.HTTP_400_BAD_REQUEST)
-#
-#         if FriendRequest.objects.filter(from_user=user, to_user=to_user).exists():
-#             return Response({'detail': 'Friend request already sent.'}, status=status.HTTP_400_BAD_REQUEST)
-#
-#         if FriendRequest.objects.filter(from_user=to_user, to_user=user, status='pending').exists():
-#             return Response({'detail': 'You have a pending request from this user.'},
-#                             status=status.HTTP_400_BAD_REQUEST)
-#
-#         FriendRequest.objects.create(from_user=user, to_user=to_user)
-#         return Response({'detail': 'Friend request sent.'}, status=status.HTTP_201_CREATED)
-#
-#
-# @method_decorator(csrf_protect, name='dispatch')
-# class AcceptFriendRequestView(APIView):
-#     def post(self, request):
-#          try:
-#             user = authenticate_user(request)
-#         except AuthenticationFailed as e:
-#             messages.warning(request, str(e))
-#             return redirect('index')
-#         friend_request_user_id = request.data.get('from_id')
-#         try:
-#             friend_request = FriendRequest.objects.get(from_user_id=friend_request_user_id, to_user_id=user)
-#         except FriendRequest.DoesNotExist:
-#             return Response({'detail': 'Friend request does not exist.'}, status=status.HTTP_404_NOT_FOUND)
-#
-#         if friend_request.to_user != user:
-#             return Response({'detail': 'You cannot accept this friend request.'}, status=status.HTTP_403_FORBIDDEN)
-#
-#         if FriendRequest.objects.filter(from_user_id=friend_request_user_id, to_user_id=user,
-#                                         status='accepted').exists():
-#             return Response({'detail': 'You already accepted this friend request.'}, status=status.HTTP_403_FORBIDDEN)
-#
-#         friend_request.status = 'accepted'
-#         friend_request.save()
-#
-#         friend_request.to_user.friends.add(friend_request.from_user)
-#         friend_request.from_user.friends.add(friend_request.to_user)
-#
-#         return Response({'detail': 'Friend request accepted.'}, status=status.HTTP_200_OK)
+# class SearchUsersView(APIView):
+#     def get(self, request):
+#         query = request.GET.get('q', '')
+#         if query:
+#             users = User.objects.filter(username__icontains=query).values('username')
+#             users_list = list(users)
+#             return JsonResponse(users_list)
+#         return JsonResponse([])
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class SendFriendRequestView(APIView):
+    def post(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return redirect('index')
+
+        to_username = request.data.get('username')
+        try:
+            to_user = User.objects.get(username=to_username)
+        except User.DoesNotExist:
+            messages.warning(request, "User does not exist.")
+            return render(request, "pages/friend.html", {"user": user})
+
+        if user == to_user:
+            messages.warning(request, "You cannot send a friend request to yourself.")
+            return render(request, "pages/friend.html", {"user": user})
+
+        if user.friends.filter(username=to_username).exists():
+            messages.warning(request, "This user is already your friend.")
+            return render(request, "pages/friend.html", {"user": user})
+
+        if FriendRequest.objects.filter(from_user=user, to_user=to_user).exists():
+            messages.warning(request, "Friend request already sent.")
+            return render(request, "pages/friend.html", {"user": user})
+
+        if FriendRequest.objects.filter(from_user=to_user, to_user=user, status='pending').exists():
+            messages.warning(request, "You have a pending request from this user.")
+            return render(request, "pages/friend.html", {"user": user})
+
+        FriendRequest.objects.create(from_user=user, to_user=to_user)
+        messages.success(request, "Friend request sent.")
+        return render(request, "pages/friend.html", {"user": user})
+
+    def get(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return redirect('index')
+        return render(request, "pages/friend.html", {
+            "user": user
+        })
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class AcceptFriendRequestView(APIView):
+    def post(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return redirect('index')
+        friend_request_user_id = request.data.get('from_id')
+        try:
+            friend_request = FriendRequest.objects.get(from_user_id=friend_request_user_id, to_user_id=user)
+        except FriendRequest.DoesNotExist:
+            return Response({'detail': 'Friend request does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if friend_request.to_user != user:
+            return Response({'detail': 'You cannot accept this friend request.'}, status=status.HTTP_403_FORBIDDEN)
+
+        if FriendRequest.objects.filter(from_user_id=friend_request_user_id, to_user_id=user,
+                                        status='accepted').exists():
+            return Response({'detail': 'You already accepted this friend request.'}, status=status.HTTP_403_FORBIDDEN)
+
+        friend_request.status = 'accepted'
+        friend_request.save()
+
+        friend_request.to_user.friends.add(friend_request.from_user)
+        friend_request.from_user.friends.add(friend_request.to_user)
+
+        return Response({'detail': 'Friend request accepted.'}, status=status.HTTP_200_OK)
 #
 # # TODO: If necessary, otherwise we stay with pending requests
 # # class DeclineFriendRequestView(APIView):
@@ -577,7 +600,7 @@ class Disable2FAView(APIView):
 # @method_decorator(csrf_protect, name='dispatch')
 # class DeleteFriendView(APIView):
 #     def post(self, request):
-#          try:
+#         try:
 #             user = authenticate_user(request)
 #         except AuthenticationFailed as e:
 #             messages.warning(request, str(e))
@@ -607,11 +630,11 @@ class Disable2FAView(APIView):
 #
 #         return Response({'detail': 'User is not in your friends.'}, status=status.HTTP_400_BAD_REQUEST)
 #
-#
+
 # @method_decorator(csrf_protect, name='dispatch')
 # class ListFriendsView(APIView):
 #     def post(self, request):
-#          try:
+#         try:
 #             user = authenticate_user(request)
 #         except AuthenticationFailed as e:
 #             messages.warning(request, str(e))

@@ -1,0 +1,107 @@
+{% extends "pages/layout.html" %}
+{% load static %}
+
+{% block script %}
+    <script src="{% static 'scriptRegistration.js' %}"></script>
+{% endblock %}
+
+{% block title %}
+ft_transcendence
+{% endblock %}
+
+{% block body %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <div {% if message.tags %} class="alertSize alert alert-{{ message.tags }}"
+                {% else %} class="alertSize alert alert-secondary" {% endif %} role="alert">{{ message }}</div>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% if user.is_authenticated %}
+
+<div class="w-100 h-100 d-flex justify-content-center align-items-center">
+    <form action="{% url 'send_friend' %}" method="post"
+          class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card hidden"
+          style="--bs-bg-opacity: .5;" id="addFriend">
+        {% csrf_token %}
+        <h1 class="text-justify play-bold">Add a friend</h1>
+        <div class="w-100">
+            <label for="username" class="visually-hidden">Username</label>
+            <div class="input-group">
+                <div class="input-group-text">
+                    <i class="bi bi-person"></i>
+                </div>
+                <input class="form-control" type="text" name="username" id="username"
+                   placeholder="Username" required>
+                <button type="submit" class="btn btn-primary">Send</button>
+            </div>
+<!--            <ul id="user-list" class="list-group mt-2"></ul>-->
+        </div>
+    </form>
+</div>
+
+<!--<div class="w-100 h-100 d-flex justify-content-center align-items-center">-->
+<!--    <form action="{% url 'send_friend' %}" method="post"-->
+<!--          class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card hidden"-->
+<!--          style="&#45;&#45;bs-bg-opacity: .5;" id="addFriend">-->
+<!--        {% csrf_token %}-->
+<!--        <h1 class="text-justify play-bold">Add a friend</h1>-->
+<!--        <div class="w-100">-->
+<!--            <label for="username" class="visually-hidden">Username</label>-->
+<!--            <div class="input-group">-->
+<!--                <div class="input-group-text">-->
+<!--                    <i class="bi bi-person"></i>-->
+<!--                </div>-->
+<!--                <input class="form-control" type="text" name="username" id="username"-->
+<!--                   placeholder="Username" required>-->
+<!--                <button type="submit" class="btn btn-primary">Send</button>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </form>-->
+<!--</div>-->
+
+<!--<script>-->
+<!--    document.addEventListener('DOMContentLoaded', function() {-->
+<!--    const usernameInput = document.getElementById('username');-->
+<!--    const userList = document.getElementById('user-list');-->
+
+<!--    usernameInput.addEventListener('textInput', function() {-->
+<!--        const query = usernameInput.value;-->
+<!--        if (query.length > 0) {-->
+<!--            fetch(`/search_user/?q=${query}`)-->
+<!--                .then(response => {response.json();-->
+<!--                    console.log(response);}) // to debug-->
+<!--                .then(data => {-->
+<!--                    console.log(data); // to debug-->
+<!--                    userList.innerHTML = '';-->
+<!--                    if (data.length > 0) {-->
+<!--                        data.forEach(user => {-->
+<!--                            const userItem = document.createElement('li');-->
+<!--                            userItem.textContent = user.username;-->
+<!--                            userItem.classList.add('list-group-item');-->
+<!--                            userList.appendChild(userItem);-->
+<!--                        });-->
+<!--                    } else {-->
+<!--                        const noUserItem = document.createElement('li');-->
+<!--                        noUserItem.textContent = 'No users found';-->
+<!--                        noUserItem.classList.add('list-group-item');-->
+<!--                        userList.appendChild(noUserItem);-->
+<!--                    }-->
+<!--                })-->
+<!--                .catch(error => {-->
+<!--                    console.error('Error:', error);-->
+<!--                });-->
+<!--        } else {-->
+<!--            userList.innerHTML = '';-->
+<!--        }-->
+<!--    });-->
+<!--});-->
+
+<!--</script>-->
+
+{% endif %}
+
+{% endblock %}
