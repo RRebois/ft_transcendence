@@ -157,14 +157,14 @@ class Login42RedirectView(APIView):
             try:
                 serializer = self.serializer_class(user42)
                 user = serializer.create(data=user42)
+                user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+                user_data.save()
             except:
                 messages.warning(request, "Username already taken.")
                 return HttpResponseRedirect(reverse("index"))
 
         user.status = 'online'
         user.save()
-        user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
-        user_data.save()
         token = generate_JWT(user)
         refresh = generate_refresh_JWT(user)
         response = redirect('index')

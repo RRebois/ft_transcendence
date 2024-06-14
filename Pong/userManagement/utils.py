@@ -35,7 +35,7 @@ def generate_JWT(user):
 def generate_refresh_JWT(user):
     payload = {
         'id': user.id,
-        'exp': datetime.now(timezone.utc) + timedelta(minutes=20),  # Refresh token expiration
+        'exp': datetime.now(timezone.utc) + timedelta(days=1),  # Refresh token expiration
         'iat': datetime.now(timezone.utc)
     }
     secret = os.environ.get('REFRESH_SECRET_KEY')
