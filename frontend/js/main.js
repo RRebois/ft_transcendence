@@ -1,16 +1,16 @@
-import {Router} from './router';
-import {isAuthenticated} from "./auth";
+// https://medium.com/swlh/lets-code-a-client-side-router-for-your-no-framework-spa-19da93105e10
+import router from "./router/index.js"
+import Route from "./router/Route.js";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import '@css/style.css'
 
-const app = document.getElementById('app');
+import homeView from "./views/home.js";
+import registerView from "./views/register.js";
 
-const router = new Router(app);
+const routes = [
+    new Route('/home', '/', homeView),
+    new Route('/register', '/register', registerView)
+];
 
-router.addRoute('/', () => {
-    if (isAuthenticated()) {
-        router.navigate('/dashboard');
-    } else {
-        import('./pages/login.js').then(module => {
-            app.innerHTML = module.;
-        });
-    }
-})
+router(routes);
