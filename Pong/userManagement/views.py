@@ -294,13 +294,11 @@ class EditDataView(APIView):
         if serializer.is_valid():
             try:
                 user = serializer.save()
-                messages.success(request, "You have successfully updated your data.")
-                return HttpResponseRedirect(reverse("index"))
+                return Response({"success": True})
             except IntegrityError:
-                messages.error(request, "Username and/or email already taken.")
-                return render(request, "index.html")
-        context = {"errors": serializer.errors}
-        return HttpResponseRedirect(reverse("index"))
+                return Response({"success": False, "errors": ["Username and/or email already taken."]})
+        else:
+            return Response({"success": False, "errors": serializer.errors})
 
 
 # @method_decorator(csrf_protect, name='dispatch')

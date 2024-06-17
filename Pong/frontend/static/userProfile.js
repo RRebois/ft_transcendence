@@ -146,7 +146,27 @@ function load_form_edit_info() {
         save.addEventListener('click', () => {
             const formData = new FormData(newForm);
 
-            fetch
+            fetch('/edit_data', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfInput.value,
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    alert("You have successfully updated your data.");
+                } else {
+                    // show error msg
+                    alert("Error: " + data.errors.join(", "));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("An error occurred. Please try again.")
+            });
         });
 
         const   cancel = document.createElement('button');
