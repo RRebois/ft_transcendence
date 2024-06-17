@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block script %}
-    {% comment %} <script src="{% static 'scriptRegistration.js' %}"></script> {% endcomment %}
     <script>
         function showGuessForm() {
             document.getElementById('quantityForm').style.display = 'none';
@@ -15,22 +14,20 @@
         }
 
         function addYourGuess(data) {
-            {% comment %} const haha = JSON.parse(data); {% endcomment %}
             const answerMsg = document.getElementById('result');
             const hintMessage = document.createElement('p');
             let text = "";
-            for (const bla in data) {
-                text += bla + " : " + data[bla] + "  ";
+            for (const tmp in data) {
+                text += tmp + " : " + data[tmp] + "  ";
             }
             hintMessage.textContent = text;
-            {% comment %} hintMessage.textContent = 'And you bet ' + guess + " and the result was " + result; {% endcomment %}
             answerMsg.appendChild(hintMessage);
         }
 
         function submitQuantity(event) {
             event.preventDefault();
             const quantity = document.getElementById('quantityInput').value;
-
+            
             fetch('/test/', {
                 method: 'POST',
                 headers: {
