@@ -629,24 +629,24 @@ class AcceptFriendRequestView(APIView):
 #             return Response({'detail': 'Friend removed.'}, status=status.HTTP_200_OK)
 #
 #         return Response({'detail': 'User is not in your friends.'}, status=status.HTTP_400_BAD_REQUEST)
-#
 
-# @method_decorator(csrf_protect, name='dispatch')
-# class ListFriendsView(APIView):
-#     def post(self, request):
-#         try:
-#             user = authenticate_user(request)
-#         except AuthenticationFailed as e:
-#             messages.warning(request, str(e))
-#             return redirect('index')
-#         friends = user.friends.all()
-#         friends_data = []
-#         if friends:
-#             for friend in friends:
-#                 friends_data.append({
-#                     'username': friend.username,
-#                     'status': friend.status,
-#                 })
-#             return Response(friends_data, status=status.HTTP_200_OK)
-#         else:
-#             return Response({'detail': 'No friends yet.'}, status=status.HTTP_200_OK)
+
+@method_decorator(csrf_protect, name='dispatch')
+class ListFriendsView(APIView):
+    def post(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return redirect('index')
+        friends = user.friends.all()
+        friends_data = []
+        if friends:
+            for friend in friends:
+                friends_data.append({
+                    'username': friend.username,
+                    'status': friend.status,
+                })
+            return Response(friends_data, status=status.HTTP_200_OK)
+        else:
+            return Response({'detail': 'No friends yet.'}, status=status.HTTP_200_OK)

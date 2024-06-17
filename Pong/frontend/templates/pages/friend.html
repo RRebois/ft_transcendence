@@ -22,9 +22,9 @@ ft_transcendence
 
 {% if user.is_authenticated %}
 
-<div class="w-100 h-100 d-flex justify-content-center align-items-center">
+<div class="w-100 h-100 d-flex flex-column justify-content-center align-items-center">
     <form action="{% url 'send_friend' %}" method="post"
-          class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card hidden"
+          class="friendPage bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card hidden"
           style="--bs-bg-opacity: .5;" id="addFriend">
         {% csrf_token %}
         <h1 class="text-justify play-bold">Add a friend</h1>
@@ -41,7 +41,20 @@ ft_transcendence
 <!--            <ul id="user-list" class="list-group mt-2"></ul>-->
         </div>
     </form>
+    <br />
+    <div class="friendPage list-group d-flex">
+        <div class="list-group-item list-group-item-action active"
+             aria-current="true">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">List group item heading</h5>
+                <small>3 days ago</small>
+            </div>
+            <p class="mb-1">Some placeholder content in a paragraph.</p>
+            <small>And some small print.</small>
+        </div>
+    </div>
 </div>
+
 
 <!--<div class="w-100 h-100 d-flex justify-content-center align-items-center">-->
 <!--    <form action="{% url 'send_friend' %}" method="post"-->
