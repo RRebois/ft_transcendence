@@ -5,10 +5,12 @@ import Route from "./router/Route.js";
 
 import homeView from "./views/home.js";
 import registerView from "./views/register.js";
+import matchView from "./views/match.js";
 
 const routes = [
     new Route('/home', '/', homeView),
-    new Route('/register', '/register', registerView)
+    new Route('/register', '/register', registerView),
+    new Route('/match', '/match', matchView)
 ];
 
 router(routes);
