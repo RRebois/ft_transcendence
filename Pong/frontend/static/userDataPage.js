@@ -56,108 +56,114 @@ function create_div_title(username, str, divName) {
     // Add CSS to created div
     title.classList.add("title_div")
     document.querySelector(`#${divName}`).append(title);
-
-    event.preventDefault();
 }
 
 function load_stats_page(username) {
-    create_div_title(username, "game stats", "mainDiv");
-
     // Hides main page elements and display user stats elements:
     document.getElementById('greetings').style.display = 'none';
-    document.getElementById('mainDiv').style.display = 'block';
+    document.getElementById('userDataDiv').style.display = 'none';
+    document.getElementById('userDataDiv').innerHTML = "";
+    document.getElementById('statsDiv').style.display = 'block';
+    document.getElementById('statsDiv').innerHTML = "";
+
+    create_div_title(username, "game stats", "statsDiv");
 
     // Fetch user stat data + create div element for each data:
-    fetch(`stats/${username}`)
-    .then(response => response.json())
-    .then(values => {
-        console.log(values);
-        const stat = document.createElement('div');
-        const statElo = document.createElement('div');
-        statElo.classList.add("divElo");
-
-        statElo.innerHTML = "Current elo / highest: " + values['elo'] + " / " + values['elo_highest'];
-        stat.append(statElo);
-
-        document.querySelector('#mainDiv').append(stat);
-
-        // Create pie chart to display winrate
-        const chart = document.createElement('div');
-        if (`${values.losses}` == 0 && `${values.wins}` == 0) {
-            chart.innerHTML = "Pie chart not available yet!";
-            chart.style.textAlign = "center";
-            document.querySelector('#mainDiv').append(chart);
-        }
-        else {
-            const pieChart = document.createElement('canvas');
-            pieChart.setAttribute('id', 'winratePie');
-            chart.style.maxWidth = "100vh";
-            chart.style.maxHeight = "100vh";
-            chart.style.minWidth = "30vh";
-            chart.style.minHeight = "30vh";
-            chart.style.margin = "0px auto";
-            chart.append(pieChart);
-            document.querySelector('#mainDiv').append(chart);
-
-            const winrateData = {
-                labels: [`Defeats (${values.losses})`, `Victories (${values.wins})`],
-                datasets: [{
-                    label: "Winrate",
-                    data: [`${values.losses}`, `${values.wins}`],
-                    backgroundColor: ["rgb(255,99,132)", "rgb(0,128,0)"],
-                    borderColor: "black",
-                    hoverOffset: 4,
-                    pointBorderWidth: 1,
-                    pointHoverBorderWidth: 2
-                }]
-            };
-
-            new Chart("winratePie", {
-                type: "pie",
-                data: winrateData,
-                options: {
-                    title: {
-                        display: true,
-                        text: `Winrate ${values.winrate}`,
-                    },
-                }
-            });
-        }
-
-
-        // Create history matchs for current user
-        const matchHistory = document.createElement('div');
-        matchHistory.classList.add("matchHistoryDiv");
-
-        const header = document.createElement('div');
-        header.innerHTML = "Match history";
-        header.classList.add("txtSectionDiv");
-        matchHistory.append(header);
-
-        fetch(`matchs/${username}`)
+    if (document.getElementById('statsDiv').style.display === 'block')
+    {
+        fetch(`stats/${username}`)
         .then(response => response.json())
-        .then(matches => {
-            if (matches.length > 0)
-                for (let i = 0; i < matches.length; i++)
-                    create_div(matches[i], matchHistory, username);
+        .then(values => {
+            console.log(values);
+            const stat = document.createElement('div');
+            const statElo = document.createElement('div');
+            statElo.classList.add("divElo");
+
+            statElo.innerHTML = "Current elo / highest: " + values['elo'] + " / " + values['elo_highest'];
+            stat.append(statElo);
+
+            document.querySelector('#statsDiv').append(stat);
+
+            // Create pie chart to display winrate
+            const chart = document.createElement('div');
+            if (`${values.losses}` == 0 && `${values.wins}` == 0) {
+                chart.innerHTML = "Pie chart not available yet!";
+                chart.style.textAlign = "center";
+                document.querySelector('#statsDiv').append(chart);
+            }
             else {
-                const   tmp = document.createElement('div');
-                tmp.innerHTML = "No game played yet!"
-                matchHistory.append(tmp);
+                const pieChart = document.createElement('canvas');
+                pieChart.setAttribute('id', 'winratePie');
+                chart.style.maxWidth = "100vh";
+                chart.style.maxHeight = "100vh";
+                chart.style.minWidth = "30vh";
+                chart.style.minHeight = "30vh";
+                chart.style.margin = "0px auto";
+                chart.append(pieChart);
+                document.querySelector('#statsDiv').append(chart);
+
+                const winrateData = {
+                    labels: [`Defeats (${values.losses})`, `Victories (${values.wins})`],
+                    datasets: [{
+                        label: "Winrate",
+                        data: [`${values.losses}`, `${values.wins}`],
+                        backgroundColor: ["rgb(255,99,132)", "rgb(0,128,0)"],
+                        borderColor: "black",
+                        hoverOffset: 4,
+                        pointBorderWidth: 1,
+                        pointHoverBorderWidth: 2
+                    }]
+                };
+
+                new Chart("winratePie", {
+                    type: "pie",
+                    data: winrateData,
+                    options: {
+                        title: {
+                            display: true,
+                            text: `Winrate ${values.winrate}`,
+                        },
+                    }
+                });
             }
 
+
+            // Create history matchs for current user
+            const matchHistory = document.createElement('div');
+            matchHistory.classList.add("matchHistoryDiv");
+
+            const header = document.createElement('div');
+            header.innerHTML = "Match history";
+            header.classList.add("txtSectionDiv");
+            matchHistory.append(header);
+
+            fetch(`matchs/${username}`)
+            .then(response => response.json())
+            .then(matches => {
+                if (matches.length > 0)
+                    for (let i = 0; i < matches.length; i++)
+                        create_div(matches[i], matchHistory, username);
+                else {
+                    const   tmp = document.createElement('div');
+                    tmp.innerHTML = "No game played yet!"
+                    matchHistory.append(tmp);
+                }
+
+            })
+            document.querySelector('#statsDiv').append(matchHistory);
         })
-        document.querySelector('#mainDiv').append(matchHistory);
-    })
-    .catch(error => console.error('Error:', error));
-    event.preventDefault();
+        .catch(error => console.error('Error:', error));
+        event.preventDefault();
+    }
 }
 
 function load_main_page() {
     document.getElementById('greetings').style.display = 'block';
 
-    document.getElementById('mainDiv').style.display = 'none';
-    document.getElementById('mainDiv').innerHTML = "";
+    document.getElementById('statsDiv').style.display = 'none';
+    document.getElementById('statsDiv').innerHTML = "";
+    document.getElementById('userDataDiv').style.display = 'none';
+    document.getElementById('userDataDiv').innerHTML = "";
 }
 
 function create_div(match, matchHistory, username) {

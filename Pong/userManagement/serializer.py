@@ -29,7 +29,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         pattern = re.compile("^[a-zA-Z]+([ '-][a-zA-Z]+)*$")
-        pattern_username = re.compile("^[a-zA-Z0-9]+([-][a-zA-Z0-9]+)*$")
+        pattern_username = re.compile("^[a-zA-Z]+(-[a-zA-Z]+)*$")
         password = attrs.get('password', '')
         password2 = attrs.get('password2', '')
         if not password.isalnum() or password.islower() or password.isupper():
@@ -47,7 +47,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         username = attrs.get('username', '')
         if not pattern_username.match(username):
-            raise serializers.ValidationError("Username must be alphanumeric only. Hyphens are allowed, if it's in the middle and with no repetitions.")
+            raise serializers.ValidationError("Username must be alphanumeric only.")
 
         return attrs
 
@@ -60,6 +60,20 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data.get('password'),
         )
         return user
+
+    def update(self, instance, validated_data):
+        if 'email' in validated_data:
+            instance.set_email(validated_data['email'])
+        if 'first_name' in validated_data:
+            instance.set_first_name(validated_data['first_name'])
+        if 'last_name' in validated_data:
+            instance.set_last_name(validated_data['last_name'])
+        if 'username' in validated_data:
+            instance.set_username(validated_data['username'])
+        if 'password' in validated_data:
+            instance.set_password(validated_data['password'])
+        instance.save()
+        return instance
 
 
 class Register42Serializer(serializers.ModelSerializer):

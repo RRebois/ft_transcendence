@@ -277,6 +277,32 @@ class UserPersonalInformationView(APIView):
         return JsonResponse(user.serialize())
 
 
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class EditDataView(APIView):
+    serializer_class = RegisterSerializer
+
+    def post(self, request):
+        user_data = request.data
+        user = authenticate_user(request)
+
+        if not user:
+            messages.error(request, "Authentication failed.")
+            return render(request, "pages/index.html")
+
+        serializer = self.serializer_class(user, data=user_data, partial=True)
+        if serializer.is_valid():
+            try:
+                user = serializer.save()
+                messages.success(request, "You have successfully updated your data.")
+                return HttpResponseRedirect(reverse("index"))
+            except IntegrityError:
+                messages.error(request, "Username and/or email already taken.")
+                return render(request, "index.html")
+        context = {"errors": serializer.errors}
+        return HttpResponseRedirect(reverse("index"))
+
+
 # @method_decorator(csrf_protect, name='dispatch')
 # class UpdateUserView(APIView):
 #     serializer_class = UserSerializer

@@ -7,7 +7,7 @@ class Match(models.Model):
     players = models.ManyToManyField('userManagement.User', related_name="players")
     winner = models.ForeignKey('userManagement.User', on_delete=models.CASCADE,
                                blank=True, null=True)
-    score = ArrayField(models.IntegerField(), default=[])
+    score = ArrayField(models.IntegerField(), default=[0, 0])
     timeMatch = models.DateTimeField(auto_now_add=True)
     #timeMatchEnded?changethe auto now to blank = null and value will be added when match ends
 
