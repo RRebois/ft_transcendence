@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Play:wght@400;700&family=Poppins&display=swap');
 
+* {
+    margin: 0;
+    padding: 0;
+}
+
 .invalidColor {
     color:  #99251B;
 }
@@ -241,8 +246,14 @@ gap-1-5 {
 
 .friendPage {
     width: 50%;
+    align-items: center;
+    text-align: center;
 }
 
 .acceptBtn {
     float: right;
+}
+
+.p {
+    margin-bottom: 0;
 }

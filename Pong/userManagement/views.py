@@ -592,7 +592,8 @@ class AcceptFriendRequestView(APIView):
     #     return render(request, "pages/friend.html", {"user": user})
     def post(self, request):
         user = request.user
-        friend_request_user_id = request.data.get('from_id')
+        # friend_request_user = request.data.get('from_id')
+        friend_request_user_id = user.id
         friend_request = get_object_or_404(FriendRequest, from_user_id=friend_request_user_id, to_user_id=user)
 
         if friend_request.to_user != user:

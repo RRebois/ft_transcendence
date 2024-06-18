@@ -42,19 +42,7 @@ ft_transcendence
         </div>
     </form>
     <br />
-<!--    <div class="friendPage bg-white login-card d-flex py-2 px-5 rounded" style="&#45;&#45;bs-bg-opacity: .5;" id="friendRequest">-->
-<!--        <div class="list-group-item list-group-item-action active"-->
-<!--             aria-current="true">-->
-<!--            <div class="d-flex w-100 justify-content-between">-->
-<!--                <h5 class="mb-1">Sender username</h5>-->
-<!--                <small>date sent</small>-->
-<!--            </div>-->
-<!--            <p class="mb-1">Games played</p>-->
-<!--            <small>Status</small>-->
-<!--            <button type="submit" class="acceptBtn btn btn-primary " style="background: #209920">Accept</button>-->
-<!--        </div>-->
-<!--    </div>-->
-    <div id="friendRequest">
+    <div id="friendRequest" class="friendPage">
     </div>
 </div>
 
@@ -66,23 +54,22 @@ document.addEventListener("DOMContentLoaded", function() {
         .then(data => {
             console.log(data);
             const friendRequestContainer = document.getElementById('friendRequest');
-            friendRequestContainer.innerHTML = ''; // Clear existing content
+            friendRequestContainer.innerHTML = '';
 
             data.forEach(request => {
                 const friendRequestItem = document.createElement('div');
-                friendRequestItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white',
-                                                'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
-                friendRequestItem.style.cssText = '--bs-bg-opacity: .5;';
+                friendRequestItem.classList.add('friendPage', 'list-group-item','list-group-item-action', 'bg-white', 'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
+                friendRequestItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px';
                 friendRequestItem.innerHTML = `
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">${request.from_user__username}</h5>
-                        <small>${new Date(request.time).toLocaleString()}</small>
-                    </div>
-                    <p class="mb-1">Games played</p>
-                    <small>Status: ${request.status}</small>
-                    <button type="button" class="acceptBtn btn btn-primary" style="background: #209920; border-color: #209920" data-id="${request.from_user__username}">Accept</button>
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">${request.from_user__username}</h5>
+                            <small>${new Date(request.time).toLocaleString()}</small>
+                        </div>
+                        <p class="mb-1">Games played</p>
+                        <p class="mb-1">Status: ${request.status}</p>
+                        <button type="button" class="acceptBtn btn btn-primary" style="background: #209920; border-color: #209920"
+                                data-id="${request.from_user__username}">Accept</button>
                 `;
-
                 friendRequestContainer.appendChild(friendRequestItem);
             });
 
