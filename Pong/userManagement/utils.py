@@ -6,7 +6,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import AccessToken
 from datetime import datetime, timedelta, timezone
 from PIL import Image
-from .models import User
+from .models import User, FriendRequest
 import jwt
 import os
 

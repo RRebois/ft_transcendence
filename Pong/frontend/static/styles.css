@@ -238,3 +238,11 @@ gap-1-5 {
     align-items: center;
     pointer-events: none;
 }
+
+.friendPage {
+    width: 50%;
+}
+
+.acceptBtn {
+    float: right;
+}

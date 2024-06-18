@@ -2,7 +2,7 @@ from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -548,34 +548,67 @@ class SendFriendRequestView(APIView):
         })
 
 
-@method_decorator(csrf_protect, name='dispatch')
-class AcceptFriendRequestView(APIView):
-    def post(self, request):
+class GetFriendRequestView(APIView):
+    def get(self, request):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
             return redirect('index')
+        friendRequests = FriendRequest.object.filter(to_user=user, status='pending').values('from_user__username', 'time')
+        return JsonResponse(list(friendRequests), safe=False)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class AcceptFriendRequestView(APIView):
+    # def post(self, request):
+    #     try:
+    #         user = authenticate_user(request)
+    #     except AuthenticationFailed as e:
+    #         messages.warning(request, str(e))
+    #         return redirect('index')
+    #     friend_request_user_id = request.data.get('from_id')
+    #     try:
+    #         friend_request = FriendRequest.objects.get(from_user_id=friend_request_user_id, to_user_id=user)
+    #     except FriendRequest.DoesNotExist:
+    #         messages.warning(request, "Friend request does not exist.")
+    #         return render(request, "pages/friend.html", {"user": user})
+    #
+    #     if friend_request.to_user != user:
+    #         messages.warning(request, "You cannot accept this friend request.")
+    #         return render(request, "pages/friend.html", {"user": user})
+    #
+    #     if FriendRequest.objects.filter(from_user_id=friend_request_user_id, to_user_id=user,
+    #                                     status='accepted').exists():
+    #         messages.warning(request, "You already accepted this friend request.")
+    #         return render(request, "pages/friend.html", {"user": user})
+    #
+    #     friend_request.status = 'accepted'
+    #     friend_request.save()
+    #
+    #     friend_request.to_user.friends.add(friend_request.from_user)
+    #     friend_request.from_user.friends.add(friend_request.to_user)
+    #     messages.success(request, "Friend request accepted.")
+    #     return render(request, "pages/friend.html", {"user": user})
+    def post(self, request):
+        user = request.user
         friend_request_user_id = request.data.get('from_id')
-        try:
-            friend_request = FriendRequest.objects.get(from_user_id=friend_request_user_id, to_user_id=user)
-        except FriendRequest.DoesNotExist:
-            return Response({'detail': 'Friend request does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+        friend_request = get_object_or_404(FriendRequest, from_user_id=friend_request_user_id, to_user_id=user)
 
         if friend_request.to_user != user:
-            return Response({'detail': 'You cannot accept this friend request.'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"message": "You cannot accept this friend request."}, status=status.HTTP_403_FORBIDDEN)
 
         if FriendRequest.objects.filter(from_user_id=friend_request_user_id, to_user_id=user,
                                         status='accepted').exists():
-            return Response({'detail': 'You already accepted this friend request.'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"message": "You already accepted this friend request."},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         friend_request.status = 'accepted'
         friend_request.save()
 
         friend_request.to_user.friends.add(friend_request.from_user)
         friend_request.from_user.friends.add(friend_request.to_user)
-
-        return Response({'detail': 'Friend request accepted.'}, status=status.HTTP_200_OK)
+        return Response({"message": "Friend request accepted."}, status=status.HTTP_200_OK)
 #
 # # TODO: If necessary, otherwise we stay with pending requests
 # # class DeclineFriendRequestView(APIView):

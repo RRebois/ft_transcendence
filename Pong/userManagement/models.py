@@ -58,7 +58,7 @@ class FriendRequest(models.Model):
         ('declined', 'Declined'),
     ]
     status = models.CharField(max_length=20, choices=status_choices, default="pending")
-    saved_at = models.DateTimeField(auto_now=True)
+    time = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ['from_user', 'to_user']
