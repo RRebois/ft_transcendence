@@ -11,4 +11,4 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(UserData)
 class UserDataAdmin(admin.ModelAdmin):
     list_display = ("get_username", "user_wins", "user_losses",
-                    "user_winrate", "user_elo")
+                    "user_winrate", "user_elo_pong", "user_elo_purrinha")

@@ -1,10 +1,7 @@
-# from userManagement.models import User, UserData
 
 max_quantity = 3
 
 class   PurrinhaGame:
-
-    # players = {}
 
     def __init__(self) -> None:
         self.players = {}
@@ -12,6 +9,9 @@ class   PurrinhaGame:
     def add_player(self, username):
         if username not in self.players:
             self.players[username] = PurrinhaPlayer(username)
+
+    def remove_players(self):
+        self.players.clear()
 
     def remove_player(self, username):
         self.players.pop(username)
@@ -22,21 +22,13 @@ class   PurrinhaGame:
     def get_round_result(self):
         final_value = sum(player.get_quantity() for player in self.players.values())
         result = {"final_value" : final_value}
-        # for v in self.players.values():
-        #     final_value += int(v.get_quantity())
-        # test['final'] = final_value
         result['winner'] = 'tie'
+        result['players'] = list(self.players)
         for k, v in self.players.items():
-            # test.append({k : v.serialize()})
-            result[k] = [{"guess" : v.get_guess()}, {"quantity" : v.get_quantity()}]
-            # result[k + '_q'] = v.get_quantity()
+            result[f"{k}_guess"] = v.get_guess()
+            result[f"{k}_quantity"] = v.get_quantity()
             if v.get_guess() == final_value:
                 result['winner'] = k
-            #     return test
-        #         return {"winner" : k, 'final_v' : final_value}
-        # return {"winner" : "tie", 'final_v' : final_value}
-        # test.append({"soma" : final_value})
-        # test['winner'] = 'tie'
         return result
     
     def get_player_quantity(self, username):
@@ -78,7 +70,3 @@ class   PurrinhaPlayer:
     
     def get_name(self):
         return self.username
-
-    # def restart_values(self):
-    #     self.quantity = -1
-    #     self.guess = -1

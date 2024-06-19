@@ -18,7 +18,7 @@
             const hintMessage = document.createElement('p');
             let text = "";
             for (const tmp in data) {
-                text += tmp + " : " + data[tmp] + "  ";
+                text += tmp + " : " + data[tmp] + "  |||  ";
             }
             hintMessage.textContent = text;
             answerMsg.appendChild(hintMessage);
@@ -51,7 +51,7 @@
         function submitGuess(event) {
             event.preventDefault();
             const guess = document.getElementById('guessInput').value;
-
+            
             fetch('/test/', {
                 method: 'POST',
                 headers: {
@@ -94,7 +94,7 @@
 <form id="quantityForm" onsubmit="submitQuantity(event)">
     {% csrf_token %}
     <label>Quantity:
-        <input type="number" id="quantityInput" name="quantity" required>
+        <input type="number" id="quantityInput" name="quantity" min='0' max='3' required>
     </label>
     <button type="submit">Send Quantity</button>
 </form>
@@ -102,7 +102,7 @@
 <form id="guessForm" style="display: none;" onsubmit="submitGuess(event)">
     {% csrf_token %}
     <label>Guess:
-        <input type="number" id="guessInput" name="guess" required>
+        <input type="number" id="guessInput" name="guess" min='0' max='3' required>
     </label>
     <button type="submit">Send Guess</button>
 </form>
@@ -112,43 +112,4 @@
     <button type="button" onclick="location.reload()">Play again</button>
 </div>
 
-
-
-
-{% comment %} 
-    <h2>Recuperar Nomes e Números</h2>
-    <form id="myForm" method="post" action="{% url 'another_game' %}">
-        {% csrf_token %}
-        <div id="entries">
-            <div class="entry">
-                <label>Username: <input type="text" name="username[]"></label>
-                <label>Quantity: <input type="number" name="quantity[]"></label>
-                <label>Guess: <input type="number" name="guess[]"></label>
-                
-            </div>
-            <div class="entry">
-                <label>Username: <input type="text" name="username[]"></label>
-                <label>Quantity: <input type="number" name="quantity[]"></label>
-                <label>Guess: <input type="number" name="guess[]"></label>
-                
-            </div>
-        </div>
-        <button type="button" onclick="addEntry()">Adicionar Mais</button>
-        <button type="submit">Enviar</button>
-    </form>
-
-    <script>
-        function addEntry() {
-            const entriesDiv = document.getElementById('entries');
-            const newEntry = document.createElement('div');
-            newEntry.classList.add('entry');
-            newEntry.innerHTML = `
-                <label>Username: <input type="text" name="username[]"></label>
-                <label>Quantity: <input type="number" name="quantity[]"></label>
-                <label>Guess: <input type="number" name="guess[]"></label>
-            `;
-            entriesDiv.appendChild(newEntry);
-        }
-    </script> {% endcomment %}
-    
 {% endblock %}
