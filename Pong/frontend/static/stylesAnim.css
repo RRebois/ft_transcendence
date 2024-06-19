@@ -7,7 +7,7 @@
         margin-bottom: 0px;
     }
     100% {
-        opacity: 0;
+        opacity: 1;
         height: 100%;
         line-height: 100%;
     }

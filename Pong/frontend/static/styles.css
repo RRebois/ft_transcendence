@@ -150,14 +150,14 @@
     animation-name: display;
     animation-duration: 1s;
     animation-fill-mode: forwards;
-    animation-state-play: "paused";
+    animation-play-state: "paused";
 }
 
 .displayAnimImg {
     animation-name: displayImg;
     animation-duration: 1s;
     animation-fill-mode: forwards;
-    animation-state-play: "paused";
+    animation-play-state: "paused";
 }
 
 .rmAnimImg {
@@ -165,7 +165,7 @@
     animation-duration: 1s;
     animation-direction: reverse;
     animation-fill-mode: forwards;
-    animation-state-play: "paused";
+    animation-play-state: "paused";
 }
 
 .rmAnim {
@@ -173,7 +173,11 @@
     animation-duration: 1s;
     animation-direction: reverse;
     animation-fill-mode: forwards;
-    animation-state-play: "paused";
+    animation-play-state: "paused";
+}
+
+.infoDiv {
+    text-align: center;
 }
 
 .infoKey {
@@ -181,8 +185,14 @@
     font-weight: bold;
     text-decoration: underline;
     min-width: fit-content;
-    width: 200px;
-    text-align: center;
+}
+
+.infoValue {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-flex;
+    white-space: nowrap;
 }
 
 .play-regular {
