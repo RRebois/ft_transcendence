@@ -11,17 +11,16 @@ ft_transcendence
 
 {% block body %}
 
-{% if messages %}
-    <ul class="messages" id="messagesContainer">
-        {% for message in messages %}
-            <div {% if message.tags %} class="alertSize alert alert-{{ message.tags }}"
-                {% else %} class="alertSize alert alert-secondary" {% endif %} role="alert">{{ message }}</div>
-        {% endfor %}
-    </ul>
-{% endif %}
+<ul class="messages" id="messagesContainer">
+    {% for message in messages %}
+        <div {% if message.tags %} class="alertSize alert alert-{{ message.tags }}"
+            {% else %} class="alertSize alert alert-secondary" {% endif %} role="alert">{{ message }}</div>
+    {% endfor %}
+</ul>
 
 {% if user.is_authenticated %}
 
+<!--<div class="alertSize alert alert-{{ message.tags }}" id="message" style="margin-top: 0px;"></div>-->
 <div class="w-100 h-100 d-flex flex-column justify-content-center align-items-center">
     <form action="{% url 'send_friend' %}" method="post"
           class="friendPage bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card"
@@ -62,13 +61,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 friendRequestItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px';
                 friendRequestItem.innerHTML = `
                         <div class="d-flex w-100 justify-content-between">
-                            <h5 class="mb-1">${request.from_user__username}</h5>
-                            <small>${new Date(request.time).toLocaleString()}</small>
+                            <h5 class="mb-1">From: ${request.from_user__username}</h5>
+                            <p class="mb-1">Sent: ${new Date(request.time).toLocaleString()}</p>
                         </div>
-                        <p class="mb-1">Games played</p>
                         <p class="mb-1">Status: ${request.status}</p>
-                        <button type="button" class="acceptBtn btn btn-primary" style="background: #209920; border-color: #209920"
-                                data-id="${request.from_user_id}">Accept</button>
+                        <div class="buttonsContainer" style="">
+                            <button type="button" class="acceptBtn btn btn-primary" style="background: #209920; border-color: #040303"
+                                    data-id="${request.from_user_id}">Accept</button>
+                            <button type="button" class="declineBtn btn btn-primary" style="background: #e3031c; border-color: #040303"
+                                    data-id="${request.from_user_id}">Decline</button>
+                        </div>
                 `;
                 friendRequestContainer.appendChild(friendRequestItem);
             });
@@ -85,21 +87,65 @@ document.addEventListener("DOMContentLoaded", function() {
                         body: JSON.stringify({ from_id: from_id })
                     })
                     .then(response => {
+                        return response.json().then(data => {
+                            if (response.ok) {
+                                this.innerText = 'Accepted';
+                                this.classList.remove('btn-primary');
+                                this.style.background = '';
+                                this.classList.add('btn-success', 'acceptedBtn');
+                                this.disabled = true;
+                                if (data.level && data.message) {
+                                    displayMessage(data.message, data.level);
+                                }
+                            } else {
+                                throw new Error(data.message || 'Unknown error occurred.');
+                            }
+                        });
+                    })
+                    .catch(error => console.error('Error accepting friend request:', error));
+                });
+            });
+
+            document.querySelectorAll('.declineBtn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const from_id = this.getAttribute('data-id');
+                    fetch(`decline_friend`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({ from_id: from_id })
+                    })
+                    .then(response => {
                         if (response.ok) {
-                            // Optionally, update the UI to show the request was accepted
-                            this.innerText = 'Accepted';
+                            this.innerText = 'Declined';
                             this.classList.remove('btn-primary');
-                            this.classList.add('btn-success');
+                            this.style.background = ''
+                            this.classList.add('acceptedBtn');
+                            this.disabled = true;
                         } else {
                             return response.json().then(data => { throw new Error(data.message); });
                         }
                     })
-                    .catch(error => console.error('Error accepting friend request:', error));
+                    .catch(error => console.error('Error declining friend request:', error));
                 });
             });
         })
         .catch(error => console.error('Error fetching friend requests:', error));
     })
+
+function displayMessage(message, level) {
+        const messagesContainer = document.getElementById('messagesContainer');
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alertSize alert alert-${level}`;
+        alertDiv.role = 'alert';
+        alertDiv.innerText = message;
+        messagesContainer.appendChild(alertDiv);
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
 </script>
 
 <!--<script>-->

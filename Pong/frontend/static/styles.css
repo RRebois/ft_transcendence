@@ -254,6 +254,18 @@ gap-1-5 {
     float: right;
 }
 
+.acceptedBtn {
+    background-color: #555f57;
+    border-color: black;
+    cursor: not-allowed;
+}
+
+.buttonsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
 .p {
     margin-bottom: 0;
 }

@@ -534,8 +534,9 @@ class SendFriendRequestView(APIView):
             return render(request, "pages/friend.html", {"user": user})
 
         FriendRequest.objects.create(from_user=user, to_user=to_user)
-        messages.success(request, "Friend request sent.")
-        return render(request, "pages/friend.html", {"user": user})
+        message = "Friend request sent."
+        # return render(request, "pages/friend.html", {"user": user})
+        return JsonResponse({"message": message, "user": user})
 
     def get(self, request):
         try:
@@ -555,41 +556,12 @@ class GetFriendRequestView(APIView):
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
             return redirect('index')
-        friendRequests = FriendRequest.objects.filter(to_user=user).values('from_user__username', 'time', 'status', 'from_user_id')
+        friendRequests = FriendRequest.objects.filter(to_user=user, status='pending').values('from_user__username', 'time', 'status', 'from_user_id')
         return JsonResponse(list(friendRequests), safe=False)
 
 
 @method_decorator(csrf_protect, name='dispatch')
 class AcceptFriendRequestView(APIView):
-    # def post(self, request):
-    #     try:
-    #         user = authenticate_user(request)
-    #     except AuthenticationFailed as e:
-    #         messages.warning(request, str(e))
-    #         return redirect('index')
-    #     friend_request_user_id = request.data.get('from_id')
-    #     try:
-    #         friend_request = FriendRequest.objects.get(from_user_id=friend_request_user_id, to_user_id=user)
-    #     except FriendRequest.DoesNotExist:
-    #         messages.warning(request, "Friend request does not exist.")
-    #         return render(request, "pages/friend.html", {"user": user})
-    #
-    #     if friend_request.to_user != user:
-    #         messages.warning(request, "You cannot accept this friend request.")
-    #         return render(request, "pages/friend.html", {"user": user})
-    #
-    #     if FriendRequest.objects.filter(from_user_id=friend_request_user_id, to_user_id=user,
-    #                                     status='accepted').exists():
-    #         messages.warning(request, "You already accepted this friend request.")
-    #         return render(request, "pages/friend.html", {"user": user})
-    #
-    #     friend_request.status = 'accepted'
-    #     friend_request.save()
-    #
-    #     friend_request.to_user.friends.add(friend_request.from_user)
-    #     friend_request.from_user.friends.add(friend_request.to_user)
-    #     messages.success(request, "Friend request accepted.")
-    #     return render(request, "pages/friend.html", {"user": user})
     def post(self, request):
         try:
             user = authenticate_user(request)
@@ -617,7 +589,7 @@ class AcceptFriendRequestView(APIView):
 
         friend_request.to_user.friends.add(friend_request.from_user)
         friend_request.from_user.friends.add(friend_request.to_user)
-        return Response({"message": "Friend request accepted."}, status=status.HTTP_200_OK)
+        return JsonResponse({"message": "Friend request accepted.", "level": "success"}, status=status.HTTP_200_OK)
 #
 # # TODO: If necessary, otherwise we stay with pending requests
 # # class DeclineFriendRequestView(APIView):

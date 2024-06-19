@@ -63,6 +63,9 @@ class FriendRequest(models.Model):
     class Meta:
         unique_together = ['from_user', 'to_user']
 
+    def get_to_user(self):
+        return self.from_user.username
+
 
 class UserData(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
