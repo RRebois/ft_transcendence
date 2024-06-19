@@ -19,6 +19,9 @@ from rest_framework.views import APIView
 import pyotp
 import jwt
 import requests
+import logging
+
+logger = logging.getLogger(__name__)
 
 from .models import *
 from .forms import *
@@ -280,9 +283,9 @@ class UserPersonalInformationView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class EditDataView(APIView):
-    serializer_class = RegisterSerializer
+    serializer_class = EditUserSerializer
 
-    def post(self, request):
+    def put(self, request):
         user_data = request.data
         user = authenticate_user(request)
 
@@ -291,13 +294,11 @@ class EditDataView(APIView):
             return render(request, "pages/index.html")
 
         serializer = self.serializer_class(user, data=user_data, partial=True)
-        if serializer.is_valid():
-            try:
-                user = serializer.save()
-                return Response({"success": True})
-            except IntegrityError:
-                return Response({"success": False, "errors": ["Username and/or email already taken."]})
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response({"success": True})
         else:
+            logger.error("Validation errors: {serializer.errors}")
             return Response({"success": False, "errors": serializer.errors})
 
 

@@ -61,19 +61,19 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         return user
 
-    def update(self, instance, validated_data):
-        if 'email' in validated_data:
-            instance.set_email(validated_data['email'])
-        if 'first_name' in validated_data:
-            instance.set_first_name(validated_data['first_name'])
-        if 'last_name' in validated_data:
-            instance.set_last_name(validated_data['last_name'])
-        if 'username' in validated_data:
-            instance.set_username(validated_data['username'])
-        if 'password' in validated_data:
-            instance.set_password(validated_data['password'])
-        instance.save()
-        return instance
+    # def update(self, instance, validated_data):
+    #     if 'email' in validated_data:
+    #         instance.set_email(validated_data['email'])
+    #     if 'first_name' in validated_data:
+    #         instance.set_first_name(validated_data['first_name'])
+    #     if 'last_name' in validated_data:
+    #         instance.set_last_name(validated_data['last_name'])
+    #     if 'username' in validated_data:
+    #         instance.set_username(validated_data['username'])
+    #     if 'password' in validated_data:
+    #         instance.set_password(validated_data['password'])
+    #     instance.save()
+    #     return instance
 
 
 class Register42Serializer(serializers.ModelSerializer):
@@ -120,12 +120,11 @@ class LoginSerializer(serializers.ModelSerializer):
         }
 
 
-class UserSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(max_length=255, allow_empty_file=False, use_url=True, required=False)
+class EditUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'image']
+        fields = ['username', 'first_name', 'last_name', 'email']
         extra_kwargs = {
             'username': {'required': False},
             'first_name': {'required': False},
@@ -133,28 +132,34 @@ class UserSerializer(serializers.ModelSerializer):
             'image': {'required': False},
         }
 
-    def validate_image(self, value):
-        # checking extension
-        valid_extension = ['jpg', 'jpeg', 'png', 'gif']
-        ext = os.path.splitext(value.name)[1][1:].lower()
-        if ext not in valid_extension:
-            raise serializers.ValidationError("Only jpg/jpeg and png files are allowed")
+    def validate(self, attrs):
+        pattern = re.compile("^[a-zA-Z]+([ '-][a-zA-Z]+)*$")
+        pattern_username = re.compile("^[a-zA-Z]+(-[a-zA-Z]+)*$")
 
-        # checking file content, that it matches the format given
-        try:
-            img = Image.open(value)
-            if img.format not in ['JPEG', 'PNG']:
-                raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
-        except Exception as e:
-            raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
+        first = attrs.get('first_name', '')
+        if not pattern.match(first):
+            raise serializers.ValidationError(
+                "All characters of first name must be alphabetic characters. Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
+
+        last = attrs.get('last_name', '')
+        if not pattern.match(last):
+            raise serializers.ValidationError(
+                "All characters of last name must be alphabetic characters. Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
+
+        username = attrs.get('username', '')
+        if not pattern_username.match(username):
+            raise serializers.ValidationError("Username must be alphanumeric only.")
+
+        return attrs
 
     def update(self, instance, validated_data):
         instance.username = validated_data.get('username', instance.username)
         instance.first_name = validated_data.get('first_name', instance.first_name)
         instance.last_name = validated_data.get('last_name', instance.last_name)
-        instance.image = validated_data.get('image', instance.image)
+        instance.email = validated_data.get('email', instance.email)
 
         instance.save()
+        return instance
 
 
 class PasswordChangeSerializer(serializers.Serializer):

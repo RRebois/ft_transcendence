@@ -180,6 +180,9 @@
     margin-right: 5px;
     font-weight: bold;
     text-decoration: underline;
+    min-width: fit-content;
+    width: 200px;
+    text-align: center;
 }
 
 .play-regular {
