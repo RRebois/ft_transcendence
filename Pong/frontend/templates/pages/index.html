@@ -12,7 +12,7 @@ ft_transcendence
 {% block body %}
 
 {% if messages %}
-    <ul class="messages">
+    <ul class="messages" id="messagesContainer">
         {% for message in messages %}
             <div {% if message.tags %} class="alertSize alert alert-{{ message.tags }}"
                 {% else %} class="alertSize alert alert-secondary" {% endif %} role="alert">{{ message }}</div>

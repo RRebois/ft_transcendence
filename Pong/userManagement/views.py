@@ -555,7 +555,7 @@ class GetFriendRequestView(APIView):
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
             return redirect('index')
-        friendRequests = FriendRequest.objects.filter(to_user=user).values('from_user__username', 'time', 'status')
+        friendRequests = FriendRequest.objects.filter(to_user=user).values('from_user__username', 'time', 'status', 'from_user_id')
         return JsonResponse(list(friendRequests), safe=False)
 
 
@@ -591,16 +591,24 @@ class AcceptFriendRequestView(APIView):
     #     messages.success(request, "Friend request accepted.")
     #     return render(request, "pages/friend.html", {"user": user})
     def post(self, request):
-        user = request.user
-        # friend_request_user = request.data.get('from_id')
-        friend_request_user_id = user.id
-        friend_request = get_object_or_404(FriendRequest, from_user_id=friend_request_user_id, to_user_id=user)
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+                messages.warning(request, str(e))
+                return redirect('index')
+        friend_request_user_id = request.data.get('from_id')
+        try:
+            friend_request = FriendRequest.objects.get(from_user=friend_request_user_id, to_user=user)
+        except FriendRequest.DoesNotExist as e:
+                messages.warning(request, str(e))
+                return redirect('index')
 
         if friend_request.to_user != user:
             return Response({"message": "You cannot accept this friend request."}, status=status.HTTP_403_FORBIDDEN)
 
         if FriendRequest.objects.filter(from_user_id=friend_request_user_id, to_user_id=user,
                                         status='accepted').exists():
+            messages.warning(request, "You already accepted this friend request.")
             return Response({"message": "You already accepted this friend request."},
                             status=status.HTTP_400_BAD_REQUEST)
 

@@ -12,7 +12,7 @@ ft_transcendence
 {% block body %}
 
 {% if messages %}
-    <ul class="messages">
+    <ul class="messages" id="messagesContainer">
         {% for message in messages %}
             <div {% if message.tags %} class="alertSize alert alert-{{ message.tags }}"
                 {% else %} class="alertSize alert alert-secondary" {% endif %} role="alert">{{ message }}</div>
@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         <p class="mb-1">Games played</p>
                         <p class="mb-1">Status: ${request.status}</p>
                         <button type="button" class="acceptBtn btn btn-primary" style="background: #209920; border-color: #209920"
-                                data-id="${request.from_user__username}">Accept</button>
+                                data-id="${request.from_user_id}">Accept</button>
                 `;
                 friendRequestContainer.appendChild(friendRequestItem);
             });
