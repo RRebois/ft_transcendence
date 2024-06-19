@@ -153,6 +153,9 @@ class Login42RedirectView(APIView):
             return HttpResponseRedirect(reverse("index"))
         try:
             user = User.objects.get(email=user42["email"])
+            if not user.stud42:
+                messages.warning(request, "e-mail already taken.")
+                return HttpResponseRedirect(reverse("index"))
         except User.DoesNotExist:
             try:
                 serializer = self.serializer_class(user42)
