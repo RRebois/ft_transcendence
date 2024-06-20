@@ -248,6 +248,7 @@ gap-1-5 {
     width: 50%;
     align-items: center;
     text-align: center;
+    margin-bottom: 10px;
 }
 
 .acceptBtn {

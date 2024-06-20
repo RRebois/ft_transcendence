@@ -17,6 +17,7 @@
             crossorigin="anonymous"></script>
     <script src="{% static 'userProfile.js' %}"></script>
     <script src="{% static 'userDataPage.js' %}"></script>
+    <script src="{% static 'friendsPage.js' %}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
@@ -53,8 +54,8 @@
             <div class="dropdown-menu dropdown-menu-start">
                 <a class="dropdown-item button" onclick="load_profile_page('{{ user.username }}')" href="" id="profile">Profile</a>
                 <a class="dropdown-item button" onclick="load_stats_page('{{ user.username }}')" href="" id="statsPage">Stats</a>
-                <a class="dropdown-item button" href="{% url 'send_friend' %}" id="friendsPage">Friends</a>
-<!--                <a class="dropdown-item button" onclick="load_friends_page('{{ user.username }}')" href="" id="friendsPage">Friends</a>-->
+<!--                <a class="dropdown-item button" href="{% url 'send_friend' %}" id="friendsPage">Friends</a>-->
+                <a class="dropdown-item button" onclick="load_friends_page('{{ user.username }}')" href="" id="friendsPage">Friends</a>
             </div>
         </div>
 
