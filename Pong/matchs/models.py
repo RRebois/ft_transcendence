@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
-from .manager import MatchManager
 # Create your models here.
 
 
@@ -14,7 +13,6 @@ class Match(models.Model):
     timeMatch = models.DateTimeField(auto_now_add=True)
     #timeMatchEnded?changethe auto now to blank = null and value will be added when match ends
 
-    objects = MatchManager()
 
     class Meta:
         ordering = ['-timeMatch']
