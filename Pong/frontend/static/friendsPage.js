@@ -73,6 +73,30 @@ function load_friends_page(username) {
     friendRequestContainer.classList.add('friendPage');
     globalContainer.appendChild(friendRequestContainer);
 
+    document.querySelectorAll('.sendReqBtn').forEach(button => {
+        button.addEventListener('click', function () {
+            const from_id = this.getAttribute('data-id');
+            fetch('send_friend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+                body: JSON.stringify({from_id: from_id})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (response.ok) {
+                        if (data.level && data.message) {
+                            displayMessage(data.message, data.level);
+                        }
+                    } else {
+                        throw new Error(data.message || 'Unknown error occurred.');
+                    }
+                })
+        });
+    });
+
     fetch('get_friend_requests')
         .then(response => response.json())
         .then(data => {
@@ -104,26 +128,27 @@ function load_friends_page(username) {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRFToken': '{{ csrf_token }}'
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                         },
                         body: JSON.stringify({from_id: from_id})
                     })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (response.ok) {
-                                this.innerText = 'Accepted';
-                                this.classList.remove('btn-primary');
-                                this.style.background = '';
-                                this.classList.add('btn-success', 'acceptedBtn');
-                                this.disabled = true;
-                                if (data.level && data.message) {
-                                    displayMessage(data.message, data.level);
-                                }
-                            } else {
-                                throw new Error(data.message || 'Unknown error occurred.');
+                    .then(response => {
+                        return response.json().then(data => ({ status: response.status, data: data }));
+                    })
+                    .then(({ status, data }) => {
+                        if (status === 200) {
+                            this.innerText = 'Accepted';
+                            this.classList.remove('btn-primary');
+                            this.style.background = '';
+                            this.classList.add('btn-success', 'acceptedBtn');
+                            this.disabled = true;
+                            if (data.level && data.message) {
+                                displayMessage(data.message, data.level);
                             }
-                        })
-                        .catch(error => console.error('Error accepting friend request:', error));
+                        } else {
+                            throw new Error(data.message || 'Unknown error occurred.');
+                        }
+                    })
                 });
             });
 
@@ -134,7 +159,7 @@ function load_friends_page(username) {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRFToken': '{{ csrf_token }}'
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                         },
                         body: JSON.stringify({from_id: from_id})
                     })

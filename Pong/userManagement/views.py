@@ -527,7 +527,6 @@ class SendFriendRequestView(APIView):
 
         if FriendRequest.objects.filter(from_user=user, to_user=to_user).exists():
             message = "Friend request already sent."
-            # return render(request, "pages/friend.html", {"user": user})
             return JsonResponse({"message": message, "user": user.serialize()})
 
         if FriendRequest.objects.filter(from_user=to_user, to_user=user, status='pending').exists():
@@ -536,18 +535,7 @@ class SendFriendRequestView(APIView):
 
         FriendRequest.objects.create(from_user=user, to_user=to_user)
         message = "Friend request sent."
-        # return render(request, "pages/friend.html", {"user": user})
         return JsonResponse({"message": message, "user": user.serialize(), "level": "success"}, status=status.HTTP_200_OK)
-
-    # def get(self, request):
-    #     try:
-    #         user = authenticate_user(request)
-    #     except AuthenticationFailed as e:
-    #         messages.warning(request, str(e))
-    #         return redirect('index')
-    #     return render(request, "pages/friend.html", {
-    #         "user": user
-    #     })
 
 
 class GetFriendRequestView(APIView):

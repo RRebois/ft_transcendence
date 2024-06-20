@@ -3,6 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Transcendence{% endblock %}</title>
     <link href="{% static 'styles.css' %}" rel="stylesheet">
@@ -99,24 +100,30 @@
 {% endif %}
 
 <div id="content" class="h-100">
+    <ul class="messages" id="messagesContainer">
+        {% for message in messages %}
+            <div {% if message.tags %} class="alertSize alert alert-{{ message.tags }}"
+                {% else %} class="alertSize alert alert-secondary" {% endif %} role="alert">{{ message }}</div>
+        {% endfor %}
+    </ul>
     {% block body %}
     {% endblock %}
 </div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        setTimeout(function() {
-            let messages = document.querySelectorAll('.messages');
-            messages.forEach(function(message) {
-                message.style.transition = 'opacity 0.5s ease-out';
-                message.style.opacity = '0';
-                setTimeout(function() {
-                    message.remove();
-                }, 500);
-            });
-        }, 5000);
-    });
-</script>
+<!--<script>-->
+<!--    document.addEventListener("DOMContentLoaded", function() {-->
+<!--        setTimeout(function() {-->
+<!--            let messages = document.querySelectorAll('.messages');-->
+<!--            messages.forEach(function(message) {-->
+<!--                message.style.transition = 'opacity 0.5s ease-out';-->
+<!--                message.style.opacity = '0';-->
+<!--                setTimeout(function() {-->
+<!--                    message.remove();-->
+<!--                }, 500);-->
+<!--            });-->
+<!--        }, 5000);-->
+<!--    });-->
+<!--</script>-->
 
 </body>
 </html>
