@@ -32,16 +32,10 @@ class MatchScoreView(APIView):
 
         return JsonResponse(game.serialize())
 
-# @method_decorator(csrf_protect, name='dispatch')
-# @method_decorator(login_required(login_url='login'), name='dispatch')
+
 def create_match(match_result, winner, is_pong=True):
     match = Match.objects.create(is_pong=is_pong, score=match_result)
     game = 0 if is_pong else 1
-    '''
-    {
-        player : score
-    }
-    '''
 
     for player_username in match_result.keys():
         player = User.objects.get(username=player_username)

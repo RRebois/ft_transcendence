@@ -1,20 +1,14 @@
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import render
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django.urls import reverse
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from random import randint
-import requests
 import json
 
 from userManagement.models import User, UserData
 from userManagement.views import authenticate_user
-# from matchs.manager import MatchManager
-# from matchs.models import Match
 from matchs.views import create_match
 from .game import *
 
@@ -22,7 +16,6 @@ from .game import *
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class   AnotherGameView(APIView):
     match = PurrinhaGame()
-    # manager = MatchManager
     
     def update_results(self, result):
 
@@ -30,32 +23,6 @@ class   AnotherGameView(APIView):
         for player in result['players']:
             match_result[player] = 1 if player == result else 0
         create_match(match_result=match_result, winner=result['winner'], is_pong=False)
-        # # winner = result['winner'] if result['winner'] != 'tie' else None
-        # # if 'bot' in result['players']:
-        # #     result['players'].remove('bot')
-        # # creator = self.manager()
-        # score = [0, 1]
-        # match = Match.objects.create(game=False, score=score)
-        # # match.game = False
-        # # match.score = score
-        # for player_username in result['players']:
-        #     player = User.objects.get(username=player_username)
-        #     if player_username == result['winner']:
-        #         match.winner = player
-        #     match.players.add(player)
-        # match.save()
-        # # creator.create_match(players=result['players'], winner=winner, is_pong=False, score=score)
-        # # return test.serialize()
-        # # if winner:
-        # for player in result['players']:
-        #     # if player != 'bot':
-        #     user_data = UserData.objects.get(user_id=User.objects.get(username=player))
-        #     if result['winner'] == player:
-        #         user_data.user_wins[1] += 1
-        #     else:
-        #         user_data.user_losses[1] += 1
-        #     user_data.user_winrate[1] = user_data.user_wins[1] / (user_data.user_wins[1] + user_data.user_losses[1])
-        #     user_data.save()
 
     def post(self, request):
         user = authenticate_user(request)
