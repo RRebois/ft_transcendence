@@ -84,7 +84,7 @@
                        required>
                 <span class="helper_txt">Password must be at least 8 characters
                     and contain 1 digit, 1 lowercase, and 1 uppercase.</span>
-                {% if errors.first_name %}
+                {% if errors.password %}
                     <p class="invalidColor">{{ errors.password.0 }}</p>
                 {% endif %}
                 <div class="valid-feedback validColor">Looks good!</div>

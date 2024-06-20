@@ -67,11 +67,12 @@ class FriendRequest(models.Model):
 
 class UserData(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    user_wins = models.IntegerField(default=0)
-    user_losses = models.IntegerField(default=0)
-    user_winrate = models.FloatField(default=0)
-    user_elo = ArrayField(models.IntegerField(), default=[900])
-    user_highest = models.IntegerField(default=900)
+    user_wins = ArrayField(models.IntegerField(), default=[0, 0])
+    user_losses = ArrayField(models.IntegerField(), default=[0, 0])
+    user_winrate = ArrayField(models.FloatField(), default=[0, 0])
+    user_elo_pong = ArrayField(models.IntegerField(), default=[900])
+    user_elo_purrinha = ArrayField(models.IntegerField(), default=[900])
+    user_highest = ArrayField(models.IntegerField(), default=[900, 900])
 
     def serialize(self):
         return {
@@ -79,7 +80,8 @@ class UserData(models.Model):
             "wins": self.user_wins,
             "losses": self.user_losses,
             "winrate": self.user_winrate,
-            "elo": self.user_elo,
+            "elo_pong": self.user_elo_pong,
+            "elo_purrinha": self.user_elo_purrinha,
             "elo_highest": self.user_highest,
         }
 
