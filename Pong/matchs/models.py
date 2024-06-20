@@ -28,6 +28,6 @@ class Match(models.Model):
                 }
                 for User in self.players.all()
                 ],
-            "winner": self.winner.username if self.winner else None,
+            "winner": self.winner.username,
             "timestamp": self.timeMatch.strftime("%b %d %Y, %I:%M %p"),
         }

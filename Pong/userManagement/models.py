@@ -45,7 +45,8 @@ class User(AbstractUser):
             "Last name": self.last_name,
             "Email": self.email,
             "Username": self.username,
-            "stud42": self.stud42
+            "stud42": self.stud42,
+            "2fa": self.tfa_activated,
         }
 
 

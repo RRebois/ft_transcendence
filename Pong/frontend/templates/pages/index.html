@@ -7,6 +7,9 @@ ft_transcendence
 
 {% block script %}
     <script src="{% static 'forgotPW.js' %}"></script>
+    <script src="{% static 'userProfile.js' %}"></script>
+    <script src="{% static 'userDataPage.js' %}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 {% endblock %}
 
 {% block body %}
@@ -24,7 +27,10 @@ ft_transcendence
 
 <div id="greetings">Hello {{user.username}} 😳👉👈</div>
 
-<div class="container" id="mainDiv">
+<div class="container" id="statsDiv">
+</div>
+
+<div class="container" id="userDataDiv">
 </div>
 
 {% else %}

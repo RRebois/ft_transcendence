@@ -19,7 +19,7 @@ function reset_password() {
     var parentForm = document.getElementById("loginForm");
 
     parentForm.id = "formForgotPW";
-    parentForm.action = "/reset_password"
+    parentForm.action = "/reset_password";
     parent.querySelectorAll('div').forEach(child => child.remove());
     parent.querySelectorAll('button').forEach(child => child.remove());
 
