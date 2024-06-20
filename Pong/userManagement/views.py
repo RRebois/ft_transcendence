@@ -470,14 +470,6 @@ class Security2FAView(APIView):
             except Exception as e:
                 return Response({"success": False, "error": str(e)}, status=500)
 
-    def get(self, request):
-        try:
-            user = authenticate_user(request)
-        except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return redirect('index')
-        return render(request, "pages/2FA.html", {"user": user})
-
 
 @method_decorator(csrf_protect, name='dispatch')
 class VerifyOTPView(APIView):

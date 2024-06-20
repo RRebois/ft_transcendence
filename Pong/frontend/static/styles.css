@@ -78,6 +78,15 @@
     border-bottom: 2px solid black;
 }
 
+.QRcss {
+    max-height: 100px;
+    min-height: 100px;
+    max-width: 100px;
+    min-width: 100px;
+    margin: auto;
+    width: 50%;
+}
+
 .expander {
     display: inline-block;
 }

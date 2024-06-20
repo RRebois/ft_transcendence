@@ -78,10 +78,15 @@ function    display_user_data(element) {
                     const   togDiv = document.createElement('div');
                     togDiv.className = 'form-check form-switch';
 
+                    togDiv.style.margin = 'auto';
+                    togDiv.style.width = '50%';
+
                     const   togLabel = document.createElement('label');
                     togLabel.setAttribute('for', 'flexSwitchCheckDefault');
                     togLabel.className = "form-check-label";
                     togLabel.setAttribute('id', 'togLab');
+                    togLabel.style.textAlign = 'center';
+                    togLabel.style.width = '100%';
 
                     const   togInput = document.createElement('input');
                     togInput.setAttribute('type', 'checkbox');
@@ -97,6 +102,7 @@ function    display_user_data(element) {
                         togInput.checked = false;
                         togLabel.innerHTML = "2FA Deactivated."
                     }
+                    togLabel.style.width = 'fit-content';
                     let new2fa = key2fa;
                     togInput.addEventListener('click', () => {
                         new2fa = !new2fa;
@@ -118,11 +124,19 @@ function    display_user_data(element) {
                                 displayMessage(data.message, "success");
                             if (new2fa) {
                                 togInput.checked = true;
-                                togLabel.innerHTML = "2FA Activated.";
+                                togLabel.innerHTML = "2FA activated.";
+                                const   QR = document.createElement('div');
+                                QR.setAttribute('id', 'QRcode');
+                                QR.classList.add('QRcss');
+                                QR.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?data=' + encodeURIComponent(data.qr_url) + '&size=100x100" alt="QR Code" />';
+                                togDiv.append(QR);
                             }
                             else {
                                 togInput.checked = false;
-                                togLabel.innerHTML = "2FA Deactivated."
+                                togLabel.innerHTML = "2FA deactivated."
+                                const rmQR = document.querySelector('#QRcode');
+                                if (rmQR != null)
+                                    rmQR.remove();
                             }
                         })
                         .catch(error => {
@@ -182,7 +196,6 @@ function    display_user_data(element) {
         else {
             // Select div displaying infos
             var divRM = document.getElementById(element.parentElement.parentElement.id + "Child");
-
             // Add animation class
             divRM.classList.add("rmAnim");
 

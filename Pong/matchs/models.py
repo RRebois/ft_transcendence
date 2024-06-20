@@ -20,14 +20,14 @@ class Match(models.Model):
     def serialize(self):
         return {
             'id': self.id,
-            'game' : 'Pong' if self.is_pong else 'Purrinha',
+            'game': 'Pong' if self.is_pong else 'Purrinha',
             "players": [
                 {
                     'username': User['username'],
                     'score': self.score[User['username']],
                 }
                 for User in self.players.all()
-                ],
+            ],
             "winner": self.winner.username,
             "timestamp": self.timeMatch.strftime("%b %d %Y, %I:%M %p"),
         }

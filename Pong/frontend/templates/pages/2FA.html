@@ -46,7 +46,7 @@
                 success: function(response) {
                     if (response.qr_url) {
                         var qrCodeDiv = $('#QRcode');
-                        qrCodeDiv.html('<img src="https://api.qrserver.com/v1/create-qr-code/?data=' + encodeURIComponent(response.qr_url) + '&size=200x200" alt="QR Code" />');
+                        qrCodeDiv.html('<img src="https://api.qrserver.com/v1/create-qr-code/?data=' + encodeURIComponent(response.qr_url) + '&size=2000x200" alt="QR Code" />');
                         qrCodeDiv.show();
                     }
                     if (response.message) {
