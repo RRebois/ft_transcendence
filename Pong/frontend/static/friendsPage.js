@@ -12,7 +12,7 @@ function load_friends_page(username) {
     document.getElementById('greetings').style.display = 'none';
 
     const globalContainer = document.createElement('div');
-    const sendRequest = document.createElement('form');
+    const sendRequestForm = document.createElement('form');
     const sendReqTitle = document.createElement('h1');
     const sendReqUserBar = document.createElement('div');
     const sendReqLabel = document.createElement('label');
@@ -23,15 +23,15 @@ function load_friends_page(username) {
     const sendReqBtn = document.createElement('button');
 
     globalContainer.className = "w-100 h-100 d-flex flex-column justify-content-center align-items-center";
-    globalContainer.appendChild(sendRequest);
+    globalContainer.appendChild(sendRequestForm);
 
-    sendRequest.className = "friendPage bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card";
-    sendRequest.action = "{% url 'send_friend' %}";
-    sendRequest.method = 'post';
-    sendRequest.style.cssText = "--bs-bg-opacity: .5;";
-    sendRequest.id = "addFriend"
-    sendRequest.appendChild(sendReqTitle);
-    sendRequest.appendChild(sendReqUserBar);
+    sendRequestForm.className = "friendPage bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card";
+    // sendRequestForm.action = "{% url 'send_friend' %}";
+    // sendRequestForm.method = 'post';
+    sendRequestForm.style.cssText = "--bs-bg-opacity: .5;";
+    sendRequestForm.id = "addFriend"
+    sendRequestForm.appendChild(sendReqTitle);
+    sendRequestForm.appendChild(sendReqUserBar);
 
     sendReqTitle.className = "text-justify play-bold";
     sendReqTitle.innerText = "Add a friend";
@@ -73,29 +73,34 @@ function load_friends_page(username) {
     friendRequestContainer.classList.add('friendPage');
     globalContainer.appendChild(friendRequestContainer);
 
-    document.querySelectorAll('.sendReqBtn').forEach(button => {
-        button.addEventListener('click', function () {
-            const from_id = this.getAttribute('data-id');
-            fetch('send_friend', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
-                body: JSON.stringify({from_id: from_id})
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (response.ok) {
-                        if (data.level && data.message) {
-                            displayMessage(data.message, data.level);
-                        }
-                    } else {
-                        throw new Error(data.message || 'Unknown error occurred.');
-                    }
-                })
-        });
+    sendReqBtn.addEventListener('click', () => {
+        const formData = {
+        'username': document.getElementById('sendReqInput').value
+        // 'username': document.getElementById('username').value
+        }
+        fetch('send_friend', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            return response.json().then(data => ({ status: response.status, data: data }));
+        })
+        .then(({ status, data }) => {
+            if (status === 200) {
+                if (data.level && data.message) {
+                    displayMessage(data.message, data.level);
+                }
+            } else {
+                throw new Error(data.message || 'Unknown error occurred.');
+            }
+        })
+        event.preventDefault();
     });
+
 
     fetch('get_friend_requests')
         .then(response => response.json())

@@ -545,7 +545,8 @@ class GetFriendRequestView(APIView):
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
             return redirect('index')
-        friendRequests = FriendRequest.objects.filter(to_user=user, status='pending').values('from_user__username', 'time', 'status', 'from_user_id')
+        friendRequests = (FriendRequest.objects.filter(to_user=user, status='pending').
+                          values('from_user__username', 'time', 'status', 'from_user_id'))
         return JsonResponse(list(friendRequests), safe=False)
 
 
