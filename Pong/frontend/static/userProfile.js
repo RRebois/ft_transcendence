@@ -1,25 +1,27 @@
 document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', () => {
         const element = event.target;
-        display_user_data(element);
+        if (element.classList.contains("fa-square-caret-down") || element.classList.contains("fa-square-caret-up"))
+            display_user_data(element);
     });
 })
-
+// a remodifier, mettre les fetchs dans le if square caret down pour pas fetch si on close els onglets
 function    display_user_data(element) {
+    // fetch user_connected and all of his information
     if (element.classList.contains("fa-square-caret-down"))
     {
-        // Create expand div
-        const   exDiv = document.createElement('div');
-        exDiv.setAttribute("id", element.parentElement.parentElement.id + "Child");
-        exDiv.classList.add("displayAnim");
-
-        if (element.id === "info") {
-            fetch("getUsernameConnected")
+        fetch("getUsernameConnected")
+        .then(response => response.json())
+        .then(user_connected => {
+            fetch(`user/${user_connected}/information`)
             .then(response => response.json())
-            .then(user_connected => {
-                fetch(`user/${user_connected}/information`)
-                .then(response => response.json())
-                .then(user_info => {
+            .then(user_info => {
+                // Create expand div
+                const   exDiv = document.createElement('div');
+                exDiv.setAttribute("id", element.parentElement.parentElement.id + "Child");
+                exDiv.classList.add("displayAnim");
+
+                if (element.id === "info") {
                     // Change arrow down to arrow up
                     element.classList.remove("fa-square-caret-down");
                     element.classList.add("fa-square-caret-up");
@@ -36,9 +38,9 @@ function    display_user_data(element) {
                     exDiv.append(divData);
                     var   isStud = false;
                     for (const key in user_info)
-                        if (key != "stud42")
+                        if (key != "stud42" && key != "2fa")
                             append_info(divData, key, user_info[key]);
-                        else
+                        else if (key == "stud42")
                             isStud = user_info[key];
                     element.parentElement.parentElement.append(exDiv);
 
@@ -55,71 +57,104 @@ function    display_user_data(element) {
                         exDiv.classList.remove("displayAnim");
                         img.classList.remove("displayAnimImg");
                     });
-//                    exDiv.style.opacity = "1px";
+                    exDiv.style.opacity = "1px";
 
                     // Add form when editing image is clicked
                     img.addEventListener('click', () => {
-                        load_form_edit_info(isStud);
+                        load_form_edit_info(isStud, user_connected);
                     })
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+                }
+                else if (element.id === "security") {
+                    document.getElementById('section3').style.display = 'block';
+
+                    // Change arrow
+                    element.classList.remove("fa-square-caret-down");
+                    element.classList.add("fa-square-caret-up");
+                    element.parentElement.parentElement.append(exDiv);
+
+                    // Create div to contain change password and 2FA
+                    const   subExDiv = document.createElement('div');
+                    // Add content to subExDiv
+                    const   togDiv = document.createElement('div');
+                    togDiv.className = 'form-check form-switch';
+
+                    const   togLabel = document.createElement('label');
+                    togLabel.setAttribute('for', 'flexSwitchCheckDefault');
+                    togLabel.className = "form-check-label";
+                    togLabel.setAttribute('id', 'togLab');
+
+                    const   togInput = document.createElement('input');
+                    togInput.setAttribute('type', 'checkbox');
+                    togInput.setAttribute('id', 'flexSwitchCheckDefault');
+                    togInput.className = "form-check-input";
+
+                    const   key2fa = user_info["2fa"];
+                    if (key2fa) {
+                        togInput.checked = true;
+                        togLabel.innerHTML = "2FA Activated.";
+                    }
+                    else {
+                        togInput.checked = false;
+                        togLabel.innerHTML = "2FA Deactivated."
+                    }
+                    let new2fa = key2fa;
+                    togInput.addEventListener('click', () => {
+                        new2fa = !new2fa;
+                        fetch("/2FA", {
+                            method: 'PUT',
+                            headers: {
+                                'content-Type': 'application/json',
+                                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            },
+                            body: JSON.stringify({ value: new2fa })
+                        })
+                        .then(response => {
+                            if (response.ok) { console.log("HTTP request successful")}
+                            else { console.log("HTTP request unsuccessful")}
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.message)
+                                displayMessage(data.message, "success");
+                            if (new2fa) {
+                                togInput.checked = true;
+                                togLabel.innerHTML = "2FA Activated.";
+                            }
+                            else {
+                                togInput.checked = false;
+                                togLabel.innerHTML = "2FA Deactivated."
+                            }
+                        })
+                        .catch(error => {
+                            displayMessage(error, "error");
+                        });
+                        event.preventDefault();
+                    });
+
+                    togDiv.append(togInput, togLabel);
+                    subExDiv.append(togDiv);
+                    exDiv.append(subExDiv);
+
+
+                    // run animation
+                    exDiv.style.animationPlayState = "running";
+                    exDiv.addEventListener("animationend", (event) => {
+                        // stop animation
+                        exDiv.style.animationPlayState = "paused";
+
+                        // rm animation class
+                        exDiv.classList.remove("displayAnim");
+                    });
+                //            exDiv.style.opacity = "1px";
+                }
             })
             .catch(err => {
                 console.log(err);
             });
-        }
-        else if (element.id === "security") {
-            // Change arrow
-            element.classList.remove("fa-square-caret-down");
-            element.classList.add("fa-square-caret-up");
-            element.parentElement.parentElement.append(exDiv);
-
-            // Create div to contain change password and 2FA
-            const   subExDiv = document.createElement('div');
-            // Add content to subExDiv
-            const   togDiv = document.createElement('div');
-            togDiv.className = 'form-check form-switch';
-
-            const   togLabel = document.createElement('label');
-            togLabel.innerHTML = "2FA Deactivated."
-            togLabel.setAttribute('for', 'flexSwitchCheckDefault');
-            togLabel.className = "form-check-label";
-            togLabel.setAttribute('id', 'togLab');
-
-            const   togInput = document.createElement('input');
-            togInput.setAttribute('type', 'checkbox');
-            togInput.setAttribute('id', 'flexSwitchCheckDefault');
-            togInput.className = "form-check-input";
-            togInput.addEventListener('click', () => {
-                if (togLabel.innerHTML === "2FA Deactivated.")
-                    togLabel.innerHTML = "2FA Activated.";
-                else
-                    togLabel.innerHTML = "2FA Deactivated.";
-            });
-
-            togDiv.append(togInput, togLabel);
-            subExDiv.append(togDiv);
-            exDiv.append(subExDiv);
-
-            // Add div with bottom border to see the animation
-//            const   divLine = document.createElement('div');
-//            element.parentElement.parentElement.append(divLine);
-//            divLine.classList.add('txtSectionDiv'); // or create the div from the beginning but hide it and display it on when animation running??
-//            divLine.style.borderBottom = "2px solid black"; // create div like Account security and p. info
-
-            // run animation
-            exDiv.style.animationPlayState = "running";
-            exDiv.addEventListener("animationend", (event) => {
-                // stop animation
-                exDiv.style.animationPlayState = "paused";
-
-                // rm animation class
-                exDiv.classList.remove("displayAnim");
-            });
-//            exDiv.style.opacity = "1px";
-        }
+        })
+        .catch(err => {
+            console.log(err);
+        });
     }
     else if (element.classList.contains("fa-square-caret-up"))
     {
@@ -133,7 +168,7 @@ function    display_user_data(element) {
             divRM.classList.add("rmAnim");
             img.classList.add("rmAnimImg");
 
-//            divRM.style.opacity = '0px';
+            //            divRM.style.opacity = '0px';
             // run animation
             divRM.style.animationPlayState = "running";
             img.style.animationPlayState = "running";
@@ -157,6 +192,7 @@ function    display_user_data(element) {
             // remove div after animation ended
             divRM.addEventListener("animationend", (event) => {
                 divRM.remove();
+                document.getElementById('section3').style.display = 'none';
             });
         }
 
@@ -166,7 +202,7 @@ function    display_user_data(element) {
     }
 }
 
-function load_form_edit_info(isStud) {
+function load_form_edit_info(isStud, user_connected) {
     const   infoDiv = document.getElementById('section1Child');
     const   img = document.getElementById('section1img');
     const   checkForm = document.getElementById('editForm');
@@ -229,84 +265,76 @@ function load_form_edit_info(isStud) {
                 'username': document.getElementById('username').value,
                 'email': document.getElementById('email').value
             }
-            fetch("getUsernameConnected")
-            .then(response => response.json())
-            .then(user_connected => {
-                fetch("edit_data", {
-                    method: 'PUT',
-                    headers: {
-                        'content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    },
-                    body: JSON.stringify(formData)
-                })
-                .then(response => {
-                    if (response.ok) { console.log("HTTP request successful")}
-                    else { console.log("HTTP request unsuccessful")}
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Show success message
-                        alert("You have successfully updated your data.");
-                        console.log(user_connected);
-                        fetch(`user/${document.getElementById('username').value}/information`)
-                        .then(response => response.json())
-                        .then(user_info => {
-                            for (const key in user_info) {
-                                switch(key) {
-                                    case 'First name':
-                                        document.getElementById("First name").innerHTML = user_info[key];
-                                        break;
-                                    case 'Last name':
-                                        document.getElementById("Last name").innerHTML = user_info[key];
-                                        break;
-                                    case 'Email':
-                                        document.getElementById("Email").innerHTML = user_info[key];
-                                        break;
-                                    case 'Username':
-                                        // update username in navbar
-                                        var updateUsername = document.getElementById('ownUsername');
-                                        const arrow = document.getElementById('arrowUsername');
-                                        updateUsername.innerHTML = user_info[key] + "  ";
-                                        updateUsername.append(arrow);
-
-                                        //update username in title
-                                        var updateTitle = document.querySelector('.title_div');
-                                        updateTitle.innerHTML = user_info[key] + " profile";
-
-                                        //update username in form
-                                        document.getElementById("Username").innerHTML = user_info[key];
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-                            divData.style.display = 'block';
-                            newForm.remove();
-                        })
-                        .catch (err => {
-                            console.log(err);
-                            alert(err);
-                        });
-                    }
-                    else {
-                    // show error msg
-                        const errors = [];
-                        for (const [field, messages] of Object.entries(data.errors)) {
-                            errors.push(`${field}: ${messages.join(", ")}`);
-                        }
-                            alert("Error: " + errors.join("\n"));
-                    }
-                })
-                .catch(error => {
-                    console.error("Error: " + error);
-                    alert("Error: " + error);
-                });
+            fetch("edit_data", {
+                method: 'PUT',
+                headers: {
+                    'content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+                body: JSON.stringify(formData)
             })
-            .catch (err => {
-                console.log(err);
-                alert(err);
+            .then(response => {
+                if (response.ok) { console.log("HTTP request successful")}
+                else { console.log("HTTP request unsuccessful")}
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    alert("You have successfully updated your data.");
+                    console.log(user_connected);
+                    fetch(`user/${document.getElementById('username').value}/information`)
+                    .then(response => response.json())
+                    .then(user_info => {
+                        for (const key in user_info) {
+                            switch(key) {
+                                case 'First name':
+                                    document.getElementById("First name").innerHTML = user_info[key];
+                                    break;
+                                case 'Last name':
+                                    document.getElementById("Last name").innerHTML = user_info[key];
+                                    break;
+                                case 'Email':
+                                    document.getElementById("Email").innerHTML = user_info[key];
+                                    break;
+                                case 'Username':
+                                    // update username in navbar
+                                    var updateUsername = document.getElementById('ownUsername');
+                                    const arrow = document.getElementById('arrowUsername');
+                                    updateUsername.innerHTML = user_info[key] + "  ";
+                                    updateUsername.append(arrow);
+
+                                    //update username in title
+                                    var updateTitle = document.querySelector('.title_div');
+                                    updateTitle.innerHTML = user_info[key] + " profile";
+
+                                    //update username in form
+                                    document.getElementById("Username").innerHTML = user_info[key];
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        divData.style.display = 'block';
+                        newForm.remove();
+                    })
+                    .catch (err => {
+                        console.log(err);
+                        alert(err);
+                    });
+                }
+                else {
+                    // show error msg
+                    const errors = [];
+                    for (const [field, messages] of Object.entries(data.errors)) {
+                        errors.push(`${field}: ${messages.join(", ")}`);
+                    }
+                        alert("Error: " + errors.join("\n"));
+                }
+            })
+            .catch(error => {
+                console.error("Error: " + error);
+                alert("Error: " + error);
             });
             event.preventDefault();
         });
@@ -326,6 +354,7 @@ function load_form_edit_info(isStud) {
 
         butDiv.append(save, cancel);
         butDiv.style.textAlign = 'center';
+        butDiv.style.marginTop = '5px';
         newForm.append(butDiv);
 
         infoDiv.append(newForm);
@@ -364,8 +393,10 @@ function load_profile_page(username) {
     // Create elements to display
     const   title1 = document.createElement('div');
     const   title2 = document.createElement('div');
+    const   title3 = document.createElement('div');
     const   part1 = document.createElement('div');
     const   part2 = document.createElement('div');
+    const   part3 = document.createElement('div');
     const   arrowSpan1 = document.createElement('span');
     const   arrowSpan2 = document.createElement('span');
 
@@ -378,18 +409,21 @@ function load_profile_page(username) {
 
     title1.setAttribute("id", "section1");
     title2.setAttribute("id", "section2");
+    title3.setAttribute("id", "section3");
 
     part1.classList.add("txtSectionDiv");
     part1.innerHTML = "Personal information";
     part1.append(arrowSpan1);
     title1.append(part1);
-    mainDivEl.append(title1);
 
     part2.classList.add("txtSectionDiv");
     part2.innerHTML = "Account security";
     part2.append(arrowSpan2);
     title2.append(part2);
-    mainDivEl.append(title2);
 
-    event.preventDefault();
+    part3.classList.add("txtSectionDiv");
+    part3.style.borderBottom = '0px';
+    title3.append(part3);
+    title3.style.display = 'none';
+    mainDivEl.append(title1, title2, title3);
 }

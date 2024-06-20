@@ -16,8 +16,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossorigin="anonymous"></script>
-    <script src="{% static 'userProfile.js' %}"></script>
-    <script src="{% static 'userDataPage.js' %}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
     {% block script %}
     {% endblock %}
@@ -48,8 +46,8 @@
 
 
             <div class="dropdown-menu dropdown-menu-start">
-                <a class="dropdown-item button" onclick="load_profile_page('{{ user.username }}')" href="" id="profile">Profile</a>
-                <a class="dropdown-item button" onclick="load_stats_page('{{ user.username }}')" href="" id="statsPage">Stats</a>
+                <a class="dropdown-item button" href="" id="profile">Profile</a>
+                <a class="dropdown-item button" href="" id="statsPage">Stats</a>
                 <a class="dropdown-item button" href="" id="friendsPage">Friends</a>
             </div>
         </div>
@@ -94,6 +92,12 @@
 {% endif %}
 
 <div id="content" class="h-100">
+    <ul class="messages" id="messagesContainer">
+        {% for message in messages %}
+            <div {% if message.tags %} class="alertSize alert alert-{{ message.tags }}"
+                {% else %} class="alertSize alert alert-secondary" {% endif %} role="alert">{{ message }}</div>
+        {% endfor %}
+    </ul>
     {% block body %}
     {% endblock %}
 </div>

@@ -12,9 +12,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 let j = Math.round((100 / data.players.length));
                 for (let i = 0; i < data.players.length; i++)
                 {
-                    const subDiv = document.createElement('div');
-                    subDiv.innerHTML = `<a href="" onclick='load_stats_page(${JSON.stringify(data.players[i])})'>
-                        ${data.players[i]} </a> <br /> ${data.score[i]}`;
+                    const   subDiv = document.createElement('div');
+                    const   subDivChild1 = document.createElement('div');
+                    const   subDivChild2 = document.createElement('div');
+
+                    subDivChild1.innerHTML = `${data.players[i]}`;
+                    subDivChild1.style.textDecoration = "underline";
+                    subDivChild1.style.width = "100%";
+                    subDivChild1.addEventListener('click', () => {
+                        load_stats_page(`${data.players[i]}`);
+                    })
+
+                    subDivChild2.innerHTML = `${data.score[i]}`;
+                    subDivChild2.style.width = "100%";
+
+                    subDiv.append(subDivChild1, subDivChild2);
                     if (`${data.players[i]}` === `${data.winner}`) {
                         subDiv.classList.add("matchWonSub");
                         subDiv.style.width = `${j}%`;
@@ -26,7 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     addDiv.append(subDiv);
                 }
             })
-
+            .catch (error => {
+                // add error message
+            })
             if (element.classList.contains("shrink"))
             {
                 element.className = "fa-solid fa-eye-slash expander";
@@ -39,7 +53,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             event.preventDefault();
         }
-    });
+        else if (element.id === 'statsPage' || element.id === 'profile') {
+            fetch('/getUsernameConnected')
+            .then(response => response.json())
+            .then(username => {
+                if (element.id === 'statsPage')
+                    load_stats_page(username);
+                else
+                    load_profile_page(username);
+            })
+            event.preventDefault();
+        }
+    })
 
     const mainPage = document.getElementById('mainPage');
     if (mainPage != null)
@@ -47,6 +72,18 @@ document.addEventListener('DOMContentLoaded', () => {
             load_main_page();
         });
 })
+
+function displayMessage(message, level) {// A ENLEVER QUAND MERGE AVEC FRIEND GESTION
+    const messagesContainer = document.getElementById('messagesContainer');
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alertSize alert alert-${level}`;
+    alertDiv.role = 'alert';
+    alertDiv.innerText = message;
+    messagesContainer.appendChild(alertDiv);
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
 
 function create_div_title(username, str, divName) {
     document.getElementById(divName).innerHTML = "";
@@ -153,7 +190,6 @@ function load_stats_page(username) {
             document.querySelector('#statsDiv').append(matchHistory);
         })
         .catch(error => console.error('Error:', error));
-        event.preventDefault();
     }
 }
 

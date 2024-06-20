@@ -188,8 +188,8 @@
 }
 
 .infoValue {
-    max-width: 100px;
-    overflow: hidden;
+    max-width: 300px;
+    overflow: auto;
     text-overflow: ellipsis;
     display: inline-flex;
     white-space: nowrap;
