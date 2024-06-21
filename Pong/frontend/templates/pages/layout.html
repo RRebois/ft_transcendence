@@ -110,20 +110,5 @@
     {% endblock %}
 </div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        setTimeout(function() {
-            let messages = document.querySelectorAll('.messages');
-            messages.forEach(function(message) {
-                message.style.transition = 'opacity 0.5s ease-out';
-                message.style.opacity = '0';
-                setTimeout(function() {
-                    message.remove();
-                }, 500);
-            });
-        }, 5000);
-    });
-</script>
-
 </body>
 </html>

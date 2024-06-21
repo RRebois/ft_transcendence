@@ -10,6 +10,7 @@ function load_friends_page(username) {
     friendsDivElement.innerHTML = "";
     create_div_title(username, "friends", "friendsDiv");
     document.getElementById('greetings').style.display = 'none';
+    document.getElementById('mainDiv').style.display = 'none';
 
     const globalContainer = document.createElement('div');
     const sendRequestForm = document.createElement('form');
@@ -26,8 +27,6 @@ function load_friends_page(username) {
     globalContainer.appendChild(sendRequestForm);
 
     sendRequestForm.className = "friendPage bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card";
-    // sendRequestForm.action = "{% url 'send_friend' %}";
-    // sendRequestForm.method = 'post';
     sendRequestForm.style.cssText = "--bs-bg-opacity: .5;";
     sendRequestForm.id = "addFriend"
     sendRequestForm.appendChild(sendReqTitle);
@@ -92,14 +91,13 @@ function load_friends_page(username) {
             if (data.redirect) {
                 window.location.href = data.redirect_url;
             }
-            if (status === 200) {
+            else if (status != 401) {
                 if (data.level && data.message) {
                     displayMessage(data.message, data.level);
                 }
-            } else {
-                throw new Error(data.message || 'Unknown error occurred.');
             }
         })
+        // .catch(error => {displayMessage(error, "error")});
     });
 
 
@@ -181,7 +179,7 @@ function load_friends_page(username) {
                                 throw new Error(data.message || 'Unknown error occurred.');
                             }
                         })
-                        .catch(error => console.error('Error declining friend request:', error));
+                        .catch(error => {displayMessage(error, "error")});
                 });
             });
         })
@@ -196,6 +194,8 @@ function displayMessage(message, level) {
     alertDiv.innerText = message;
     messagesContainer.appendChild(alertDiv);
     setTimeout(() => {
-        alertDiv.remove();
+        if (alertDiv && alertDiv.parentNode) {
+            alertDiv.parentNode.removeChild(alertDiv);
+        }
     }, 5000);
 }
