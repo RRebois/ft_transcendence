@@ -260,6 +260,7 @@ gap-1-5 {
     background-color: #555f57;
     border-color: black;
     cursor: not-allowed;
+    pointer-events: none;
 }
 
 .buttonsContainer {

@@ -97,7 +97,6 @@ function load_friends_page(username) {
                 }
             }
         })
-        // .catch(error => {displayMessage(error, "error")});
     });
 
 
@@ -128,6 +127,7 @@ function load_friends_page(username) {
             document.querySelectorAll('.acceptBtn').forEach(button => {
                 button.addEventListener('click', function () {
                     const from_id = this.getAttribute('data-id');
+                    const declineBtn = document.querySelector('.declineBtn')
                     fetch('accept_friend', {
                         method: 'POST',
                         headers: {
@@ -140,17 +140,22 @@ function load_friends_page(username) {
                         return response.json().then(data => ({ status: response.status, data: data }));
                     })
                     .then(({ status, data }) => {
-                        if (status === 200) {
+                        if (data.redirect) {
+                            window.location.href = data.redirect_url;
+                        }
+                        else if (status !== 401) {
                             this.innerText = 'Accepted';
                             this.classList.remove('btn-primary');
                             this.style.background = '';
                             this.classList.add('btn-success', 'acceptedBtn');
                             this.disabled = true;
+                            declineBtn.classList.remove('btn-primary');
+                            declineBtn.style.background= '#a55b5b';
+                            declineBtn.style.color= 'white';
+                            declineBtn.classList.add('acceptedBtn');
                             if (data.level && data.message) {
                                 displayMessage(data.message, data.level);
                             }
-                        } else {
-                            throw new Error(data.message || 'Unknown error occurred.');
                         }
                     })
                 });
@@ -159,6 +164,7 @@ function load_friends_page(username) {
             document.querySelectorAll('.declineBtn').forEach(button => {
                 button.addEventListener('click', function () {
                     const from_id = this.getAttribute('data-id');
+                    const acceptBtn = document.querySelector('.acceptBtn')
                     fetch('decline_friend', {
                         method: 'POST',
                         headers: {
@@ -167,19 +173,25 @@ function load_friends_page(username) {
                         },
                         body: JSON.stringify({from_id: from_id})
                     })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (response.ok) {
-                                this.innerText = 'Declined';
-                                this.classList.remove('btn-primary');
-                                this.style.background = '';
-                                this.classList.add('acceptedBtn');
-                                this.disabled = true;
-                            } else {
-                                throw new Error(data.message || 'Unknown error occurred.');
-                            }
-                        })
-                        .catch(error => {displayMessage(error, "error")});
+                    .then(response => {
+                        return response.json().then(data => ({status: response.status, data: data}));
+                    })
+                    .then(({ status, data }) => {
+                        if (status === 200) {
+                            this.innerText = 'Declined';
+                            this.classList.remove('btn-primary');
+                            this.style.background = '#a55b5b';
+                            this.style.color = 'white';
+                            this.classList.add('acceptedBtn');
+                            // this.disabled = true;
+                            acceptBtn.classList.remove('btn-primary');
+                            acceptBtn.style.background= '';
+                            acceptBtn.classList.add('btn-success', 'acceptedBtn');
+                        } else {
+                            throw new Error(data.message || 'Unknown error occurred.');
+                        }
+                    })
+                    .catch(error => {displayMessage(error, "error")});
                 });
             });
         })
