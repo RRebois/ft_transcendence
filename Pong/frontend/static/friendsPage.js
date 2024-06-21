@@ -67,16 +67,15 @@ function load_friends_page(username) {
 
     friendsDivElement.appendChild(globalContainer);
 
-    // Friend request container
     const friendRequestContainer = document.createElement('div');
     friendRequestContainer.id = 'friendRequest';
     friendRequestContainer.classList.add('friendPage');
     globalContainer.appendChild(friendRequestContainer);
 
     sendReqBtn.addEventListener('click', () => {
+        event.preventDefault();
         const formData = {
-        'username': document.getElementById('sendReqInput').value
-        // 'username': document.getElementById('username').value
+        'username': document.getElementById('username').value
         }
         fetch('send_friend', {
             method: 'POST',
@@ -98,7 +97,6 @@ function load_friends_page(username) {
                 throw new Error(data.message || 'Unknown error occurred.');
             }
         })
-        event.preventDefault();
     });
 
 

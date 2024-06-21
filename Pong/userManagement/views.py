@@ -514,24 +514,24 @@ class SendFriendRequestView(APIView):
         try:
             to_user = User.objects.get(username=to_username)
         except User.DoesNotExist:
-            messages.warning(request, "User does not exist.")
-            return render(request, "pages/friend.html", {"user": user})
+            message = "User does not exist."
+            return JsonResponse({"message": message, "user": to_username, "level": "warning"})
 
         if user == to_user:
-            messages.warning(request, "You cannot send a friend request to yourself.")
-            return render(request, "pages/friend.html", {"user": user})
+            message = "You cannot send a friend request to yourself."
+            return JsonResponse({"message": message, "user": user.serialize(), "level": "warning"})
 
         if user.friends.filter(username=to_username).exists():
-            messages.warning(request, "This user is already your friend.")
-            return render(request, "pages/friend.html", {"user": user})
+            message = "This user is already your friend."
+            return JsonResponse({"message": message, "user": user.serialize(), "level": "warning"})
 
         if FriendRequest.objects.filter(from_user=user, to_user=to_user).exists():
             message = "Friend request already sent."
-            return JsonResponse({"message": message, "user": user.serialize()})
+            return JsonResponse({"message": message, "user": user.serialize(), "level": "warning"})
 
         if FriendRequest.objects.filter(from_user=to_user, to_user=user, status='pending').exists():
-            messages.warning(request, "You have a pending request from this user.")
-            return render(request, "pages/friend.html", {"user": user})
+            message = "You have a pending request from this user."
+            return JsonResponse({"message": message, "user": user.serialize(), "level": "warning"})
 
         FriendRequest.objects.create(from_user=user, to_user=to_user)
         message = "Friend request sent."
