@@ -89,6 +89,9 @@ function load_friends_page(username) {
             return response.json().then(data => ({ status: response.status, data: data }));
         })
         .then(({ status, data }) => {
+            if (data.redirect) {
+                window.location.href = data.redirect_url;
+            }
             if (status === 200) {
                 if (data.level && data.message) {
                     displayMessage(data.message, data.level);

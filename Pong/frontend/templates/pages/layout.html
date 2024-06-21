@@ -31,6 +31,7 @@
 
 
 <body class="bg-gradient fullscreen d-flex flex-column">
+
 {% if user.is_authenticated %}
 <nav class="navbar bg-body-tertiary sticky-top">
     <div class="container-fluid">
@@ -55,7 +56,6 @@
             <div class="dropdown-menu dropdown-menu-start">
                 <a class="dropdown-item button" onclick="load_profile_page('{{ user.username }}')" href="" id="profile">Profile</a>
                 <a class="dropdown-item button" onclick="load_stats_page('{{ user.username }}')" href="" id="statsPage">Stats</a>
-<!--                <a class="dropdown-item button" href="{% url 'send_friend' %}" id="friendsPage">Friends</a>-->
                 <a class="dropdown-item button" onclick="load_friends_page('{{ user.username }}')" href="" id="friendsPage">Friends</a>
             </div>
         </div>
@@ -110,20 +110,20 @@
     {% endblock %}
 </div>
 
-<!--<script>-->
-<!--    document.addEventListener("DOMContentLoaded", function() {-->
-<!--        setTimeout(function() {-->
-<!--            let messages = document.querySelectorAll('.messages');-->
-<!--            messages.forEach(function(message) {-->
-<!--                message.style.transition = 'opacity 0.5s ease-out';-->
-<!--                message.style.opacity = '0';-->
-<!--                setTimeout(function() {-->
-<!--                    message.remove();-->
-<!--                }, 500);-->
-<!--            });-->
-<!--        }, 5000);-->
-<!--    });-->
-<!--</script>-->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(function() {
+            let messages = document.querySelectorAll('.messages');
+            messages.forEach(function(message) {
+                message.style.transition = 'opacity 0.5s ease-out';
+                message.style.opacity = '0';
+                setTimeout(function() {
+                    message.remove();
+                }, 500);
+            });
+        }, 5000);
+    });
+</script>
 
 </body>
 </html>

@@ -508,30 +508,35 @@ class SendFriendRequestView(APIView):
             user = authenticate_user(request)
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
-            return redirect('index')
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
 
         to_username = request.data.get('username')
         try:
             to_user = User.objects.get(username=to_username)
         except User.DoesNotExist:
             message = "User does not exist."
-            return JsonResponse({"message": message, "user": to_username, "level": "warning"})
+            return JsonResponse({"message": message, "user": to_username, "level": "warning"},
+                                status=status.HTTP_403_FORBIDDEN)
 
         if user == to_user:
             message = "You cannot send a friend request to yourself."
-            return JsonResponse({"message": message, "user": user.serialize(), "level": "warning"})
+            return JsonResponse({"message": message, "user": user.serialize(), "level": "warning"},
+                                status=status.HTTP_403_FORBIDDEN)
 
         if user.friends.filter(username=to_username).exists():
             message = "This user is already your friend."
-            return JsonResponse({"message": message, "user": user.serialize(), "level": "warning"})
+            return JsonResponse({"message": message, "user": user.serialize(), "level": "warning"},
+                                status=status.HTTP_403_FORBIDDEN)
 
         if FriendRequest.objects.filter(from_user=user, to_user=to_user).exists():
             message = "Friend request already sent."
-            return JsonResponse({"message": message, "user": user.serialize(), "level": "warning"})
+            return JsonResponse({"message": message, "user": user.serialize(), "level": "warning"},
+                                status=status.HTTP_403_FORBIDDEN)
 
         if FriendRequest.objects.filter(from_user=to_user, to_user=user, status='pending').exists():
             message = "You have a pending request from this user."
-            return JsonResponse({"message": message, "user": user.serialize(), "level": "warning"})
+            return JsonResponse({"message": message, "user": user.serialize(), "level": "warning"},
+                                status=status.HTTP_403_FORBIDDEN)
 
         FriendRequest.objects.create(from_user=user, to_user=to_user)
         message = "Friend request sent."
@@ -544,7 +549,7 @@ class GetFriendRequestView(APIView):
             user = authenticate_user(request)
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
-            return redirect('index')
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
         friendRequests = (FriendRequest.objects.filter(to_user=user, status='pending').
                           values('from_user__username', 'time', 'status', 'from_user_id'))
         return JsonResponse(list(friendRequests), safe=False)
@@ -556,7 +561,8 @@ class AcceptFriendRequestView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            return JsonResponse({"message": str(e), "level": "warning"}, status=status.HTTP_403_FORBIDDEN)
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
         friend_request_user_id = request.data.get('from_id')
         try:
             friend_request = FriendRequest.objects.get(from_user=friend_request_user_id, to_user=user)
