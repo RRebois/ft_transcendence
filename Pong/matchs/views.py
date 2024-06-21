@@ -34,12 +34,18 @@ class MatchScoreView(APIView):
 
 
 def create_match(match_result, winner, is_pong=True):
-    match = Match.objects.create(is_pong=is_pong, score=match_result)
+    match = Match.objects.create(is_pong=is_pong)
     game = 0 if is_pong else 1
 
     for player_username in match_result.keys():
         player = User.objects.get(username=player_username)
         user_data = UserData.objects.get(user_id=player)
+        score = PlayerScore.objects.update_or_create(
+            player=player, 
+            match=match, 
+            create_defaults={'score' : match_result[player_username]}
+            )
+        score[0].save()
         if player_username == winner:
             match.winner = player
             user_data.user_wins[game] += 1
