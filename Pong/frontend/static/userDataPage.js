@@ -91,7 +91,7 @@ function create_div_title(username, str, divName) {
     title.innerHTML = username + " " + str;
 
     // Add CSS to created div
-    title.classList.add("title_div")
+    title.className = "title_div gradient-background";
     document.querySelector(`#${divName}`).append(title);
 }
 

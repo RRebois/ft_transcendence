@@ -74,12 +74,13 @@ function    display_user_data(element) {
 
                     // Create div to contain change password and 2FA
                     const   subExDiv = document.createElement('div');
+
                     // Add content to subExDiv
                     const   togDiv = document.createElement('div');
                     togDiv.className = 'form-check form-switch';
 
                     togDiv.style.margin = 'auto';
-                    togDiv.style.width = '50%';
+                    togDiv.style.width = 'fit-content';
 
                     const   togLabel = document.createElement('label');
                     togLabel.setAttribute('for', 'flexSwitchCheckDefault');
@@ -129,7 +130,7 @@ function    display_user_data(element) {
                                 QR.setAttribute('id', 'QRcode');
                                 QR.classList.add('QRcss');
                                 QR.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?data=' + encodeURIComponent(data.qr_url) + '&size=100x100" alt="QR Code" />';
-                                togDiv.append(QR);
+                                subExDiv.append(QR);
                             }
                             else {
                                 togInput.checked = false;
@@ -149,6 +150,16 @@ function    display_user_data(element) {
                     subExDiv.append(togDiv);
                     exDiv.append(subExDiv);
 
+                    // Change password display
+                    const   subExDiv2 = document.createElement('div');
+                    const   changeP = document.createElement('button');
+                    changeP.setAttribute('class', 'btn btn-primary');
+                    changeP.setAttribute('type', 'submit');
+                    changeP.setAttribute('id', 'changePassword');
+                    changeP.textContent = "Change password";
+
+                    subExDiv2.append(changeP);
+                    exDiv.append(subExDiv2);
 
                     // run animation
                     exDiv.style.animationPlayState = "running";
@@ -159,7 +170,6 @@ function    display_user_data(element) {
                         // rm animation class
                         exDiv.classList.remove("displayAnim");
                     });
-                //            exDiv.style.opacity = "1px";
                 }
             })
             .catch(err => {
@@ -294,8 +304,10 @@ function load_form_edit_info(isStud, user_connected) {
             .then(data => {
                 if (data.success) {
                     // Show success message
-                    alert("You have successfully updated your data.");
-                    console.log(user_connected);
+                    const   msg = "You have successfully updated your data."
+                    displayMessage(msg, "success");
+
+                                    alert("You have successfully updated your data.");    console.log(user_connected);
                     fetch(`user/${document.getElementById('username').value}/information`)
                     .then(response => response.json())
                     .then(user_info => {
