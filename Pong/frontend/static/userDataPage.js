@@ -124,20 +124,20 @@ function load_stats_page(username) {
     const   radioInput1 = document.createElement('input');
     const   radioInput2 = document.createElement('input');
     const   radioInput3 = document.createElement('input');
-    setAttributes(radioInput1, {'class': 'form-check-input', 'type': 'radio', 'name': 'radiobtn', 'id': 'radio1', 'value': 'all'});
-    radioInput1.checked = true;
-    setAttributes(radioInput2, {'class': 'form-check-input', 'type': 'radio', 'name': 'radiobtn', 'id': 'radio2', 'value': 'pong'});
-    setAttributes(radioInput3, {'class': 'form-check-input', 'type': 'radio', 'name': 'radiobtn', 'id': 'radio3', 'value': 'purrinha'});
+    setAttributes(radioInput1, {'class': 'form-check-input', 'type': 'checkbox', 'name': 'radiobtn', 'id': 'radio1', 'value': 'pong'});
+    setAttributes(radioInput2, {'class': 'form-check-input', 'type': 'checkbox', 'name': 'radiobtn', 'id': 'radio2', 'value': 'all'});
+    radioInput2.checked = true;
+    setAttributes(radioInput3, {'class': 'form-check-input', 'type': 'checkbox', 'name': 'radiobtn', 'id': 'radio3', 'value': 'purrinha'});
 
     const   radioLabel1 = document.createElement('label');
     const   radioLabel2 = document.createElement('label');
     const   radioLabel3 = document.createElement('label');
     setAttributes(radioLabel1, {'class': 'form-check-label', 'for': 'radio1'});
-    radioLabel1.textContent = "Both games stats";
+    radioLabel1.textContent = "Pong stats";
     setAttributes(radioLabel2, {'class': 'form-check-label', 'for': 'radio2'});
-    radioLabel2.textContent = "Pong game";
+    radioLabel2.textContent = "Both games stats";
     setAttributes(radioLabel3, {'class': 'form-check-label', 'for': 'radio3'});
-    radioLabel3.textContent = "Purrinha game";
+    radioLabel3.textContent = "Purrinha stats";
 
     radioSubDiv1.append(radioInput1, radioLabel1);
     radioSubDiv2.append(radioInput2, radioLabel2);
@@ -148,88 +148,114 @@ function load_stats_page(username) {
     // Fetch user stat data + create div element for each data:
     if (document.getElementById('statsDiv').style.display === 'block')
     {
-        fetch(`stats/${username}`)
-        .then(response => response.json())
-        .then(values => {
-            console.log(values);
-            const stat = document.createElement('div');
-            const statElo = document.createElement('div');
-            statElo.classList.add("divElo");
+        if (radioInput1.checked == false && radioInput2.checked == false && radioInput3.checked == false) {
+            const   tipDiv = document.createElement('div');
+            setAttributes(tipDiv, {'id': 'tipDiv'});
+            tipDiv.innerHTML = "Select one of the three checkboxes above to see the detailed information of your stats.";
+            document.querySelector('#statsDiv').append(tipDiv);
 
-            statElo.innerHTML = "Current elo / highest: " + values['elo'] + " / " + values['elo_highest'];
-            stat.append(statElo);
+            // Remove stats if present
+            const   divDisplayStats = document.querySelectorAll('displayStats');
+            if (divDisplayStats != null)
+                console.log('hi');
+                // TODO
+        }
+        else {
+            const   rmTip = document.getElementById('tipDiv');
+            if (rmTip != null)
+                rmTip.remove();
 
-            document.querySelector('#statsDiv').append(stat);
-
-            // Create pie chart to display winrate
-            const chart = document.createElement('div');
-            if (`${values.losses}` == 0 && `${values.wins}` == 0) {
-                chart.innerHTML = "Pie chart not available yet!";
-                chart.style.textAlign = "center";
-                document.querySelector('#statsDiv').append(chart);
-            }
-            else {
-                const pieChart = document.createElement('canvas');
-                setAttributes(pieChart, {'id': 'winratePie'});
-                chart.style.maxWidth = "100vh";
-                chart.style.maxHeight = "100vh";
-                chart.style.minWidth = "30vh";
-                chart.style.minHeight = "30vh";
-                chart.style.margin = "0px auto";
-                chart.append(pieChart);
-                document.querySelector('#statsDiv').append(chart);
-
-                const winrateData = {
-                    labels: [`Defeats (${values.losses})`, `Victories (${values.wins})`],
-                    datasets: [{
-                        label: "Winrate",
-                        data: [`${values.losses}`, `${values.wins}`],
-                        backgroundColor: ["rgb(255,99,132)", "rgb(0,128,0)"],
-                        borderColor: "black",
-                        hoverOffset: 4,
-                        pointBorderWidth: 1,
-                        pointHoverBorderWidth: 2
-                    }]
-                };
-
-                new Chart("winratePie", {
-                    type: "pie",
-                    data: winrateData,
-                    options: {
-                        title: {
-                            display: true,
-                            text: `Winrate ${values.winrate}`,
-                        },
-                    }
-                });
-            }
-
-
-            // Create history matchs for current user
-            const matchHistory = document.createElement('div');
-            matchHistory.classList.add("matchHistoryDiv");
-
-            const header = document.createElement('div');
-            header.innerHTML = "Match history";
-            header.classList.add("txtSectionDiv");
-            matchHistory.append(header);
-
-            fetch(`matchs/${username}`)
+            // Display main div with data of both games
+            fetch(`stats/${username}`)
             .then(response => response.json())
-            .then(matches => {
-                if (matches.length > 0)
-                    for (let i = 0; i < matches.length; i++)
-                        create_div(matches[i], matchHistory, username);
+            .then(values => {
+                console.log(values);
+
+                const   statMainDiv = document.createElement('div');
+                const   stat = document.createElement('div');
+                const   statEloPong = document.createElement('div');
+                const   statEloPurr = document.createElement('div');
+                statEloPong.classList.add("divElo");
+                statEloPurr.classList.add("divElo");
+
+                statEloPong.innerHTML = "Pong current elo / highest: " + values['elo_pong'] + " / " + values['elo_highest'][0];
+                statEloPurr.innerHTML = "Purrinha current elo / highest: " + values['elo_purrinha'] + " / " + values['elo_highest'][1];
+                stat.append(statEloPong, statEloPurr);
+
+                statMainDiv.append(stat);
+
+                // Create pie chart to display winrate
+                const chart = document.createElement('div');
+                if (values[losses][0] == 0 && values[losses][1] == 0)
+                    && values[wins][0] == 0 && values[wins][1] == 0{
+                    chart.innerHTML = "Pie chart not available yet!";
+                    chart.style.textAlign = "center";
+                    statMainDiv.append(chart);
+                }
                 else {
-                    const   tmp = document.createElement('div');
-                    tmp.innerHTML = "No game played yet!"
-                    matchHistory.append(tmp);
+                    const pieChart = document.createElement('canvas');
+                    setAttributes(pieChart, {'id': 'winratePie'});
+                    chart.style.maxWidth = "100vh";
+                    chart.style.maxHeight = "100vh";
+                    chart.style.minWidth = "30vh";
+                    chart.style.minHeight = "30vh";
+                    chart.style.margin = "0px auto";
+                    chart.append(pieChart);
+                    statMainDiv.append(chart);
+
+                    const winrateData = {
+                        labels: [`Defeats (${values.losses})` , `Victories (${values.wins})`],
+                        datasets: [{
+                            label: "Winrate",
+                            data: [`${values.losses}`, `${values.wins}`],
+                            backgroundColor: ["rgb(255,99,132)", "rgb(0,128,0)"],
+                            borderColor: "black",
+                            hoverOffset: 4,
+                            pointBorderWidth: 1,
+                            pointHoverBorderWidth: 2
+                        }]
+                    };
+
+                    new Chart("winratePie", {
+                        type: "pie",
+                        data: winrateData,
+                        options: {
+                            title: {
+                                display: true,
+                                text: `Winrate ${values.winrate}`,
+                            },
+                        }
+                    });
                 }
 
+
+                // Create history matchs for current user
+                const matchHistory = document.createElement('div');
+                matchHistory.classList.add("matchHistoryDiv");
+
+                const header = document.createElement('div');
+                header.innerHTML = "Match history";
+                header.classList.add("txtSectionDiv");
+                matchHistory.append(header);
+
+                fetch(`matchs/${username}`)
+                .then(response => response.json())
+                .then(matches => {
+                    if (matches.length > 0)
+                        for (let i = 0; i < matches.length; i++)
+                            create_div(matches[i], matchHistory, username);
+                    else {
+                        const   tmp = document.createElement('div');
+                        tmp.innerHTML = "No game played yet!"
+                        matchHistory.append(tmp);
+                    }
+
+                })
+                statMainDiv.append(matchHistory);
+                document.querySelector('#statsDiv').append(statMainDiv);
             })
-            document.querySelector('#statsDiv').append(matchHistory);
-        })
-        .catch(error => console.error('Error:', error));
+            .catch(error => console.error('Error:', error));
+        }
     }
 }
 
