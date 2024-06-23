@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const element = event.target;
         if (element.classList.contains('expander')) {
             const addDiv = document.createElement('div');
-            addDiv.setAttribute('id', element.parentElement.id + 'expand');
+            setAttributes(addDiv, {'id': element.parentElement.id + 'expand'});
 
             // fetch for the scoreboard
             fetch(`match/${element.parentElement.id}`)
@@ -85,6 +85,12 @@ function displayMessage(message, level) {// A ENLEVER QUAND MERGE AVEC FRIEND GE
     }, 5000);
 }
 
+function setAttributes(el, attrs) {
+  for(var key in attrs) {
+    el.setAttribute(key, attrs[key]);
+  }
+}
+
 function create_div_title(username, str, divName) {
     document.getElementById(divName).innerHTML = "";
     const   title = document.createElement('div');
@@ -104,6 +110,40 @@ function load_stats_page(username) {
     document.getElementById('statsDiv').innerHTML = "";
 
     create_div_title(username, "game stats", "statsDiv");
+
+    // Create radio button groups to display both game data or pong data or purrinha data
+    const   radioDiv = document.createElement('div');
+    radioDiv.style.textAlign = 'center';
+    const   radioSubDiv1 = document.createElement('div');
+    const   radioSubDiv2 = document.createElement('div');
+    const   radioSubDiv3 = document.createElement('div');
+    radioSubDiv1.className = "form-check form-check-inline";
+    radioSubDiv2.className = "form-check form-check-inline";
+    radioSubDiv3.className = "form-check form-check-inline";
+
+    const   radioInput1 = document.createElement('input');
+    const   radioInput2 = document.createElement('input');
+    const   radioInput3 = document.createElement('input');
+    setAttributes(radioInput1, {'class': 'form-check-input', 'type': 'radio', 'name': 'radiobtn', 'id': 'radio1', 'value': 'all'});
+    radioInput1.checked = true;
+    setAttributes(radioInput2, {'class': 'form-check-input', 'type': 'radio', 'name': 'radiobtn', 'id': 'radio2', 'value': 'pong'});
+    setAttributes(radioInput3, {'class': 'form-check-input', 'type': 'radio', 'name': 'radiobtn', 'id': 'radio3', 'value': 'purrinha'});
+
+    const   radioLabel1 = document.createElement('label');
+    const   radioLabel2 = document.createElement('label');
+    const   radioLabel3 = document.createElement('label');
+    setAttributes(radioLabel1, {'class': 'form-check-label', 'for': 'radio1'});
+    radioLabel1.textContent = "Both games stats";
+    setAttributes(radioLabel2, {'class': 'form-check-label', 'for': 'radio2'});
+    radioLabel2.textContent = "Pong game";
+    setAttributes(radioLabel3, {'class': 'form-check-label', 'for': 'radio3'});
+    radioLabel3.textContent = "Purrinha game";
+
+    radioSubDiv1.append(radioInput1, radioLabel1);
+    radioSubDiv2.append(radioInput2, radioLabel2);
+    radioSubDiv3.append(radioInput3, radioLabel3);
+    radioDiv.append(radioSubDiv1, radioSubDiv2, radioSubDiv3);
+    document.querySelector('#statsDiv').append(radioDiv);
 
     // Fetch user stat data + create div element for each data:
     if (document.getElementById('statsDiv').style.display === 'block')
@@ -130,7 +170,7 @@ function load_stats_page(username) {
             }
             else {
                 const pieChart = document.createElement('canvas');
-                pieChart.setAttribute('id', 'winratePie');
+                setAttributes(pieChart, {'id': 'winratePie'});
                 chart.style.maxWidth = "100vh";
                 chart.style.maxHeight = "100vh";
                 chart.style.minWidth = "30vh";
@@ -205,7 +245,7 @@ function load_main_page() {
 function create_div(match, matchHistory, username) {
     const   tmp = document.createElement('div');
     tmp.classList.add("matchDisplay");
-    tmp.setAttribute('id', `${match.id}`);
+    setAttributes(tmp, {'id': `${match.id}`});
 
     var txt = `${match.players.length} players game played on ${match.timestamp}.`;
     tmp.innerHTML = txt;

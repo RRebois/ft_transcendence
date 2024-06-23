@@ -18,7 +18,7 @@ function    display_user_data(element) {
             .then(user_info => {
                 // Create expand div
                 const   exDiv = document.createElement('div');
-                exDiv.setAttribute("id", element.parentElement.parentElement.id + "Child");
+                setAttributes(exDiv, {"id": element.parentElement.parentElement.id + "Child"});
                 exDiv.classList.add("displayAnim");
 
                 if (element.id === "info") {
@@ -29,12 +29,12 @@ function    display_user_data(element) {
                     // Add img to edit info
                     const   img = document.createElement('span');
                     img.className = "fa-solid fa-user-pen displayAnimImg";
-                    img.setAttribute("id", element.parentElement.parentElement.id + "img")
+                    setAttributes(img, {"id": element.parentElement.parentElement.id + "img"})
                     element.parentElement.append(img);
 
                     // Create span with all data fetched
                     const   divData = document.createElement('div');
-                    divData.setAttribute('id', 'userDataDisplayed');
+                    setAttributes(divData, {'id': 'userDataDisplayed'});
                     exDiv.append(divData);
                     var   isStud = false;
                     for (const key in user_info)
@@ -83,15 +83,13 @@ function    display_user_data(element) {
                     togDiv.style.width = 'fit-content';
 
                     const   togLabel = document.createElement('label');
-                    togLabel.setAttribute('for', 'flexSwitchCheckDefault');
+                    setAttributes(togLabel, {'for': 'flexSwitchCheckDefault', 'id': 'togLab'});
                     togLabel.className = "form-check-label";
-                    togLabel.setAttribute('id', 'togLab');
                     togLabel.style.textAlign = 'center';
                     togLabel.style.width = '100%';
 
                     const   togInput = document.createElement('input');
-                    togInput.setAttribute('type', 'checkbox');
-                    togInput.setAttribute('id', 'flexSwitchCheckDefault');
+                    setAttributes(togInput, {'type': 'checkbox', 'id': 'flexSwitchCheckDefault'});
                     togInput.className = "form-check-input";
 
                     const   key2fa = user_info["2fa"];
@@ -127,7 +125,7 @@ function    display_user_data(element) {
                                 togInput.checked = true;
                                 togLabel.innerHTML = "2FA activated.";
                                 const   QR = document.createElement('div');
-                                QR.setAttribute('id', 'QRcode');
+                                setAttributes(QR, {'id': 'QRcode'});
                                 QR.classList.add('QRcss');
                                 QR.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?data=' + encodeURIComponent(data.qr_url) + '&size=100x100" alt="QR Code" />';
                                 subExDiv.append(QR);
@@ -153,9 +151,7 @@ function    display_user_data(element) {
                     // Change password display
                     const   subExDiv2 = document.createElement('div');
                     const   changeP = document.createElement('button');
-                    changeP.setAttribute('class', 'btn btn-primary');
-                    changeP.setAttribute('type', 'submit');
-                    changeP.setAttribute('id', 'changePassword');
+                    setAttributes(changeP, {'class': 'btn btn-primary', 'type': 'submit', 'id': 'changePassword'});
                     changeP.textContent = "Change password";
 
                     subExDiv2.append(changeP);
@@ -240,7 +236,7 @@ function load_form_edit_info(isStud, user_connected) {
         const   infoValues = document.querySelectorAll('.infoValue');
 
         const   newForm = document.createElement('form');
-        newForm.setAttribute('id', 'editForm');
+        setAttributes(newForm, {'id': 'editForm'});
 
         const   mainDiv = [];
         const   mainSpan = [];
@@ -261,8 +257,7 @@ function load_form_edit_info(isStud, user_connected) {
                 mainInput[i] = document.createElement('input');
                 mainInput[i].value = infoValues[i].innerHTML;
             }
-            mainInput[i].setAttribute('name', names[i]);
-            mainInput[i].setAttribute('id', names[i]);
+            setAttributes(mainInput[i], {'name': names[i], 'id': names[i]});
 
             mainDiv[i].append(mainSpan[i]);
             mainDiv[i].append(mainInput[i]);
@@ -275,9 +270,7 @@ function load_form_edit_info(isStud, user_connected) {
 
         // Add save and cancel buttons
         const   save = document.createElement('button');
-        save.setAttribute('class', 'btn btn-primary');
-        save.setAttribute('type', 'submit');
-        save.setAttribute('id', 'saveData');
+        setAttributes(save, {'class': 'btn btn-primary', 'type': 'submit', 'id': 'saveData'});
         save.style.marginRight = '5px;';
         save.textContent = "Save";
 
@@ -365,9 +358,7 @@ function load_form_edit_info(isStud, user_connected) {
         });
 
         const   cancel = document.createElement('button');
-        cancel.setAttribute('class', "btn btn-primary");
-        cancel.setAttribute('type', "submit");
-        cancel.setAttribute('id', 'cancelData');
+        setAttributes(cancel, {'class': 'btn btn-primary', 'type': 'submit', 'id': 'cancelData'});
         cancel.style.marginLeft = '5px';
         cancel.textContent = "Cancel";
 
@@ -394,7 +385,7 @@ function append_info(exDiv, key, value) {
     infoDiv.classList.add("infoDiv")
     addKey.classList.add("infoKey");
     addValue.classList.add("infoValue");
-    addValue.setAttribute('id', `${key}`);
+    setAttributes(addValue, {'id': `${key}`});
 
     addKey.innerHTML = key + ":";
     addValue.innerHTML = value;
@@ -426,15 +417,15 @@ function load_profile_page(username) {
     const   arrowSpan2 = document.createElement('span');
 
     arrowSpan1.className = "fa-regular fa-square-caret-down";
-    arrowSpan1.setAttribute("id", "info");
+    setAttributes(arrowSpan1, {"id": "info"});
     arrowSpan1.style.margin = "0 10px";
     arrowSpan2.className = "fa-regular fa-square-caret-down";
-    arrowSpan2.setAttribute("id", "security");
+    setAttributes(arrowSpan2, {"id": "security"});
     arrowSpan2.style.margin = "0 10px";
 
-    title1.setAttribute("id", "section1");
-    title2.setAttribute("id", "section2");
-    title3.setAttribute("id", "section3");
+    setAttributes(title1, {"id": "section1"});
+    setAttributes(title2, {"id": "section2"});
+    setAttributes(title3, {"id": "section3"});
 
     part1.classList.add("txtSectionDiv");
     part1.innerHTML = "Personal information";
