@@ -12,7 +12,7 @@ class User(AbstractUser):
     password = models.CharField(max_length=100, blank=True)
     image_url = models.URLField(blank=True)
     image = models.ImageField(default='profile_pics/default_pp.jpg', upload_to='profile_pics/')
-    friends = models.ManyToManyField("self", blank=True)
+    friends = models.ManyToManyField("User", blank=True)
     status_choices = [
         ('online', 'Online'),
         ('offline', 'Offline'),

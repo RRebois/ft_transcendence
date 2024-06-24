@@ -652,6 +652,5 @@ class GetFriendView(APIView):
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
-        friendList = (user.friends)
-                          values('from_user__username', 'time', 'status', 'from_user_id'))
-        return JsonResponse(list(friendRequests), safe=False)
+        friendList = user.friends.all().values('username', 'id', 'status')
+        return JsonResponse(list(friendList), safe=False)

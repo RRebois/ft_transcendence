@@ -65,10 +65,6 @@ function load_friends_page(username) {
     sendReqBtn.type = "submit";
     sendReqBtn.innerText = "Send";
 
-    const headerReq = document.createElement('div');
-    headerReq.classList.add("txtSectionDiv");
-    headerReq.innerHTML = "Friend requests";
-
     friendsDivElement.appendChild(globalContainer);
 
     const friendRequestContainer = document.createElement('div');
@@ -76,10 +72,23 @@ function load_friends_page(username) {
     friendRequestContainer.classList.add('friendPage');
     friendRequestContainer.style.marginTop = '30px';
 
-    const friendListContainer = document.createElement()
+    const headerReq = document.createElement('div');
+    headerReq.classList.add("txtSectionDiv");
+    headerReq.innerHTML = "Friend requests";
+
+    const friendListContainer = document.createElement('div')
+    friendListContainer.id = 'friendList';
+    friendListContainer.classList.add('friendPage');
+    friendListContainer.style.marginTop = '30px';
+
+    const headerFriends = document.createElement('div');
+    headerFriends.classList.add("txtSectionDiv");
+    headerFriends.innerHTML = "Friends";
 
     friendRequestContainer.appendChild(headerReq);
+    friendListContainer.appendChild(headerFriends);
     globalContainer.appendChild(friendRequestContainer);
+    globalContainer.appendChild(friendListContainer);
 
     sendReqBtn.addEventListener('click', () => {
         event.preventDefault();
@@ -114,25 +123,32 @@ function load_friends_page(username) {
         .then(response => response.json())
         .then(data => {
             console.log(data);
-            // friendRequestContainer.innerHTML = '';
-
-            data.forEach(request => {
-                const friendRequestItem = document.createElement('div');
-                friendRequestItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white', 'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
-                friendRequestItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px';
-                friendRequestItem.innerHTML = `
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">From: ${request.from_user__username}</h5>
-                        <p class="mb-1">Sent: ${new Date(request.time).toLocaleString()}</p>
-                    </div>
-                    <p class="mb-1">Status: ${request.status}</p>
-                    <div class="buttonsContainer">
-                        <button type="button" class="acceptBtn btn btn-primary" style="background: #209920; border-color: #040303" data-id="${request.from_user_id}">Accept</button>
-                        <button type="button" class="declineBtn btn btn-primary" style="background: #e3031c; border-color: #040303" data-id="${request.from_user_id}">Decline</button>
-                    </div>
-                `;
-                friendRequestContainer.appendChild(friendRequestItem);
-            });
+            if (Array.isArray(data) && data.length > 0) {
+                data.forEach(request => {
+                    const friendRequestItem = document.createElement('div');
+                    friendRequestItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white', 'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
+                    friendRequestItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px';
+                    friendRequestItem.innerHTML = `
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">From: ${request.from_user__username}</h5>
+                            <p class="mb-1">Sent: ${new Date(request.time).toLocaleString()}</p>
+                        </div>
+                        <p class="mb-1">Status: ${request.status}</p>
+                        <div class="buttonsContainer">
+                            <button type="button" class="acceptBtn btn btn-primary" style="background: #209920; border-color: #040303" data-id="${request.from_user_id}">Accept</button>
+                            <button type="button" class="declineBtn btn btn-primary" style="background: #e3031c; border-color: #040303" data-id="${request.from_user_id}">Decline</button>
+                        </div>
+                    `;
+                    friendRequestContainer.appendChild(friendRequestItem);
+                });
+            }
+            else {
+                    const friendRequestItem = document.createElement('div');
+                    friendRequestItem.innerHTML = `
+                    <div>No friend request yet</div>
+                    `;
+                    friendRequestContainer.appendChild(friendRequestItem);
+                }
 
             document.querySelectorAll('.acceptBtn').forEach(button => {
                 button.addEventListener('click', function () {
@@ -193,7 +209,6 @@ function load_friends_page(username) {
                             this.style.background = '#a55b5b';
                             this.style.color = 'white';
                             this.classList.add('acceptedBtn');
-                            // this.disabled = true;
                             acceptBtn.classList.remove('btn-primary');
                             acceptBtn.style.background= '';
                             acceptBtn.classList.add('btn-success', 'acceptedBtn');
@@ -206,7 +221,37 @@ function load_friends_page(username) {
             });
         })
         .catch(error => console.error('Error fetching friend requests:', error));
+
+
+    fetch ('get_friends')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            if (Array.isArray(data) && data.length > 0) {
+                data.forEach(request => {
+                    const friendItem = document.createElement('div');
+                    friendItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white', 'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
+                    friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px';
+                    friendItem.innerHTML = `
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">${request.username}</h5>
+                            </div>
+                            <p class="mb-1">Status: ${request.status}</p>
+                        `;
+                    friendListContainer.appendChild(friendItem);
+                });
+            }
+            else {
+                const friendItem = document.createElement('div');
+                friendItem.innerHTML = `
+                    <div>No friends yet</div>
+                `;
+                friendListContainer.appendChild(friendItem);
+            }
+        })
 }
+
+
 
 function displayMessage(message, level) {
     const messagesContainer = document.getElementById('messagesContainer');
