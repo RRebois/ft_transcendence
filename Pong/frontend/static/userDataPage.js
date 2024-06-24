@@ -162,7 +162,6 @@ function load_stats_page(username) {
                         widthValue += 1;
                 if (widthValue != 0)
                     widthV = (Math.round(100 / widthValue) - 2);
-//                    widthV = ((statsDiv.offsetWidth / widthValue) - 10) * 100 / statsDiv.offsetWidth;
 
                 if (element.checked == false) {
                     const   rmDivStats = document.getElementById(`div${element.value}`);
@@ -205,43 +204,40 @@ function load_stats_page(username) {
                     // Create pie chart to display winrate
                     const chart = document.createElement('div');
                     chart.className = "d-none d-sm-block";
-                    if ((values['losses'][0] == 0 && values['losses'][1] == 0
-                        && values['wins'][0] == 0 && values['wins'][1] == 0)
-                        || (values['losses'][0] == 0 && values['wins'][0] == 0)
-                        || (values['losses'][1] == 0 && values['wins'][1] == 0)) {
-                        chart.innerHTML = "Pie chart not available yet!";
-                        chart.style.textAlign = "center";
-                        console.log("here no chart available");
+
+                    const   pieChart = document.createElement('canvas');
+                    setAttributes(pieChart, {'id': `winratePie${element.value}`});
+
+                    chart.style.maxWidth = "50vh";
+                    chart.style.maxHeight = "50vh";
+                    chart.style.minWidth = "30vh";
+                    chart.style.minHeight = "30vh";
+                    chart.style.margin = "0px auto";
+
+                    let wins, losses, winrate;
+                    if (element.value == 'pong') {
+                        wins = values['wins'][0];
+                        losses = values['losses'][0];
+                        winrate = values['winrate'][0];
+                    }
+                    else if (element.value == 'all') {
+                        wins = values['wins'][0] + values['wins'][1];
+                        losses = values['losses'][0] + values['losses'][1];
+                        winrate = Math.round(((values['wins'][0] + values['wins'][1]) /
+                                (values['wins'][0] + values['wins'][1] +
+                                values['losses'][0] + values['losses'][1])) * 100);
                     }
                     else {
-                        const   pieChart = document.createElement('canvas');
-                        setAttributes(pieChart, {'id': `winratePie${element.value}`});
+                        wins = values['wins'][1];
+                        losses = values['losses'][1];
+                        winrate = values['winrate'][1];
+                    }
 
-                        chart.style.maxWidth = "50vh";
-                        chart.style.maxHeight = "50vh";
-                        chart.style.minWidth = "30vh";
-                        chart.style.minHeight = "30vh";
-                        chart.style.margin = "0px auto";
-
-                        let wins, losses, winrate;
-                        if (element.value == 'pong') {
-                            wins = values['wins'][0];
-                            losses = values['losses'][0];
-                            winrate = values['winrate'][0];
-                        }
-                        else if (element.value == 'all') {
-                            wins = values['wins'][0] + values['wins'][1];
-                            losses = values['losses'][0] + values['losses'][1];
-                            winrate = ((values['wins'][0] + values['wins'][1]) /
-                                    (values['wins'][0] + values['wins'][1] +
-                                    values['losses'][0] + values['losses'][1])) * 100;
-                        }
-                        else {
-                            wins = values['wins'][1];
-                            losses = values['losses'][1];
-                            winrate = values['winrate'][1];
-                        }
-
+                    if (wins + losses == 0) {
+                        chart.innerHTML = "Pie chart not available yet!";
+                        chart.style.textAlign = "center";
+                    }
+                    else {
                         const winrateData = {
                             labels: [`Defeats (${losses})` , `Victories (${wins})`],
                             datasets: [{
@@ -284,13 +280,19 @@ function load_stats_page(username) {
                             document.getElementById('divpong').after(mainDivStats);
                         else
                             radioDiv.after(mainDivStats);
-//                    statsDiv.append(mainDivStats);
+
+                    // fetch game history depending on div
+                    fetch(`matchs/${username}:${element.value}`)
+                    .then(response => response.json())
+                    .then(matchs => {
+                        console.log(matchs);
+                    })
+                    .catch (err => console.log(err));
                 }
             })
             .catch (err => console.log(err));
         })
     })
-
 }
 
 function load_main_page() {

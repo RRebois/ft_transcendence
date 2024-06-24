@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from django.http import Http404, JsonResponse
+from django.db.models import Q
 
 from userManagement.models import User, UserData
 from .models import *
@@ -12,13 +13,20 @@ from .models import *
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class MatchHistoryView(APIView):
-    def get(self, request, username):
+    def get(self, request, username, word):
         try:
-            matchs = Match.objects.filter(players=User.objects.get(username=username))
+            user = User.objects.get(username=username)
         except User.DoesNotExist:
             raise Http404("error: User does not exists.")
-
-        return JsonResponse([match.serialize() for match in matchs], safe=False)
+        if word == 'all':
+            matches = Match.objects.filter(Q(score__contains={str(user.id): None}))
+        elif word == 'pong':
+            matches = Match.objects.filter(Q(score__contains={str(user.id): None}) & Q(is_pong=True))
+        elif word == 'purrinha':
+            matches = Match.objects.filter(Q(score__contains={str(user.id): None}) & Q(is_pong=False))
+        else:
+            raise Http404("error: Data does not exists.")
+        return JsonResponse([match.serialize() for match in matches], safe=False)
 
 
 @method_decorator(csrf_protect, name='dispatch')

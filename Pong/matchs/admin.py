@@ -8,21 +8,21 @@ from userManagement.models import User
 #https://books.agiliq.com/projects/django-admin-cookbook/en/latest/many_to_many.html
 @admin.register(Match)
 class MatchAdmin(admin.ModelAdmin):
-    def players_display(self, obj):
-        return ", ".join([
-            User.username for User in obj.players.all()
-        ])
-    players_display.short_description = "Players"
-    list_display = ("pk", "winner", "players_display", "score", "timeMatch")
-    filter_horizontal = ("players",)
+    # def players_display(self, obj):
+    #     return ", ".join([
+    #         User.username for User in obj.players.all()
+    #     ])
+    # players_display.short_description = "Players"
+    list_display = ("pk", "winner", "score", "timeMatch")
+    # filter_horizontal = ("players",)
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "winner":
-            if request._obj_ is not None:
-                kwargs["queryset"] = request._obj_.players.all()
-            else:
-                kwargs["queryset"] = User.objects.none()
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    # def formfield_for_foreignkey(self, db_field, request, **kwargs):
+    #     if db_field.name == "winner":
+    #         if request._obj_ is not None:
+    #             kwargs["queryset"] = request._obj_.score.all()[0]
+    #         else:
+    #             kwargs["queryset"] = User.objects.none()
+    #     return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def get_form(self, request, obj=None, **kwargs):
         request._obj_ = obj

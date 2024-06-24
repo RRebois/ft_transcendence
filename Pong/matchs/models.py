@@ -5,7 +5,7 @@ from django.contrib.postgres.fields import ArrayField
 
 
 class Match(models.Model):
-    players = models.ManyToManyField('userManagement.User', related_name="players", default=list)
+    # players = models.ManyToManyField('userManagement.User', related_name="players")
     winner = models.ForeignKey('userManagement.User', on_delete=models.CASCADE,
                                blank=True, null=True)
     score = models.JSONField(default=dict)
@@ -17,17 +17,21 @@ class Match(models.Model):
     class Meta:
         ordering = ['-timeMatch']
 
+    # def serialize(self):
+    #     return {
+    #         'id': self.id,
+    #         'game': 'Pong' if self.is_pong else 'Purrinha',
+    #         "players": [User.username for User in self.players.all()],
+    #         "winner": self.winner.id,
+    #         "score": self.score,
+    #         "timestamp": self.timeMatch.strftime("%b %d %Y, %I:%M %p"),
+    #     }
+
     def serialize(self):
         return {
             'id': self.id,
             'game': 'Pong' if self.is_pong else 'Purrinha',
-            "players": [
-                {
-                    'username': User['username'],
-                    'score': self.score[User['username']],
-                }
-                for User in self.players.all()
-            ],
+            "scores": self.score,
             "winner": self.winner.username,
             "timestamp": self.timeMatch.strftime("%b %d %Y, %I:%M %p"),
         }
