@@ -66,6 +66,7 @@ function load_stats_page(username) {
     // Hides main page elements and display user stats elements:
     document.getElementById('greetings').style.display = 'none';
     document.getElementById('mainDiv').style.display = 'block';
+    document.getElementById('friendsDiv').style.display = 'none';
 
     // Fetch user stat data + create div element for each data:
     fetch(`stats/${username}`)

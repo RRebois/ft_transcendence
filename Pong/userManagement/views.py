@@ -279,24 +279,6 @@ class UserPersonalInformationView(APIView):
         return JsonResponse(user.serialize())
 
 
-# @method_decorator(csrf_protect, name='dispatch')
-# class UpdateUserView(APIView):
-#     serializer_class = UserSerializer
-#     def put(self, request):
-#          try:
-#             user = authenticate_user(request)
-#         except AuthenticationFailed as e:
-#             messages.warning(request, str(e))
-#             return redirect('index')
-#
-#         serializer = self.serializer_class(user, data=request.data, partial=True)
-#         if serializer.is_valid(raise_exception=True):
-#             serializer.save()
-#             return Response({"detail": "Data changed successfully"},
-#                             status=status.HTTP_200_OK)
-#         return Response(serializer.errors, status=status.HTTP_403_FORBIDDEN)
-#
-#
 @method_decorator(csrf_protect, name='dispatch')
 class PasswordChangeView(APIView):
     serializer_class = PasswordChangeSerializer
@@ -661,3 +643,15 @@ class ListFriendsView(APIView):
             return Response(friends_data, status=status.HTTP_200_OK)
         else:
             return Response({'detail': 'No friends yet.'}, status=status.HTTP_200_OK)
+
+
+class GetFriendView(APIView):
+    def get(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        friendList = (user.friends)
+                          values('from_user__username', 'time', 'status', 'from_user_id'))
+        return JsonResponse(list(friendRequests), safe=False)

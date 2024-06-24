@@ -11,6 +11,7 @@ function load_friends_page(username) {
     create_div_title(username, "friends", "friendsDiv");
     document.getElementById('greetings').style.display = 'none';
     document.getElementById('mainDiv').style.display = 'none';
+    document.getElementById('friendsDiv').style.display = 'block';
 
     const globalContainer = document.createElement('div');
     const sendRequestForm = document.createElement('form');
@@ -64,11 +65,20 @@ function load_friends_page(username) {
     sendReqBtn.type = "submit";
     sendReqBtn.innerText = "Send";
 
+    const headerReq = document.createElement('div');
+    headerReq.classList.add("txtSectionDiv");
+    headerReq.innerHTML = "Friend requests";
+
     friendsDivElement.appendChild(globalContainer);
 
     const friendRequestContainer = document.createElement('div');
     friendRequestContainer.id = 'friendRequest';
     friendRequestContainer.classList.add('friendPage');
+    friendRequestContainer.style.marginTop = '30px';
+
+    const friendListContainer = document.createElement()
+
+    friendRequestContainer.appendChild(headerReq);
     globalContainer.appendChild(friendRequestContainer);
 
     sendReqBtn.addEventListener('click', () => {
@@ -104,7 +114,7 @@ function load_friends_page(username) {
         .then(response => response.json())
         .then(data => {
             console.log(data);
-            friendRequestContainer.innerHTML = '';
+            // friendRequestContainer.innerHTML = '';
 
             data.forEach(request => {
                 const friendRequestItem = document.createElement('div');

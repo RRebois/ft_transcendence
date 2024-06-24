@@ -89,6 +89,8 @@ function load_profile_page(username) {
     mainDivEl.innerHTML = "";
     create_div_title(username, "profile", "mainDiv");
     document.getElementById('greetings').style.display = 'none';
+    document.getElementById('friendsDiv').style.display = 'none';
+
 
     // Create elements to display
     const   title1 = document.createElement('div');
