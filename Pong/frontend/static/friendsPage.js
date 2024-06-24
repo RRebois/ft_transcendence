@@ -110,7 +110,7 @@ function load_friends_page(username) {
             if (data.redirect) {
                 window.location.href = data.redirect_url;
             }
-            else if (status != 401) {
+            else if (status !== 401) {
                 if (data.level && data.message) {
                     displayMessage(data.message, data.level);
                 }
@@ -230,12 +230,14 @@ function load_friends_page(username) {
             if (Array.isArray(data) && data.length > 0) {
                 data.forEach(request => {
                     const friendItem = document.createElement('div');
-                    friendItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white', 'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
+                    friendItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white',
+                                            'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
                     friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px';
                     friendItem.innerHTML = `
-                            <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1">${request.username}</h5>
+                            <div class="roundBorder nav-item">
+                                <img src="media/${request.image}" alt="avatar">
                             </div>
+                            <h5 class="mb-1">${request.username}</h5>
                             <p class="mb-1">Status: ${request.status}</p>
                         `;
                     friendListContainer.appendChild(friendItem);
