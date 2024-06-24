@@ -15,15 +15,15 @@ from .models import *
 class MatchHistoryView(APIView):
     def get(self, request, username, word):
         try:
-            user = User.objects.get(username=username)
+            user_id = User.objects.get(username=username).id
         except User.DoesNotExist:
             raise Http404("error: User does not exists.")
         if word == 'all':
-            matches = Match.objects.filter(Q(score__contains={str(user.id): None}))
+            matches = Match.objects.filter(Q(score__contains={str(user_id): None}))
         elif word == 'pong':
-            matches = Match.objects.filter(Q(score__contains={str(user.id): None}) & Q(is_pong=True))
+            matches = Match.objects.filter(Q(score__contains={str(user_id): None}) & Q(is_pong=True))
         elif word == 'purrinha':
-            matches = Match.objects.filter(Q(score__contains={str(user.id): None}) & Q(is_pong=False))
+            matches = Match.objects.filter(Q(score__contains={str(user_id): None}) & Q(is_pong=False))
         else:
             raise Http404("error: Data does not exists.")
         return JsonResponse([match.serialize() for match in matches], safe=False)

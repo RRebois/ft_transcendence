@@ -282,10 +282,10 @@ function load_stats_page(username) {
                             radioDiv.after(mainDivStats);
 
                     // fetch game history depending on div
-                    fetch(`matchs/${username}:${element.value}`)
+                    fetch(`matches/${username}:${element.value}`)
                     .then(response => response.json())
-                    .then(matchs => {
-                        console.log(matchs);
+                    .then(matches => {
+                        console.log(matches);
                     })
                     .catch (err => console.log(err));
                 }
