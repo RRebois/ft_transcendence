@@ -114,6 +114,7 @@ function load_stats_page(username) {
     // Create radio button groups to display both game data or pong data or purrinha data
     const   radioDiv = document.createElement('div');
     radioDiv.style.textAlign = 'center';
+    radioDiv.style.margin = '10px 0px';
     const   radioSubDiv1 = document.createElement('div');
     const   radioSubDiv2 = document.createElement('div');
     const   radioSubDiv3 = document.createElement('div');
@@ -124,139 +125,172 @@ function load_stats_page(username) {
     const   radioInput1 = document.createElement('input');
     const   radioInput2 = document.createElement('input');
     const   radioInput3 = document.createElement('input');
-    setAttributes(radioInput1, {'class': 'form-check-input', 'type': 'checkbox', 'name': 'radiobtn', 'id': 'radio1', 'value': 'pong'});
-    setAttributes(radioInput2, {'class': 'form-check-input', 'type': 'checkbox', 'name': 'radiobtn', 'id': 'radio2', 'value': 'all'});
+    setAttributes(radioInput1, {'class': 'form-check-input', 'type': 'checkbox', 'name': 'radioBtn', 'id': 'radio1', 'value': 'pong'});
+    setAttributes(radioInput2, {'class': 'form-check-input', 'type': 'checkbox', 'name': 'radioBtn', 'id': 'radio2', 'value': 'all'});
     radioInput2.checked = true;
-    setAttributes(radioInput3, {'class': 'form-check-input', 'type': 'checkbox', 'name': 'radiobtn', 'id': 'radio3', 'value': 'purrinha'});
+    setAttributes(radioInput3, {'class': 'form-check-input', 'type': 'checkbox', 'name': 'radioBtn', 'id': 'radio3', 'value': 'purrinha'});
 
     const   radioLabel1 = document.createElement('label');
     const   radioLabel2 = document.createElement('label');
     const   radioLabel3 = document.createElement('label');
-    setAttributes(radioLabel1, {'class': 'form-check-label', 'for': 'radio1'});
+    setAttributes(radioLabel1, {'class': 'form-check-label'});
     radioLabel1.textContent = "Pong stats";
-    setAttributes(radioLabel2, {'class': 'form-check-label', 'for': 'radio2'});
+    setAttributes(radioLabel2, {'class': 'form-check-label'});
     radioLabel2.textContent = "Both games stats";
-    setAttributes(radioLabel3, {'class': 'form-check-label', 'for': 'radio3'});
+    setAttributes(radioLabel3, {'class': 'form-check-label'});
     radioLabel3.textContent = "Purrinha stats";
 
     radioSubDiv1.append(radioInput1, radioLabel1);
     radioSubDiv2.append(radioInput2, radioLabel2);
     radioSubDiv3.append(radioInput3, radioLabel3);
     radioDiv.append(radioSubDiv1, radioSubDiv2, radioSubDiv3);
+    setAttributes(radioDiv, {'id': 'radioDiv'});
     document.querySelector('#statsDiv').append(radioDiv);
 
-    // Fetch user stat data + create div element for each data:
-    if (document.getElementById('statsDiv').style.display === 'block')
-    {
-        if (radioInput1.checked == false && radioInput2.checked == false && radioInput3.checked == false) {
-            const   tipDiv = document.createElement('div');
-            setAttributes(tipDiv, {'id': 'tipDiv'});
-            tipDiv.innerHTML = "Select one of the three checkboxes above to see the detailed information of your stats.";
-            document.querySelector('#statsDiv').append(tipDiv);
-
-            // Remove stats if present
-            const   divDisplayStats = document.querySelectorAll('displayStats');
-            if (divDisplayStats != null)
-                console.log('hi');
-                // TODO
-        }
-        else {
-            const   rmTip = document.getElementById('tipDiv');
-            if (rmTip != null)
-                rmTip.remove();
-
-            // Display main div with data of both games
+    // Add event listener to all checkboxes
+    const   checkBtn = document.getElementsByName('radioBtn');
+    checkBtn.forEach(element => {
+        element.addEventListener('click', () => {
             fetch(`stats/${username}`)
             .then(response => response.json())
             .then(values => {
-                console.log(values);
+                // Calculate width depending on how many stats divs are displayed
+                let   widthValue = 0;
+                let widthV = 100;
+                for (let i = 0; i < checkBtn.length; i++)
+                    if (checkBtn[i].checked == true)
+                        widthValue += 1;
+                if (widthValue != 0)
+                    widthV = (Math.round(100 / widthValue) - 2);
+//                    widthV = ((statsDiv.offsetWidth / widthValue) - 10) * 100 / statsDiv.offsetWidth;
 
-                const   statMainDiv = document.createElement('div');
-                const   stat = document.createElement('div');
-                const   statEloPong = document.createElement('div');
-                const   statEloPurr = document.createElement('div');
-                statEloPong.classList.add("divElo");
-                statEloPurr.classList.add("divElo");
-
-                statEloPong.innerHTML = "Pong current elo / highest: " + values['elo_pong'] + " / " + values['elo_highest'][0];
-                statEloPurr.innerHTML = "Purrinha current elo / highest: " + values['elo_purrinha'] + " / " + values['elo_highest'][1];
-                stat.append(statEloPong, statEloPurr);
-
-                statMainDiv.append(stat);
-
-                // Create pie chart to display winrate
-                const chart = document.createElement('div');
-                if (values[losses][0] == 0 && values[losses][1] == 0)
-                    && values[wins][0] == 0 && values[wins][1] == 0{
-                    chart.innerHTML = "Pie chart not available yet!";
-                    chart.style.textAlign = "center";
-                    statMainDiv.append(chart);
+                if (element.checked == false) {
+                    const   rmDivStats = document.getElementById(`div${element.value}`);
+                    if (rmDivStats != null)
+                        rmDivStats.remove();
+                    const   allMainDivStats = document.querySelectorAll('.mainDivStats');
+                    if (allMainDivStats.length > 0)
+                        allMainDivStats.forEach(element => {
+                            element.style.width = `${widthV}%`;
+                        });
                 }
                 else {
-                    const pieChart = document.createElement('canvas');
-                    setAttributes(pieChart, {'id': 'winratePie'});
-                    chart.style.maxWidth = "100vh";
-                    chart.style.maxHeight = "100vh";
-                    chart.style.minWidth = "30vh";
-                    chart.style.minHeight = "30vh";
-                    chart.style.margin = "0px auto";
-                    chart.append(pieChart);
-                    statMainDiv.append(chart);
+                    // Create main div to display stats of selected checkbox
+                    const   mainDivStats = document.createElement('div');
+                    setAttributes(mainDivStats, {'id': `div${element.value}`, 'class': 'mainDivStats'});
 
-                    const winrateData = {
-                        labels: [`Defeats (${values.losses})` , `Victories (${values.wins})`],
-                        datasets: [{
-                            label: "Winrate",
-                            data: [`${values.losses}`, `${values.wins}`],
-                            backgroundColor: ["rgb(255,99,132)", "rgb(0,128,0)"],
-                            borderColor: "black",
-                            hoverOffset: 4,
-                            pointBorderWidth: 1,
-                            pointHoverBorderWidth: 2
-                        }]
-                    };
+                    const   allMainDivStats = document.querySelectorAll('.mainDivStats');
+                    if (allMainDivStats.length > 0)
+                        allMainDivStats.forEach(element => {
+                            element.style.width = `${widthV}%`;
+                        });
+                    mainDivStats.style.width = `${widthV}%`;
 
-                    new Chart("winratePie", {
+                    // create other div to display elo
+                    const   stat = document.createElement('div');
+                    if (element.value === 'all' || element.value === 'pong') {
+                        const   statEloPong = document.createElement('div');
+                        statEloPong.classList.add("divElo");
+                        statEloPong.innerHTML = "Pong current elo / highest: " + values['elo_pong'] + " / " + values['elo_highest'][0];
+                        stat.append(statEloPong);
+                    }
+                    if (element.value === 'all' || element.value === 'purrinha') {
+                        const   statEloPurr = document.createElement('div');
+                        statEloPurr.classList.add("divElo");
+                        statEloPurr.innerHTML = "Purrinha current elo / highest: " + values['elo_purrinha'] + " / " + values['elo_highest'][1];
+                        stat.append(statEloPurr);
+                    }
+                    mainDivStats.append(stat);
+
+                    // Create pie chart to display winrate
+                    const chart = document.createElement('div');
+                    chart.className = "d-none d-sm-block";
+                    if ((values['losses'][0] == 0 && values['losses'][1] == 0
+                        && values['wins'][0] == 0 && values['wins'][1] == 0)
+                        || (values['losses'][0] == 0 && values['wins'][0] == 0)
+                        || (values['losses'][1] == 0 && values['wins'][1] == 0)) {
+                        chart.innerHTML = "Pie chart not available yet!";
+                        chart.style.textAlign = "center";
+                        console.log("here no chart available");
+                    }
+                    else {
+                        const   pieChart = document.createElement('canvas');
+                        setAttributes(pieChart, {'id': `winratePie${element.value}`});
+
+                        chart.style.maxWidth = "50vh";
+                        chart.style.maxHeight = "50vh";
+                        chart.style.minWidth = "30vh";
+                        chart.style.minHeight = "30vh";
+                        chart.style.margin = "0px auto";
+
+                        let wins, losses, winrate;
+                        if (element.value == 'pong') {
+                            wins = values['wins'][0];
+                            losses = values['losses'][0];
+                            winrate = values['winrate'][0];
+                        }
+                        else if (element.value == 'all') {
+                            wins = values['wins'][0] + values['wins'][1];
+                            losses = values['losses'][0] + values['losses'][1];
+                            winrate = ((values['wins'][0] + values['wins'][1]) /
+                                    (values['wins'][0] + values['wins'][1] +
+                                    values['losses'][0] + values['losses'][1])) * 100;
+                        }
+                        else {
+                            wins = values['wins'][1];
+                            losses = values['losses'][1];
+                            winrate = values['winrate'][1];
+                        }
+
+                        const winrateData = {
+                            labels: [`Defeats (${losses})` , `Victories (${wins})`],
+                            datasets: [{
+                                label: "Winrate",
+                                data: [losses, wins],
+                                backgroundColor: ["rgb(255,99,132)", "rgb(0,128,0)"],
+                                borderColor: "black",
+                                hoverOffset: 4,
+                                pointBorderWidth: 1,
+                                pointHoverBorderWidth: 2
+                            }]
+                        };
+                        const   ctx = pieChart.getContext("2d");
+                        new Chart(ctx, {
                         type: "pie",
                         data: winrateData,
                         options: {
                             title: {
                                 display: true,
-                                text: `Winrate ${values.winrate}`,
-                            },
-                        }
-                    });
-                }
-
-
-                // Create history matchs for current user
-                const matchHistory = document.createElement('div');
-                matchHistory.classList.add("matchHistoryDiv");
-
-                const header = document.createElement('div');
-                header.innerHTML = "Match history";
-                header.classList.add("txtSectionDiv");
-                matchHistory.append(header);
-
-                fetch(`matchs/${username}`)
-                .then(response => response.json())
-                .then(matches => {
-                    if (matches.length > 0)
-                        for (let i = 0; i < matches.length; i++)
-                            create_div(matches[i], matchHistory, username);
-                    else {
-                        const   tmp = document.createElement('div');
-                        tmp.innerHTML = "No game played yet!"
-                        matchHistory.append(tmp);
+                                text: `Winrate ${winrate}%`,
+                                },
+                            }
+                        });
+                        chart.append(pieChart);
                     }
 
-                })
-                statMainDiv.append(matchHistory);
-                document.querySelector('#statsDiv').append(statMainDiv);
+                    // Append all into mainDiv
+                    mainDivStats.append(chart);
+                    if (mainDivStats.id == 'divpong')
+                        document.getElementById('radioDiv').after(mainDivStats);
+                    else if (mainDivStats.id == 'divall')
+                        if (document.getElementById('divpong') != null)
+                            document.getElementById('divpong').after(mainDivStats);
+                        else
+                            radioDiv.after(mainDivStats);
+                    else
+                        if (document.getElementById('divall') != null)
+                            document.getElementById('divall').after(mainDivStats);
+                        else if (document.getElementById('divpong') != null)
+                            document.getElementById('divpong').after(mainDivStats);
+                        else
+                            radioDiv.after(mainDivStats);
+//                    statsDiv.append(mainDivStats);
+                }
             })
-            .catch(error => console.error('Error:', error));
-        }
-    }
+            .catch (err => console.log(err));
+        })
+    })
+
 }
 
 function load_main_page() {

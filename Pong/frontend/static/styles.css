@@ -52,6 +52,9 @@
     text-decoration: underline;
     --borderWidth: 3px;
     position: relative;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .title_div:after {
@@ -68,13 +71,30 @@
   background-size: 300% 300%;
 }
 
+#statsDiv {
+    text-align: center;
+    border: 2px solid black;
+    min-width: 98%;
+}
+
 .divElo {
     color: black;
-    font-size: 15px;
     margin: 5px auto;
     padding: 5px;
-    max-width: fit-content;
-    border-bottom: 1px solid black;
+    text-decoration: underline;
+}
+
+.mainDivStats {
+    border: 2px solid black;
+    min-width: fit-content;
+    display: inline-block;
+    margin: 10px 2px;
+    text-align: center;
+}
+
+.mainDivStats:hover {
+    border: 3px solid black;
+    box-shadow: 2px 2px #100C08;
 }
 
 .matchHistoryDiv {
