@@ -81,12 +81,12 @@ def create_match(match_result, winner, is_pong=True):
     for player_username in match_result.keys():
         player = User.objects.get(username=player_username)
         players_data.append(UserData.objects.get(user_id=player))
-        score = PlayerScore.objects.update_or_create(
+        score = PlayerScore.objects.create(
             player=player, 
             match=match, 
-            create_defaults={'score' : match_result[player_username]}
+            score=match_result[player_username]
             )
-        score[0].save()
+        score.save()
         if player_username == winner:
             match.winner = player
         match.players.add(player)
