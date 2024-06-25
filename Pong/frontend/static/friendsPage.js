@@ -28,7 +28,7 @@ function load_friends_page(username) {
     globalContainer.appendChild(sendRequestForm);
 
     sendRequestForm.className = "friendPage bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card";
-    sendRequestForm.style.cssText = "--bs-bg-opacity: .5;";
+    sendRequestForm.style.cssText = "--bs-bg-opacity: .5; width: 50%";
     sendRequestForm.id = "addFriend"
     sendRequestForm.appendChild(sendReqTitle);
     sendRequestForm.appendChild(sendReqUserBar);
@@ -127,7 +127,7 @@ function load_friends_page(username) {
                 data.forEach(request => {
                     const friendRequestItem = document.createElement('div');
                     friendRequestItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white', 'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
-                    friendRequestItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px';
+                    friendRequestItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto';
                     friendRequestItem.innerHTML = `
                         <div class="d-flex w-100 justify-content-between">
                             <h5 class="mb-1">From: ${request.from_user__username}</h5>
@@ -232,13 +232,14 @@ function load_friends_page(username) {
                     const friendItem = document.createElement('div');
                     friendItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white',
                                             'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
-                    friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px';
+                    friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; justify-content: space-between; width: 50%; ' +
+                                                'display: block; margin-left: auto; margin-right: auto';
                     friendItem.innerHTML = `
-                            <div class="roundBorder nav-item">
+                            <div class="roundBorder nav-item" style="display: flex">
                                 <img src="media/${request.image}" alt="avatar">
                             </div>
-                            <h5 class="mb-1">${request.username}</h5>
-                            <p class="mb-1">Status: ${request.status}</p>
+                            <h5 class="mb-1" style="display: flex">${request.username}</h5>
+                            <p class="mb-1" style="display: flex">Status: ${request.status}</p>
                         `;
                     friendListContainer.appendChild(friendItem);
                 });
