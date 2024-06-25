@@ -285,7 +285,14 @@ function load_stats_page(username) {
                     fetch(`matches/${username}:${element.value}`)
                     .then(response => response.json())
                     .then(matches => {
-                        console.log(matches);
+                        console.log('Raw response:', matches); // Log the raw response
+                        try {
+                            const parsedData = JSON.parse(matches); // Parse the JSON
+                            console.log('Parsed data:', parsedData); // Log the parsed data
+                            // Your logic to handle parsedData
+                        } catch (error) {
+                            console.error('JSON parse error:', error.message); // Log any JSON parse errors
+                        }
                     })
                     .catch (err => console.log(err));
                 }
