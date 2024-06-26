@@ -24,7 +24,7 @@ function load_friends_page(username) {
     const sendReqInput = document.createElement('input');
     const sendReqBtn = document.createElement('button');
 
-    globalContainer.className = "w-100 h-100 d-flex flex-column justify-content-center align-items-center";
+    globalContainer.className = "friendPage w-100 h-100 d-flex flex-column justify-content-center align-items-center";
     globalContainer.appendChild(sendRequestForm);
 
     sendRequestForm.className = "friendPage bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card";
@@ -69,7 +69,7 @@ function load_friends_page(username) {
 
     const friendRequestContainer = document.createElement('div');
     friendRequestContainer.id = 'friendRequest';
-    friendRequestContainer.classList.add('friendPage');
+    friendRequestContainer.classList.add('friendPage', 'w-100');
     friendRequestContainer.style.marginTop = '30px';
 
     const headerReq = document.createElement('div');
@@ -78,7 +78,7 @@ function load_friends_page(username) {
 
     const friendListContainer = document.createElement('div')
     friendListContainer.id = 'friendList';
-    friendListContainer.classList.add('friendPage');
+    friendListContainer.classList.add('friendPage', 'w-100');
     friendListContainer.style.marginTop = '30px';
 
     const headerFriends = document.createElement('div');
@@ -111,6 +111,7 @@ function load_friends_page(username) {
                 window.location.href = data.redirect_url;
             }
             else if (status !== 401) {
+                sendReqInput.value = "";
                 if (data.level && data.message) {
                     displayMessage(data.message, data.level);
                 }
@@ -203,7 +204,10 @@ function load_friends_page(username) {
                         return response.json().then(data => ({status: response.status, data: data}));
                     })
                     .then(({ status, data }) => {
-                        if (status === 200) {
+                         if (data.redirect) {
+                            window.location.href = data.redirect_url;
+                        }
+                        else if (status !== 401) {
                             this.innerText = 'Declined';
                             this.classList.remove('btn-primary');
                             this.style.background = '#a55b5b';
@@ -212,11 +216,8 @@ function load_friends_page(username) {
                             acceptBtn.classList.remove('btn-primary');
                             acceptBtn.style.background= '';
                             acceptBtn.classList.add('btn-success', 'acceptedBtn');
-                        } else {
-                            throw new Error(data.message || 'Unknown error occurred.');
                         }
                     })
-                    .catch(error => {displayMessage(error, "error")});
                 });
             });
         })
@@ -231,29 +232,61 @@ function load_friends_page(username) {
                 data.forEach(request => {
                     const friendItem = document.createElement('div');
                     friendItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white',
-                                            'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
-                    friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; justify-content: space-between; width: 50%; ' +
-                                                'display: block; margin-left: auto; margin-right: auto';
+                        'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
+                    friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; justify-content: space-between; width: 50%; 'load +
+                        'display: block; margin-left: auto; margin-right: auto';
                     friendItem.innerHTML = `
-                            <div class="roundBorder nav-item" style="display: flex">
-                                <img src="media/${request.image}" alt="avatar">
-                            </div>
-                            <h5 class="mb-1" style="display: flex">${request.username}</h5>
-                            <p class="mb-1" style="display: flex">Status: ${request.status}</p>
+                        <div class="roundBorder nav-item" style="display: flex">
+                            <img src="media/${request.image}" alt="avatar">
+                        </div>
+                        <h5 class="mb-1" style="display: flex">${request.username}</h5>
+                        <p class="mb-1" style="display: flex">Status: ${request.status}</p>
+                        <button type="button" class="removeBtn btn btn-primary" style="background: #e3031c; border-color: #040303" data-id="${request.id}">Remove</button>
                         `;
                     friendListContainer.appendChild(friendItem);
                 });
-            }
-            else {
+            } else {
                 const friendItem = document.createElement('div');
                 friendItem.innerHTML = `
                     <div>No friends yet</div>
                 `;
                 friendListContainer.appendChild(friendItem);
             }
-        })
-}
 
+
+            document.querySelectorAll('.removeBtn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const from_id = this.getAttribute('data-id');
+                    fetch('remove_friend', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        },
+                        body: JSON.stringify({from_id: from_id})
+                    })
+                        .then(response => {
+                            return response.json().then(data => ({status: response.status, data: data}));
+                        })
+                        .then(({status, data}) => {
+                            if (data.redirect) {
+                                window.location.href = data.redirect_url;
+                            } else if (status !== 401) {
+                                this.innerText = 'Removed';
+                                this.classList.remove('btn-primary');
+                                this.style.background = '#a55b5b';
+                                this.style.color = 'white';
+                                this.classList.add('acceptedBtn');
+                                if (data.level && data.message) {
+                                    displayMessage(data.message, data.level);
+                                }
+                            }
+                        })
+                });
+            });
+        })
+        .catch(error => console.error('Error fetching friend requests:', error));
+}
 
 
 function displayMessage(message, level) {

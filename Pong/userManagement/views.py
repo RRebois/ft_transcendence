@@ -588,40 +588,40 @@ class DeclineFriendRequestView(APIView):
 
         friend_request.delete()
         return JsonResponse({"message": "Friend request declined.", "level": "success"}, status=status.HTTP_200_OK)
-#
-#
-# @method_decorator(csrf_protect, name='dispatch')
-# class DeleteFriendView(APIView):
-#     def post(self, request):
-#         try:
-#             user = authenticate_user(request)
-#         except AuthenticationFailed as e:
-#             messages.warning(request, str(e))
-#             return redirect('index')
-#         friend_id = request.data.get('to_id')
-#         try:
-#             friend = User.objects.get(id=friend_id)
-#         except User.DoesNotExist:
-#             return Response({'detail': 'Friend does not exist.'}, status=status.HTTP_404_NOT_FOUND)
-#
-#         if friend in user.friends.all():
-#             user.friends.remove(friend)
-#             friend.friends.remove(user)
-#
-#             try:
-#                 friend_request = FriendRequest.objects.get(from_user_id=friend_id, to_user_id=user)
-#                 friend_request.delete()
-#             except FriendRequest.DoesNotExist:
-#                 pass
-#             try:
-#                 friend_request = FriendRequest.objects.get(from_user_id=user, to_user_id=friend_id)
-#                 friend_request.delete()
-#             except FriendRequest.DoesNotExist:
-#                 pass
-#
-#             return Response({'detail': 'Friend removed.'}, status=status.HTTP_200_OK)
-#
-#         return Response({'detail': 'User is not in your friends.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class RemoveFriendView(APIView):
+    def post(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        friend_id = request.data.get('from_id')
+        try:
+            friend = User.objects.get(id=friend_id)
+        except User.DoesNotExist as e:
+            return JsonResponse({"message": str(e), "level": "warning"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if friend in user.friends.all():
+            user.friends.remove(friend)
+            friend.friends.remove(user)
+
+            try:
+                friend_request = FriendRequest.objects.get(from_user=friend_id, to_user=user)
+                friend_request.delete()
+            except FriendRequest.DoesNotExist:
+                pass
+            try:
+                friend_request = FriendRequest.objects.get(from_user=user, to_user=friend_id)
+                friend_request.delete()
+            except FriendRequest.DoesNotExist:
+                pass
+
+            return JsonResponse({"message": "User removed from your friends.", "level": "success"}, status=status.HTTP_200_OK)
+
+        return JsonResponse({"message": "User is not in your friends.", "level": "warning"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class GetFriendView(APIView):

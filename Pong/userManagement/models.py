@@ -54,8 +54,7 @@ class FriendRequest(models.Model):
     to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='to_user')
     status_choices = [
         ('pending', 'Pending'),
-        ('accepted', 'Accepted'),
-        ('declined', 'Declined'),
+        ('accepted', 'Accepted')
     ]
     status = models.CharField(max_length=20, choices=status_choices, default="pending")
     time = models.DateTimeField(auto_now=True)
