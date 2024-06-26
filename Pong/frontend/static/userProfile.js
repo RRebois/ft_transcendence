@@ -8,8 +8,13 @@ document.addEventListener('DOMContentLoaded', () => {
 // a remodifier, mettre les fetchs dans le if square caret down pour pas fetch si on close els onglets
 function    display_user_data(element) {
     // fetch user_connected and all of his information
-    if (element.classList.contains("fa-square-caret-down"))
+    if ((element.id === "info" || element.id === "security")
+        && element.classList.contains("fa-square-caret-down"))
     {
+        // Change arrow down to arrow up
+        element.classList.remove("fa-square-caret-down");
+        element.classList.add("fa-square-caret-up");
+
         fetch("getUsernameConnected")
         .then(response => response.json())
         .then(user_connected => {
@@ -22,10 +27,6 @@ function    display_user_data(element) {
                 exDiv.classList.add("displayAnim");
 
                 if (element.id === "info") {
-                    // Change arrow down to arrow up
-                    element.classList.remove("fa-square-caret-down");
-                    element.classList.add("fa-square-caret-up");
-
                     // Add img to edit info
                     const   img = document.createElement('span');
                     img.className = "fa-solid fa-user-pen displayAnimImg";
@@ -67,9 +68,6 @@ function    display_user_data(element) {
                 else if (element.id === "security") {
                     document.getElementById('section3').style.display = 'block';
 
-                    // Change arrow
-                    element.classList.remove("fa-square-caret-down");
-                    element.classList.add("fa-square-caret-up");
                     element.parentElement.parentElement.append(exDiv);
 
                     // Create div to contain change password and 2FA
@@ -176,7 +174,8 @@ function    display_user_data(element) {
             console.log(err);
         });
     }
-    else if (element.classList.contains("fa-square-caret-up"))
+    else if (element.classList.contains("fa-square-caret-up") &&
+        (element.id === 'info' || element.id === 'security'))
     {
         if (element.id === "info")
         {
@@ -199,7 +198,7 @@ function    display_user_data(element) {
                 img.remove();
             });
         }
-        else {
+        else if (element.id === "security") {
             // Select div displaying infos
             var divRM = document.getElementById(element.parentElement.parentElement.id + "Child");
             // Add animation class

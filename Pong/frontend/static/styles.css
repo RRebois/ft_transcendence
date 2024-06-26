@@ -73,8 +73,8 @@
 
 #statsDiv {
     text-align: center;
-    border: 2px solid black;
-    min-width: 98%;
+/*    border: 2px solid black;
+    min-width: 98%;*/
 }
 
 .divElo {
@@ -114,6 +114,12 @@
     border-bottom: 2px solid black;
 }
 
+.rad {
+    font-size: 16px;
+    font-weight: normal;
+    font-style: normal;
+}
+
 .QRcss {
     max-height: 100px;
     min-height: 100px;
@@ -124,6 +130,10 @@
 }
 
 .expander {
+    display: inline-block;
+}
+
+.shrink {
     display: inline-block;
 }
 

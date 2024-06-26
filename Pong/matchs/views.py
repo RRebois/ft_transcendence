@@ -4,7 +4,6 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from django.http import Http404, JsonResponse
-from django.db.models import Q
 
 from userManagement.models import User, UserData
 from .models import *
@@ -15,15 +14,15 @@ from .models import *
 class MatchHistoryView(APIView):
     def get(self, request, username, word):
         try:
-            user_id = str(User.objects.get(username=username).id)
+            user = User.objects.get(username=username)
         except User.DoesNotExist:
             raise Http404("error: User does not exists.")
         if word == 'all':
-            matches = Match.objects.filter(score__has_key=user_id)
+            matches = Match.objects.filter(players=user)
         elif word == 'pong':
-            matches = Match.objects.filter(score__has_key=user_id, is_pong=True)
+            matches = Match.objects.filter(players=user, is_pong=True)
         elif word == 'purrinha':
-            matches = Match.objects.filter(score__has_key=user_id, is_pong=False)
+            matches = Match.objects.filter(players=user, is_pong=False)
         else:
             raise Http404("error: Data does not exists.")
         return JsonResponse([match.serialize() for match in matches], safe=False)
