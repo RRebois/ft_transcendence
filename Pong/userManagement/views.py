@@ -473,16 +473,6 @@ class Disable2FAView(APIView):
         return response
 
 
-# class SearchUsersView(APIView):
-#     def get(self, request):
-#         query = request.GET.get('q', '')
-#         if query:
-#             users = User.objects.filter(username__icontains=query).values('username')
-#             users_list = list(users)
-#             return JsonResponse(users_list)
-#         return JsonResponse([])
-
-
 @method_decorator(csrf_protect, name='dispatch')
 class SendFriendRequestView(APIView):
     def post(self, request):
@@ -565,7 +555,7 @@ class AcceptFriendRequestView(APIView):
 
         friend_request.to_user.friends.add(friend_request.from_user)
         friend_request.from_user.friends.add(friend_request.to_user)
-        return JsonResponse({"message": "Friend request accepted.", "level": "success", "redirect": True, "redirect_url": ""}, status=status.HTTP_200_OK)
+        return JsonResponse({"message": "Friend request accepted.", "level": "success"}, status=status.HTTP_200_OK)
 
 
 class DeclineFriendRequestView(APIView):
