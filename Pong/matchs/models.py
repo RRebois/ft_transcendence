@@ -1,15 +1,15 @@
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
+from userManagement.models import User
+
 # Create your models here.
 
 
 class Match(models.Model):
-    players = models.ManyToManyField('userManagement.User', related_name="players")
+    players = models.ManyToManyField('userManagement.User', related_name="matchs", default=list)
     winner = models.ForeignKey('userManagement.User', on_delete=models.CASCADE,
                                blank=True, null=True)
-    score = ArrayField(models.IntegerField(), default=[])
+    is_pong = models.BooleanField(default=True)
     timeMatch = models.DateTimeField(auto_now_add=True)
-    #timeMatchEnded?changethe auto now to blank = null and value will be added when match ends
 
     class Meta:
         ordering = ['-timeMatch']
@@ -17,8 +17,15 @@ class Match(models.Model):
     def serialize(self):
         return {
             'id': self.id,
-            "players": [User.username for User in self.players.all()],
-            "winner": self.winner.username,
-            "score": self.score,
+            'game': 'Pong' if self.is_pong else 'Purrinha',
+            "players": {score.player.username if score.player else "deleted_user": score.score for score in self.scores.all()},
+            "count": self.players.count(),
+            "winner": self.winner.username if self.winner else "deleted_user",
             "timestamp": self.timeMatch.strftime("%b %d %Y, %I:%M %p"),
         }
+
+
+class Score(models.Model):
+    player = models.ForeignKey('userManagement.User', on_delete=models.SET_NULL, null=True, related_name='scores')
+    match = models.ForeignKey('Match', on_delete=models.CASCADE, related_name='scores')
+    score = models.IntegerField(default=0)

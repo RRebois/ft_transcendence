@@ -10,7 +10,8 @@ function load_friends_page(username) {
     friendsDivElement.innerHTML = "";
     create_div_title(username, "friends", "friendsDiv");
     document.getElementById('greetings').style.display = 'none';
-    document.getElementById('mainDiv').style.display = 'none';
+    document.getElementById('userDataDiv').style.display = 'none';
+    document.getElementById('statsDiv').style.display = 'none';
     document.getElementById('friendsDiv').style.display = 'block';
 
     const globalContainer = document.createElement('div');

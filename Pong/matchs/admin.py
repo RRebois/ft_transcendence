@@ -10,10 +10,18 @@ from userManagement.models import User
 class MatchAdmin(admin.ModelAdmin):
     def players_display(self, obj):
         return ", ".join([
-            User.username for User in obj.players.all()
+            score.player.username if score.player else "deleted_user" for score in obj.scores.all()
         ])
+
     players_display.short_description = "Players"
-    list_display = ("pk", "winner", "players_display", "score", "timeMatch")
+
+    def scores_display(self, obj):
+        return ", ".join([f"{score.player.username if score.player else 'deleted_user'}: {score.score}" for score in
+                          obj.scores.all()])
+
+    scores_display.short_description = "Scores"
+
+    list_display = ("pk", "winner", "players_display", "scores_display", "timeMatch")
     filter_horizontal = ("players",)
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
@@ -27,3 +35,8 @@ class MatchAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         request._obj_ = obj
         return super().get_form(request, obj, **kwargs)
+
+@admin.register(Score)
+class ScoreAdmin(admin.ModelAdmin):
+    list_display = ("player", "match", "score")
+    search_fields = ('player__username', 'match__id')

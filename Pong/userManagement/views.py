@@ -2,7 +2,7 @@ from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -18,6 +18,9 @@ from rest_framework.views import APIView
 import pyotp
 import jwt
 import requests
+import logging
+
+logger = logging.getLogger(__name__)
 
 from .models import *
 from .forms import *
@@ -151,18 +154,21 @@ class Login42RedirectView(APIView):
             return HttpResponseRedirect(reverse("index"))
         try:
             user = User.objects.get(email=user42["email"])
+            if not user.stud42:
+                messages.warning(request, "e-mail already taken.")
+                return HttpResponseRedirect(reverse("index"))
         except User.DoesNotExist:
             try:
                 serializer = self.serializer_class(user42)
                 user = serializer.create(data=user42)
+                user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+                user_data.save()
             except:
                 messages.warning(request, "Username already taken.")
                 return HttpResponseRedirect(reverse("index"))
 
         user.status = 'online'
         user.save()
-        user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
-        user_data.save()
         token = generate_JWT(user)
         refresh = generate_refresh_JWT(user)
         response = redirect('index')
@@ -280,6 +286,28 @@ class UserPersonalInformationView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class EditDataView(APIView):
+    serializer_class = EditUserSerializer
+
+    def put(self, request):
+        user_data = request.data
+        user = authenticate_user(request)
+
+        if not user:
+            messages.error(request, "Authentication failed.")
+            return render(request, "pages/index.html")
+
+        serializer = self.serializer_class(user, data=user_data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response({"success": True})
+        else:
+            logger.error("Validation errors: {serializers.ValidationError}")
+            return Response({"success": False, "errors": serializer.errors})
+
+
+@method_decorator(csrf_protect, name='dispatch')
 class PasswordChangeView(APIView):
     serializer_class = PasswordChangeSerializer
 
@@ -390,35 +418,68 @@ class PasswordResetConfirmedView(APIView):
             return HttpResponseRedirect(reverse('index'))
 
 
+# @method_decorator(csrf_protect, name='dispatch')
+# class Enable2FAView(APIView):
+#     def post(self, request):
+#         try:
+#             user = authenticate_user(request)
+#         except AuthenticationFailed as e:
+#             messages.warning(request, str(e))
+#             return redirect('index')
+#
+#         if user.tfa_activated is True:
+#             messages.warning(request, "2FA already activated.")
+#             response = redirect('index')
+#             return response
+#         secret_key = pyotp.random_base32()
+#         user.totp = secret_key
+#         user.tfa_activated = True
+#         user.save()
+#
+#         qr_url = pyotp.totp.TOTP(secret_key).provisioning_uri(user.username)
+#         message = "2FA activated, please scan the QR-code in authenticator to save your account code."
+#         return JsonResponse({"qr_url": qr_url, "message": message})
+#
+#     def get(self, request):
+#         try:
+#             user = authenticate_user(request)
+#         except AuthenticationFailed as e:
+#             messages.warning(request, str(e))
+#             return redirect('index')
+#         return render(request, "pages/2FA.html", {"user": user})
+
+
 @method_decorator(csrf_protect, name='dispatch')
-class Enable2FAView(APIView):
-    def post(self, request):
-        try:
-            user = authenticate_user(request)
-        except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return redirect('index')
+class Security2FAView(APIView):
+    def put(self, request):
+        user = authenticate_user(request)
+        # if not user: or not needed???
+        #     return Response({"success": False, "message": "User not authenticated"}, status=401)
 
-        if user.tfa_activated is True:
-            messages.warning(request, "2FA already activated.")
-            response = redirect('index')
-            return response
-        secret_key = pyotp.random_base32()
-        user.totp = secret_key
-        user.tfa_activated = True
-        user.save()
+        data = request.data
+        value = data.get('value')
 
-        qr_url = pyotp.totp.TOTP(secret_key).provisioning_uri(user.username)
-        message = "2FA activated, please scan the QR-code in authenticator to save your account code."
-        return JsonResponse({"qr_url": qr_url, "message": message})
+        if value:
+            try:
+                secret_key = pyotp.random_base32()
+                user.totp = secret_key
+                user.tfa_activated = True
+                user.save()
 
-    def get(self, request):
-        try:
-            user = authenticate_user(request)
-        except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return redirect('index')
-        return render(request, "pages/2FA.html", {"user": user})
+                qr_url = pyotp.totp.TOTP(secret_key).provisioning_uri(user.username)
+                message = "2FA activated, please scan the QR-code in authenticator to save your account code."
+                return JsonResponse({"qr_url": qr_url, "message": message})
+            except Exception as e:
+                return Response({"success": False, "error": str(e)}, status=500)
+        else:
+            try:
+                user.totp = None
+                user.tfa_activated = False
+                user.save()
+                message = "2FA successfully deactivated."
+                return Response({"success": True, "message": message})
+            except Exception as e:
+                return Response({"success": False, "error": str(e)}, status=500)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -442,35 +503,14 @@ class VerifyOTPView(APIView):
 
         return response
 
-    def get(self, request):
-        user_id = request.GET.get('user_id')
-        serializer = self.serializer_class()
-        return render(request, "pages/otp.html", {
-            "user_id": user_id,
-            "form": serializer
-        })
+    # def get(self, request):
+    #     user_id = request.GET.get('user_id')
+    #     serializer = self.serializer_class()
+    #     return render(request, "pages/otp.html", {
+    #         "user_id": user_id,
+    #         "form": serializer
+    #     })
 
-
-@method_decorator(csrf_protect, name='dispatch')
-class Disable2FAView(APIView):
-
-    def post(self, request):
-        try:
-            user = authenticate_user(request)
-        except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return redirect('index')
-
-        if user.tfa_activated is False:
-            messages.warning(request, "2FA already deactivated.")
-            response = redirect('index')
-            return response
-        user.totp = None
-        user.tfa_activated = False
-        user.save()
-        messages.success(request, "2FA deactivated.")
-        response = redirect('index')
-        return response
 
 
 @method_decorator(csrf_protect, name='dispatch')

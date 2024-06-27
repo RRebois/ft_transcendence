@@ -44,6 +44,7 @@
 }
 
 .title_div {
+    text-align: center;
     color: black;
     font-size: 30px;
     font-weight: bold;
@@ -54,15 +55,51 @@
     border-radius: 50%;
     box-shadow: 10px 10px #100C08;
     text-decoration: underline;
+    --borderWidth: 3px;
+    position: relative;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.title_div:after {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--borderWidth));
+  left: calc(-1 * var(--borderWidth));
+  height: calc(100% + var(--borderWidth) * 2);
+  width: calc(100% + var(--borderWidth) * 2);
+  background: linear-gradient(80deg, #f79533, #f37055, #ef4e7b, #a166ab, #5073b8, #1098ad, #07b39b, #6fba82);
+  border-radius: 50%;
+  z-index: -1;
+  animation: animatedgradient 3s ease alternate infinite;
+  background-size: 300% 300%;
+}
+
+#statsDiv {
+    text-align: center;
+/*    border: 2px solid black;
+    min-width: 98%;*/
 }
 
 .divElo {
     color: black;
-    font-size: 15px;
     margin: 5px auto;
     padding: 5px;
-    max-width: fit-content;
-    border-bottom: 1px solid black;
+    text-decoration: underline;
+}
+
+.mainDivStats {
+    border: 2px solid black;
+    min-width: fit-content;
+    display: inline-block;
+    margin: 10px 2px;
+    text-align: center;
+}
+
+.mainDivStats:hover {
+    border: 3px solid black;
+    box-shadow: 2px 2px #100C08;
 }
 
 .matchHistoryDiv {
@@ -77,12 +114,31 @@
     font-style: italic;
     font-family: Arial, Helvetica, sans-serif;
     width: 100%;
-    margin-bottom: 10px;
+    margin: 10px 0px;
     border-top: 2px solid black;
     border-bottom: 2px solid black;
 }
 
+.rad {
+    font-size: 16px;
+    font-weight: normal;
+    font-style: normal;
+}
+
+.QRcss {
+    max-height: 100px;
+    min-height: 100px;
+    max-width: 100px;
+    min-width: 100px;
+    margin: auto;
+    width: 50%;
+}
+
 .expander {
+    display: inline-block;
+}
+
+.shrink {
     display: inline-block;
 }
 
@@ -150,31 +206,53 @@
     font-style: italic;
 }
 
-#mainDiv {
-    border: 2px dotted black;
-}
-
 .displayAnim  {
     animation-name: display;
-    animation-duration: 2s;
+    animation-duration: 1s;
     animation-fill-mode: forwards;
+    animation-play-state: "paused";
 }
 
 .displayAnimImg {
     animation-name: displayImg;
-    animation-duration: 2s;
+    animation-duration: 1s;
     animation-fill-mode: forwards;
+    animation-play-state: "paused";
+}
+
+.rmAnimImg {
+    animation-name: displayImg;
+    animation-duration: 1s;
+    animation-direction: reverse;
+    animation-fill-mode: forwards;
+    animation-play-state: "paused";
 }
 
 .rmAnim {
     animation-name: display;
-    animation-duration: 2s;
-    animation-fill-mode: backwards;
-    animation-play-state: paused;
+    animation-duration: 1s;
+    animation-direction: reverse;
+    animation-fill-mode: forwards;
+    animation-play-state: "paused";
 }
 
 .infoDiv {
+    text-align: center;
+}
 
+.infoKey {
+    margin-right: 5px;
+    font-weight: bold;
+    text-decoration: underline;
+    min-width: fit-content;
+}
+
+.infoValue {
+    max-width: 300px;
+    overflow: auto;
+    text-overflow: ellipsis;
+    display: inline-flex;
+    white-space: nowrap;
 }
 
 .play-regular {

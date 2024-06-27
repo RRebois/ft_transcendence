@@ -6,30 +6,30 @@
         padding: 0px;
         margin-bottom: 0px;
     }
-    75% {
+    100% {
         opacity: 0;
         height: 100%;
         line-height: 100%;
-        padding: 20px;
-        margin-bottom: 10px;
-    }
-    100% {
-        opacity: 1;
-        height: 100%;
-        line-height: 100%;
-        padding: 20px;
-        margin-bottom: 10px;
     }
 }
 
 @keyframes displayImg {
-    0% {
+    from {
         opacity: 0;
     }
-    75% {
-        opacity: 0.75;
-    }
-    100% {
+    to {
         opacity: 1;
     }
+}
+
+@keyframes animatedgradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
 }

@@ -1,0 +1,115 @@
+{% extends "pages/layout.html" %}
+{% load static %}
+
+{% block script %}
+    <script>
+        function showGuessForm() {
+            document.getElementById('quantityForm').style.display = 'none';
+            document.getElementById('guessForm').style.display = 'block';
+        }
+
+        function showResult() {
+            document.getElementById('guessForm').style.display = 'none';
+            document.getElementById('playagain').style.display = 'block';
+        }
+
+        function addYourGuess(data) {
+            const answerMsg = document.getElementById('result');
+            const hintMessage = document.createElement('p');
+            let text = "";
+            for (const tmp in data) {
+                text += tmp + " : " + data[tmp] + "  |||  ";
+            }
+            hintMessage.textContent = text;
+            answerMsg.appendChild(hintMessage);
+        }
+
+        function submitQuantity(event) {
+            event.preventDefault();
+            const quantity = document.getElementById('quantityInput').value;
+            
+            fetch('/test/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ quantity: quantity })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const hintMessage = document.getElementById('result');
+                    hintMessage.textContent = 'The bot put ' + data.bot_quantity + ' and bet on ' + data.bot_guess + ' and you put ' + quantity;
+                    showGuessForm();
+                } else {
+                    alert('Error');
+                }
+            });
+        }
+
+        function submitGuess(event) {
+            event.preventDefault();
+            const guess = document.getElementById('guessInput').value;
+            
+            fetch('/test/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ guess: guess })
+            })
+            .then(response => response.json())
+            .then(data => {
+                addYourGuess(data);
+                if (data.winner === 'bot') {
+                    alert('You lost!');
+                } else if (data.winner === 'tie') {
+                    alert("No one guessed the right answer...");
+                } 
+                else {
+                    alert('You won!');
+                }
+                showResult();
+            });
+        }
+    </script>
+{% endblock %}
+
+{% block body %}
+
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <div {% if message.tags %} class="alertSize alert alert-{{ message.tags }}"
+    {% else %} class="alertSize alert alert-secondary" {% endif %} role="alert">{{ message }}</div>
+    {% endfor %}
+</ul>
+{% endif %}
+
+
+<h2>Game version test versus bot</h2>
+<form id="quantityForm" onsubmit="submitQuantity(event)">
+    {% csrf_token %}
+    <label>Quantity:
+        <input type="number" id="quantityInput" name="quantity" min='0' max='3' required>
+    </label>
+    <button type="submit">Send Quantity</button>
+</form>
+
+<form id="guessForm" style="display: none;" onsubmit="submitGuess(event)">
+    {% csrf_token %}
+    <label>Guess:
+        <input type="number" id="guessInput" name="guess" min='0' max='6' required>
+    </label>
+    <button type="submit">Send Guess</button>
+</form>
+
+<div id="playagain" style="display: none">
+    <p id="result"></p>
+    <button type="button" onclick="location.reload()">Play again</button>
+</div>
+
+{% endblock %}
