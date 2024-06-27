@@ -565,7 +565,7 @@ class AcceptFriendRequestView(APIView):
 
         friend_request.to_user.friends.add(friend_request.from_user)
         friend_request.from_user.friends.add(friend_request.to_user)
-        return JsonResponse({"message": "Friend request accepted.", "level": "success"}, status=status.HTTP_200_OK)
+        return JsonResponse({"message": "Friend request accepted.", "level": "success", "redirect": True, "redirect_url": ""}, status=status.HTTP_200_OK)
 
 
 class DeclineFriendRequestView(APIView):

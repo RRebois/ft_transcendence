@@ -233,13 +233,13 @@ function load_friends_page(username) {
                     const friendItem = document.createElement('div');
                     friendItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white',
                         'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
-                    friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; justify-content: space-between; width: 50%; 'load +
+                    friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; justify-content: space-between; width: 50%; ' +
                         'display: block; margin-left: auto; margin-right: auto';
                     friendItem.innerHTML = `
-                        <div class="roundBorder nav-item" style="display: flex">
+                        <a class="roundBorder nav-item friendImg" style="/*display: flex*/" onclick="load_stats_page('${ request.username }')" href="">
                             <img src="media/${request.image}" alt="avatar">
-                        </div>
-                        <h5 class="mb-1" style="display: flex">${request.username}</h5>
+                        </a>
+                        <a class="mb-1" style="display: flex" onclick="load_stats_page('${ request.username }')" href="">${request.username}</a>
                         <p class="mb-1" style="display: flex">Status: ${request.status}</p>
                         <button type="button" class="removeBtn btn btn-primary" style="background: #e3031c; border-color: #040303" data-id="${request.id}">Remove</button>
                         `;
