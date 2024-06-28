@@ -116,6 +116,8 @@ function load_stats_page(username) {
     document.getElementById('friendsDiv').style.display = 'none';
 
     create_div_title(username, "game stats", "statsDiv");
+    const url = '/stats'
+    window.history.pushState({ page: url, username: username }, '', url);
 
     // Create radio button groups to display both game data or pong data or purrinha data
     const   radioDiv = document.createElement('div');

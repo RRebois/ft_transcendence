@@ -1,4 +1,5 @@
-from django.urls import path
+from django.urls import path, re_path
+from django.views.generic import TemplateView
 from . import views
 from .views import *
 
@@ -29,5 +30,7 @@ urlpatterns = [
     path('remove_friend', RemoveFriendView.as_view(), name='remove_friend'),
     path('verifyotp', VerifyOTPView.as_view(), name='verify_otp'),
     # path('disable_2FA', Disable2FAView.as_view(), name='disable_2FA'),
+
+    re_path(r'^(?:.*)/?$', TemplateView.as_view(template_name='index.html')),
 ]
 

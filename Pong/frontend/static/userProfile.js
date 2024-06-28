@@ -406,6 +406,8 @@ function load_profile_page(username) {
     document.getElementById('statsDiv').innerHTML = "";
     document.getElementById('friendsDiv').style.display = 'none';
     document.getElementById('userDataDiv').style.display = 'block';
+    const url = '/profile'
+    window.history.pushState({ page: url, username: username }, '', '');
 
     // Create elements to display
     const   title1 = document.createElement('div');

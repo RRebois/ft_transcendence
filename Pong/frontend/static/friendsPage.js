@@ -13,6 +13,8 @@ function load_friends_page(username) {
     document.getElementById('userDataDiv').style.display = 'none';
     document.getElementById('statsDiv').style.display = 'none';
     document.getElementById('friendsDiv').style.display = 'block';
+    const url = `/friends`;
+    window.history.pushState({ page: url, username: username }, '', url);
 
     const globalContainer = document.createElement('div');
     const sendRequestForm = document.createElement('form');
@@ -183,6 +185,7 @@ function load_friends_page(username) {
                             declineBtn.classList.add('acceptedBtn');
                             if (data.level && data.message) {
                                 displayMessage(data.message, data.level);
+                            window.history.
                             }
                         }
                     })
@@ -238,6 +241,7 @@ function load_friends_page(username) {
                         'display: block; margin-left: auto; margin-right: auto';
                     friendItem.innerHTML = `
                         <a class="roundBorder nav-item friendImg" style="/*display: flex*/" onclick="load_stats_page('${ request.username }')" href="">
+                            
                             <img src="media/${request.image}" alt="avatar">
                         </a>
                         <a class="mb-1" style="display: flex" onclick="load_stats_page('${ request.username }')" href="">${request.username}</a>
