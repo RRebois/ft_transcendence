@@ -10,7 +10,6 @@ import json
 from userManagement.models import User, UserData
 from userManagement.views import authenticate_user
 from matchs.views import create_match
-from .forms import PurrinhaForm
 from .game import *
 
 @method_decorator(csrf_protect, name='dispatch')

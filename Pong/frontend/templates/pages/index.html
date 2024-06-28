@@ -7,31 +7,16 @@ ft_transcendence
 
 {% block script %}
     <script src="{% static 'forgotPW.js' %}"></script>
-    <script src="{% static 'userProfile.js' %}"></script>
-    <script src="{% static 'userDataPage.js' %}"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 {% endblock %}
 
 {% block body %}
-
-{% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-            <div {% if message.tags %} class="alertSize alert alert-{{ message.tags }}"
-                {% else %} class="alertSize alert alert-secondary" {% endif %} role="alert">{{ message }}</div>
-        {% endfor %}
-    </ul>
-{% endif %}
 
 {% if user.is_authenticated %}
 
 <div id="greetings">Hello {{user.username}} 😳👉👈</div>
 
-<div class="container" id="statsDiv">
-</div>
-
-<div class="container" id="userDataDiv">
-</div>
+<div class="container" id="mainDiv"></div>
+<div class="container" id="friendsDiv"></div>
 
 {% else %}
 <div class="w-100 h-100 d-flex justify-content-center align-items-center" id="divLoginForm">
@@ -61,7 +46,6 @@ ft_transcendence
                            required/>
                 </div>
             </div>
-<!--            <a href="{% url 'reset_password' %}" class="text-decoration-none">Forgot password?</a>-->
             <a href="" class="text-decoration-none" id="Alzheimer">Forgot password?</a>
         </div>
         <button type="submit" class="btn btn-primary">Log in</button>

@@ -11,3 +11,4 @@ pyotp==2.9.0
 pillow==10.3.0
 requests==2.32.3
 qrcode[pil]
+channels

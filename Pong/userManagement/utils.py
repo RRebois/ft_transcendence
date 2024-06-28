@@ -6,7 +6,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import AccessToken
 from datetime import datetime, timedelta, timezone
 from PIL import Image
-from .models import User
+from .models import User, FriendRequest
 import jwt
 import os
 
@@ -35,7 +35,7 @@ def generate_JWT(user):
 def generate_refresh_JWT(user):
     payload = {
         'id': user.id,
-        'exp': datetime.now(timezone.utc) + timedelta(days=1),  # Refresh token expiration
+        'exp': datetime.now(timezone.utc) + timedelta(hours=2),  # Refresh token expiration
         'iat': datetime.now(timezone.utc)
     }
     secret = os.environ.get('REFRESH_SECRET_KEY')
