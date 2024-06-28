@@ -228,7 +228,7 @@ function load_stats_page(username) {
 
         // Append all into mainDiv
         mainDivStats.append(chart);
-        document.getElementById('statsDiv').append(mainDivStats);
+        radioDiv.after(mainDivStats);
     })
     .catch (err => console.log(err));
 
@@ -370,70 +370,56 @@ function load_stats_page(username) {
     })
 
     // Creating div history
-    if (document.getElementById("matchHistoryDiv") === null)
-    {
-        const   matchHistory = document.createElement("div");
-        setAttributes(matchHistory, {"class": "matchHistoryDiv", "id": "matchHistoryDiv"});
+    const   matchHistory = document.createElement("div");
+    matchHistory.innerHTML = "";
+    setAttributes(matchHistory, {"class": "matchHistoryDiv", "id": "matchHistoryDiv"});
 
-        const   header = document.createElement("div");
-        header.innerHTML = "Match history   ";
-        header.classList.add("txtSectionDiv");
+    const   header = document.createElement("div");
+    header.innerHTML = "Match history   ";
+    setAttributes(header, {"class": "txtSectionDiv", "id": "txtSection"});
 
-        const   rad1 = document.createElement('div');
-        const   rad2 = document.createElement('div');
-        const   rad3 = document.createElement('div');
-        rad1.className = "form-check form-check-inline rad";
-        rad2.className = "form-check form-check-inline rad";
-        rad3.className = "form-check form-check-inline rad";
+    const   rad1 = document.createElement('div');
+    const   rad2 = document.createElement('div');
+    const   rad3 = document.createElement('div');
+    rad1.className = "form-check form-check-inline rad";
+    rad2.className = "form-check form-check-inline rad";
+    rad3.className = "form-check form-check-inline rad";
 
-        const   radIn1 = document.createElement("input");
-        const   radIn2 = document.createElement("input");
-        const   radIn3 = document.createElement("input");
-        setAttributes(radIn1, {"class": "form-check-input", "type": "radio", "name": "radIn", "id": "radIn1", "value": "all"});
-        setAttributes(radIn2, {"class": "form-check-input", "type": "radio", "name": "radIn", "id": "radIn2", "value": "pong"});
-        setAttributes(radIn3, {"class": "form-check-input", "type": "radio", "name": "radIn", "id": "radIn3", "value": "purrinha"});
-        radIn1.checked = true;
+    const   radIn1 = document.createElement("input");
+    const   radIn2 = document.createElement("input");
+    const   radIn3 = document.createElement("input");
+    setAttributes(radIn1, {"class": "form-check-input", "type": "radio", "name": "radIn", "id": "radIn1", "value": "all"});
+    setAttributes(radIn2, {"class": "form-check-input", "type": "radio", "name": "radIn", "id": "radIn2", "value": "pong"});
+    setAttributes(radIn3, {"class": "form-check-input", "type": "radio", "name": "radIn", "id": "radIn3", "value": "purrinha"});
+    radIn1.checked = true;
 
-        const   radLab1 = document.createElement("label");
-        const   radLab2 = document.createElement("label");
-        const   radLab3 = document.createElement("label");
-        setAttributes(radLab1, {"class": "form-check-label", "for": "radIn1"});
-        setAttributes(radLab2, {"class": "form-check-label", "for": "radIn2"});
-        setAttributes(radLab3, {"class": "form-check-label", "for": "radIn3"});
-        radLab1.innerHTML = "All games";
-        radLab2.innerHTML = "Pong games";
-        radLab3.innerHTML = "Purrinha games";
+    const   radLab1 = document.createElement("label");
+    const   radLab2 = document.createElement("label");
+    const   radLab3 = document.createElement("label");
+    setAttributes(radLab1, {"class": "form-check-label", "for": "radIn1"});
+    setAttributes(radLab2, {"class": "form-check-label", "for": "radIn2"});
+    setAttributes(radLab3, {"class": "form-check-label", "for": "radIn3"});
+    radLab1.innerHTML = "All games";
+    radLab2.innerHTML = "Pong games";
+    radLab3.innerHTML = "Purrinha games";
 
-        rad1.append(radIn1, radLab1);
-        rad2.append(radIn2, radLab2);
-        rad3.append(radIn3, radLab3);
-        header.append(rad1, rad2, rad3);
-        matchHistory.append(header);
-        load_match_history(username, matchHistory, "all");
+    rad1.append(radIn1, radLab1);
+    rad2.append(radIn2, radLab2);
+    rad3.append(radIn3, radLab3);
+    header.append(rad1, rad2, rad3);
+    matchHistory.append(header);
+    load_match_history(username, matchHistory, "all");document.querySelector('#statsDiv').append(matchHistory);
 
-        // Add eventListener to radio btn
+    // Add eventListener to radioGroup
     const   radAll = document.getElementsByName('radIn');
     radAll.forEach(el => {
         el.addEventListener('click', () => {
-            matchHistory.innerHTML = "";
+            const   childrenDiv = matchHistory.childNodes;
+            for (let i = childrenDiv.length - 1; i > 0; i--)
+                childrenDiv[i].remove();
             load_match_history(username, matchHistory, el.value);
         });
     });
-
-    //    radIn2.addEventListener('click', () => {
-      //      matchHistory.innerHTML = "";
-        //    matchHistory.append(header);
-          //  load_match_history(username, document.getElementById("matchHistoryDiv"), "pong");
-        //});
-    }
-    // Add eventListener to radio btn
-//    const   radAll = document.getElementsByName('radIn');
-  //  radAll.forEach(el => {
-    //    el.addEventListener('click', () => {
-      //      matchHistory.innerHTML = "";
-        //    load_match_history(username, matchHistory, el.value);
-        //});
-    //});
 }
 
 function    load_match_history(username, matchHistory, str) {
@@ -445,10 +431,10 @@ function    load_match_history(username, matchHistory, str) {
                 create_div(matches[i], matchHistory, username);
         else {
             const   tmp = document.createElement('div');
+            tmp.setAttribute("id", "tmpToRm");
             tmp.innerHTML = "No game played yet! Start a pong game here or a purrinha game here."
             matchHistory.append(tmp);
         }
-        document.querySelector('#statsDiv').append(matchHistory);
     })
     .catch (err => console.log(err));
 }
