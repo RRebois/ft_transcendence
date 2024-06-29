@@ -1,15 +1,27 @@
 services:
-  client:
-    build: ./frontend
-    container_name: frontend
-    env_file:
-      - ./.env
+  frontend-vite:
+    build:
+      context: ./frontend
+      dockerfile: docker/vite/Dockerfile
+    container_name: frontend-vite
     volumes:
-      - ./frontend:/app
+      - ./frontend/app:/app
+      - ./frontend/build:/app/dist/
+    networks:
+      - front
+
+  front-nginx:
+    build:
+      context: ./frontend
+      dockerfile: docker/nginx/Dockerfile
+    container_name: front-nginx
     ports:
-      - 8080:80     # <-- Change the http port here
-      - 8443:443    # <-- Change the https port here
-    restart: on-failure
+      - 443:443
+    volumes:
+      - ./frontend/build:/app/
+    networks:
+      - front
+
 
   web:
     build: Pong
@@ -61,7 +73,13 @@ services:
         condition: service_healthy
     restart: on-failure
 
+networks:
+  transcendence:
+  front:
+
 volumes:
   postgres_data:
   static_volume:
   media_volume:
+  app:
+  build:

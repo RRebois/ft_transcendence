@@ -3,13 +3,20 @@ export default class Home {
         this.props = props;
     }
 
+    fetchData() {
+        fetch('https://localhost:8443/test')
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch(error => console.error('Error:', error));
+    }
 
     // TODO: check form action link
     render() {
+        this.fetchData();
         return `
          <div class="w-100 h-100 d-flex justify-content-center align-items-center">
             <form action="/login" method="post" class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card" style="--bs-bg-opacity: .5;">
-                <h1><a class="text-justify play-bold" href="/frontend/app/public" >ft_transcendence 🏓</a></h1>
+                <h1><a class="text-justify play-bold" href="/" >ft_transcendence 🏓</a></h1>
                 <div class="w-100">
                     <label for="login-username" class="visually-hidden">Username</label>
                     <div class="input-group">

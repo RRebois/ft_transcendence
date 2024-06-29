@@ -16,6 +16,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
+from rest_framework.response import Response
 import pyotp
 import jwt
 
@@ -176,6 +177,10 @@ def userManagementData(request, username):
         return JsonResponse(user.serialize())
     else:
         return JsonResponse({"Error": "Method not allowed"})
+
+class test_view(APIView):
+    def get(self, request):
+        return Response({"message": "Test successful"}, status=200)
 
 #
 # @method_decorator(csrf_protect, name='dispatch')
