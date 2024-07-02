@@ -102,7 +102,7 @@ class LoginView(APIView):
 
 @method_decorator(csrf_protect, name='dispatch')
 class Login42View(APIView):
-    
+
     def post(self, request):
         return redirect(os.environ.get('API_42_CALL'))
 

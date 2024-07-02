@@ -44,7 +44,6 @@
 }
 
 .title_div {
-    text-align: center;
     color: black;
     font-size: 30px;
     font-weight: bold;
@@ -78,7 +77,7 @@
     font-style: italic;
     font-family: Arial, Helvetica, sans-serif;
     width: 100%;
-    margin: 10px 0px;
+    margin-bottom: 10px;
     border-top: 2px solid black;
     border-bottom: 2px solid black;
 }
@@ -151,53 +150,31 @@
     font-style: italic;
 }
 
+#mainDiv {
+    border: 2px dotted black;
+}
+
 .displayAnim  {
     animation-name: display;
-    animation-duration: 1s;
+    animation-duration: 2s;
     animation-fill-mode: forwards;
-    animation-play-state: "paused";
 }
 
 .displayAnimImg {
     animation-name: displayImg;
-    animation-duration: 1s;
+    animation-duration: 2s;
     animation-fill-mode: forwards;
-    animation-play-state: "paused";
-}
-
-.rmAnimImg {
-    animation-name: displayImg;
-    animation-duration: 1s;
-    animation-direction: reverse;
-    animation-fill-mode: forwards;
-    animation-play-state: "paused";
 }
 
 .rmAnim {
     animation-name: display;
-    animation-duration: 1s;
-    animation-direction: reverse;
-    animation-fill-mode: forwards;
-    animation-play-state: "paused";
+    animation-duration: 2s;
+    animation-fill-mode: backwards;
+    animation-play-state: paused;
 }
 
 .infoDiv {
-    text-align: center;
-}
 
-.infoKey {
-    margin-right: 5px;
-    font-weight: bold;
-    text-decoration: underline;
-    min-width: fit-content;
-}
-
-.infoValue {
-    max-width: 300px;
-    overflow: auto;
-    text-overflow: ellipsis;
-    display: inline-flex;
-    white-space: nowrap;
 }
 
 .play-regular {

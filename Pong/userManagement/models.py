@@ -31,7 +31,7 @@ class User(AbstractUser):
 
     def get_username(self):
         return self.username
-    
+
     def token(self):
         refresh = RefreshToken.for_user(self)
         return {
@@ -46,7 +46,6 @@ class User(AbstractUser):
             "Email": self.email,
             "Username": self.username,
             "stud42": self.stud42,
-            "2fa": self.tfa_activated,
         }
 
 
