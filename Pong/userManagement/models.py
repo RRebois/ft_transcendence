@@ -17,6 +17,12 @@ class User(AbstractUser):
         ('online', 'Online'),
         ('offline', 'Offline'),
     ]
+    language_choices = (
+        ('English', 'english'),
+        ('French', 'french'),
+        ('Spanish', 'spanish'),
+    )
+    language = models.CharField(choices=language_choices, default="English")
     status = models.CharField(max_length=50, choices=status_choices, default='offline')
     totp = models.CharField(max_length=100, blank=True, null=True)
     tfa_activated = models.BooleanField(default=False)
@@ -45,6 +51,7 @@ class User(AbstractUser):
             "Last name": self.last_name,
             "Email": self.email,
             "Username": self.username,
+            "Language": self.language,
             "stud42": self.stud42,
             "2fa": self.tfa_activated,
         }

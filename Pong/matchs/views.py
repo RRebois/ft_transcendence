@@ -31,7 +31,7 @@ class MatchHistoryView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class MatchScoreView(APIView):
-    def get(selfself, request, match_id):
+    def get(self, request, match_id):
         try:
             game = Match.objects.get(pk=match_id)
         except Match.DoesNotExist:

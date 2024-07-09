@@ -101,6 +101,7 @@ function create_div_title(username, str, divName) {
 
     // Add CSS to created div
     title.className = "title_div gradient-background";
+    title.setAttribute("name", "top");
     document.querySelector(`#${divName}`).append(title);
 }
 
@@ -408,9 +409,12 @@ function load_stats_page(username) {
     rad3.append(radIn3, radLab3);
     header.append(rad1, rad2, rad3);
     matchHistory.append(header);
-    load_match_history(username, matchHistory, "all");document.querySelector('#statsDiv').append(matchHistory);
+    load_match_history(username, matchHistory, "all");
+    document.querySelector('#statsDiv').append(matchHistory);
 
     // Add eventListener to radioGroup
+    let position = 0;
+    let start = 0;
     const   radAll = document.getElementsByName('radIn');
     radAll.forEach(el => {
         el.addEventListener('click', () => {
@@ -427,9 +431,13 @@ function    load_match_history(username, matchHistory, str) {
     .then(response => response.json())
     .then(matches => {
         if (matches.length > 0)
-            for (let i = 0; i < matches.length; i++)
-                create_div(matches[i], matchHistory, username);
-        else {
+            for (let i = 0; i < matches.length; i++) {
+                if (i == matches.length - 1)
+                    create_div(matches[i], matchHistory, username, 1);
+                else
+                    create_div(matches[i], matchHistory, username, 0);
+            }
+        else if (document.getElementById("tmpToRm") === null && i === 0) {
             const   tmp = document.createElement('div');
             tmp.setAttribute("id", "tmpToRm");
             tmp.innerHTML = "No game played yet! Start a pong game here or a purrinha game here."
@@ -448,7 +456,7 @@ function    load_main_page() {
     document.getElementById('userDataDiv').innerHTML = "";
 }
 
-function    create_div(match, matchHistory, username) {
+function    create_div(match, matchHistory, username, value) {
     const   tmp = document.createElement('div');
     tmp.classList.add("matchDisplay");
     setAttributes(tmp, {'id': `${match.id}`});
@@ -467,7 +475,23 @@ function    create_div(match, matchHistory, username) {
 
     const eye = document.createElement('div');
     eye.className = "fa-solid fa-eye shrink";
-
     tmp.append(eye);
+
+    if (value)
+    {
+        // Add link to title
+        const   back_to_top = document.createElement("div");
+        back_to_top.className = "fa-solid fa-up-long";
+        back_to_top.textContent = "Top";
+        tmp.style.position = "relative";
+        tmp.append(back_to_top);
+
+        back_to_top.style.position = "absolute";
+        back_to_top.style.right = "0";
+
+        back_to_top.addEventListener("click", () => {
+            document.documentElement.scrollTop = 0;
+        });
+    }
     matchHistory.append(tmp);
 }

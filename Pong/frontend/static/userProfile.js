@@ -240,7 +240,7 @@ function load_form_edit_info(isStud, user_connected) {
         const   mainDiv = [];
         const   mainSpan = [];
         const   mainInput = []
-        const   names = ["first_name", "last_name", "email", "username"]
+        const   names = ["first_name", "last_name", "email", "username", "language"]
         for (let i = 0; i < document.querySelectorAll('.infoDiv').length; i++) {
 
             mainDiv[i] = document.createElement('div');
@@ -255,6 +255,16 @@ function load_form_edit_info(isStud, user_connected) {
             else {
                 mainInput[i] = document.createElement('input');
                 mainInput[i].value = infoValues[i].innerHTML;
+            }
+            if (names[i] == "language") {
+                mainInput[i] = document.createElement('select');
+                const   a = document.createElement("option");
+                setAttributes(a, {"value": "none", "textContent": "Select a language"});
+                mainInput[i].append(a);
+//                for (let i = 0; i < Choices.pairs("language").length; i++)
+//                {
+//                    console.log("test");
+//                }
             }
             setAttributes(mainInput[i], {'name': names[i], 'id': names[i]});
 
