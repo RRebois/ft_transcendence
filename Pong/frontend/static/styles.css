@@ -73,8 +73,6 @@
 
 #statsDiv {
     text-align: center;
-/*    border: 2px solid black;
-    min-width: 98%;*/
 }
 
 .divElo {
@@ -90,6 +88,12 @@
     display: inline-block;
     margin: 10px 2px;
     text-align: center;
+}
+
+.PWBtn {
+    width: 100%;
+    text-align: center;
+    margin: 10px 0px;
 }
 
 .mainDivStats:hover {
@@ -203,21 +207,21 @@
 
 .displayAnim  {
     animation-name: display;
-    animation-duration: 1s;
+    animation-duration: .5s;
     animation-fill-mode: forwards;
     animation-play-state: "paused";
 }
 
 .displayAnimImg {
     animation-name: displayImg;
-    animation-duration: 1s;
+    animation-duration: .5s;
     animation-fill-mode: forwards;
     animation-play-state: "paused";
 }
 
 .rmAnimImg {
     animation-name: displayImg;
-    animation-duration: 1s;
+    animation-duration: .5s;
     animation-direction: reverse;
     animation-fill-mode: forwards;
     animation-play-state: "paused";
@@ -225,7 +229,7 @@
 
 .rmAnim {
     animation-name: display;
-    animation-duration: 1s;
+    animation-duration: .5s;
     animation-direction: reverse;
     animation-fill-mode: forwards;
     animation-play-state: "paused";

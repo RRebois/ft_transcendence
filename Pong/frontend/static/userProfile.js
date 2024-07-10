@@ -37,7 +37,7 @@ function    display_user_data(element) {
                     const   divData = document.createElement('div');
                     setAttributes(divData, {'id': 'userDataDisplayed'});
                     exDiv.append(divData);
-                    var   isStud = false;
+
                     for (const key in user_info)
                         if (key != "stud42" && key != "2fa")
                             append_info(divData, key, user_info[key]);
@@ -62,7 +62,7 @@ function    display_user_data(element) {
 
                     // Add form when editing image is clicked
                     img.addEventListener('click', () => {
-                        load_form_edit_info(isStud, user_connected);
+                        load_form_edit_info(user_info, user_connected);
                     })
                 }
                 else if (element.id === "security") {
@@ -147,13 +147,14 @@ function    display_user_data(element) {
                     exDiv.append(subExDiv);
 
                     // Change password display
-                    const   subExDiv2 = document.createElement('div');
-                    const   changeP = document.createElement('button');
-                    setAttributes(changeP, {'class': 'btn btn-primary', 'type': 'submit', 'id': 'changePassword'});
-                    changeP.textContent = "Change password";
-
-                    subExDiv2.append(changeP);
-                    exDiv.append(subExDiv2);
+                    create_change_password(exDiv);
+//                    const   subExDiv2 = document.createElement('div');
+//                    const   changeP = document.createElement('button');
+//                    setAttributes(changeP, {'class': 'btn btn-primary', 'type': 'submit', 'id': 'changePassword'});
+//                    changeP.textContent = "Change password";
+//
+//                    subExDiv2.append(changeP);
+//                    exDiv.append(subExDiv2);
 
                     // run animation
                     exDiv.style.animationPlayState = "running";
@@ -220,7 +221,32 @@ function    display_user_data(element) {
     }
 }
 
-function load_form_edit_info(isStud, user_connected) {
+function    create_change_password(mainDiv) {
+    const   changeDiv = document.createElement('div');
+    changeDiv.setAttribute("class", "PWBtn");
+    const   changeBtn = document.createElement('button');
+    setAttributes(changeBtn, {'class': 'btn btn-primary', 'type': 'submit', 'id': 'changePassword'});
+    changeBtn.textContent = "Change password";
+
+    changeDiv.append(changeBtn);
+    mainDiv.append(changeDiv);
+
+    // Onclick displays new div
+    changeBtn.addEventListener('click', load_form_change_pw(mainDiv));
+}
+
+function    load_form_change_pw(mainDiv) {console.log("clicked")
+    const   formDiv = document.createElement("div");
+    formDiv.className = "w-100 h-100 d-flex justify-content-center align-items-center";
+
+    const   divTitle = document.createElement('h1');
+    setAttributes(divTitle, {"class": "text-justify play-bold", "content": "ft_transcendence 🏓"});
+
+formDiv.append(divTitle);
+mainDiv.append(formDiv);
+}
+
+function    load_form_edit_info(user_info, user_connected) {
     const   infoDiv = document.getElementById('section1Child');
     const   img = document.getElementById('section1img');
     const   checkForm = document.getElementById('editForm');
@@ -233,44 +259,46 @@ function load_form_edit_info(isStud, user_connected) {
     {
         const   infoKeys = document.querySelectorAll('.infoKey');
         const   infoValues = document.querySelectorAll('.infoValue');
-
         const   newForm = document.createElement('form');
         setAttributes(newForm, {'id': 'editForm'});
 
         const   mainDiv = [];
         const   mainSpan = [];
         const   mainInput = []
-        const   names = ["first_name", "last_name", "email", "username", "language"]
-        for (let i = 0; i < document.querySelectorAll('.infoDiv').length; i++) {
+        var   names = {"First name": "first_name",
+                          "Last name": "last_name",
+                          "Email": "email",
+                          "Username": "username",
+                          "Language": "language"}
 
-            mainDiv[i] = document.createElement('div');
-            mainDiv[i].classList.add('infoDiv');
-            mainSpan[i] = document.createElement('span');
-            mainSpan[i].innerHTML = infoKeys[i].innerHTML;
-            mainSpan[i].classList.add('infoKey');
-            if (isStud && names[i] == "email") {
-                mainInput[i] = document.createElement('span');
-                mainInput[i].innerHTML = infoValues[i].innerHTML;
-            }
-            else {
-                mainInput[i] = document.createElement('input');
-                mainInput[i].value = infoValues[i].innerHTML;
-            }
-            if (names[i] == "language") {
-                mainInput[i] = document.createElement('select');
-                const   a = document.createElement("option");
-                setAttributes(a, {"value": "none", "textContent": "Select a language"});
-                mainInput[i].append(a);
-//                for (let i = 0; i < Choices.pairs("language").length; i++)
-//                {
-//                    console.log("test");
-//                }
-            }
-            setAttributes(mainInput[i], {'name': names[i], 'id': names[i]});
+        var i = 0;
+        for (const key in user_info) {
+            if (key in names) {
+                mainDiv[i] = document.createElement('div');
+                mainDiv[i].classList.add('infoDiv');
+                mainSpan[i] = document.createElement('span');
+                mainSpan[i].innerHTML = key;
+                mainSpan[i].classList.add('infoKey');
+                if (key == "stud42" && user_info[key] == true && names[key] == "email") {
+                    mainInput[i] = document.createElement('span');
+                    mainInput[i].innerHTML = user_info[key];
+                }
+                else {
+                    mainInput[i] = document.createElement('input');
+                    mainInput[i].value = user_info[key];
+                }
+                if (names[key] == "language") {
+                    mainInput[i] = document.createElement("select");
+                    create_options_select_language(mainInput[i], user_info[key]);
+//                    console.log("option selected: " + mainInput[i].options[mainInput[i].selectedIndex].value);
+                }
+                setAttributes(mainInput[i], {"name": names[key], "id": names[key]});
 
-            mainDiv[i].append(mainSpan[i]);
-            mainDiv[i].append(mainInput[i]);
-            newForm.append(mainDiv[i]);
+                mainDiv[i].append(mainSpan[i]);
+                mainDiv[i].append(mainInput[i]);
+                newForm.append(mainDiv[i]);
+                i++;
+            }
         }
         mainInput[0].autofocus = true;
 
@@ -284,11 +312,13 @@ function load_form_edit_info(isStud, user_connected) {
         save.textContent = "Save";
 
         save.addEventListener('click', () => {
+            const   select_div = document.getElementById('language');
             const formData = {
                 'first_name': document.getElementById('first_name').value,
                 'last_name': document.getElementById('last_name').value,
                 'username': document.getElementById('username').value,
-                'email': document.getElementById('email').value
+                'email': document.getElementById('email').value,
+                'language': select_div.options[select_div.selectedIndex].value
             }
             fetch("edit_data", {
                 method: 'PUT',
@@ -306,10 +336,8 @@ function load_form_edit_info(isStud, user_connected) {
             .then(data => {
                 if (data.success) {
                     // Show success message
-                    const   msg = "You have successfully updated your data."
-                    displayMessage(msg, "success");
+                    displayMessage("You have successfully updated your data.", "success");
 
-                                    alert("You have successfully updated your data.");    console.log(user_connected);
                     fetch(`user/${document.getElementById('username').value}/information`)
                     .then(response => response.json())
                     .then(user_info => {
@@ -338,6 +366,8 @@ function load_form_edit_info(isStud, user_connected) {
                                     //update username in form
                                     document.getElementById("Username").innerHTML = user_info[key];
                                     break;
+                                case 'Language':
+                                    document.getElementById("Language").innerHTML = user_info[key];
                                 default:
                                     break;
                             }
@@ -347,7 +377,7 @@ function load_form_edit_info(isStud, user_connected) {
                     })
                     .catch (err => {
                         console.log(err);
-                        alert(err);
+                        displayMessage(err, "failure");
                     });
                 }
                 else {
@@ -360,8 +390,7 @@ function load_form_edit_info(isStud, user_connected) {
                 }
             })
             .catch(error => {
-                console.error("Error: " + error);
-                alert("Error: " + error);
+                displayMessage(error, "failure");
             });
             event.preventDefault();
         });
@@ -386,7 +415,21 @@ function load_form_edit_info(isStud, user_connected) {
     }
 }
 
-function append_info(exDiv, key, value) {
+function    create_options_select_language(input, str) {
+    // Available languages
+    language_choices = ['English', 'French', 'Spanish', 'Portuguese'];
+
+    for (let i = 0; i < language_choices.length; i++) {
+        const   opt = document.createElement("option");
+        opt.value = language_choices[i];
+        opt.text = language_choices[i];
+        if (str === language_choices[i])
+            opt.selected = true;
+        input.append(opt);
+    }
+}
+
+function    append_info(exDiv, key, value) {
     const   infoDiv = document.createElement('div');
     const   addKey = document.createElement('span');
     const   addValue = document.createElement('span');
@@ -404,7 +447,7 @@ function append_info(exDiv, key, value) {
     exDiv.append(infoDiv);
 }
 
-function load_profile_page(username) {
+function    load_profile_page(username) {
     let   mainDivEl = document.getElementById('userDataDiv');
 
     // hide or display elements

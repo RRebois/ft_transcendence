@@ -17,11 +17,12 @@ class User(AbstractUser):
         ('online', 'Online'),
         ('offline', 'Offline'),
     ]
-    language_choices = (
-        ('English', 'english'),
-        ('French', 'french'),
-        ('Spanish', 'spanish'),
-    )
+    language_choices = [
+        ['English', 'en'],
+        ['French', 'fr'],
+        ['Spanish', 'es'],
+        ['Portuguese', 'pt']
+    ]
     language = models.CharField(choices=language_choices, default="English")
     status = models.CharField(max_length=50, choices=status_choices, default='offline')
     totp = models.CharField(max_length=100, blank=True, null=True)

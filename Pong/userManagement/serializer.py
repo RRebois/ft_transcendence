@@ -124,13 +124,7 @@ class EditUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email']
-        extra_kwargs = {
-            'username': {'required': False},
-            'first_name': {'required': False},
-            'last_name': {'required': False},
-            'image': {'required': False},
-        }
+        fields = ['username', 'first_name', 'last_name', 'email', 'language']
 
     def validate(self, attrs):
         pattern = re.compile("^[a-zA-Z]+([ '-][a-zA-Z]+)*$")
@@ -157,7 +151,7 @@ class EditUserSerializer(serializers.ModelSerializer):
         instance.first_name = validated_data.get('first_name', instance.first_name)
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.email = validated_data.get('email', instance.email)
-
+        instance.language = validated_data.get('language', instance.language)
         instance.save()
         return instance
 
