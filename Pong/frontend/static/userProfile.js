@@ -3,6 +3,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const element = event.target;
         if (element.classList.contains("fa-square-caret-down") || element.classList.contains("fa-square-caret-up"))
             display_user_data(element);
+        if (element.id === "changePassword") {
+            const   mainDiv = document.getElementById("section2Child");
+            if (mainDiv != null)
+                load_form_change_pw(mainDiv);
+        }
     });
 })
 // a remodifier, mettre les fetchs dans le if square caret down pour pas fetch si on close els onglets
@@ -48,6 +53,7 @@ function    display_user_data(element) {
                     // run animation
                     exDiv.style.animationPlayState = "running";
                     img.style.animationPlayState = "running";
+                    element.setAttribute("id", "infoDisabled");
 
                     exDiv.addEventListener("animationend", (event) => {
                         // stop animation
@@ -57,6 +63,8 @@ function    display_user_data(element) {
                         // rm animation class
                         exDiv.classList.remove("displayAnim");
                         img.classList.remove("displayAnimImg");
+
+                        element.setAttribute("id", "info");
                     });
                     exDiv.style.opacity = "1px";
 
@@ -158,12 +166,16 @@ function    display_user_data(element) {
 
                     // run animation
                     exDiv.style.animationPlayState = "running";
+                    element.setAttribute("id", "securityDisabled");
                     exDiv.addEventListener("animationend", (event) => {
                         // stop animation
                         exDiv.style.animationPlayState = "paused";
 
                         // rm animation class
                         exDiv.classList.remove("displayAnim");
+
+                        // allow click again
+                        element.setAttribute("id", "security");
                     });
                 }
             })
@@ -192,11 +204,13 @@ function    display_user_data(element) {
             // run animation
             divRM.style.animationPlayState = "running";
             img.style.animationPlayState = "running";
+            element.setAttribute("id", "infoDisabled");
 
             // remove div after animation ended
             divRM.addEventListener("animationend", (event) => {
                 divRM.remove();
                 img.remove();
+                element.setAttribute("id", "info");
             });
         }
         else if (element.id === "security") {
@@ -207,11 +221,13 @@ function    display_user_data(element) {
 
             // run animation
             divRM.style.animationPlayState = "running";
+            element.setAttribute("id", "securityDisabled");
 
             // remove div after animation ended
             divRM.addEventListener("animationend", (event) => {
                 divRM.remove();
                 document.getElementById('section3').style.display = 'none';
+                element.setAttribute("id", "security");
             });
         }
 
@@ -230,20 +246,73 @@ function    create_change_password(mainDiv) {
 
     changeDiv.append(changeBtn);
     mainDiv.append(changeDiv);
-
-    // Onclick displays new div
-    changeBtn.addEventListener('click', load_form_change_pw(mainDiv));
 }
 
-function    load_form_change_pw(mainDiv) {console.log("clicked")
-    const   formDiv = document.createElement("div");
-    formDiv.className = "w-100 h-100 d-flex justify-content-center align-items-center";
+function    load_form_change_pw(mainDiv) {
+    const   check = document.getElementById("formChangePW");
 
-    const   divTitle = document.createElement('h1');
-    setAttributes(divTitle, {"class": "text-justify play-bold", "content": "ft_transcendence 🏓"});
+    if (check == null) {
+        const   formDiv = document.createElement("div");
+        formDiv.className = "w-100 h-100 d-flex justify-content-center align-items-center bg-white flex-column py-2 px-5 rounded login-card hidden";
+        formDiv.setAttribute("id", "formChangePW");
+        formDiv.setAttribute("style", "--bs-bg-opacity: .5;");
 
-formDiv.append(divTitle);
-mainDiv.append(formDiv);
+        const   divTitle = document.createElement("h1");
+        divTitle.className = "text-justify play-bold";
+        divTitle.innerHTML = "ft_transcendence 🏓";
+
+        const   old = create_div_pattern("old_password", "Old password");
+        const   newPW = create_div_pattern("new_password", "New password");
+        const   confirm = create_div_pattern("confirm_password", "Confirm new password");
+        formDiv.append(divTitle, old, newPW, confirm);
+        mainDiv.append(formDiv);
+    }
+    else {
+        check.remove();
+    }
+}
+
+function    create_div_pattern(str, str2) {
+    const   subDiv = document.createElement("div");
+    const   label = document.createElement("label");
+    const   divGroup = document.createElement("div");
+    const   divGroupSub = document.createElement("div");
+    const   item = document.createElement("i");
+    const   input = document.createElement("input");
+    const   span = document.createElement("span");
+    const   valid = document.createElement("div");
+    const   invalid = document.createElement("div");
+
+    subDiv.className = "w-100";
+    setAttributes(label, {"for": str, "class": "visually-hidden", "value": str2});
+    divGroup.className = "input-group";
+    divGroupSub.className = "input-group-text";
+    item.className = "bi bi-lock";
+    setAttributes(input, {"type": "password", "name": str, "id": str, "class": "form-control", "placeholder": str2});
+    input.required = true;
+    if (str === "old_password")
+        input.autofocus = true;
+    else if (str === "new_password") {
+        setAttributes(input, {"minlength": "8", "pattern": "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{5,12}"});
+        span.className = "helper_txt";
+        span.innerHTML = "Password must be at least 8 characters and contain 1 digit, 1 lowercase, and 1 uppercase.";
+    }
+    else {
+        setAttributes(input, {"minlength": "8", "pattern": "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{5,12}"});
+        span.className = "helper_txt";
+        span.innerHTML = "Must match new password input.";
+    }
+
+    if (str !== "old_password") {
+        valid.className = "valid-feedback validColor";
+        valid.innerHTML = "Looks good!";
+        invalid.className = "invalid-feedback invalidColor";
+        invalid.innerHTML = "Bad input!";
+    }
+    divGroupSub.append(item);
+    divGroup.append(divGroupSub, input);
+    subDiv.append(label, divGroup, span, valid, invalid);
+    return subDiv;
 }
 
 function    load_form_edit_info(user_info, user_connected) {
