@@ -7,3 +7,5 @@ Pong/env/*
 
 Pong/configFiles/__pycache__/*
 Pong/userManagement/migrations/*_initial.py
+frontend/app/node_modules/
+frontend/app/dist/

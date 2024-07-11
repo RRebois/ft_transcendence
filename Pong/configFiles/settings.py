@@ -61,7 +61,7 @@ MIDDLEWARE = [
     'userManagement.middleware.JWTAuthenticationMiddleware',
 ]
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:8080", "https://localhost:8443"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:8080", "https://localhost:8443", "https://localhost:3000"]
 
 ROOT_URLCONF = 'configFiles.urls'
 

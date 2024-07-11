@@ -66,6 +66,9 @@ def index(request):
         })
     return render(request, "pages/index.html")
 
+class test_view(APIView):
+    def get(self, request):
+        return Response({"message": "healthy"}, status=200)
 
 @method_decorator(csrf_protect, name='dispatch')
 class LoginView(APIView):

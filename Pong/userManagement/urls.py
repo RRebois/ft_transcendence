@@ -9,6 +9,7 @@ urlpatterns = [
     path("login42/redirect", Login42RedirectView.as_view()),
     path("register", RegisterView.as_view(), name="register"),
     path("logout/", LogoutView.as_view(), name="logout"),
+    path("test/", test_view.as_view(), name="test"),
 
     path("stats/<str:username>", UserStatsDataView.as_view(), name="userStatsData"),
     path("user/<str:username>/information", UserPersonalInformationView.as_view(), name="infos"),
