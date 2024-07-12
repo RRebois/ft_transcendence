@@ -3,7 +3,7 @@ import path from 'path'
 
 export default defineConfig({
     server: {
-        port: 8443,
+        port: 9000,
     },
     resolve: {
         alias: {

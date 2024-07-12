@@ -10,28 +10,43 @@ export default class Home {
             .catch(error => console.error('Error:', error));
     }
 
-    loginUser(username, password) {
-        console.log('username: ', username);
-        console.log('password: ', password);
-    }
+    loginUser(event) {
+        event.preventDefault(); // Prevent the default form submission
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-pwd').value;
+        const csrfToken = this.getCSRFToken(); // Assuming getCSRFToken() method exists and fetches the CSRF token correctly
 
-    getCSRFToken() {
-        // Function to extract CSRF token from cookies
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; csrftoken=`);
-        console.log('parts: ', parts);
-        if (parts.length === 2) return parts.pop().split(';').shift();
+        fetch('https://localhost:8443/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken // Include CSRF token in request headers if needed
+            },
+            body: JSON.stringify({ username, password })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                // Handle success, e.g., redirecting the user or displaying a success message
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Handle errors, e.g., displaying an error message to the user
+            });
     }
 
     // TODO: check form action link
     render() {
         this.fetchData();
-        const csrfToken = this.getCSRFToken();
         return `
          <div class="w-100 h-100 d-flex justify-content-center align-items-center">
-            <form action="https://localhost:8443/login" method="post" class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card" style="--bs-bg-opacity: .5;">
+            <form onsubmit="this.loginUser(event);" method="post" class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card" style="--bs-bg-opacity: .5;">
                 <h1><a class="text-justify play-bold" href="/" >ft_transcendence 🏓</a></h1>
-                <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
                 <div class="w-100">
                     <label for="login-username" class="visually-hidden">Username</label>
                     <div class="input-group">
