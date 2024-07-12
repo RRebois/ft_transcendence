@@ -7,6 +7,7 @@ export default defineConfig({
     },
     resolve: {
         alias: {
+            '~bootstrap': path.resolve(__dirname, 'node_modules/bootstrap'),
             '@css': path.resolve(__dirname, 'css/'),
             '@js': path.resolve(__dirname, 'js/'),
             '@views': path.resolve(__dirname, 'js/views/'),

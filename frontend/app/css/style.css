@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Play:wght@400;700&family=Poppins&display=swap');
+@import "bootstrap/dist/css/bootstrap.css";
+@import "bootstrap-icons/font/bootstrap-icons.scss";
 
 .fullscreen {
   height: 100vh;
