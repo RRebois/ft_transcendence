@@ -286,10 +286,13 @@ function    load_form_change_pw(mainDiv) {
                 if (data.success) {
                     displayMessage(" You have successfully changed your password.", "success");
                 }
+                else {
+                    displayMessage(data.errors, "danger");
+                }
             })
             .catch (err => {
                 console.log(err);
-                displayMessage(err, "failure");
+                displayMessage(err, "danger");
             });
         });
 
@@ -490,20 +493,15 @@ function    load_form_edit_info(user_info, user_connected) {
                     })
                     .catch (err => {
                         console.log(err);
-                        displayMessage(err, "failure");
+                        displayMessage(err, "danger");
                     });
                 }
                 else {
-                    // show error msg
-                    const errors = [];
-                    for (const [field, messages] of Object.entries(data.errors)) {
-                        errors.push(`${field}: ${messages.join(", ")}`);
-                    }
-                        alert("Error: " + errors.join("\n"));
+                    displayMessage(data.errors, "danger");
                 }
             })
             .catch(error => {
-                displayMessage(error, "failure");
+                displayMessage(error, "danger");
             });
             event.preventDefault();
         });

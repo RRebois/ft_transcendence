@@ -130,7 +130,6 @@ class EditUserSerializer(serializers.ModelSerializer):
         username = attrs.get('username', '')
         if not pattern_username.match(username):
             raise serializers.ValidationError("Username must be alphanumeric only.")
-
         return attrs
 
     def update(self, instance, validated_data):

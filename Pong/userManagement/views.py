@@ -292,39 +292,30 @@ class EditDataView(APIView):
 
     def put(self, request):
         user_data = request.data
-        user = authenticate_user(request)
-
-        if not user:
-            messages.error(request, "Authentication failed.")
-            return render(request, "pages/index.html")
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            return Response({"success": False, "errors": str(e)})
 
         serializer = self.serializer_class(user, data=user_data, partial=True)
-        if serializer.is_valid(raise_exception=True):
+        try:
+            serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response({"success": True})
-        else:
-            return Response({"success": False, "errors": serializer.errors})
+        except serializers.ValidationError as e:
+            error_messages = []
+            for field, errors in e.detail.items():
+                for error in errors:
+                    if field == 'non_field_errors':
+                        error_messages.append(f"{error}")
+                    else:
+                        error_messages.append(f"{field}: {error}")
+            error_message = " | ".join(error_messages)
+            return Response({"success": False, "errors": error_message})
 
 
-# @method_decorator(csrf_protect, name='dispatch')
-# class UpdateUserView(APIView):
-#     serializer_class = UserSerializer
-#     def put(self, request):
-#          try:
-#             user = authenticate_user(request)
-#         except AuthenticationFailed as e:
-#             messages.warning(request, str(e))
-#             return redirect('index')
-#
-#         serializer = self.serializer_class(user, data=request.data, partial=True)
-#         if serializer.is_valid(raise_exception=True):
-#             serializer.save()
-#             return Response({"detail": "Data changed successfully"},
-#                             status=status.HTTP_200_OK)
-#         return Response(serializer.errors, status=status.HTTP_403_FORBIDDEN)
-#
-#
 @method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
 class PasswordChangeView(APIView):
     serializer_class = PasswordChangeSerializer
 
@@ -332,8 +323,7 @@ class PasswordChangeView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return redirect('index')
+            return Response({"success": False, "errors": str(e)})
         serializer = self.serializer_class(data=request.data, context={'user': user})
         try:
             serializer.is_valid(raise_exception=True)
@@ -348,8 +338,7 @@ class PasswordChangeView(APIView):
                     else:
                         error_messages.append(f"{field}: {error}")
             error_message = " | ".join(error_messages)
-            messages.warning(request, error_message)
-            return Response({"success": False, "errors": serializer.errors})
+            return Response({"success": False, "errors": error_message})
 
 
 @method_decorator(csrf_protect, name='dispatch')
