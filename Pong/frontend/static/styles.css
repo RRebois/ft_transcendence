@@ -4,10 +4,33 @@
     color:  #99251B;
 }
 
-indexLink {
+.indexLink {
     width: fit-content;
 }
 
+#profilePic {
+    width: 80vw;
+    height: 80vh;
+    position: sticky;
+    top: 10%;
+    left : 10%;
+}
+
+.profilePicShadowBox {
+    z-index: 1;
+    border: 2px solid #333;
+    box-shadow: 8px 8px 5px #444;
+    padding: 8px 12px;
+    overflow: auto;
+    background-image: linear-gradient(241deg, #8360C3, #2EBF91);
+}
+
+.changePW {
+    width: 60%;
+    margin: 10px auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
 .roundBorder {
     width: 60px;
@@ -32,6 +55,8 @@ indexLink {
 .alertSize{
     width: 50%;
     margin: auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .dropdown {
@@ -249,6 +274,8 @@ indexLink {
     font-weight: bold;
     text-decoration: underline;
     min-width: fit-content;
+    display: inline-block;
+    width: 100%;
 }
 
 .infoValue {

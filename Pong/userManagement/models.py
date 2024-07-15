@@ -55,6 +55,7 @@ class User(AbstractUser):
             "Language": self.language,
             "stud42": self.stud42,
             "2fa": self.tfa_activated,
+            "img": self.image.url
         }
 
 

@@ -57,16 +57,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             event.preventDefault();
         }
-        else if (element.id === 'statsPage' || element.id === 'profile') {
-            fetch('/getUsernameConnected')
+        else if (element.id === "statsPage" || element.id === "profile" || element.id === "userImg") {
+            fetch("/getUsernameConnected")
             .then(response => response.json())
             .then(username => {
-                if (element.id === 'statsPage')
+                if (element.id === "statsPage")
                     load_stats_page(username);
-                else
+                else if (element.id === "profile")
                     load_profile_page(username);
+                else
+                    load_change_profile_pic(username);
             })
             event.preventDefault();
+        }
+        else {
+            if (!element.classList.contains('profilePicShadowBox')) {
+                document.getElementById('profilePic').innerHTML = "";
+                document.getElementById('profilePic').display = "none";
+                document.getElementById('profilePic').classList.remove("profilePicShadowBox");
+            }
         }
     })
     const mainPage = document.getElementById('mainPage');
@@ -76,7 +85,48 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 })
 
-function displayMessage(message, level) {// A ENLEVER QUAND MERGE AVEC FRIEND GESTION
+function    load_change_profile_pic(username) {
+    const   picDiv = document.getElementById("profilePic");
+    picDiv.innerHTML = "";
+    picDiv.style.display = "block";
+    picDiv.classList.add("profilePicShadowBox");
+
+    // Title div
+    const   title = document.createElement("div");
+    title.innerHTML = "Change your avatar";
+    title.className = "title_div gradient-background";
+    title.setAttribute("name", "top");
+    picDiv.append(title);
+
+    // Current profile image
+    fetch(`user/${username}/information`)
+    .then(response => response.json())
+    .then(data => {console.log(data);
+
+        const   divImages = document.createElement("div");
+        const   currentImgTitle = document.createElement("div");
+        const   currentImg = document.createElement("img");
+
+        // Current avatar
+        currentImgTitle.innerHTML = "Current avatar";
+        setAttributes(currentImg, {"src": `${data.img}`, "alt": "avatar", "id": "currentImg"});
+
+        divImages.append(currentImgTitle, currentImg);
+        picDiv.append(divImages);
+
+        // Available avatars
+        fetch("media/")
+        .then(response => response.json())
+        .then(pics => {
+            console.log(pics);
+        })
+    })
+    .catch (err => {
+        displayMessage(err, "danger");
+    });
+}
+
+function    displayMessage(message, level) {// A ENLEVER QUAND MERGE AVEC FRIEND GESTION
     const messagesContainer = document.getElementById('messagesContainer');
     const alertDiv = document.createElement('div');
     alertDiv.className = `alertSize alert alert-${level}`;
@@ -110,6 +160,8 @@ function load_stats_page(username) {
     document.getElementById('greetings').style.display = 'none';
     document.getElementById('userDataDiv').style.display = 'none';
     document.getElementById('userDataDiv').innerHTML = "";
+    document.getElementById('profilePic').style.display = 'none';
+    document.getElementById('profilePic').innerHTML = "";
     document.getElementById('statsDiv').style.display = 'block';
     document.getElementById('statsDiv').innerHTML = "";
 

@@ -3,11 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const element = event.target;
         if (element.classList.contains("fa-square-caret-down") || element.classList.contains("fa-square-caret-up"))
             display_user_data(element);
-        if (element.id === "changePassword") {
-            const   mainDiv = document.getElementById("section2Child");
-            if (mainDiv != null)
-                load_form_change_pw(mainDiv);
-        }
     });
 })
 // a remodifier, mettre les fetchs dans le if square caret down pour pas fetch si on close els onglets
@@ -231,20 +226,12 @@ function    display_user_data(element) {
 }
 
 function    create_change_password(mainDiv) {
-    const   changeDiv = document.createElement('div');
-    changeDiv.setAttribute("class", "PWBtn");
-    const   changeBtn = document.createElement('button');
-    setAttributes(changeBtn, {'class': 'btn btn-primary', 'type': 'submit', 'id': 'changePassword'});
-    changeBtn.textContent = "Change password";
-
-    changeDiv.append(changeBtn);
-    mainDiv.append(changeDiv);
-}
-
-function    load_form_change_pw(mainDiv) {
     const   check = document.getElementById("formChangePW");
 
     if (check == null) {
+        const   mainFormDiv = document.createElement("div");
+        mainFormDiv.className = "changePW";
+
         const   formDiv = document.createElement("div");
         formDiv.className = "w-100 h-100 d-flex justify-content-center align-items-center bg-white flex-column py-2 px-5 rounded login-card hidden";
         formDiv.setAttribute("id", "formChangePW");
@@ -252,7 +239,7 @@ function    load_form_change_pw(mainDiv) {
 
         const   divTitle = document.createElement("h1");
         divTitle.className = "text-justify play-bold";
-        divTitle.innerHTML = "ft_transcendence 🏓";
+        divTitle.innerHTML = "Change password";
 
         const   old = create_div_pattern("old_password", "Old password");
         const   newPW = create_div_pattern("new_password", "New password");
@@ -261,7 +248,7 @@ function    load_form_change_pw(mainDiv) {
         const   btnPW = document.createElement('button');
         setAttributes(btnPW, {"class": "btn btn-primary", "type": "submit", "id": "changePassword"});
         btnPW.style.margin = "0px 10px;";
-        btnPW.textContent = "Submit";
+        btnPW.textContent = "Change password";
 
         btnPW.addEventListener("click", () => {
             const formData = {
@@ -295,9 +282,9 @@ function    load_form_change_pw(mainDiv) {
                 displayMessage(err, "danger");
             });
         });
-
         formDiv.append(divTitle, old, newPW, confirm, btnPW);
-        mainDiv.append(formDiv);
+        mainFormDiv.append(formDiv);
+        mainDiv.append(mainFormDiv);
     }
     else {
         check.remove();
@@ -375,7 +362,7 @@ function    load_form_edit_info(user_info, user_connected) {
     {
         const   infoKeys = document.querySelectorAll('.infoKey');
         const   infoValues = document.querySelectorAll('.infoValue');
-        const   newForm = document.createElement('form');
+        const   newForm = document.createElement('div');
         setAttributes(newForm, {'id': 'editForm'});
 
         const   mainDiv = [];
@@ -406,12 +393,12 @@ function    load_form_edit_info(user_info, user_connected) {
                 if (names[key] == "language") {
                     mainInput[i] = document.createElement("select");
                     create_options_select_language(mainInput[i], user_info[key]);
-//                    console.log("option selected: " + mainInput[i].options[mainInput[i].selectedIndex].value);
                 }
                 setAttributes(mainInput[i], {"name": names[key], "id": names[key]});
+                mainInput[i].style.width = "20%";
 
-                mainDiv[i].append(mainSpan[i]);
-                mainDiv[i].append(mainInput[i]);
+                mainDiv[i].append(mainSpan[i], mainInput[i]);
+                mainDiv[i].style.textAlign = "center";
                 newForm.append(mainDiv[i]);
                 i++;
             }
@@ -566,6 +553,8 @@ function    load_profile_page(username) {
     mainDivEl.innerHTML = "";
     create_div_title(username, "profile", "userDataDiv");
     document.getElementById('greetings').style.display = 'none';
+    document.getElementById('profilePic').style.display = 'none';
+    document.getElementById('profilePic').innerHTML = "";
     document.getElementById('statsDiv').style.display = 'none';
     document.getElementById('statsDiv').innerHTML = "";
 

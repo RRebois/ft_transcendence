@@ -31,9 +31,9 @@
         <ul class="nav">
             <li class="nav-item roundBorder">
                 {% if user.image_url %}
-                    <img src="{{ user.image_url}}" alt="avatar">
+                    <img src="{{ user.image_url}}" alt="avatar" id="userImg42">
                 {% else %}
-                    <img src="{{ user.image.url }}" alt="avatar">
+                    <img src="{{ user.image.url }}" alt="avatar" id="userImg">
                 {% endif %}
             </li>
         </ul>
