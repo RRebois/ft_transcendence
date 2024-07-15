@@ -11,10 +11,9 @@ export default class Home {
     }
 
     loginUser(event) {
-        event.preventDefault(); // Prevent the default form submission
+        event.preventDefault();
         const username = document.getElementById('login-username').value;
         const password = document.getElementById('login-pwd').value;
-        const csrfToken = this.getCSRFToken(); // Assuming getCSRFToken() method exists and fetches the CSRF token correctly
 
         fetch('https://localhost:8443/login', {
             method: 'POST',
@@ -42,11 +41,12 @@ export default class Home {
 
     // TODO: check form action link
     render() {
+        document.title = 'ft_transcendence | Login';
         this.fetchData();
         return `
-         <div class="w-100 h-100 d-flex justify-content-center align-items-center">
+         <div class="w-100 h-100 d-flex flex-column justify-content-center align-items-center">
             <form onsubmit="this.loginUser(event);" method="post" class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card" style="--bs-bg-opacity: .5;">
-                <h1><a class="text-justify play-bold" href="/" >ft_transcendence 🏓</a></h1>
+                <h1 class="text-justify play-bold fs-1" >ft_transcendence 🏓</h1>
                 <div class="w-100">
                     <label for="login-username" class="visually-hidden">Username</label>
                     <div class="input-group">
@@ -70,6 +70,9 @@ export default class Home {
                 </div>
                 <button type="submit" class="btn btn-primary">Log in</button>
             </form>
+            <div class="padForm">
+                Don't have an account? <a href="/register">Register here.</a>
+            </div>
          </div>
         `;
     }

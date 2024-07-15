@@ -15,6 +15,7 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
+from django.forms.models import model_to_dict
 import pyotp
 import jwt
 import requests
@@ -23,6 +24,16 @@ from .models import *
 from .forms import *
 from .serializer import *
 from .utils import *
+
+import logging
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()  # This handler writes logs to stdout
+    ]
+)
 
 
 # @method_decorator(csrf_protect, name='dispatch')
@@ -66,15 +77,18 @@ def index(request):
         })
     return render(request, "pages/index.html")
 
+
 class test_view(APIView):
     def get(self, request):
         return Response({"message": "healthy"}, status=200)
+
 
 @method_decorator(csrf_protect, name='dispatch')
 class LoginView(APIView):
     serializer_class = LoginSerializer
 
     def post(self, request):
+        logger.debug(f"LOGIN REQUEST: {request}")
         serializer = self.serializer_class(data=request.data, context={'request': request})
         try:
             serializer.is_valid(raise_exception=True)
@@ -91,8 +105,10 @@ class LoginView(APIView):
             user.save()
 
             response = HttpResponseRedirect(reverse("index"))
-            response.set_cookie(key='jwt_access', value=access_token, httponly=True,  samesite='Lax', secure=True, path='/')
-            response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True, path='/')
+            response.set_cookie(key='jwt_access', value=access_token, httponly=True, samesite='Lax', secure=True,
+                                path='/')
+            response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True,
+                                path='/')
             response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True, path='/')
             return response
         except AuthenticationFailed as e:
@@ -115,33 +131,33 @@ class Login42View(APIView):
 
 def exchange_token(code):
     data = {
-        "grant_type" : "authorization_code",
-        "client_id" : os.environ.get('CLIENT42_ID'),
-        "client_secret" : os.environ.get('CLIENT42_SECRET'),
-        "code" : code,
-        "redirect_uri" : os.environ.get('REDIRECT_42URI'),
+        "grant_type": "authorization_code",
+        "client_id": os.environ.get('CLIENT42_ID'),
+        "client_secret": os.environ.get('CLIENT42_SECRET'),
+        "code": code,
+        "redirect_uri": os.environ.get('REDIRECT_42URI'),
     }
     response = requests.post("https://api.intra.42.fr/oauth/token", data=data)
     credentials = response.json()
     token = credentials['access_token']
     user = requests.get("https://api.intra.42.fr/v2/me", headers={
-        "Authorization" : f"Bearer {token}"
+        "Authorization": f"Bearer {token}"
     }).json()
 
     return {
-        "email" : user['email'],
-        "username" : user['login'],
-        "image" : user['image']['link'],
-        "first_name" : user['first_name'],
-        "last_name" : user['last_name'],
-        "language_id" : user["languages_users"][0]['language_id'],
+        "email": user['email'],
+        "username": user['login'],
+        "image": user['image']['link'],
+        "first_name": user['first_name'],
+        "last_name": user['last_name'],
+        "language_id": user["languages_users"][0]['language_id'],
     }
 
 
 @method_decorator(csrf_protect, name='dispatch')
 class Login42RedirectView(APIView):
-
     serializer_class = Register42Serializer
+
     def post(self, request):
         return HttpResponseRedirect(reverse("index"))
 
@@ -199,18 +215,31 @@ class LogoutView(APIView):
 
 
 # https://www.django-rest-framework.org/api-guide/renderers/#templatehtmlrenderer
+# TODO : handling username or email already taken
 @method_decorator(csrf_protect, name='dispatch')
 class RegisterView(APIView):
     serializer_class = RegisterSerializer
+
     def post(self, request):
         user_data = request.data
         serializer = self.serializer_class(data=user_data)
-        if serializer.is_valid():
+        logging.debug("request.data: " + str(request.data))
+
+        try:
+            serializer_response = serializer.is_valid(raise_exception=True)
+        except:
+            logging.debug("serializer is not valid")
+            errors = serializer.errors
+            logging.debug("serializer validation errors: ", str(errors))
+            return Response({message: str(errors)}, status=400)
+        if serializer_response:
+            logging.debug("serializer is valid")
             try:
                 user = serializer.save()
             except IntegrityError:
                 messages.error(request, "Username and/or email already taken.")
-                return render(request, "pages/register.html")
+                logger.debug("Username and/or email already taken.")
+                return Response({message: "username or email already taken"}, status=400)
 
             if 'imageFile' in request.FILES:
                 try:
@@ -220,17 +249,15 @@ class RegisterView(APIView):
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
                     messages.success(request, "You have successfully registered.")
-                    return HttpResponseRedirect(reverse("index"))
-
-                except :
+                    return Response(model_to_dict(user), status=200)
+                except:
                     user.image = "profile_pics/default_pp.jpg"
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
                     messages.info(request, "Image format not valid. Profile picture set to default.")
                     messages.success(request, "You have successfully registered.")
-                    return HttpResponseRedirect(reverse("index"))
-
+                    return Response(model_to_dict(user), status=200)
             else:
                 user.image = "profile_pics/default_pp.jpg"
                 user.save()
@@ -238,18 +265,74 @@ class RegisterView(APIView):
                 user_data.save()
                 messages.info(request, "No profile image selected. Profile picture set to default.")
                 messages.success(request, "You have successfully registered.")
-                return HttpResponseRedirect(reverse("index"))
+                return Response(model_to_dict(user), status=200)
+        else:
+            logging.debug("serializer is not valid")
+            errors = serializer.errors
+            logging.debug("serializer validation errors: ", str(errors))
+            return Response({message: str(errors)}, status=400)
 
-        return render(request, "pages/register.html", {
-            "form": serializer,
-            "errors": serializer.errors
-        })
+    # if serializer.is_valid():
+    #     logging.debug("serializer is valid")
+    # else:
+    #     logging.debug("serializer is not valid")
+    #     errors = serializer.errors
+    #     logging.debug("serializer validation errors: ", str(errors))
 
-    def get(self, request):
-        serializer = self.serializer_class()
-        return render(request, "pages/register.html", {
-            "form": serializer
-        })
+
+
+    # return Response({"message": "test register"}, status=200)
+    #     try:
+    #         user = serializer.save()
+    #     except IntegrityError:
+    #         messages.error(request, "Username and/or email already taken.")
+    #         logger.debug("Username and/or email already taken.")
+    #         return JsonResponse("username or email already taken", status=400)
+    # return render(request, "pages/register.html")
+
+    # if 'imageFile' in request.FILES:
+    #     try:
+    #         image = validate_image(request.FILES['imageFile'])
+    #         user.image = image
+    #         user.save()
+    #         user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+    #         user_data.save()
+    #         messages.success(request, "You have successfully registered.")
+    #         # return HttpResponseRedirect(reverse("index"))
+    #         return JsonResponse("ok with image", status=200)
+    #
+    #     except :
+    #         user.image = "profile_pics/default_pp.jpg"
+    #         user.save()
+    #         user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+    #         user_data.save()
+    #         messages.info(request, "Image format not valid. Profile picture set to default.")
+    #         messages.success(request, "You have successfully registered.")
+    #         # return HttpResponseRedirect(reverse("index"))
+    #         return JsonResponse("ok with default image", status=200)
+    #
+    # else:
+    #     user.image = "profile_pics/default_pp.jpg"
+    #     user.save()
+    #     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+    #     user_data.save()
+    #     messages.info(request, "No profile image selected. Profile picture set to default.")
+    #     messages.success(request, "You have successfully registered.")
+    #     # return HttpResponseRedirect(reverse("index"))
+    #     return JsonResponse("ok with default image because no image provided", status=200)
+    # return JsonResponse("faux", status=400)
+
+    # return render(request, "pages/register.html", {
+    #     "form": serializer,
+    #     "errors": serializer.errors
+    # })
+
+    # def get(self, request):
+    #     return Response({"message": "test register"}, status=200)
+    # serializer = self.serializer_class()
+    # return render(request, "pages/register.html", {
+    #     "form": serializer
+    # })
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -518,7 +601,8 @@ class SendFriendRequestView(APIView):
 
         FriendRequest.objects.create(from_user=user, to_user=to_user)
         message = "Friend request sent."
-        return JsonResponse({"message": message, "user": user.serialize(), "level": "success"}, status=status.HTTP_200_OK)
+        return JsonResponse({"message": message, "user": user.serialize(), "level": "success"},
+                            status=status.HTTP_200_OK)
 
 
 class GetFriendRequestView(APIView):
@@ -615,9 +699,11 @@ class RemoveFriendView(APIView):
             except FriendRequest.DoesNotExist:
                 pass
 
-            return JsonResponse({"message": "User removed from your friends.", "level": "success"}, status=status.HTTP_200_OK)
+            return JsonResponse({"message": "User removed from your friends.", "level": "success"},
+                                status=status.HTTP_200_OK)
 
-        return JsonResponse({"message": "User is not in your friends.", "level": "warning"}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({"message": "User is not in your friends.", "level": "warning"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class GetFriendView(APIView):

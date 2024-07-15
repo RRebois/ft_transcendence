@@ -13,4 +13,7 @@ export default defineConfig({
             '@views': path.resolve(__dirname, 'js/views/'),
         },
     },
+    optimizeDeps: {
+        include: ['bootstrap']
+    },
 })

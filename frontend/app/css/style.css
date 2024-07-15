@@ -24,3 +24,10 @@ body.bg-gradient {
   text-decoration: none;
   color: black;
 }
+
+password-validator-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
