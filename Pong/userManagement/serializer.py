@@ -49,6 +49,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         if not pattern_username.match(username):
             raise serializers.ValidationError("Username must be alphanumeric only.")
 
+        validate_password(password, username)
         return attrs
 
     def create(self, validated_data):
@@ -60,20 +61,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data.get('password'),
         )
         return user
-
-    # def update(self, instance, validated_data):
-    #     if 'email' in validated_data:
-    #         instance.set_email(validated_data['email'])
-    #     if 'first_name' in validated_data:
-    #         instance.set_first_name(validated_data['first_name'])
-    #     if 'last_name' in validated_data:
-    #         instance.set_last_name(validated_data['last_name'])
-    #     if 'username' in validated_data:
-    #         instance.set_username(validated_data['username'])
-    #     if 'password' in validated_data:
-    #         instance.set_password(validated_data['password'])
-    #     instance.save()
-    #     return instance
 
 
 class Register42Serializer(serializers.ModelSerializer):
@@ -175,11 +162,12 @@ class PasswordChangeSerializer(serializers.Serializer):
         validate_password(new_password, user)
         return attrs
 
-    def save(self, **kwargs):
-        user = self.context['user']
-        new_password = self.validated_data['new_password']
-        user.set_password(new_password)
-        user.save()
+    def update(self, instance, validated_data):
+        instance.old_password = validated_data.get('old_password', instance.username)
+        instance.new_password = validated_data.get('new_password', instance.first_name)
+        instance.confirm_password = validated_data.get('confirm_password', instance.last_name)
+        instance.save()
+        return instance
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):

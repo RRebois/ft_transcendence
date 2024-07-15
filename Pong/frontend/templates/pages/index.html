@@ -9,6 +9,7 @@ ft_transcendence
     <script src="{% static 'forgotPW.js' %}"></script>
     <script src="{% static 'userProfile.js' %}"></script>
     <script src="{% static 'userDataPage.js' %}"></script>
+    <script src="{% static 'scriptRegistration.js' %}"></script>
 {% endblock %}
 
 {% block body %}
@@ -60,8 +61,7 @@ ft_transcendence
                            required/>
                 </div>
             </div>
-<!--            <a href="{% url 'reset_password' %}" class="text-decoration-none">Forgot password?</a>-->
-            <a href="" class="text-decoration-none" id="Alzheimer">Forgot password?</a>
+            <a href="" class="text-decoration-none indexLink" id="Alzheimer">Forgot password?</a>
         </div>
         <button type="submit" class="btn btn-primary">Log in</button>
         {% if login_error %}

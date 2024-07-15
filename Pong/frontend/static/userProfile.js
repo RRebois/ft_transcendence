@@ -156,13 +156,6 @@ function    display_user_data(element) {
 
                     // Change password display
                     create_change_password(exDiv);
-//                    const   subExDiv2 = document.createElement('div');
-//                    const   changeP = document.createElement('button');
-//                    setAttributes(changeP, {'class': 'btn btn-primary', 'type': 'submit', 'id': 'changePassword'});
-//                    changeP.textContent = "Change password";
-//
-//                    subExDiv2.append(changeP);
-//                    exDiv.append(subExDiv2);
 
                     // run animation
                     exDiv.style.animationPlayState = "running";
@@ -264,7 +257,43 @@ function    load_form_change_pw(mainDiv) {
         const   old = create_div_pattern("old_password", "Old password");
         const   newPW = create_div_pattern("new_password", "New password");
         const   confirm = create_div_pattern("confirm_password", "Confirm new password");
-        formDiv.append(divTitle, old, newPW, confirm);
+
+        const   btnPW = document.createElement('button');
+        setAttributes(btnPW, {"class": "btn btn-primary", "type": "submit", "id": "changePassword"});
+        btnPW.style.margin = "0px 10px;";
+        btnPW.textContent = "Submit";
+
+        btnPW.addEventListener("click", () => {
+            const formData = {
+                "old_password": document.getElementById("old_password").value,
+                "new_password": document.getElementById("new_password").value,
+                "confirm_password": document.getElementById("confirm_password").value
+            }
+            fetch("change_password", {
+                method: "PUT",
+                headers: {
+                    "content-Type": "application/json",
+                    "X-CSRFToken": document.querySelector("meta[name='csrf-token']").getAttribute("content"),
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                if (response.ok) { console.log("HTTP request successful") }
+                else { console.log("HTTP request unsuccessful") }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    displayMessage(" You have successfully changed your password.", "success");
+                }
+            })
+            .catch (err => {
+                console.log(err);
+                displayMessage(err, "failure");
+            });
+        });
+
+        formDiv.append(divTitle, old, newPW, confirm, btnPW);
         mainDiv.append(formDiv);
     }
     else {
@@ -290,6 +319,21 @@ function    create_div_pattern(str, str2) {
     item.className = "bi bi-lock";
     setAttributes(input, {"type": "password", "name": str, "id": str, "class": "form-control", "placeholder": str2});
     input.required = true;
+
+    // Check input validity
+    input.addEventListener("blur", function(event){
+        if (!input.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+            input.classList.remove("is-valid");
+            input.classList.add("is-invalid");
+        }
+        else {
+            input.classList.remove("is-invalid");
+            input.classList.add("is-valid");
+        }
+    })
+
     if (str === "old_password")
         input.autofocus = true;
     else if (str === "new_password") {
@@ -398,8 +442,8 @@ function    load_form_edit_info(user_info, user_connected) {
                 body: JSON.stringify(formData)
             })
             .then(response => {
-                if (response.ok) { console.log("HTTP request successful")}
-                else { console.log("HTTP request unsuccessful")}
+                if (response.ok) { console.log("HTTP request successful") }
+                else { console.log("HTTP request unsuccessful") }
                 return response.json();
             })
             .then(data => {

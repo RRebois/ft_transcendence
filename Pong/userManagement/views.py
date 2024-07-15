@@ -19,9 +19,7 @@ from rest_framework.views import APIView
 import pyotp
 import jwt
 import requests
-import logging
 
-logger = logging.getLogger(__name__)
 
 from .models import *
 from .forms import *
@@ -305,7 +303,6 @@ class EditDataView(APIView):
             serializer.save()
             return Response({"success": True})
         else:
-            logger.error("Validation errors: {serializers.ValidationError}")
             return Response({"success": False, "errors": serializer.errors})
 
 
@@ -331,7 +328,7 @@ class EditDataView(APIView):
 class PasswordChangeView(APIView):
     serializer_class = PasswordChangeSerializer
 
-    def post(self, request):
+    def put(self, request):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
@@ -341,9 +338,7 @@ class PasswordChangeView(APIView):
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            response = redirect('index')
-            messages.success(request, "Your password has been changed.")
-            return response
+            return Response({"success": True})
         except serializers.ValidationError as e:
             error_messages = []
             for field, errors in e.detail.items():
@@ -354,26 +349,7 @@ class PasswordChangeView(APIView):
                         error_messages.append(f"{field}: {error}")
             error_message = " | ".join(error_messages)
             messages.warning(request, error_message)
-            return render(request, "pages/changePassword.html", {
-                "form": serializer,
-                "user": user
-            })
-
-    def get(self, request):
-        try:
-            user = authenticate_user(request)
-        except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return redirect('index')
-        if user.stud42:
-            response = redirect('index')
-            messages.warning(request, "You can't change your password when using a 42 account.")
-            return response
-        serializer = self.serializer_class()
-        return render(request, "pages/changePassword.html", {
-            "form": serializer,
-            "user": user
-        })
+            return Response({"success": False, "errors": serializer.errors})
 
 
 @method_decorator(csrf_protect, name='dispatch')

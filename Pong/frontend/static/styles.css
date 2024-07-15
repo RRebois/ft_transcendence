@@ -4,6 +4,11 @@
     color:  #99251B;
 }
 
+indexLink {
+    width: fit-content;
+}
+
+
 .roundBorder {
     width: 60px;
     height: 60px;
