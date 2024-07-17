@@ -155,8 +155,8 @@ function load_stats_page(username) {
     document.getElementById('userDataDiv').innerHTML = "";
     document.getElementById('profilePic').style.display = 'none';
     document.getElementById('profilePic').innerHTML = "";
-    document.getElementById('friendsPage').style.display = 'none';
-    document.getElementById('friendsPage').innerHTML = "";
+    document.getElementById('friendsDiv').style.display = 'none';
+    document.getElementById('friendsDiv').innerHTML = "";
     document.getElementById('statsDiv').style.display = 'block';
     document.getElementById('statsDiv').innerHTML = "";
 

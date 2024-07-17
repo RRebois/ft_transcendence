@@ -570,8 +570,8 @@ function    load_profile_page(username) {
     document.getElementById('profilePic').innerHTML = "";
     document.getElementById('statsDiv').style.display = 'none';
     document.getElementById('statsDiv').innerHTML = "";
-    document.getElementById('friendsPage').style.display = 'none';
-    document.getElementById('friendsPage').innerHTML = "";
+    document.getElementById('friendsDiv').style.display = 'none';
+    document.getElementById('friendsDiv').innerHTML = "";
 
     // Create elements to display
     const   title1 = document.createElement('div');
