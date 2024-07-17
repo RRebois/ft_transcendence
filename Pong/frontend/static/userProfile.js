@@ -41,7 +41,7 @@ function    display_user_data(element) {
                     for (const key in user_info)
                         if (key != "stud42" && key != "2fa")
                             append_info(divData, key, user_info[key]);
-                        else if (key == "stud42")
+                        else if (key === "stud42")
                             isStud = user_info[key];
                     element.parentElement.parentElement.append(exDiv);
 
@@ -228,7 +228,7 @@ function    display_user_data(element) {
 function    create_change_password(mainDiv) {
     const   check = document.getElementById("formChangePW");
 
-    if (check == null) {
+    if (check === null) {
         const   mainFormDiv = document.createElement("div");
         mainFormDiv.className = "changePW";
 
@@ -358,7 +358,7 @@ function    load_form_edit_info(user_info, user_connected) {
     const   divData = document.getElementById('userDataDisplayed');
     divData.style.display = 'none';
 
-    if (checkForm == null && img != null)
+    if (checkForm === null && img !== null)
     {
         const   infoKeys = document.querySelectorAll('.infoKey');
         const   infoValues = document.querySelectorAll('.infoValue');
@@ -382,7 +382,7 @@ function    load_form_edit_info(user_info, user_connected) {
                 mainSpan[i] = document.createElement('span');
                 mainSpan[i].innerHTML = key;
                 mainSpan[i].classList.add('infoKey');
-                if (key == "stud42" && user_info[key] == true && names[key] == "email") {
+                if (key === "stud42" && user_info[key] === true && names[key] === "email") {
                     mainInput[i] = document.createElement('span');
                     mainInput[i].innerHTML = user_info[key];
                 }
@@ -390,7 +390,7 @@ function    load_form_edit_info(user_info, user_connected) {
                     mainInput[i] = document.createElement('input');
                     mainInput[i].value = user_info[key];
                 }
-                if (names[key] == "language") {
+                if (names[key] === "language") {
                     mainInput[i] = document.createElement("select");
                     create_options_select_language(mainInput[i], user_info[key]);
                 }

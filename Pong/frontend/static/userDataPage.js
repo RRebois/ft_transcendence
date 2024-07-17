@@ -248,7 +248,7 @@ function load_stats_page(username) {
                 (values['wins'][0] + values['wins'][1] +
                 values['losses'][0] + values['losses'][1])) * 100);
 
-        if (wins + losses == 0) {
+        if (wins + losses === 0) {
             chart.innerHTML = "Pie chart not available yet!";
             chart.style.textAlign = "center";
         }
@@ -295,12 +295,12 @@ function load_stats_page(username) {
 
                 // Calculate width depending on how many stats divs are displayed
                 for (let i = 0; i < checkBtn.length; i++)
-                    if (checkBtn[i].checked == true)
+                    if (checkBtn[i].checked === true)
                         widthValue += 1;
                 if (widthValue != 0)
                     widthV = (Math.round(100 / widthValue) - 2);
 
-                if (element.checked == false) {
+                if (element.checked === false) {
                     const   rmDivStats = document.getElementById(`div${element.value}`);
                     if (rmDivStats != null)
                         rmDivStats.remove();
@@ -351,12 +351,12 @@ function load_stats_page(username) {
                     chart.style.minHeight = "30vh";
                     chart.style.margin = "0px auto";
 
-                    if (element.value == 'pong') {
+                    if (element.value === 'pong') {
                         wins = values['wins'][0];
                         losses = values['losses'][0];
                         winrate = values['winrate'][0];
                     }
-                    else if (element.value == 'all') {
+                    else if (element.value === 'all') {
                         wins = values['wins'][0] + values['wins'][1];
                         losses = values['losses'][0] + values['losses'][1];
                         winrate = Math.round(((values['wins'][0] + values['wins'][1]) /
@@ -369,7 +369,7 @@ function load_stats_page(username) {
                         winrate = values['winrate'][1];
                     }
 
-                    if (wins + losses == 0) {
+                    if (wins + losses === 0) {
                         chart.innerHTML = "Pie chart not available yet!";
                         chart.style.textAlign = "center";
                     }
@@ -402,9 +402,9 @@ function load_stats_page(username) {
 
                     // Append all into mainDiv
                     mainDivStats.append(chart);
-                    if (mainDivStats.id == 'divpong')
+                    if (mainDivStats.id === 'divpong')
                         document.getElementById('radioDiv').after(mainDivStats);
-                    else if (mainDivStats.id == 'divall')
+                    else if (mainDivStats.id === 'divall')
                         if (document.getElementById('divpong') != null)
                             document.getElementById('divpong').after(mainDivStats);
                         else
@@ -484,7 +484,7 @@ function    load_match_history(username, matchHistory, str) {
     .then(matches => {
         if (matches.length > 0)
             for (let i = 0; i < matches.length; i++) {
-                if (i == matches.length - 1)
+                if (i === matches.length - 1)
                     create_div(matches[i], matchHistory, username, 1);
                 else
                     create_div(matches[i], matchHistory, username, 0);
@@ -520,7 +520,7 @@ function    create_div(match, matchHistory, username, value) {
         txt = `${match.count} players game played on ${match.timestamp}. `;
     tmp.innerHTML = txt;
 
-    if (username == `${match.winner}`)
+    if (username === `${match.winner}`)
         tmp.classList.add("matchWon");
     else
         tmp.classList.add("matchLost");
