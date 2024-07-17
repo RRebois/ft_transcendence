@@ -19,6 +19,7 @@ from django.forms.models import model_to_dict
 import pyotp
 import jwt
 import requests
+import os
 
 from .models import *
 from .forms import *
@@ -223,6 +224,7 @@ class RegisterView(APIView):
     def post(self, request):
         user_data = request.data
         serializer = self.serializer_class(data=user_data)
+        logging.debug("-----------------------------------------------------------------------------------")
         logging.debug("request.data: " + str(request.data))
 
         try:
@@ -231,46 +233,59 @@ class RegisterView(APIView):
             logging.debug("serializer is not valid")
             errors = serializer.errors
             logging.debug("serializer validation errors: ", str(errors))
-            return Response({message: str(errors)}, status=400)
+            for key, value in errors.items():
+                for error in value:
+                    if key == 'email' and error.code == 'unique':
+                        return Response('email already taken', status=400)
+                    elif key == 'username' and error.code == 'unique':
+                        return Response('username already taken', status=400)
+            return Response('Something went wrong', status=400)
         if serializer_response:
             logging.debug("serializer is valid")
             try:
+                logging.debug("serializer save (before)")
                 user = serializer.save()
+                logging.debug("serializer save (after)")
             except IntegrityError:
-                messages.error(request, "Username and/or email already taken.")
                 logger.debug("Username and/or email already taken.")
-                return Response({message: "username or email already taken"}, status=400)
-
+                return Response("username or email already taken", status=400)
+            logging.debug("here (test 1)")
             if 'imageFile' in request.FILES:
                 try:
+                    logging.debug("imageFile in request.FILES")
                     image = validate_image(request.FILES['imageFile'])
                     user.image = image
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
-                    messages.success(request, "You have successfully registered.")
                     return Response(model_to_dict(user), status=200)
                 except:
+                    logging.debug("image format not valid (EXCEPT)")
                     user.image = "profile_pics/default_pp.jpg"
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
-                    messages.info(request, "Image format not valid. Profile picture set to default.")
-                    messages.success(request, "You have successfully registered.")
                     return Response(model_to_dict(user), status=200)
             else:
+                logging.debug("no imageFile in request.FILES")
                 user.image = "profile_pics/default_pp.jpg"
+                logging.debug("user.image: " + str(user.image))
                 user.save()
+                logging.debug("user saved")
                 user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
+                logging.debug("user_data created")
                 user_data.save()
-                messages.info(request, "No profile image selected. Profile picture set to default.")
-                messages.success(request, "You have successfully registered.")
-                return Response(model_to_dict(user), status=200)
+                logging.debug("user_data saved")
+                user_dict = model_to_dict(user, fields=[field.name for field in user._meta.fields if field.name != 'image'])
+                server_url = os.environ.get('SERVER_URL')
+                user_dict['image_url'] = f"{server_url}/{user.image}" if str(user.image) else None
+                logging.debug("user_dict prepared for JSON response: " + str(user_dict))
+                return Response(user_dict, status=200)
         else:
             logging.debug("serializer is not valid")
             errors = serializer.errors
             logging.debug("serializer validation errors: ", str(errors))
-            return Response({message: str(errors)}, status=400)
+            return Response(str(errors), status=400)
 
     # if serializer.is_valid():
     #     logging.debug("serializer is valid")

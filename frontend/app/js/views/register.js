@@ -12,10 +12,12 @@ export default class Register {
         const usernameRegex = new RegExp("^[a-zA-Z0-9-_]{5,12}$");
         const passwordRegex = new RegExp("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[?!@$ %^&*]).{8,}$");
         const emailRegex = new RegExp("^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$");
+        let isValid = true;
 
         // Firstname validation
         if (!nameRegex.test(firstname)) {
             document.getElementById('first_name').classList.add('is-invalid');
+            isValid = false;
         } else {
             document.getElementById('first_name').classList.remove('is-invalid');
         }
@@ -23,6 +25,7 @@ export default class Register {
         // Lastname validation
         if (!nameRegex.test(lastname)) {
             document.getElementById('last_name').classList.add('is-invalid');
+            isValid = false;
         } else {
             document.getElementById('last_name').classList.remove('is-invalid');
         }
@@ -30,6 +33,7 @@ export default class Register {
         // Username validation
         if (!usernameRegex.test(username)) {
             document.getElementById('username').classList.add('is-invalid');
+            isValid = false;
         } else {
             document.getElementById('username').classList.remove('is-invalid');
         }
@@ -37,6 +41,7 @@ export default class Register {
         // Email validation
         if (!emailRegex.test(email)) {
             document.getElementById('email').classList.add('is-invalid');
+            isValid = false;
         } else {
             document.getElementById('email').classList.remove('is-invalid');
         }
@@ -44,6 +49,7 @@ export default class Register {
         // Password validation
         if (!passwordRegex.test(password)) {
             document.getElementById('password').classList.add('is-invalid');
+            isValid = false;
         } else {
             document.getElementById('password').classList.remove('is-invalid');
         }
@@ -51,11 +57,12 @@ export default class Register {
         // Confirm password validation
         if (password !== confirm_password) {
             document.getElementById('password2').classList.add('is-invalid');
+            isValid = false;
         } else {
             document.getElementById('password2').classList.remove('is-invalid');
         }
-
-
+        console.log("isValid: ", isValid);
+        return isValid;
     }
 
     getCookie(cname) {
@@ -84,9 +91,11 @@ export default class Register {
         const password2 = document.getElementById('password2').value;
         // TODO add profile picture
 
-        this.validateInputs(firstname, lastname, username, email, password, password2);
-
         console.log(firstname, lastname, username, email, password, password2);
+        if (!this.validateInputs(firstname, lastname, username, email, password, password2)) {
+            return;
+        }
+
         const csrfToken = this.getCookie('csrftoken');
         console.log("CSRF Token: ", csrfToken);
         fetch('https://localhost:8443/register', {
@@ -104,19 +113,22 @@ export default class Register {
                 password: password,
                 password2: password2
             })
-        }).then(response => {
-            if (!response.ok) {
+        })
+            .then(response => response.json().then(data => ({ok: response.ok, data})))
+            .then(({ok, data}) => {
+                if (!ok) {
+                    const toastComponent = new ToastComponent();
+                    toastComponent.throwToast('Error', data || 'Something went wrong', 5000, 'error');
+                } else {
+                    console.log('Success:', data);
+                    // Handle success, e.g., redirecting the user or displaying a success message
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
                 const toastComponent = new ToastComponent();
-                toastComponent.throwToast('Error', 'Something went wrong', 5000, 'error');
-            }
-            return response.json();
-        }).then(data => {
-            console.log('Success:', data);
-            // Handle success, e.g., redirecting the user or displaying a success message
-
-        }).catch(error => {
-            console.error('Error:', error);
-        });
+                toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+            });
     }
 
     validatePassword() {
