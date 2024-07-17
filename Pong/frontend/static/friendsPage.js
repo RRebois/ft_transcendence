@@ -1,17 +1,16 @@
-// document.addEventListener("DOMContentLoaded", () => {
-//     const friendPage = document.getElementById("friendsPage");
-//     if (friendPage != null)
-//         friendPage.addEventListener('click', )
-// })
-
-function load_friends_page(username) {
+function load_friends_page(username) {console.log("here");
     const friendsDivElement = document.getElementById('friendsDiv')
 
     friendsDivElement.innerHTML = "";
-    create_div_title(username, "friends", "friendsDiv");
     document.getElementById('greetings').style.display = 'none';
-    document.getElementById('mainDiv').style.display = 'none';
-    document.getElementById('friendsDiv').style.display = 'block';
+    document.getElementById('greetings').innerHTML = '';
+    document.getElementById('profilePic').style.display = 'none';
+    document.getElementById('profilePic').innerHTML = "";
+    document.getElementById('statsDiv').style.display = 'none';
+    document.getElementById('statsDiv').innerHTML = "";
+//    document.getElementById('friendsPage').style.display = 'none';
+//    document.getElementById('friendsPage').innerHTML = "";
+    create_div_title(username, "friends", "friendsDiv");
 
     const globalContainer = document.createElement('div');
     const sendRequestForm = document.createElement('form');
@@ -225,67 +224,67 @@ function load_friends_page(username) {
 
 
     fetch ('get_friends')
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-            if (Array.isArray(data) && data.length > 0) {
-                data.forEach(request => {
-                    const friendItem = document.createElement('div');
-                    friendItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white',
-                        'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
-                    friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; justify-content: space-between; width: 50%; ' +
-                        'display: block; margin-left: auto; margin-right: auto';
-                    friendItem.innerHTML = `
-                        <a class="roundBorder nav-item friendImg" style="/*display: flex*/" onclick="load_stats_page('${ request.username }')" href="">
-                            <img src="media/${request.image}" alt="avatar">
-                        </a>
-                        <a class="mb-1" style="display: flex" onclick="load_stats_page('${ request.username }')" href="">${request.username}</a>
-                        <p class="mb-1" style="display: flex">Status: ${request.status}</p>
-                        <button type="button" class="removeBtn btn btn-primary" style="background: #e3031c; border-color: #040303" data-id="${request.id}">Remove</button>
-                        `;
-                    friendListContainer.appendChild(friendItem);
-                });
-            } else {
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        if (Array.isArray(data) && data.length > 0) {
+            data.forEach(request => {
                 const friendItem = document.createElement('div');
+                friendItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white',
+                    'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
+                friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; justify-content: space-between; width: 50%; ' +
+                    'display: block; margin-left: auto; margin-right: auto';
                 friendItem.innerHTML = `
-                    <div>No friends yet</div>
-                `;
+                    <a class="roundBorder nav-item friendImg" style="/*display: flex*/" onclick="load_stats_page('${ request.username }')" href="">
+                        <img src="media/${request.image}" alt="avatar">
+                    </a>
+                    <a class="mb-1" style="display: flex" onclick="load_stats_page('${ request.username }')" href="">${request.username}</a>
+                    <p class="mb-1" style="display: flex">Status: ${request.status}</p>
+                    <button type="button" class="removeBtn btn btn-primary" style="background: #e3031c; border-color: #040303" data-id="${request.id}">Remove</button>
+                    `;
                 friendListContainer.appendChild(friendItem);
-            }
-
-
-            document.querySelectorAll('.removeBtn').forEach(button => {
-                button.addEventListener('click', function () {
-                    const from_id = this.getAttribute('data-id');
-                    fetch('remove_friend', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        },
-                        body: JSON.stringify({from_id: from_id})
-                    })
-                        .then(response => {
-                            return response.json().then(data => ({status: response.status, data: data}));
-                        })
-                        .then(({status, data}) => {
-                            if (data.redirect) {
-                                window.location.href = data.redirect_url;
-                            } else if (status !== 401) {
-                                this.innerText = 'Removed';
-                                this.classList.remove('btn-primary');
-                                this.style.background = '#a55b5b';
-                                this.style.color = 'white';
-                                this.classList.add('acceptedBtn');
-                                if (data.level && data.message) {
-                                    displayMessage(data.message, data.level);
-                                }
-                            }
-                        })
-                });
             });
-        })
-        .catch(error => console.error('Error fetching friend requests:', error));
+        } else {
+            const friendItem = document.createElement('div');
+            friendItem.innerHTML = `
+                <div>No friends yet</div>
+            `;
+            friendListContainer.appendChild(friendItem);
+        }
+
+
+        document.querySelectorAll('.removeBtn').forEach(button => {
+            button.addEventListener('click', function () {
+                const from_id = this.getAttribute('data-id');
+                fetch('remove_friend', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                    body: JSON.stringify({from_id: from_id})
+                })
+                    .then(response => {
+                        return response.json().then(data => ({status: response.status, data: data}));
+                    })
+                    .then(({status, data}) => {
+                        if (data.redirect) {
+                            window.location.href = data.redirect_url;
+                        } else if (status !== 401) {
+                            this.innerText = 'Removed';
+                            this.classList.remove('btn-primary');
+                            this.style.background = '#a55b5b';
+                            this.style.color = 'white';
+                            this.classList.add('acceptedBtn');
+                            if (data.level && data.message) {
+                                displayMessage(data.message, data.level);
+                            }
+                        }
+                    })
+            });
+        });
+    })
+    .catch(error => console.error('Error fetching friend requests:', error));
 }
 
 

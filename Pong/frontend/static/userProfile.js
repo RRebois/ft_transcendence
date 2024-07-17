@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
             display_user_data(element);
     });
 })
+
 // a remodifier, mettre les fetchs dans le if square caret down pour pas fetch si on close els onglets
 function    display_user_data(element) {
     // fetch user_connected and all of his information
@@ -65,7 +66,7 @@ function    display_user_data(element) {
 
                     // Add form when editing image is clicked
                     img.addEventListener('click', () => {
-                        load_form_edit_info(user_info, user_connected);
+                        load_form_edit_info();
                     })
                 }
                 else if (element.id === "security") {
@@ -140,7 +141,7 @@ function    display_user_data(element) {
                             }
                         })
                         .catch(error => {
-                            displayMessage(error, "error");
+                            console.error('Error fetching 2FA requests: ', error)
                         });
                         event.preventDefault();
                     });
@@ -349,16 +350,16 @@ function    create_div_pattern(str, str2) {
     return subDiv;
 }
 
-function    load_form_edit_info(user_info, user_connected) {
+function    load_form_edit_info() {
     const   infoDiv = document.getElementById('section1Child');
-    const   img = document.getElementById('section1img');
+//    const   img = document.getElementById('section1img');
     const   checkForm = document.getElementById('editForm');
 
     // hides displayed data to show form;
     const   divData = document.getElementById('userDataDisplayed');
     divData.style.display = 'none';
 
-    if (checkForm === null && img !== null)
+    if (checkForm === null)// && img !== null)
     {
         const   infoKeys = document.querySelectorAll('.infoKey');
         const   infoValues = document.querySelectorAll('.infoValue');
@@ -374,142 +375,154 @@ function    load_form_edit_info(user_info, user_connected) {
                           "Username": "username",
                           "Language": "language"}
 
-        var i = 0;
-        for (const key in user_info) {
-            if (key in names) {
-                mainDiv[i] = document.createElement('div');
-                mainDiv[i].classList.add('infoDiv');
-                mainSpan[i] = document.createElement('span');
-                mainSpan[i].innerHTML = key;
-                mainSpan[i].classList.add('infoKey');
-                if (key === "stud42" && user_info[key] === true && names[key] === "email") {
-                    mainInput[i] = document.createElement('span');
-                    mainInput[i].innerHTML = user_info[key];
-                }
-                else {
-                    mainInput[i] = document.createElement('input');
-                    mainInput[i].value = user_info[key];
-                }
-                if (names[key] === "language") {
-                    mainInput[i] = document.createElement("select");
-                    create_options_select_language(mainInput[i], user_info[key]);
-                }
-                setAttributes(mainInput[i], {"name": names[key], "id": names[key]});
-                mainInput[i].style.width = "20%";
-
-                mainDiv[i].append(mainSpan[i], mainInput[i]);
-                mainDiv[i].style.textAlign = "center";
-                newForm.append(mainDiv[i]);
-                i++;
-            }
-        }
-        mainInput[0].autofocus = true;
-
-        // create Div for both buttons
-        const   butDiv = document.createElement('div');
-
-        // Add save and cancel buttons
-        const   save = document.createElement('button');
-        setAttributes(save, {'class': 'btn btn-primary', 'type': 'submit', 'id': 'saveData'});
-        save.style.marginRight = '5px;';
-        save.textContent = "Save";
-
-        save.addEventListener('click', () => {
-            const   select_div = document.getElementById('language');
-            const formData = {
-                'first_name': document.getElementById('first_name').value,
-                'last_name': document.getElementById('last_name').value,
-                'username': document.getElementById('username').value,
-                'email': document.getElementById('email').value,
-                'language': select_div.options[select_div.selectedIndex].value
-            }
-            fetch("edit_data", {
-                method: 'PUT',
-                headers: {
-                    'content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(response => {
-                if (response.ok) { console.log("HTTP request successful") }
-                else { console.log("HTTP request unsuccessful") }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    // Show success message
-                    displayMessage("You have successfully updated your data.", "success");
-
-                    fetch(`user/${document.getElementById('username').value}/information`)
-                    .then(response => response.json())
-                    .then(user_info => {
-                        for (const key in user_info) {
-                            switch(key) {
-                                case 'First name':
-                                    document.getElementById("First name").innerHTML = user_info[key];
-                                    break;
-                                case 'Last name':
-                                    document.getElementById("Last name").innerHTML = user_info[key];
-                                    break;
-                                case 'Email':
-                                    document.getElementById("Email").innerHTML = user_info[key];
-                                    break;
-                                case 'Username':
-                                    // update username in navbar
-                                    var updateUsername = document.getElementById('ownUsername');
-                                    const arrow = document.getElementById('arrowUsername');
-                                    updateUsername.innerHTML = user_info[key] + "  ";
-                                    updateUsername.append(arrow);
-
-                                    //update username in title
-                                    var updateTitle = document.querySelector('.title_div');
-                                    updateTitle.innerHTML = user_info[key] + " profile";
-
-                                    //update username in form
-                                    document.getElementById("Username").innerHTML = user_info[key];
-                                    break;
-                                case 'Language':
-                                    document.getElementById("Language").innerHTML = user_info[key];
-                                default:
-                                    break;
-                            }
+        fetch("getUsernameConnected")
+        .then(response => response.json())
+        .then(user_connected => {
+            fetch(`user/${user_connected}/information`)
+            .then(response => response.json())
+            .then(user_info => {
+                var i = 0;
+                for (const key in names) {
+                    if (key in names) {
+                        mainDiv[i] = document.createElement('div');
+                        mainDiv[i].classList.add('infoDiv');
+                        mainSpan[i] = document.createElement('span');
+                        mainSpan[i].innerHTML = key;
+                        mainSpan[i].classList.add('infoKey');
+                        if (key === "stud42" && user_info[key] === true && names[key] === "email") {
+                            mainInput[i] = document.createElement('span');
+                            mainInput[i].innerHTML = document.getElementById(key).innerHTML;
+                            mainInput[i].innerHTML = user_info[key];
                         }
-                        divData.style.display = 'block';
-                        newForm.remove();
+                        else {
+                            mainInput[i] = document.createElement('input');
+                            mainInput[i].innerHTML = document.getElementById(key);
+                            mainInput[i].value = user_info[key];
+                        }
+                        if (names[key] === "language") {
+                            mainInput[i] = document.createElement("select");
+                            create_options_select_language(mainInput[i], user_info[key]);
+                        }
+                        setAttributes(mainInput[i], {"name": names[key], "id": names[key]});
+                        mainInput[i].style.width = "20%";
+
+                        mainDiv[i].append(mainSpan[i], mainInput[i]);
+                        mainDiv[i].style.textAlign = "center";
+                        newForm.append(mainDiv[i]);
+                        i++;
+                    }
+                }
+                mainInput[0].autofocus = true;
+
+                // create Div for both buttons
+                const   butDiv = document.createElement('div');
+
+                // Add save and cancel buttons
+                const   save = document.createElement('button');
+                setAttributes(save, {'class': 'btn btn-primary', 'type': 'submit', 'id': 'saveData'});
+                save.style.marginRight = '5px;';
+                save.textContent = "Save";
+
+                save.addEventListener('click', () => {
+                    const   select_div = document.getElementById('language');
+                    const formData = {
+                        'first_name': document.getElementById('first_name').value,
+                        'last_name': document.getElementById('last_name').value,
+                        'username': document.getElementById('username').value,
+                        'email': document.getElementById('email').value,
+                        'language': select_div.options[select_div.selectedIndex].value
+                    }
+                    fetch("edit_data", {
+                        method: 'PUT',
+                        headers: {
+                            'content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        },
+                        body: JSON.stringify(formData)
                     })
-                    .catch (err => {
-                        console.log(err);
-                        displayMessage(err, "danger");
+                    .then(response => {
+                        if (response.ok) { console.log("HTTP request successful") }
+                        else { console.log("HTTP request unsuccessful") }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message
+                            displayMessage("You have successfully updated your data.", "success");
+
+                            fetch(`user/${document.getElementById('username').value}/information`)
+                            .then(response => response.json())
+                            .then(user_info => {
+                                for (const key in user_info) {
+                                    switch(key) {
+                                        case 'First name':
+                                            document.getElementById("First name").innerHTML = user_info[key];
+                                            break;
+                                        case 'Last name':
+                                            document.getElementById("Last name").innerHTML = user_info[key];
+                                            break;
+                                        case 'Email':
+                                            document.getElementById("Email").innerHTML = user_info[key];
+                                            break;
+                                        case 'Username':
+                                            // update username in navbar
+                                            var updateUsername = document.getElementById('ownUsername');
+                                            const arrow = document.getElementById('arrowUsername');
+                                            updateUsername.innerHTML = user_info[key] + "  ";
+                                            updateUsername.append(arrow);
+
+                                            //update username in title
+                                            var updateTitle = document.querySelector('.title_div');
+                                            updateTitle.innerHTML = user_info[key] + " profile";
+
+                                            //update username in form
+                                            document.getElementById("Username").innerHTML = user_info[key];
+                                            break;
+                                        case 'Language':
+                                            document.getElementById("Language").innerHTML = user_info[key];
+                                        default:
+                                            break;
+                                    }
+                                }
+                                divData.style.display = 'block';
+                                newForm.remove();
+                            })
+                            .catch (err => {
+                                console.log(err);
+                                displayMessage(err, "danger");
+                            });
+                        }
+                        else {
+                            displayMessage(data.errors, "danger");
+                        }
+                    })
+                    .catch(error => {
+                        displayMessage(error, "danger");
                     });
-                }
-                else {
-                    displayMessage(data.errors, "danger");
-                }
+                    event.preventDefault();
+                });
+
+                const   cancel = document.createElement('button');
+                setAttributes(cancel, {'class': 'btn btn-primary', 'type': 'submit', 'id': 'cancelData'});
+                cancel.style.marginLeft = '5px';
+                cancel.textContent = "Cancel";
+
+                cancel.addEventListener('click', () => {
+                    divData.style.display = 'block';
+                    newForm.remove();
+                    event.preventDefault();
+                });
+
+                butDiv.append(save, cancel);
+                butDiv.style.textAlign = 'center';
+                butDiv.style.marginTop = '5px';
+                newForm.append(butDiv);
+
+                infoDiv.append(newForm);
             })
-            .catch(error => {
-                displayMessage(error, "danger");
-            });
-            event.preventDefault();
-        });
-
-        const   cancel = document.createElement('button');
-        setAttributes(cancel, {'class': 'btn btn-primary', 'type': 'submit', 'id': 'cancelData'});
-        cancel.style.marginLeft = '5px';
-        cancel.textContent = "Cancel";
-
-        cancel.addEventListener('click', () => {
-            divData.style.display = 'block';
-            newForm.remove();
-            event.preventDefault();
+            .catch(err => displayMessage(err, "danger"));
         })
-
-        butDiv.append(save, cancel);
-        butDiv.style.textAlign = 'center';
-        butDiv.style.marginTop = '5px';
-        newForm.append(butDiv);
-
-        infoDiv.append(newForm);
+        .catch(err => displayMessage(err, "danger"));
     }
 }
 
@@ -557,6 +570,8 @@ function    load_profile_page(username) {
     document.getElementById('profilePic').innerHTML = "";
     document.getElementById('statsDiv').style.display = 'none';
     document.getElementById('statsDiv').innerHTML = "";
+    document.getElementById('friendsPage').style.display = 'none';
+    document.getElementById('friendsPage').innerHTML = "";
 
     // Create elements to display
     const   title1 = document.createElement('div');

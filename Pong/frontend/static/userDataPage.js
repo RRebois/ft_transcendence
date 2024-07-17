@@ -57,7 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             event.preventDefault();
         }
-        else if (element.id === "statsPage" || element.id === "profile" || element.id === "userImg") {
+        else if (element.id === "statsPage" || element.id === "profile" || element.id === "userImg" ||
+                element.id === "friendsPage") {
             fetch("/getUsernameConnected")
             .then(response => response.json())
             .then(username => {
@@ -65,6 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     load_stats_page(username);
                 else if (element.id === "profile")
                     load_profile_page(username);
+                else if (element.id === "friendsPage")
+                    load_friends_page(username);
                 else
                     load_change_profile_pic(username);
             })
@@ -72,9 +75,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         else {
             if (!element.classList.contains('profilePicShadowBox')) {
-                document.getElementById('profilePic').innerHTML = "";
-                document.getElementById('profilePic').display = "none";
-                document.getElementById('profilePic').classList.remove("profilePicShadowBox");
+                if (document.getElementById('profilePic') !== null) {
+                    document.getElementById('profilePic').innerHTML = "";
+                    document.getElementById('profilePic').display = "none";
+                    document.getElementById('profilePic').classList.remove("profilePicShadowBox");
+                }
             }
         }
     })
@@ -126,18 +131,6 @@ function    load_change_profile_pic(username) {
     });
 }
 
-function    displayMessage(message, level) {// A ENLEVER QUAND MERGE AVEC FRIEND GESTION
-    const messagesContainer = document.getElementById('messagesContainer');
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alertSize alert alert-${level}`;
-    alertDiv.role = 'alert';
-    alertDiv.innerText = message;
-    messagesContainer.appendChild(alertDiv);
-    setTimeout(() => {
-        alertDiv.remove();
-    }, 5000);
-}
-
 function setAttributes(el, attrs) {
   for(var key in attrs) {
     el.setAttribute(key, attrs[key]);
@@ -162,6 +155,8 @@ function load_stats_page(username) {
     document.getElementById('userDataDiv').innerHTML = "";
     document.getElementById('profilePic').style.display = 'none';
     document.getElementById('profilePic').innerHTML = "";
+    document.getElementById('friendsPage').style.display = 'none';
+    document.getElementById('friendsPage').innerHTML = "";
     document.getElementById('statsDiv').style.display = 'block';
     document.getElementById('statsDiv').innerHTML = "";
 
@@ -506,6 +501,8 @@ function    load_main_page() {
     document.getElementById('statsDiv').innerHTML = "";
     document.getElementById('userDataDiv').style.display = 'none';
     document.getElementById('userDataDiv').innerHTML = "";
+    document.getElementById('friendsPage').style.display = 'none';
+    document.getElementById('friendsPage').innerHTML = "";
 }
 
 function    create_div(match, matchHistory, username, value) {
