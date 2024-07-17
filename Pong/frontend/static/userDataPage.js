@@ -25,9 +25,21 @@ document.addEventListener('DOMContentLoaded', () => {
                         subDivChild1.innerHTML = `${Object.keys(data.players)[i]}`;
                         subDivChild1.style.textDecoration = "underline";
                         subDivChild1.style.width = "100%";
-                        subDivChild1.addEventListener('click', () => {
-                            load_stats_page(`${Object.keys(data.players)[i]}`);
-                        })
+
+                        // Check if already on username profile, if so, do not reload username profile page, else do it
+                        const titleText = document.getElementsByName("top")[0].textContent.split(" ");
+                        let found = false;
+                        for (let j = 0; j < titleText.length; j++)
+                            if (titleText[j] === `${Object.keys(data.players)[i]}`)
+                                found = true;
+
+                        // If user not same username, allows to jump to user profile
+                        if (!found) {
+                            // Add link to user profile
+                            subDivChild1.addEventListener('click', () => {
+                                load_stats_page(`${Object.keys(data.players)[i]}`);
+                            })
+                        }
 
                         subDivChild2.innerHTML = `${Object.values(data.players)[i]}`;
                         subDivChild2.style.width = "100%";
@@ -145,10 +157,77 @@ function create_div_title(username, str, divName) {
     // Add CSS to created div
     title.className = "title_div gradient-background";
     title.setAttribute("name", "top");
+
     document.querySelector(`#${divName}`).append(title);
 }
 
-function load_stats_page(username) {
+function    create_add_friend_icon() {
+    // Create button if user connected looking at other user's stats page
+    const checkUsers = document.getElementsByName("top")[0].textContent.split(" ");
+    let userMatch = false;
+    for (let j = 0; j < checkUsers.length; j++)
+        if (checkUsers[j] === document.getElementById("ownUsername").textContent.trim())
+            userMatch = true;
+
+// Common to all results??
+const   mainFriend = document.createElement("div");
+mainFriend.setAttribute("class", "mainFriendDiv");
+const   friendTxt = document.createElement("span");
+//friendTxt.innerHTML = "Send friend request "
+
+    fetch("get_friends")
+    .then(response => response.json())
+    .then(data => {
+        for (let i = 0; i < data.length; i++) {
+            for (let j = 0; j < checkUsers.length; j++) {
+                if (checkUsers[j] === data[i].username) {
+                    const friendItem = document.createElement('div');
+                    friendItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white',
+                        'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
+                    friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; justify-content: space-between; width: 50%; ' +
+                        'display: block; margin-left: auto; margin-right: auto';
+                    friendItem.innerHTML = `User in your friend list
+                        <p class="roundBorder nav-item friendImg" style="/*display: flex*/">
+                            <img src="media/${data[i].image}" alt="avatar">
+                        </p>
+                        <p class="mb-1" style="display: flex">${data[i].username}</p>
+                        <p class="mb-1" style="display: flex">Status: ${data[i].status}</p>
+                        `;
+                    document.querySelector("#statsDiv").append(friendItem);
+
+
+
+//                    friendTxt.innerHTML = "User already in friend list";
+//                    mainFriend.append(friendTxt, friendReq);
+//                    document.querySelector("#statsDiv").append(mainFriend);
+                    return;
+                }
+            }
+        }
+        console.log(data);
+    })
+    .catch(error => console.error('Error fetching friend list: ', error));
+//    if (!userMatch) {
+////        const   mainFriend = document.createElement("div");
+////        mainFriend.setAttribute("class", "mainFriendDiv");
+////        const   friendTxt = document.createElement("span");
+//        friendTxt.innerHTML = "Send friend request "
+//        const   friendReq = document.createElement("span");
+//        friendReq.className = "fa-solid fa-user-plus";
+//        friendReq.setAttribute("if", "addFriend");
+//
+//        const   referenceTitle = document.getElementsByName("top");
+//        mainFriend.append(friendTxt, friendReq);
+//        document.querySelector("#statsDiv").append(mainFriend);
+//
+//        // add event listener to friendReq
+//        friendReq.addEventListener("click", () => {
+//
+//        });
+//    }
+}
+
+function    load_stats_page(username) {
     // Hides main page elements and display user stats elements:
     document.getElementById('greetings').style.display = 'none';
     document.getElementById('userDataDiv').style.display = 'none';
@@ -161,6 +240,7 @@ function load_stats_page(username) {
     document.getElementById('statsDiv').innerHTML = "";
 
     create_div_title(username, "game stats", "statsDiv");
+    create_add_friend_icon();
 
     // Create radio button groups to display both game data or pong data or purrinha data
     const   radioDiv = document.createElement('div');

@@ -268,7 +268,11 @@ class UserStatsDataView(APIView):
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class UserGetUsernameView(APIView):
     def get(self, request):
-        user = authenticate_user(request)
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
         return JsonResponse(user.get_username(), safe=False)
 
 
@@ -293,7 +297,8 @@ class EditDataView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            return Response({"success": False, "errors": str(e)})
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
 
         serializer = self.serializer_class(user, data=user_data, partial=True)
         try:
@@ -321,8 +326,10 @@ class PasswordChangeView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            return Response({"success": False, "errors": str(e)})
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = self.serializer_class(data=request.data, context={'user': user})
+
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -404,9 +411,11 @@ class PasswordResetConfirmedView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 class Security2FAView(APIView):
     def put(self, request):
-        user = authenticate_user(request)
-        # if not user: or not needed???
-        #     return Response({"success": False, "message": "User not authenticated"}, status=401)
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
 
         data = request.data
         value = data.get('value')
