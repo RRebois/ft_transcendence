@@ -12,7 +12,7 @@ class User(AbstractUser):
     password = models.CharField(max_length=100, blank=True)
     image_url = models.URLField(blank=True)
     image = models.ImageField(default='profile_pics/default_pp.jpg', upload_to='profile_pics/')
-    friends = models.ManyToManyField("self", blank=True)
+    friends = models.ManyToManyField("User", blank=True)
     status_choices = [
         ('online', 'Online'),
         ('offline', 'Offline'),
@@ -38,7 +38,7 @@ class User(AbstractUser):
 
     def get_username(self):
         return self.username
-    
+
     def token(self):
         refresh = RefreshToken.for_user(self)
         return {
@@ -64,14 +64,16 @@ class FriendRequest(models.Model):
     to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='to_user')
     status_choices = [
         ('pending', 'Pending'),
-        ('accepted', 'Accepted'),
-        ('declined', 'Declined'),
+        ('accepted', 'Accepted')
     ]
     status = models.CharField(max_length=20, choices=status_choices, default="pending")
-    saved_at = models.DateTimeField(auto_now=True)
+    time = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ['from_user', 'to_user']
+
+    def get_to_user(self):
+        return self.from_user.username
 
 
 class UserData(models.Model):

@@ -7,6 +7,10 @@ class UserAdmin(admin.ModelAdmin):
     list_display = ("pk", "first_name", "last_name",
                     "username", "image")
 
+@admin.register(FriendRequest)
+class FriendRequest(admin.ModelAdmin):
+    list_display = ("get_to_user", "id")
+
 
 @admin.register(UserData)
 class UserDataAdmin(admin.ModelAdmin):

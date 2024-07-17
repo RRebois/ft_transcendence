@@ -39,20 +39,63 @@ class MatchScoreView(APIView):
 
         return JsonResponse(game.serialize())
 
+def get_new_elo(player_elo, opponent_elo, win):
+    
+    expected = 1 / (1 + 10 ** ((opponent_elo - player_elo) / 400))
+
+    if player_elo < 1500:
+        k = 40
+    elif player_elo < 2500:
+        k = 20
+    else:
+        k = 10
+    new_elo = player_elo + k * (win - expected)
+
+    return new_elo
+
+def update_match_data(players_data, winner, is_pong=True):
+    elo = 'user_elo_pong' if is_pong else 'user_elo_purrinha'
+    game = 0 if is_pong else 1
+    winner_elo = 0
+    opponent_elo = 0
+
+    for data in players_data:
+        if data.get_username() == winner:
+            winner_elo = getattr(data, elo)[-1]
+            data.user_wins[game] += 1
+        else:
+            tmp = getattr(data, elo)[-1]
+            if tmp > opponent_elo:
+                opponent_elo = tmp
+            data.user_losses[game] += 1
+        data.user_winrate[game] = data.user_wins[game] / (data.user_wins[game] + data.user_losses[game])
+        
+    for data in players_data:
+        elo_lst = getattr(data, elo)
+        if data.get_username() == winner:
+            new_elo = get_new_elo(elo_lst[-1], opponent_elo, True)
+            if new_elo > data.user_highest[game]:
+                data.user_highest[game] = new_elo
+        else:
+            new_elo = get_new_elo(elo_lst[-1], winner_elo, False)
+        elo_lst.append(new_elo)
+        data.save()
 
 def create_match(match_result, winner, is_pong=True):
-    match = Match.objects.create(is_pong=is_pong, score=match_result)
-    game = 0 if is_pong else 1
+    match = Match.objects.create(is_pong=is_pong)
+    players_data = []
 
     for player_username in match_result.keys():
         player = User.objects.get(username=player_username)
-        user_data = UserData.objects.get(user_id=player)
+        players_data.append(UserData.objects.get(user_id=player))
+        score = PlayerScore.objects.create(
+            player=player, 
+            match=match, 
+            score=match_result[player_username]
+            )
+        score.save()
         if player_username == winner:
             match.winner = player
-            user_data.user_wins[game] += 1
-        else:
-            user_data.user_losses[game] += 1
-        user_data.user_winrate[game] = user_data.user_wins[game] / (user_data.user_wins[game] + user_data.user_losses[game])
-        user_data.save()
         match.players.add(player)
+    update_match_data(players_data, winner, is_pong)
     match.save()

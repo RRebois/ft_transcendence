@@ -15,41 +15,53 @@ from .game import *
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class   AnotherGameView(APIView):
-    match = PurrinhaGame()
+    matchs = []
     
     def update_results(self, result):
-
         match_result = {}
         for player in result['players']:
-            match_result[player] = 1 if player == result else 0
+            match_result[player] = 1 if player == result['winner'] else 0
         create_match(match_result=match_result, winner=result['winner'], is_pong=False)
 
-    def post(self, request):
-        user = authenticate_user(request)
-        username = user.username
-        data = json.loads(request.body)
+    def get_match(self, id=False):
+        for match in AnotherGameView.matchs:
+            if match.game_id == id:
+                return match
+        match = PurrinhaGame()
+        AnotherGameView.matchs.append(match)
+        return match
+         
 
-        if 'quantity' in data:
-            bot = 'bot-purrinha'
-            quantity = 1
-            guess = quantity + randint(0, 3)
-            AnotherGameView.match.add_player(bot)
-            AnotherGameView.match.add_player(username)
-            AnotherGameView.match.set_player_quantity(bot, quantity)
-            AnotherGameView.match.set_player_guess(bot, guess)
-            AnotherGameView.match.set_player_quantity(username, data['quantity'])
-            return JsonResponse({'status': 'success', 'bot_quantity' : quantity, 'bot_guess' : guess})
-        elif 'guess' in data:
-            AnotherGameView.match.set_player_guess(username, data['guess'])
-            result = AnotherGameView.match.get_round_result()
-            if result['winner'] != 'tie':
-                self.update_results(result)
-            result.pop('players')
-            AnotherGameView.match.remove_players()
-            return JsonResponse(result)
+    def post(self, request):
+        # form = PurrinhaForm(request.POST)
+        # if form.is_valid():
+            user = authenticate_user(request)
+            username = user.username
+            data = json.loads(request.body)
+            match = self.get_match(data.get('game_id'))
+
+            if 'quantity' in data:
+                bot = 'bot-purrinha'
+                quantity = 1
+                guess = quantity + randint(0, 3)
+                match.add_player(bot)
+                match.add_player(username)
+                match.set_player_quantity(bot, quantity)
+                match.set_player_guess(bot, guess)
+                match.set_player_quantity(username, data['quantity'])
+                return JsonResponse({'status': 'success', 'bot_quantity' : quantity, 'bot_guess' : guess, 'game_id' : match.game_id})
+            elif 'guess' in data:
+                match.set_player_guess(username, data['guess'])
+                result = match.get_round_result()
+                if result['winner'] != 'tie':
+                    self.update_results(result)
+                result.pop('players')
+                AnotherGameView.matchs.remove(match)
+                return JsonResponse(result)
 
     def get(self, request):
         bot = User.objects.get_or_create(username='bot-purrinha')
         UserData.objects.get_or_create(user_id=bot[0])
-        AnotherGameView.match.remove_players()
-        return render(request, "pages/test.html")
+        return render(request, "pages/test.html", {
+            'form' : PurrinhaForm(),
+        })

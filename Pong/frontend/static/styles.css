@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Play:wght@400;700&family=Poppins&display=swap');
 
+* {
+    margin: 0;
+    padding: 0;
+}
+
 .invalidColor {
     color:  #99251B;
 }
@@ -341,4 +346,66 @@ gap-1-5 {
 
 .messages {
     text-align: center;
+    position: fixed;
+    margin-top: 80px;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+}
+
+.friendPage {
+    width: 80%;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 10px;
+    min-width: 400px;
+    justify-content: space-between;
+}
+
+.acceptBtn {
+    float: right;
+}
+
+.acceptedBtn {
+    background-color: #555f57;
+    border-color: black;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.buttonsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.p {
+    margin-bottom: 0;
+}
+
+.friendImg {
+    min-width: 60px;
+}
+
+a:link {
+  text-decoration: none;
+}
+
+a:visited {
+  text-decoration: none;
+}
+
+a:hover {
+
+  text-decoration: none;
+}
+
+a:active {
+  text-decoration: none;
 }

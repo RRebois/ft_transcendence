@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 from .views import *
 
@@ -19,13 +19,18 @@ urlpatterns = [
     path('reset_password', PasswordResetRequestView.as_view(), name='reset_password'),
     path('change_reset_password/<uidb64>/<token>/', SetNewPasswordView.as_view(), name='change_reset_password'),
     path('reset_password_confirmed/<uidb64>/<token>/', PasswordResetConfirmedView.as_view(), name='reset_confirmed'),
-    path("edit_data", EditDataView.as_view(), name="editData"),
-    # path('send_friend', SendFriendRequestView.as_view(), name='send_friend'),
-    # path('accept_friend', AcceptFriendRequestView.as_view(), name='accept_friend'),
-    # path('delete_friend', DeleteFriendView.as_view(), name='delete_friend'),
-    # path('list_friends', ListFriendsView.as_view(), name='list_friends'),
-    path('2FA', Security2FAView.as_view(), name='enable_2FA'),
+    # path('search_user', SearchUsersView.as_view(), name='search_user'),
+    path('send_friend', SendFriendRequestView.as_view(), name='send_friend'),
+    path('get_friend_requests', GetFriendRequestView.as_view(), name='get_friend_requests'),
+    path('accept_friend', AcceptFriendRequestView.as_view(), name='accept_friend'),
+    path('decline_friend', DeclineFriendRequestView.as_view(), name='decline_friend'),
+    path('get_friends', GetFriendView.as_view(), name='get_friends'),
+    path('remove_friend', RemoveFriendView.as_view(), name='remove_friend'),
+    path('enable_2FA', Enable2FAView.as_view(), name='enable_2FA'),
     path('verifyotp', VerifyOTPView.as_view(), name='verify_otp'),
-    # path('disable_2FA', Disable2FAView.as_view(), name='disable_2FA'),
+    path('disable_2FA', Disable2FAView.as_view(), name='disable_2FA'),
+
+    # #API Routes
+    # path("stats/<str:username>", views.userStatsData, name="userStatsData")
 ]
 

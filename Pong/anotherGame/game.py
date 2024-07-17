@@ -2,9 +2,12 @@
 max_quantity = 3
 
 class   PurrinhaGame:
-
+    id = 0
+    
     def __init__(self) -> None:
         self.players = {}
+        self.game_id = PurrinhaGame.id
+        PurrinhaGame.id += 1
 
     def add_player(self, username):
         if username not in self.players:

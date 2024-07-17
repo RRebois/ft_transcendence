@@ -29,7 +29,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         pattern = re.compile("^[a-zA-Z]+([ '-][a-zA-Z]+)*$")
-        pattern_username = re.compile("^[a-zA-Z]+(-[a-zA-Z]+)*$")
+        pattern_username = re.compile("^[a-zA-Z0-9]+([-][a-zA-Z0-9]+)*$")
         password = attrs.get('password', '')
         password2 = attrs.get('password2', '')
         if not password.isalnum() or password.islower() or password.isupper():
@@ -47,7 +47,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         username = attrs.get('username', '')
         if not pattern_username.match(username):
-            raise serializers.ValidationError("Username must be alphanumeric only.")
+            raise serializers.ValidationError("Username must be alphanumeric. Hyphens are allowed, if it's in the middle and with no repetitions.")
 
         validate_password(password, username)
         return attrs
@@ -115,7 +115,7 @@ class EditUserSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         pattern = re.compile("^[a-zA-Z]+([ '-][a-zA-Z]+)*$")
-        pattern_username = re.compile("^[a-zA-Z]+(-[a-zA-Z]+)*$")
+        pattern_username = re.compile("^[a-zA-Z0-9]+([-][a-zA-Z0-9]+)*$")
 
         first = attrs.get('first_name', '')
         if not pattern.match(first):
@@ -129,7 +129,7 @@ class EditUserSerializer(serializers.ModelSerializer):
 
         username = attrs.get('username', '')
         if not pattern_username.match(username):
-            raise serializers.ValidationError("Username must be alphanumeric only.")
+            raise serializers.ValidationError("Username must be alphanumeric. Hyphens are allowed, if it's in the middle and with no repetitions.")
         return attrs
 
     def update(self, instance, validated_data):
