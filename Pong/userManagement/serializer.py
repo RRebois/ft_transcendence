@@ -47,8 +47,9 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         username = attrs.get('username', '')
         if not pattern_username.match(username):
-            raise serializers.ValidationError("Username must be alphanumeric only. Hyphens are allowed, if it's in the middle and with no repetitions.")
+            raise serializers.ValidationError("Username must be alphanumeric. Hyphens are allowed, if it's in the middle and with no repetitions.")
 
+        validate_password(password, username)
         return attrs
 
     def create(self, validated_data):
@@ -106,41 +107,39 @@ class LoginSerializer(serializers.ModelSerializer):
         }
 
 
-class UserSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(max_length=255, allow_empty_file=False, use_url=True, required=False)
+class EditUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'image']
-        extra_kwargs = {
-            'username': {'required': False},
-            'first_name': {'required': False},
-            'last_name': {'required': False},
-            'image': {'required': False},
-        }
+        fields = ['username', 'first_name', 'last_name', 'email', 'language']
 
-    def validate_image(self, value):
-        # checking extension
-        valid_extension = ['jpg', 'jpeg', 'png', 'gif']
-        ext = os.path.splitext(value.name)[1][1:].lower()
-        if ext not in valid_extension:
-            raise serializers.ValidationError("Only jpg/jpeg and png files are allowed")
+    def validate(self, attrs):
+        pattern = re.compile("^[a-zA-Z]+([ '-][a-zA-Z]+)*$")
+        pattern_username = re.compile("^[a-zA-Z0-9]+([-][a-zA-Z0-9]+)*$")
 
-        # checking file content, that it matches the format given
-        try:
-            img = Image.open(value)
-            if img.format not in ['JPEG', 'PNG']:
-                raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
-        except Exception as e:
-            raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
+        first = attrs.get('first_name', '')
+        if not pattern.match(first):
+            raise serializers.ValidationError(
+                "All characters of first name must be alphabetic characters. Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
+
+        last = attrs.get('last_name', '')
+        if not pattern.match(last):
+            raise serializers.ValidationError(
+                "All characters of last name must be alphabetic characters. Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
+
+        username = attrs.get('username', '')
+        if not pattern_username.match(username):
+            raise serializers.ValidationError("Username must be alphanumeric. Hyphens are allowed, if it's in the middle and with no repetitions.")
+        return attrs
 
     def update(self, instance, validated_data):
         instance.username = validated_data.get('username', instance.username)
         instance.first_name = validated_data.get('first_name', instance.first_name)
         instance.last_name = validated_data.get('last_name', instance.last_name)
-        instance.image = validated_data.get('image', instance.image)
-
+        instance.email = validated_data.get('email', instance.email)
+        instance.language = validated_data.get('language', instance.language)
         instance.save()
+        return instance
 
 
 class PasswordChangeSerializer(serializers.Serializer):
@@ -162,11 +161,12 @@ class PasswordChangeSerializer(serializers.Serializer):
         validate_password(new_password, user)
         return attrs
 
-    def save(self, **kwargs):
-        user = self.context['user']
-        new_password = self.validated_data['new_password']
-        user.set_password(new_password)
-        user.save()
+    def update(self, instance, validated_data):
+        instance.old_password = validated_data.get('old_password', instance.username)
+        instance.new_password = validated_data.get('new_password', instance.first_name)
+        instance.confirm_password = validated_data.get('confirm_password', instance.last_name)
+        instance.save()
+        return instance
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):

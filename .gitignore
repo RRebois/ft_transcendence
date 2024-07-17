@@ -4,6 +4,7 @@ Pong/env/*
 *.pyc
 .idea
 .code
+stopAll
 
 Pong/configFiles/__pycache__/*
 Pong/userManagement/migrations/*_initial.py

@@ -12,19 +12,26 @@ from .models import *
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class MatchHistoryView(APIView):
-    def get(self, request, username):
+    def get(self, request, username, word):
         try:
-            matchs = Match.objects.filter(players=User.objects.get(username=username))
+            user = User.objects.get(username=username)
         except User.DoesNotExist:
             raise Http404("error: User does not exists.")
-
-        return JsonResponse([match.serialize() for match in matchs], safe=False)
+        if word == 'all':
+            matches = Match.objects.filter(players=user)
+        elif word == 'pong':
+            matches = Match.objects.filter(players=user, is_pong=True)
+        elif word == 'purrinha':
+            matches = Match.objects.filter(players=user, is_pong=False)
+        else:
+            raise Http404("error: Data does not exists.")
+        return JsonResponse([match.serialize() for match in matches], safe=False)
 
 
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class MatchScoreView(APIView):
-    def get(selfself, request, match_id):
+    def get(self, request, match_id):
         try:
             game = Match.objects.get(pk=match_id)
         except Match.DoesNotExist:

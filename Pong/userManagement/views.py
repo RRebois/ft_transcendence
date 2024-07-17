@@ -19,6 +19,7 @@ import pyotp
 import jwt
 import requests
 
+
 from .models import *
 from .forms import *
 from .serializer import *
@@ -283,22 +284,22 @@ class UserPersonalInformationView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-class PasswordChangeView(APIView):
-    serializer_class = PasswordChangeSerializer
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class EditDataView(APIView):
+    serializer_class = EditUserSerializer
 
-    def post(self, request):
+    def put(self, request):
+        user_data = request.data
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return redirect('index')
-        serializer = self.serializer_class(data=request.data, context={'user': user})
+            return Response({"success": False, "errors": str(e)})
+
+        serializer = self.serializer_class(user, data=user_data, partial=True)
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            response = redirect('index')
-            messages.success(request, "Your password has been changed.")
-            return response
+            return Response({"success": True})
         except serializers.ValidationError as e:
             error_messages = []
             for field, errors in e.detail.items():
@@ -308,27 +309,34 @@ class PasswordChangeView(APIView):
                     else:
                         error_messages.append(f"{field}: {error}")
             error_message = " | ".join(error_messages)
-            messages.warning(request, error_message)
-            return render(request, "pages/changePassword.html", {
-                "form": serializer,
-                "user": user
-            })
+            return Response({"success": False, "errors": error_message})
 
-    def get(self, request):
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class PasswordChangeView(APIView):
+    serializer_class = PasswordChangeSerializer
+
+    def put(self, request):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return redirect('index')
-        if user.stud42:
-            response = redirect('index')
-            messages.warning(request, "You can't change your password when using a 42 account.")
-            return response
-        serializer = self.serializer_class()
-        return render(request, "pages/changePassword.html", {
-            "form": serializer,
-            "user": user
-        })
+            return Response({"success": False, "errors": str(e)})
+        serializer = self.serializer_class(data=request.data, context={'user': user})
+        try:
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response({"success": True})
+        except serializers.ValidationError as e:
+            error_messages = []
+            for field, errors in e.detail.items():
+                for error in errors:
+                    if field == 'non_field_errors':
+                        error_messages.append(f"{error}")
+                    else:
+                        error_messages.append(f"{field}: {error}")
+            error_message = " | ".join(error_messages)
+            return Response({"success": False, "errors": error_message})
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -394,34 +402,36 @@ class PasswordResetConfirmedView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-class Enable2FAView(APIView):
-    def post(self, request):
-        try:
-            user = authenticate_user(request)
-        except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return redirect('index')
+class Security2FAView(APIView):
+    def put(self, request):
+        user = authenticate_user(request)
+        # if not user: or not needed???
+        #     return Response({"success": False, "message": "User not authenticated"}, status=401)
 
-        if user.tfa_activated is True:
-            messages.warning(request, "2FA already activated.")
-            response = redirect('index')
-            return response
-        secret_key = pyotp.random_base32()
-        user.totp = secret_key
-        user.tfa_activated = True
-        user.save()
+        data = request.data
+        value = data.get('value')
 
-        qr_url = pyotp.totp.TOTP(secret_key).provisioning_uri(user.username)
-        message = "2FA activated, please scan the QR-code in authenticator to save your account code."
-        return JsonResponse({"qr_url": qr_url, "message": message})
+        if value:
+            try:
+                secret_key = pyotp.random_base32()
+                user.totp = secret_key
+                user.tfa_activated = True
+                user.save()
 
-    def get(self, request):
-        try:
-            user = authenticate_user(request)
-        except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return redirect('index')
-        return render(request, "pages/2FA.html", {"user": user})
+                qr_url = pyotp.totp.TOTP(secret_key).provisioning_uri(user.username)
+                message = "2FA activated, please scan the QR-code in authenticator to save your account code."
+                return JsonResponse({"qr_url": qr_url, "message": message})
+            except Exception as e:
+                return Response({"success": False, "error": str(e)}, status=500)
+        else:
+            try:
+                user.totp = None
+                user.tfa_activated = False
+                user.save()
+                message = "2FA successfully deactivated."
+                return Response({"success": True, "message": message})
+            except Exception as e:
+                return Response({"success": False, "error": str(e)}, status=500)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -445,36 +455,13 @@ class VerifyOTPView(APIView):
 
         return response
 
-    def get(self, request):
-        user_id = request.GET.get('user_id')
-        serializer = self.serializer_class()
-        return render(request, "pages/otp.html", {
-            "user_id": user_id,
-            "form": serializer
-        })
-
-
-@method_decorator(csrf_protect, name='dispatch')
-class Disable2FAView(APIView):
-
-    def post(self, request):
-        try:
-            user = authenticate_user(request)
-        except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return redirect('index')
-
-        if user.tfa_activated is False:
-            messages.warning(request, "2FA already deactivated.")
-            response = redirect('index')
-            return response
-        user.totp = None
-        user.tfa_activated = False
-        user.save()
-        messages.success(request, "2FA deactivated.")
-        response = redirect('index')
-        return response
-
+    # def get(self, request):
+    #     user_id = request.GET.get('user_id')
+    #     serializer = self.serializer_class()
+    #     return render(request, "pages/otp.html", {
+    #         "user_id": user_id,
+    #         "form": serializer
+    #     })
 
 @method_decorator(csrf_protect, name='dispatch')
 class SendFriendRequestView(APIView):
@@ -516,6 +503,7 @@ class SendFriendRequestView(APIView):
         FriendRequest.objects.create(from_user=user, to_user=to_user)
         message = "Friend request sent."
         return JsonResponse({"message": message, "user": user.serialize(), "level": "success"}, status=status.HTTP_200_OK)
+
 
 
 class GetFriendRequestView(APIView):
