@@ -15,18 +15,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(response => response.json())
                 .then(data => { // if we do 3v3 and or 4v4 create API to display all games, or only 3v3 or 4v4
                     let j = Math.round((100 / `${data.count}`));
-console.log(data.count);
-console.log(data.winner);
+
                     for (let i = 0; i < `${data.count}`; i++)
                     {
                         const   subDiv = document.createElement('div');
                         const   subDivChild1 = document.createElement('div');
                         const   subDivChild2 = document.createElement('div');
 
-                        if (`${Object.keys(data.players)[i]}`)
-                            subDivChild1.innerHTML = `${Object.keys(data.players)[i]}`;
-                        else
-                            subDivChild1.innerHTML = "deleted user";
+                        subDivChild1.innerHTML = Object.keys(data.players)[i];
                         subDivChild1.style.textDecoration = "underline";
                         subDivChild1.style.width = "100%";
 
@@ -34,11 +30,11 @@ console.log(data.winner);
                         const titleText = document.getElementsByName("top")[0].textContent.split(" ");
                         let found = false;
                         for (let j = 0; j < titleText.length; j++)
-                            if (titleText[j] === `${Object.keys(data.players)[i]}`)
+                            if (titleText[j] === Object.keys(data.players)[i])
                                 found = true;
 
                         // If user not same username, allows to jump to user profile
-                        if (!found) {
+                        if (!found && Object.keys(data.players)[i] !== "deleted_user") {
                             // Add link to user profile
                             subDivChild1.addEventListener('click', () => {
                                 load_stats_page(`${Object.keys(data.players)[i]}`);
