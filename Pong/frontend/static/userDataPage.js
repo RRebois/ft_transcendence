@@ -156,75 +156,99 @@ function create_div_title(username, str, divName) {
 
     // Add CSS to created div
     title.className = "title_div gradient-background";
-    title.setAttribute("name", "top");
+    setAttributes(title, {"name": "top", "id": "title"});
 
     document.querySelector(`#${divName}`).append(title);
+
+    if (username !== document.getElementById("ownUsername").textContent.trim())
+        create_add_friend_icon(username);
 }
 
-function    create_add_friend_icon() {
+function    create_add_friend_icon(username) {
     // Create button if user connected looking at other user's stats page
-    const checkUsers = document.getElementsByName("top")[0].textContent.split(" ");
     let userMatch = false;
-    for (let j = 0; j < checkUsers.length; j++)
-        if (checkUsers[j] === document.getElementById("ownUsername").textContent.trim())
-            userMatch = true;
+    if (username === document.getElementById("ownUsername").textContent.trim())
+        userMatch = true;
 
-// Common to all results??
-const   mainFriend = document.createElement("div");
-mainFriend.setAttribute("class", "mainFriendDiv");
-const   friendTxt = document.createElement("span");
-//friendTxt.innerHTML = "Send friend request "
+    const friendItem = document.createElement('div');
+    friendItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white',
+        'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
+    friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; justify-content: space-between; width: 50%; ' +
+        'display: block; margin-left: auto; margin-right: auto';
 
+    // Check if user already in friend list
     fetch("get_friends")
     .then(response => response.json())
     .then(data => {
         for (let i = 0; i < data.length; i++) {
-            for (let j = 0; j < checkUsers.length; j++) {
-                if (checkUsers[j] === data[i].username) {
-                    const friendItem = document.createElement('div');
-                    friendItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white',
-                        'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
-                    friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; justify-content: space-between; width: 50%; ' +
-                        'display: block; margin-left: auto; margin-right: auto';
-                    friendItem.innerHTML = `User in your friend list
-                        <p class="roundBorder nav-item friendImg" style="/*display: flex*/">
-                            <img src="media/${data[i].image}" alt="avatar">
-                        </p>
-                        <p class="mb-1" style="display: flex">${data[i].username}</p>
-                        <p class="mb-1" style="display: flex">Status: ${data[i].status}</p>
-                        `;
-                    document.querySelector("#statsDiv").append(friendItem);
-
-
-
-//                    friendTxt.innerHTML = "User already in friend list";
-//                    mainFriend.append(friendTxt, friendReq);
-//                    document.querySelector("#statsDiv").append(mainFriend);
-                    return;
-                }
+            if (username === data[i].username) {
+                friendItem.innerHTML = `User in your friend list
+                    <p class="roundBorder nav-item friendImg" style="/*display: flex*/">
+                        <img src="media/${data[i].image}" alt="avatar">
+                    </p>
+                    <p class="mb-1" style="display: flex">Friend status: ${data[i].status}</p>
+                    `;
+                document.getElementById("title").after(friendItem);
+                return ;
             }
         }
-        console.log(data);
     })
     .catch(error => console.error('Error fetching friend list: ', error));
-//    if (!userMatch) {
-////        const   mainFriend = document.createElement("div");
-////        mainFriend.setAttribute("class", "mainFriendDiv");
-////        const   friendTxt = document.createElement("span");
-//        friendTxt.innerHTML = "Send friend request "
-//        const   friendReq = document.createElement("span");
-//        friendReq.className = "fa-solid fa-user-plus";
-//        friendReq.setAttribute("if", "addFriend");
-//
-//        const   referenceTitle = document.getElementsByName("top");
-//        mainFriend.append(friendTxt, friendReq);
-//        document.querySelector("#statsDiv").append(mainFriend);
-//
-//        // add event listener to friendReq
-//        friendReq.addEventListener("click", () => {
-//
-//        });
-//    }
+
+    // Check if user has a pending request from you
+    fetch("pending_friend_requests")
+    .then(response => response.json())
+    .then(data => {
+        for (let i = 0; i < data.length; i++) {
+            if (username === data[i].to_user__username) {
+                friendItem.innerHTML = "User has already a pending request from you !";
+                friendItem.style.color = "yellow";
+                document.getElementById("title").after(friendItem);
+                return ;
+            }
+        }
+    })
+    .catch(error => console.error('Error fetching pending friend requests sent: ', error));
+
+    //user not in friend list: Add icon to do so
+    friendItem.innerHTML = "Add user to your friend list";
+    const   friendReq = document.createElement("span");
+    friendReq.className = "fa-solid fa-user-plus";
+    friendReq.setAttribute("if", "addFriend");
+    friendItem.append(friendReq);
+    document.getElementById("title").after(friendItem);
+
+    // add event listener to friendReq
+    friendReq.addEventListener("click", () => {
+        const formData = {
+            'username': username
+        }
+
+        fetch('send_friend', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            return response.json().then(data => ({ status: response.status, data: data }));
+        })
+        .then(({ status, data }) => {
+            if (data.redirect) {
+                window.location.href = data.redirect_url;
+            }
+            else if (status !== 401) {
+                if (data.level && data.message) {
+                    displayMessage(data.message, data.level);
+                }
+            }
+            friendItem.innerHTML = "User has already a pending request from you !";
+            friendItem.style.color = "yellow";
+        })
+        .catch(error => console.error('Error fetching send request: ', error));
+    });
 }
 
 function    load_stats_page(username) {
@@ -240,10 +264,10 @@ function    load_stats_page(username) {
     document.getElementById('statsDiv').innerHTML = "";
 
     create_div_title(username, "game stats", "statsDiv");
-    create_add_friend_icon();
 
     // Create radio button groups to display both game data or pong data or purrinha data
     const   radioDiv = document.createElement('div');
+    radioDiv.className = "d-none d-sm-block";
     radioDiv.style.textAlign = 'center';
     radioDiv.style.margin = '10px 0px';
     const   radioSubDiv1 = document.createElement('div');
@@ -551,14 +575,17 @@ function    load_stats_page(username) {
             load_match_history(username, matchHistory, el.value);
         });
     });
+    if (username !== document.getElementById("ownUsername").textContent.trim())
+        event.preventDefault();
 }
 
 function    load_match_history(username, matchHistory, str) {
     fetch(`matches/${username}:${str}`)
     .then(response => response.json())
     .then(matches => {
+        let i = 0;
         if (matches.length > 0)
-            for (let i = 0; i < matches.length; i++) {
+            for (i; i < matches.length; i++) {
                 if (i === matches.length - 1)
                     create_div(matches[i], matchHistory, username, 1);
                 else

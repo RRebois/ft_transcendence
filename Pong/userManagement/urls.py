@@ -22,6 +22,7 @@ urlpatterns = [
     path("edit_data", EditDataView.as_view(), name="editData"),
     # path('search_user', SearchUsersView.as_view(), name='search_user'),
     path('send_friend', SendFriendRequestView.as_view(), name='send_friend'),
+    path("pending_friend_requests", PendingFriendRequestsView.as_view(), name="pending"),
     path('get_friend_requests', GetFriendRequestView.as_view(), name='get_friend_requests'),
     path('accept_friend', AcceptFriendRequestView.as_view(), name='accept_friend'),
     path('decline_friend', DeclineFriendRequestView.as_view(), name='decline_friend'),
