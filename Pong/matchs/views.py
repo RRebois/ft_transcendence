@@ -39,6 +39,7 @@ class MatchScoreView(APIView):
 
         return JsonResponse(game.serialize())
 
+
 def get_new_elo(player_elo, opponent_elo, win):
     
     expected = 1 / (1 + 10 ** ((opponent_elo - player_elo) / 400))
@@ -52,6 +53,7 @@ def get_new_elo(player_elo, opponent_elo, win):
     new_elo = player_elo + k * (win - expected)
 
     return new_elo
+
 
 def update_match_data(players_data, winner, is_pong=True):
     elo = 'user_elo_pong' if is_pong else 'user_elo_purrinha'
@@ -81,14 +83,15 @@ def update_match_data(players_data, winner, is_pong=True):
         elo_lst.append(new_elo)
         data.save()
 
+
 def create_match(match_result, winner, is_pong=True):
-    match = Match.objects.create(is_pong=is_pong)
+    match = Match.objects.create(is_pong=is_pong, count=match_result.length())
     players_data = []
 
     for player_username in match_result.keys():
         player = User.objects.get(username=player_username)
         players_data.append(UserData.objects.get(user_id=player))
-        score = PlayerScore.objects.create(
+        score = Score.objects.create(
             player=player, 
             match=match, 
             score=match_result[player_username]

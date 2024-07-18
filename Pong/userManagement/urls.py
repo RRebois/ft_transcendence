@@ -30,6 +30,7 @@ urlpatterns = [
     path('remove_friend', RemoveFriendView.as_view(), name='remove_friend'),
     path('enable_2FA', Security2FAView.as_view(), name='enable_2FA'),
     path('verifyotp', VerifyOTPView.as_view(), name='verify_otp'),
+    path("delete_account", DeleteAccountView.as_view(), name="delete"),
     # path('disable_2FA', Disable2FAView.as_view(), name='disable_2FA'),
 
     # #API Routes

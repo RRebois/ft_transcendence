@@ -15,14 +15,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(response => response.json())
                 .then(data => { // if we do 3v3 and or 4v4 create API to display all games, or only 3v3 or 4v4
                     let j = Math.round((100 / `${data.count}`));
-
+console.log(data.count);
+console.log(data.winner);
                     for (let i = 0; i < `${data.count}`; i++)
                     {
                         const   subDiv = document.createElement('div');
                         const   subDivChild1 = document.createElement('div');
                         const   subDivChild2 = document.createElement('div');
 
-                        subDivChild1.innerHTML = `${Object.keys(data.players)[i]}`;
+                        if (`${Object.keys(data.players)[i]}`)
+                            subDivChild1.innerHTML = `${Object.keys(data.players)[i]}`;
+                        else
+                            subDivChild1.innerHTML = "deleted user";
                         subDivChild1.style.textDecoration = "underline";
                         subDivChild1.style.width = "100%";
 
@@ -83,64 +87,67 @@ document.addEventListener('DOMContentLoaded', () => {
                 else
                     load_change_profile_pic(username);
             })
+            .catch (err => {
+                displayMessage(err, "danger");
+            });
             event.preventDefault();
         }
         else {
-            if (!element.classList.contains('profilePicShadowBox')) {
-                if (document.getElementById('profilePic') !== null) {
-                    document.getElementById('profilePic').innerHTML = "";
-                    document.getElementById('profilePic').display = "none";
-                    document.getElementById('profilePic').classList.remove("profilePicShadowBox");
-                }
+            if (!element.classList.contains('profilePicShadowBox') &&
+                document.getElementById('profilePic') !== null) {
+                document.getElementById('profilePic').remove();
             }
         }
     })
     const mainPage = document.getElementById('mainPage');
-    if (mainPage != null)
+    if (mainPage !== null)
         mainPage.addEventListener('click', () => {
             load_main_page();
         });
 })
 
 function    load_change_profile_pic(username) {
-    const   picDiv = document.getElementById("profilePic");
-    picDiv.innerHTML = "";
-    picDiv.style.display = "block";
-    picDiv.classList.add("profilePicShadowBox");
+    if (document.getElementById("profilePic") == null) {
+        const   picDiv = document.createElement("div");
+        picDiv.innerHTML = "";
+        picDiv.className = "profilePicShadowBox container";
+        picDiv.setAttribute("id", "profilePic");
 
-    // Title div
-    const   title = document.createElement("div");
-    title.innerHTML = "Change your avatar";
-    title.className = "title_div gradient-background";
-    title.setAttribute("name", "top");
-    picDiv.append(title);
+        // Title div
+        const   title = document.createElement("div");
+        title.innerHTML = "Change your avatar";
+        title.className = "title_div gradient-background";
+        title.setAttribute("name", "top");
+        picDiv.append(title);
+        document.getElementById("content").append(picDiv);
 
-    // Current profile image
-    fetch(`user/${username}/information`)
-    .then(response => response.json())
-    .then(data => {console.log(data);
-
-        const   divImages = document.createElement("div");
-        const   currentImgTitle = document.createElement("div");
-        const   currentImg = document.createElement("img");
-
-        // Current avatar
-        currentImgTitle.innerHTML = "Current avatar";
-        setAttributes(currentImg, {"src": `${data.img}`, "alt": "avatar", "id": "currentImg"});
-
-        divImages.append(currentImgTitle, currentImg);
-        picDiv.append(divImages);
-
-        // Available avatars
-        fetch("media/")
+        // Current profile image
+        fetch(`user/${username}/information`)
         .then(response => response.json())
-        .then(pics => {
-            console.log(pics);
+        .then(data => {console.log(data);
+
+            const   divImages = document.createElement("div");
+            const   currentImgTitle = document.createElement("div");
+            const   currentImg = document.createElement("img");
+
+            // Current avatar
+            currentImgTitle.innerHTML = "Current avatar";
+            setAttributes(currentImg, {"src": `${data.img}`, "alt": "avatar", "id": "currentImg"});
+
+            divImages.append(currentImgTitle, currentImg);
+            picDiv.append(divImages);
+
+            // Available avatars
+            fetch("media/")
+            .then(response => response.json())
+            .then(pics => {
+                console.log(pics);
+            })
         })
-    })
-    .catch (err => {
-        displayMessage(err, "danger");
-    });
+        .catch (err => {
+            displayMessage(err, "danger");
+        });
+    }
 }
 
 function setAttributes(el, attrs) {
@@ -256,8 +263,6 @@ function    load_stats_page(username) {
     document.getElementById('greetings').style.display = 'none';
     document.getElementById('userDataDiv').style.display = 'none';
     document.getElementById('userDataDiv').innerHTML = "";
-    document.getElementById('profilePic').style.display = 'none';
-    document.getElementById('profilePic').innerHTML = "";
     document.getElementById('friendsDiv').style.display = 'none';
     document.getElementById('friendsDiv').innerHTML = "";
     document.getElementById('statsDiv').style.display = 'block';

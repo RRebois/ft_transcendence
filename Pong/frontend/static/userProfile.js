@@ -152,6 +152,7 @@ function    display_user_data(element) {
 
                     // Change password display
                     create_change_password(exDiv);
+                    create_delete_account(exDiv);
 
                     // run animation
                     exDiv.style.animationPlayState = "running";
@@ -246,10 +247,8 @@ function    create_change_password(mainDiv) {
         const   newPW = create_div_pattern("new_password", "New password");
         const   confirm = create_div_pattern("confirm_password", "Confirm new password");
 
-        const   btnPW = document.createElement('button');
-        setAttributes(btnPW, {"class": "btn btn-primary", "type": "submit", "id": "changePassword"});
+        const   btnPW = create_btn("btn btn-primary", "submit", "changePassword", "Change password");
         btnPW.style.margin = "0px 10px;";
-        btnPW.textContent = "Change password";
 
         btnPW.addEventListener("click", () => {
             const formData = {
@@ -272,7 +271,7 @@ function    create_change_password(mainDiv) {
             })
             .then(data => {
                 if (data.success) {
-                    displayMessage(" You have successfully changed your password.", "success");
+                    displayMessage("You have successfully changed your password.", "success");
                 }
                 else {
                     displayMessage(data.errors, "danger");
@@ -290,6 +289,83 @@ function    create_change_password(mainDiv) {
     else {
         check.remove();
     }
+}
+
+function    create_delete_account(mainDiv) {
+    const   deleteDiv = document.createElement("div");
+    setAttributes(deleteDiv, {"id": "deleteAccount"});
+    deleteDiv.style.textAlign = "center";
+
+    const   deleteBtn = document.createElement("btn");
+    deleteBtn.setAttribute("id", "delBtn");
+    deleteBtn.className = "btn btn-danger";
+    deleteBtn.disabled = false;
+    deleteBtn.textContent = "Delete your account";
+
+    deleteDiv.append(deleteBtn);
+    mainDiv.append(deleteDiv);
+
+    deleteBtn.addEventListener("click", () => {
+        deleteBtn.disabled = true;
+        deleteBtn.classList.add("disabled");
+
+        if (document.getElementById("confirmationDiv") === null) {
+            const   confirmationDiv = document.createElement("div");
+            setAttributes(confirmationDiv, {"id": "confirmationDiv", "class": "deletion"})
+            confirmationDiv.innerHTML = "Are you sure you want to delete your account? This action cannot be undone."
+
+            // save and cancel button
+            const   btnGroup = document.createElement("div");
+            btnGroup.style.textAlign = "center";
+            const   del = create_btn("btn btn-danger", "submit", "del", "Yes, I am sure!");
+            del.style.marginRight = '5px';
+            del.disabled = true;
+            const   cancel = create_btn("btn btn-primary", "submit", "stop", "Changed my mind.");
+            cancel.style.marginLeft = '5px';
+
+            btnGroup.append(del, cancel);
+            confirmationDiv.append(btnGroup);
+            document.getElementById("section2").append(confirmationDiv);
+            setTimeout(() => {
+                del.disabled = false;
+            }, 3000);
+
+            cancel.addEventListener("click", () => {
+                if (confirmationDiv != null)
+                    confirmationDiv.remove();
+                deleteBtn.disabled = false;
+                deleteBtn.classList.remove("disabled");
+            })
+            del.addEventListener("click", () => {
+                fetch("/getUsernameConnected")
+                .then(response => response.json())
+                .then(username => {
+                    const formData = {
+                        'username': username
+                    }
+                    fetch('delete_account', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        },
+                        body: JSON.stringify(formData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success)
+                            displayMessage(data.message, "success");
+                    })
+                    .catch (err => {
+                        displayMessage(err, "danger");
+                    });
+                })
+                .catch (err => {
+                    displayMessage(err, "danger");
+                });
+            })
+        }
+    })
 }
 
 function    create_div_pattern(str, str2) {
@@ -325,9 +401,7 @@ function    create_div_pattern(str, str2) {
         }
     })
 
-    if (str === "old_password")
-        input.autofocus = true;
-    else if (str === "new_password") {
+    if (str === "new_password") {
         setAttributes(input, {"minlength": "8", "pattern": "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{5,12}"});
         span.className = "helper_txt";
         span.innerHTML = "Password must be at least 8 characters and contain 1 digit, 1 lowercase, and 1 uppercase.";
@@ -348,6 +422,13 @@ function    create_div_pattern(str, str2) {
     divGroup.append(divGroupSub, input);
     subDiv.append(label, divGroup, span, valid, invalid);
     return subDiv;
+}
+
+function    create_btn(classTxt, type, id, str) {
+    const   btn = document.createElement("button");
+    setAttributes(btn, {"class": classTxt, "type": type, "id": id});
+    btn.textContent = str;
+    return (btn);
 }
 
 function    load_form_edit_info() {
@@ -418,10 +499,8 @@ function    load_form_edit_info() {
                 const   butDiv = document.createElement('div');
 
                 // Add save and cancel buttons
-                const   save = document.createElement('button');
-                setAttributes(save, {'class': 'btn btn-primary', 'type': 'submit', 'id': 'saveData'});
-                save.style.marginRight = '5px;';
-                save.textContent = "Save";
+                const   save = create_btn("btn btn-primary", "submit", "saveData", "Save");
+                save.style.marginRight = '5px';
 
                 save.addEventListener('click', () => {
                     const   select_div = document.getElementById('language');
@@ -502,10 +581,8 @@ function    load_form_edit_info() {
                     event.preventDefault();
                 });
 
-                const   cancel = document.createElement('button');
-                setAttributes(cancel, {'class': 'btn btn-primary', 'type': 'submit', 'id': 'cancelData'});
+                const   cancel = create_btn("btn btn-primary", "submit", "cancelData", "Cancel");
                 cancel.style.marginLeft = '5px';
-                cancel.textContent = "Cancel";
 
                 cancel.addEventListener('click', () => {
                     divData.style.display = 'block';
@@ -566,8 +643,6 @@ function    load_profile_page(username) {
     mainDivEl.innerHTML = "";
     create_div_title(username, "profile", "userDataDiv");
     document.getElementById('greetings').style.display = 'none';
-    document.getElementById('profilePic').style.display = 'none';
-    document.getElementById('profilePic').innerHTML = "";
     document.getElementById('statsDiv').style.display = 'none';
     document.getElementById('statsDiv').innerHTML = "";
     document.getElementById('friendsDiv').style.display = 'none';

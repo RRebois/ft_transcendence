@@ -633,3 +633,17 @@ class GetFriendView(APIView):
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
         friendList = user.friends.all().values('username', 'id', 'status', 'image')
         return JsonResponse(list(friendList), safe=False)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class DeleteAccountView(APIView):
+    def post(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        User.objects.get(id=user.id).delete()
+        message = "Account successfully deleted."
+        return JsonResponse({"success": True, "redirect": True, "redirect_url": "", "message": message})
