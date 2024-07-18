@@ -89,7 +89,6 @@ class LoginView(APIView):
     serializer_class = LoginSerializer
 
     def post(self, request):
-        logger.debug(f"LOGIN REQUEST: {request}")
         serializer = self.serializer_class(data=request.data, context={'request': request})
         try:
             serializer.is_valid(raise_exception=True)
@@ -98,14 +97,17 @@ class LoginView(APIView):
                 return JsonResponse({
                     'otp_required': True,
                     'user_id': user.id
-                }, status=status.HTTP_200_OK)
-
+                }, status=200)
             access_token = serializer.validated_data['jwt_access']
             refresh_token = serializer.validated_data['jwt_refresh']
             user.status = 'online'
             user.save()
+            user_dict = model_to_dict(user, fields=[field.name for field in user._meta.fields if field.name != 'image'])
+            server_url = os.environ.get('SERVER_URL')
+            user_dict['image_url'] = f"{server_url}/{user.image}" if str(user.image) else None
+            response = JsonResponse(data={'user': user_dict}, status=200)
 
-            response = HttpResponseRedirect(reverse("index"))
+            # response = HttpResponseRedirect(reverse("index"))
             response.set_cookie(key='jwt_access', value=access_token, httponly=True, samesite='Lax', secure=True,
                                 path='/')
             response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True,
@@ -114,7 +116,8 @@ class LoginView(APIView):
             return response
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
-            return HttpResponseRedirect(reverse("index"))
+            logging.debug("[EXCEPT] return error: " + str(e))
+            return JsonResponse(status=401, data={'status': 'false', 'message': str(e)})
 
     def get(self, request):
         return HttpResponseRedirect(reverse("index"))
@@ -258,14 +261,14 @@ class RegisterView(APIView):
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
-                    return Response(model_to_dict(user), status=200)
+                    return Response(model_to_dict(user), status=201)
                 except:
                     logging.debug("image format not valid (EXCEPT)")
                     user.image = "profile_pics/default_pp.jpg"
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
-                    return Response(model_to_dict(user), status=200)
+                    return Response(model_to_dict(user), status=201)
             else:
                 logging.debug("no imageFile in request.FILES")
                 user.image = "profile_pics/default_pp.jpg"
@@ -280,7 +283,7 @@ class RegisterView(APIView):
                 server_url = os.environ.get('SERVER_URL')
                 user_dict['image_url'] = f"{server_url}/{user.image}" if str(user.image) else None
                 logging.debug("user_dict prepared for JSON response: " + str(user_dict))
-                return Response(user_dict, status=200)
+                return Response(user_dict, status=201)
         else:
             logging.debug("serializer is not valid")
             errors = serializer.errors

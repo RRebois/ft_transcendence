@@ -1,4 +1,5 @@
 import ToastComponent from './../components/Toast.js';
+import {getCookie} from "../functions/cookie.js";
 
 export default class Register {
     constructor(props) {
@@ -65,22 +66,6 @@ export default class Register {
         return isValid;
     }
 
-    getCookie(cname) {
-        let name = cname + "=";
-        let decodedCookie = decodeURIComponent(document.cookie);
-        let ca = decodedCookie.split(';');
-        for (let i = 0; i < ca.length; i++) {
-            let c = ca[i];
-            while (c.charAt(0) == ' ') {
-                c = c.substring(1);
-            }
-            if (c.indexOf(name) == 0) {
-                return c.substring(name.length, c.length);
-            }
-        }
-        return "";
-    }
-
     registerUser(event) {
         event.preventDefault();
         const firstname = document.getElementById('first_name').value;
@@ -96,7 +81,7 @@ export default class Register {
             return;
         }
 
-        const csrfToken = this.getCookie('csrftoken');
+        const csrfToken = getCookie('csrftoken');
         console.log("CSRF Token: ", csrfToken);
         fetch('https://localhost:8443/register', {
             method: 'POST',

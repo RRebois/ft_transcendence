@@ -1,8 +1,12 @@
+import ToastComponent from "../components/Toast.js";
+import {getCookie} from "../functions/cookie.js";
+
 export default class Home {
     constructor(props) {
         this.props = props;
     }
 
+    // TODO : move this check in main.js
     fetchData() {
         fetch('https://localhost:8443/test')
             .then(response => response.json())
@@ -14,6 +18,9 @@ export default class Home {
         event.preventDefault();
         const username = document.getElementById('login-username').value;
         const password = document.getElementById('login-pwd').value;
+        const csrfToken = getCookie('csrftoken');
+        console.log("CSRF Token: ", csrfToken);
+        console.log(username, password);
 
         fetch('https://localhost:8443/login', {
             method: 'POST',
@@ -21,33 +28,39 @@ export default class Home {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken // Include CSRF token in request headers if needed
             },
-            body: JSON.stringify({ username, password })
+            credentials: 'include',
+            body: JSON.stringify({username, password})
         })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+            .then(response => response.json().then(data => ({ok: response.ok, data})))
+            .then(({ok, data}) => {
+                if (!ok) {
+                    const toastComponent = new ToastComponent();
+                    toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+                } else {
+                    console.log('Success:', data);
+                    // Handle success, e.g., redirecting the user or displaying a success message
                 }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Success:', data);
-                // Handle success, e.g., redirecting the user or displaying a success message
             })
             .catch(error => {
                 console.error('Error:', error);
-                // Handle errors, e.g., displaying an error message to the user
+                const toastComponent = new ToastComponent();
+                toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
             });
     }
 
     // TODO: check form action link
     render() {
         document.title = 'ft_transcendence | Login';
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('login-form').addEventListener('submit', this.loginUser);
+        })
         this.fetchData();
         return `
          <div class="w-100 h-100 d-flex flex-column justify-content-center align-items-center">
-            <form onsubmit="this.loginUser(event);" method="post" class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card" style="--bs-bg-opacity: .5;">
-                <h1 class="text-justify play-bold fs-1" >ft_transcendence 🏓</h1>
-                <div class="w-100">
+            <div class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card w-50" style="--bs-bg-opacity: .5;">
+            <h1 class="text-justify play-bold fs-1" >ft_transcendence 🏓</h1>
+            <form id="login-form">
+                <div class="row g-2">
                     <label for="login-username" class="visually-hidden">Username</label>
                     <div class="input-group">
                         <div class="input-group-text">
@@ -56,17 +69,14 @@ export default class Home {
                         <input type="text" name="username" id="login-username" class="form-control" placeholder="username" autofocus required/>
                     </div>
                 </div>
-                <div class="w-100 text-end d-flex flex-column gap-1">
-                    <div>
-                        <label for="login-pwd" class="visually-hidden">Password</label>
-                        <div class="input-group">
-                            <div class="input-group-text">
-                                <i class="bi bi-lock"></i>
-                            </div>
-                            <input type="password" name="password" id="login-pwd" class="form-control" placeholder="••••••••" required/>
+                <div class="row g-2">
+                    <label for="login-pwd" class="visually-hidden">Password</label>
+                    <div class="input-group">
+                        <div class="input-group-text">
+                            <i class="bi bi-lock"></i>
                         </div>
+                        <input type="password" name="password" id="login-pwd" class="form-control" placeholder="••••••••" required/>
                     </div>
-                    <a href="" class="text-decoration-none" id="Alzheimer">Forgot password?</a>
                 </div>
                 <button type="submit" class="btn btn-primary">Log in</button>
             </form>
