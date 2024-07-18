@@ -9,6 +9,7 @@ export default routes => {
                 e.preventDefault();
                 router.navigate(e.target.getAttribute('route'));
             }, false));
+
     });
 
     window.addEventListener('hashchange', e => router.navigate(e.target.location.hash.substr(1)))

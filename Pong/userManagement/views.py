@@ -36,8 +36,17 @@ logging.basicConfig(
     ]
 )
 
+@method_decorator(csrf_protect, name='dispatch')
+class JWTAuthView(APIView):
+    def post(self, request):
+        logging.debug('jwt_auth')
+        logging.debug(str(request.data))
+        logging.debug(str(request.headers))
+        return JsonResponse({'message': 'ok'}, status=200)
 
-# @method_decorator(csrf_protect, name='dispatch')
+
+
+@method_decorator(csrf_protect, name='dispatch')
 def authenticate_user(request):
     auth_header = request.headers.get('Authorization')
     token = None
@@ -79,9 +88,11 @@ def index(request):
     return render(request, "pages/index.html")
 
 
-class test_view(APIView):
+class TestView(APIView):
     def get(self, request):
-        return Response({"message": "healthy"}, status=200)
+        response = JsonResponse(data={'message': 'healthy'}, status=200)
+        response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True, path='/')
+        return response
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -116,12 +127,7 @@ class LoginView(APIView):
             return response
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
-            logging.debug("[EXCEPT] return error: " + str(e))
             return JsonResponse(status=401, data={'status': 'false', 'message': str(e)})
-
-    def get(self, request):
-        return HttpResponseRedirect(reverse("index"))
-
 
 @method_decorator(csrf_protect, name='dispatch')
 class Login42View(APIView):

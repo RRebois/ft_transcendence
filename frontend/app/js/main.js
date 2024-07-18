@@ -9,6 +9,7 @@ import homeView from "./views/home.js";
 import registerView from "./views/register.js";
 import matchView from "./views/match.js";
 import dashboardView from './views/dashboard.js';
+import ToastComponent from "./components/Toast.js";
 
 const routes = [
     new Route('/home', '/', homeView),

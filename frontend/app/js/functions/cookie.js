@@ -13,3 +13,25 @@ export function getCookie(cname) {
     }
     return "";
 }
+
+export async function test_server_connexion() {
+    await fetch('https://localhost:8443/test')
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => console.error('Error:', error));
+}
+
+export async function is_user_auth() {
+    const csrf_token = getCookie('csrftoken');
+    const jwt_token = getCookie('jwt_access');
+    const res = await fetch('https://localhost:8443/jwt', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrf_token,
+            'Authorization': `Bearer ${jwt_token}`,
+        },
+        credentials: 'include',
+    });
+    console.log("jwt auth res : ", res);
+}

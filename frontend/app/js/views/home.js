@@ -7,12 +7,12 @@ export default class Home {
     }
 
     // TODO : move this check in main.js
-    fetchData() {
-        fetch('https://localhost:8443/test')
-            .then(response => response.json())
-            .then(data => console.log(data))
-            .catch(error => console.error('Error:', error));
-    }
+    // fetchData() {
+    //     fetch('https://localhost:8443/test')
+    //         .then(response => response.json())
+    //         .then(data => console.log(data))
+    //         .catch(error => console.error('Error:', error));
+    // }
 
     loginUser(event) {
         event.preventDefault();
@@ -54,7 +54,7 @@ export default class Home {
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('login-form').addEventListener('submit', this.loginUser);
         })
-        this.fetchData();
+        // this.fetchData();
         return `
          <div class="w-100 h-100 d-flex flex-column justify-content-center align-items-center">
             <div class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card w-50" style="--bs-bg-opacity: .5;">
