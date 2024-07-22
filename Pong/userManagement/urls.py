@@ -13,6 +13,7 @@ urlpatterns = [
     path("stats/<str:username>", UserStatsDataView.as_view(), name="userStatsData"),
     path("user/<str:username>/information", UserPersonalInformationView.as_view(), name="infos"),
     path("getUsernameConnected", UserGetUsernameView.as_view(), name="getUsername"),
+    path("getStudStatus", UserGetIsStudView.as_view(), name="getIsStud"),
 
     # path('user', UpdateUserView.as_view()),
     path('change_password', PasswordChangeView.as_view(), name='change_password'),

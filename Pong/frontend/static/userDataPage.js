@@ -56,9 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         addDiv.append(subDiv);
                     }
                 })
-                .catch (error => {
-                // add error message
-                })
+                .catch(error => console.error('Error fetching match data request: ', error));
                 element.className = "fa-solid fa-eye-slash expander";
                 element.parentElement.append(addDiv);
             }
@@ -83,9 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 else
                     load_change_profile_pic(username);
             })
-            .catch (err => {
-                displayMessage(err, "danger");
-            });
+            .catch(error => console.error('Error fetching username request: ', error));
             event.preventDefault();
         }
         else {
@@ -140,9 +136,7 @@ function    load_change_profile_pic(username) {
                 console.log(pics);
             })
         })
-        .catch (err => {
-            displayMessage(err, "danger");
-        });
+        .catch(error => console.error('Error fetching username information request: ', error));
     }
 }
 
@@ -383,7 +377,7 @@ function    load_stats_page(username) {
         mainDivStats.append(chart);
         radioDiv.after(mainDivStats);
     })
-    .catch (err => console.log(err));
+    .catch(error => console.error('Error fetching stats request: ', error));
 
     // Add event listener to all checkboxes to add or remove chart infos
     const   checkBtn = document.getElementsByName('radioBtn');
@@ -518,7 +512,7 @@ function    load_stats_page(username) {
                             radioDiv.after(mainDivStats);
                 }
             })
-            .catch (err => console.log(err));
+            .catch(error => console.error('Error fetching stats request: ', error));
         })
     })
 
@@ -599,7 +593,7 @@ function    load_match_history(username, matchHistory, str) {
             matchHistory.append(tmp);
         }
     })
-    .catch (err => console.log(err));
+    .catch(error => console.error(`Error fetching ${str} matches request: `, error));
 }
 
 function    load_main_page() {

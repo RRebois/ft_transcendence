@@ -311,8 +311,6 @@ function    create_delete_account(mainDiv) {
             confirmationDiv.innerHTML = "Are you sure you want to delete your account? This action cannot be undone."
 
             // save and cancel button
-            const   delInputDiv = create_div_pattern("enterPW", "Enter your password");
-
             const   del = create_btn("btn btn-danger", "submit", "del", "Yes, I am sure!");
             del.style.margin = "5px 0";
             del.disabled = true;
@@ -322,57 +320,64 @@ function    create_delete_account(mainDiv) {
             const   cancel = create_btn("btn btn-primary", "submit", "stop", "Changed my mind.");
             cancel.style.margin= "5px 0";
 
-            delInputDiv.append(del);
-            cancelDiv.append(cancel);
-            confirmationDiv.append(delInputDiv, cancelDiv);
+            // For non 42 students, add input to enter password
+            var delInputDiv;
+            fetch("getStudStatus")
+            .then(response => response.json())
+            .then(stud => {
+                if (!stud)
+                    delInputDiv = create_div_pattern("enterPW", "Enter your password");
+                else
+                    delInputDiv = document.createElement("div");
+                delInputDiv.append(del);
+                cancelDiv.append(cancel);
+                confirmationDiv.append(delInputDiv, cancelDiv);
 
-            deleteDiv.append(confirmationDiv);
-            setTimeout(() => {
-                del.disabled = false;
-            }, 3000);
+                deleteDiv.append(confirmationDiv);
+                setTimeout(() => {
+                    del.disabled = false;
+                }, 3000);
 
-            cancel.addEventListener("click", () => {
-                if (confirmationDiv != null)
-                    confirmationDiv.remove();
-                deleteBtn.disabled = false;
-                deleteBtn.classList.remove("disabled");
-            })
-            del.addEventListener("click", () => { console.log("clicked!");
-                fetch("/getUsernameConnected")
-                .then(response => response.json())
-                .then(username => { console.log("clicked! to delete");
-                    const formData = {
-                        "password": document.getElementById("enterPW").value
-                    }
-                    fetch('delete_account', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        },
-                        body: JSON.stringify(formData)
-                    })
-                    .then(response => {
-                        if (response.ok) { console.log("HTTP request successful") }
-                        else { console.log("HTTP request unsuccessful") }
-                        return response.json();
-                    })
-                    .then(data => {console.log(data.message)
-                        if (data.success) {
-                            displayMessage(data.message, "success");
-                        }
-                        else {
-                            displayMessage(data.errors, "danger");
-                        }
-                    })
-                    .catch (err => {
-                        displayMessage(err, "danger");
-                    });
+                cancel.addEventListener("click", () => {
+                    if (confirmationDiv != null)
+                        confirmationDiv.remove();
+                    deleteBtn.disabled = false;
+                    deleteBtn.classList.remove("disabled");
                 })
-                .catch (err => {
-                    displayMessage(err, "danger");
-                });
+                del.addEventListener("click", () => {
+                    fetch("/getUsernameConnected")
+                    .then(response => response.json())
+                    .then(username => {
+                        var formData;
+                        if (!stud)
+                            formData = {
+                                "password": document.getElementById("enterPW").value
+                            }
+                        else
+                            formData = {}
+                        fetch('delete_account', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            },
+                            body: JSON.stringify(formData)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                displayMessage(data.message, "success");
+                            }
+                            else {
+                                displayMessage(data.errors, "danger");
+                            }
+                        })
+                        .catch(error => console.error('Error fetching delete account request: ', error));
+                    })
+                    .catch(error => console.error('Error fetching username request: ', error));
+                })
             })
+            .catch(error => console.error('Error fetching student status request: ', error));
         }
     })
 }

@@ -36,6 +36,9 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+    def get_is_stud(self):
+        return self.stud42
+
     def get_username(self):
         return self.username
 
