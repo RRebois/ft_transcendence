@@ -5,8 +5,6 @@ function load_friends_page(username) {
     document.getElementById('greetings').innerHTML = '';
     document.getElementById('userDataDiv').style.display = 'none';
     document.getElementById('userDataDiv').innerHTML = "";
-    document.getElementById('profilePic').style.display = 'none';
-    document.getElementById('profilePic').innerHTML = "";
     document.getElementById('statsDiv').style.display = 'none';
     document.getElementById('statsDiv').innerHTML = "";
     friendsDivElement.innerHTML = "";

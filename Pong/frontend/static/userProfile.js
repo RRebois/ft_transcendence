@@ -24,8 +24,8 @@ function    display_user_data(element) {
             .then(user_info => {
                 // Create expand div
                 const   exDiv = document.createElement('div');
-                setAttributes(exDiv, {"id": element.parentElement.parentElement.id + "Child"});
-                exDiv.classList.add("displayAnim");
+                setAttributes(exDiv, {"id": element.parentElement.parentElement.id + "Child", "class": "divProfile"});
+                exDiv.classList.add("displayAnimImg"); //rm
 
                 if (element.id === "info") {
                     // Add img to edit info
@@ -37,6 +37,8 @@ function    display_user_data(element) {
                     // Create span with all data fetched
                     const   divData = document.createElement('div');
                     setAttributes(divData, {'id': 'userDataDisplayed'});
+                    divData.className = "subDivProfile form-check form-switch w-100 h-100 justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+                    divData.setAttribute("style", "--bs-bg-opacity: 0.5;");
                     exDiv.append(divData);
 
                     for (const key in user_info)
@@ -57,7 +59,7 @@ function    display_user_data(element) {
                         img.style.animationPlayState = "paused";
 
                         // rm animation class
-                        exDiv.classList.remove("displayAnim");
+                        exDiv.classList.remove("displayAnimImg"); //rm img
                         img.classList.remove("displayAnimImg");
 
                         element.setAttribute("id", "info");
@@ -75,20 +77,16 @@ function    display_user_data(element) {
                     element.parentElement.parentElement.append(exDiv);
 
                     // Create div to contain change password and 2FA
-                    const   subExDiv = document.createElement('div');
-
-                    // Add content to subExDiv
                     const   togDiv = document.createElement('div');
-                    togDiv.className = 'form-check form-switch';
+                    togDiv.className = "subDivProfile form-check form-switch w-100 h-100 d-flex justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+                    togDiv.setAttribute("style", "--bs-bg-opacity: 0.5;");
+                    togDiv.style.marginBottom = "5px";
 
-                    togDiv.style.margin = 'auto';
-                    togDiv.style.width = 'fit-content';
-
+                    // Create div to have input and label for 2FA
+                    const   divInpLab = document.createElement("div");
                     const   togLabel = document.createElement('label');
                     setAttributes(togLabel, {'for': 'flexSwitchCheckDefault', 'id': 'togLab'});
                     togLabel.className = "form-check-label";
-                    togLabel.style.textAlign = 'center';
-                    togLabel.style.width = '100%';
 
                     const   togInput = document.createElement('input');
                     setAttributes(togInput, {'type': 'checkbox', 'id': 'flexSwitchCheckDefault'});
@@ -103,7 +101,6 @@ function    display_user_data(element) {
                         togInput.checked = false;
                         togLabel.innerHTML = "2FA Deactivated."
                     }
-                    togLabel.style.width = 'fit-content';
                     let new2fa = key2fa;
                     togInput.addEventListener('click', () => {
                         new2fa = !new2fa;
@@ -130,7 +127,8 @@ function    display_user_data(element) {
                                 setAttributes(QR, {'id': 'QRcode'});
                                 QR.classList.add('QRcss');
                                 QR.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?data=' + encodeURIComponent(data.qr_url) + '&size=100x100" alt="QR Code" />';
-                                subExDiv.append(QR);
+                                divInpLab.append(QR);
+                                togDiv.append(divInpLab);
                             }
                             else {
                                 togInput.checked = false;
@@ -146,12 +144,13 @@ function    display_user_data(element) {
                         event.preventDefault();
                     });
 
-                    togDiv.append(togInput, togLabel);
-                    subExDiv.append(togDiv);
-                    exDiv.append(subExDiv);
+                    divInpLab.append(togInput, togLabel);
+                    togDiv.append(divInpLab);
+                    exDiv.append(togDiv);
 
                     // Change password display
                     create_change_password(exDiv);
+                    create_delete_account(exDiv);
 
                     // run animation
                     exDiv.style.animationPlayState = "running";
@@ -161,7 +160,7 @@ function    display_user_data(element) {
                         exDiv.style.animationPlayState = "paused";
 
                         // rm animation class
-                        exDiv.classList.remove("displayAnim");
+                        exDiv.classList.remove("displayAnimImg"); //rm
 
                         // allow click again
                         element.setAttribute("id", "security");
@@ -186,7 +185,7 @@ function    display_user_data(element) {
             var img = document.getElementById(element.parentElement.parentElement.id + "img");
 
             // Add animation class
-            divRM.classList.add("rmAnim");
+            divRM.classList.add("rmAnimImg");//rm img
             img.classList.add("rmAnimImg");
 
             //            divRM.style.opacity = '0px';
@@ -206,7 +205,7 @@ function    display_user_data(element) {
             // Select div displaying infos
             var divRM = document.getElementById(element.parentElement.parentElement.id + "Child");
             // Add animation class
-            divRM.classList.add("rmAnim");
+            divRM.classList.add("rmAnimImg");//rm img
 
             // run animation
             divRM.style.animationPlayState = "running";
@@ -230,13 +229,11 @@ function    create_change_password(mainDiv) {
     const   check = document.getElementById("formChangePW");
 
     if (check === null) {
-        const   mainFormDiv = document.createElement("div");
-        mainFormDiv.className = "changePW";
-
         const   formDiv = document.createElement("div");
-        formDiv.className = "w-100 h-100 d-flex justify-content-center align-items-center bg-white flex-column py-2 px-5 rounded login-card hidden";
+        formDiv.className = "subDivProfile w-100 h-100 d-flex justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+        formDiv.setAttribute("style", "--bs-bg-opacity: 0.5;");
+        formDiv.style.marginBottom = "5px";
         formDiv.setAttribute("id", "formChangePW");
-        formDiv.setAttribute("style", "--bs-bg-opacity: .5;");
 
         const   divTitle = document.createElement("h1");
         divTitle.className = "text-justify play-bold";
@@ -246,10 +243,8 @@ function    create_change_password(mainDiv) {
         const   newPW = create_div_pattern("new_password", "New password");
         const   confirm = create_div_pattern("confirm_password", "Confirm new password");
 
-        const   btnPW = document.createElement('button');
-        setAttributes(btnPW, {"class": "btn btn-primary", "type": "submit", "id": "changePassword"});
+        const   btnPW = create_btn("btn btn-primary", "submit", "changePassword", "Change password");
         btnPW.style.margin = "0px 10px;";
-        btnPW.textContent = "Change password";
 
         btnPW.addEventListener("click", () => {
             const formData = {
@@ -272,7 +267,7 @@ function    create_change_password(mainDiv) {
             })
             .then(data => {
                 if (data.success) {
-                    displayMessage(" You have successfully changed your password.", "success");
+                    displayMessage("You have successfully changed your password.", "success");
                 }
                 else {
                     displayMessage(data.errors, "danger");
@@ -284,12 +279,107 @@ function    create_change_password(mainDiv) {
             });
         });
         formDiv.append(divTitle, old, newPW, confirm, btnPW);
-        mainFormDiv.append(formDiv);
-        mainDiv.append(mainFormDiv);
+        mainDiv.append(formDiv);
     }
     else {
         check.remove();
     }
+}
+
+function    create_delete_account(mainDiv) {
+    const   deleteDiv = document.createElement("div");
+    setAttributes(deleteDiv, {"id": "deleteAccount"});
+    deleteDiv.className = "subDivProfile w-100 h-100 d-flex justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+    deleteDiv.setAttribute("style", "--bs-bg-opacity: 0.5;");
+
+    const   deleteBtn = document.createElement("btn");
+    deleteBtn.setAttribute("id", "delBtn");
+    deleteBtn.className = "btn btn-danger";
+    deleteBtn.disabled = false;
+    deleteBtn.textContent = "Delete your account";
+
+    deleteDiv.append(deleteBtn);
+    mainDiv.append(deleteDiv);
+
+    deleteBtn.addEventListener("click", () => {
+        deleteBtn.disabled = true;
+        deleteBtn.classList.add("disabled");
+
+        if (document.getElementById("confirmationDiv") === null) {
+            const   confirmationDiv = document.createElement("div");
+            setAttributes(confirmationDiv, {"id": "confirmationDiv", "class": "deletion"})
+            confirmationDiv.innerHTML = "Are you sure you want to delete your account? This action cannot be undone."
+
+            // save and cancel button
+            const   del = create_btn("btn btn-danger", "submit", "del", "Yes, I am sure!");
+            del.style.margin = "5px 0";
+            del.disabled = true;
+
+            const   cancelDiv = document.createElement("div");
+            cancelDiv.style.textAlign = "center";
+            const   cancel = create_btn("btn btn-primary", "submit", "stop", "Changed my mind.");
+            cancel.style.margin= "5px 0";
+
+            // For non 42 students, add input to enter password
+            var delInputDiv;
+            fetch("getStudStatus")
+            .then(response => response.json())
+            .then(stud => {
+                if (!stud)
+                    delInputDiv = create_div_pattern("enterPW", "Enter your password");
+                else
+                    delInputDiv = document.createElement("div");
+                delInputDiv.append(del);
+                cancelDiv.append(cancel);
+                confirmationDiv.append(delInputDiv, cancelDiv);
+
+                deleteDiv.append(confirmationDiv);
+                setTimeout(() => {
+                    del.disabled = false;
+                }, 3000);
+
+                cancel.addEventListener("click", () => {
+                    if (confirmationDiv != null)
+                        confirmationDiv.remove();
+                    deleteBtn.disabled = false;
+                    deleteBtn.classList.remove("disabled");
+                })
+                del.addEventListener("click", () => {
+                    fetch("/getUsernameConnected")
+                    .then(response => response.json())
+                    .then(username => {
+                        var formData;
+                        if (!stud)
+                            formData = {
+                                "password": document.getElementById("enterPW").value
+                            }
+                        else
+                            formData = {}
+                        fetch('delete_account', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            },
+                            body: JSON.stringify(formData)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                displayMessage(data.message, "success");
+                            }
+                            else {
+                                displayMessage(data.errors, "danger");
+                            }
+                        })
+                        .catch(error => console.error('Error fetching delete account request: ', error));
+                    })
+                    .catch(error => console.error('Error fetching username request: ', error));
+                })
+            })
+            .catch(error => console.error('Error fetching student status request: ', error));
+        }
+    })
 }
 
 function    create_div_pattern(str, str2) {
@@ -325,14 +415,12 @@ function    create_div_pattern(str, str2) {
         }
     })
 
-    if (str === "old_password")
-        input.autofocus = true;
-    else if (str === "new_password") {
+    if (str === "new_password") {
         setAttributes(input, {"minlength": "8", "pattern": "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{5,12}"});
         span.className = "helper_txt";
         span.innerHTML = "Password must be at least 8 characters and contain 1 digit, 1 lowercase, and 1 uppercase.";
     }
-    else {
+    else if (str === "confirm_password") {
         setAttributes(input, {"minlength": "8", "pattern": "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{5,12}"});
         span.className = "helper_txt";
         span.innerHTML = "Must match new password input.";
@@ -350,20 +438,28 @@ function    create_div_pattern(str, str2) {
     return subDiv;
 }
 
+function    create_btn(classTxt, type, id, str) {
+    const   btn = document.createElement("button");
+    setAttributes(btn, {"class": classTxt, "type": type, "id": id});
+    btn.textContent = str;
+    return (btn);
+}
+
 function    load_form_edit_info() {
     const   infoDiv = document.getElementById('section1Child');
-//    const   img = document.getElementById('section1img');
     const   checkForm = document.getElementById('editForm');
 
     // hides displayed data to show form;
     const   divData = document.getElementById('userDataDisplayed');
     divData.style.display = 'none';
 
-    if (checkForm === null)// && img !== null)
+    if (checkForm === null)
     {
         const   infoKeys = document.querySelectorAll('.infoKey');
         const   infoValues = document.querySelectorAll('.infoValue');
         const   newForm = document.createElement('div');
+        newForm.className = "subDivProfile w-100 h-100 d-flex justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+        newForm.setAttribute("style", "--bs-bg-opacity: 0.5;");
         setAttributes(newForm, {'id': 'editForm'});
 
         const   mainDiv = [];
@@ -404,7 +500,7 @@ function    load_form_edit_info() {
                             create_options_select_language(mainInput[i], user_info[key]);
                         }
                         setAttributes(mainInput[i], {"name": names[key], "id": names[key]});
-                        mainInput[i].style.width = "20%";
+                        mainInput[i].style.width = "fit-content";
 
                         mainDiv[i].append(mainSpan[i], mainInput[i]);
                         mainDiv[i].style.textAlign = "center";
@@ -418,10 +514,8 @@ function    load_form_edit_info() {
                 const   butDiv = document.createElement('div');
 
                 // Add save and cancel buttons
-                const   save = document.createElement('button');
-                setAttributes(save, {'class': 'btn btn-primary', 'type': 'submit', 'id': 'saveData'});
-                save.style.marginRight = '5px;';
-                save.textContent = "Save";
+                const   save = create_btn("btn btn-primary", "submit", "saveData", "Save");
+                save.style.marginRight = '5px';
 
                 save.addEventListener('click', () => {
                     const   select_div = document.getElementById('language');
@@ -502,10 +596,8 @@ function    load_form_edit_info() {
                     event.preventDefault();
                 });
 
-                const   cancel = document.createElement('button');
-                setAttributes(cancel, {'class': 'btn btn-primary', 'type': 'submit', 'id': 'cancelData'});
+                const   cancel = create_btn("btn btn-primary", "submit", "cancelData", "Cancel");
                 cancel.style.marginLeft = '5px';
-                cancel.textContent = "Cancel";
 
                 cancel.addEventListener('click', () => {
                     divData.style.display = 'block';
@@ -566,8 +658,6 @@ function    load_profile_page(username) {
     mainDivEl.innerHTML = "";
     create_div_title(username, "profile", "userDataDiv");
     document.getElementById('greetings').style.display = 'none';
-    document.getElementById('profilePic').style.display = 'none';
-    document.getElementById('profilePic').innerHTML = "";
     document.getElementById('statsDiv').style.display = 'none';
     document.getElementById('statsDiv').innerHTML = "";
     document.getElementById('friendsDiv').style.display = 'none';

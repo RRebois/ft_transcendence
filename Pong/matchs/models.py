@@ -6,10 +6,11 @@ from userManagement.models import User
 
 class Match(models.Model):
     players = models.ManyToManyField('userManagement.User', related_name="matchs", default=list)
-    winner = models.ForeignKey('userManagement.User', on_delete=models.CASCADE,
+    winner = models.ForeignKey('userManagement.User', on_delete=models.SET_NULL,
                                blank=True, null=True)
     is_pong = models.BooleanField(default=True)
     timeMatch = models.DateTimeField(auto_now_add=True)
+    count = models.IntegerField(default=2)
 
     class Meta:
         ordering = ['-timeMatch']
@@ -19,7 +20,7 @@ class Match(models.Model):
             'id': self.id,
             'game': 'Pong' if self.is_pong else 'Purrinha',
             "players": {score.player.username if score.player else "deleted_user": score.score for score in self.scores.all()},
-            "count": self.players.count(),
+            "count": self.count,
             "winner": self.winner.username if self.winner else "deleted_user",
             "timestamp": self.timeMatch.strftime("%b %d %Y, %I:%M %p"),
         }

@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const   subDivChild1 = document.createElement('div');
                         const   subDivChild2 = document.createElement('div');
 
-                        subDivChild1.innerHTML = `${Object.keys(data.players)[i]}`;
+                        subDivChild1.innerHTML = Object.keys(data.players)[i];
                         subDivChild1.style.textDecoration = "underline";
                         subDivChild1.style.width = "100%";
 
@@ -30,11 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         const titleText = document.getElementsByName("top")[0].textContent.split(" ");
                         let found = false;
                         for (let j = 0; j < titleText.length; j++)
-                            if (titleText[j] === `${Object.keys(data.players)[i]}`)
+                            if (titleText[j] === Object.keys(data.players)[i])
                                 found = true;
 
                         // If user not same username, allows to jump to user profile
-                        if (!found) {
+                        if (!found && Object.keys(data.players)[i] !== "deleted_user") {
                             // Add link to user profile
                             subDivChild1.addEventListener('click', () => {
                                 load_stats_page(`${Object.keys(data.players)[i]}`);
@@ -56,9 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         addDiv.append(subDiv);
                     }
                 })
-                .catch (error => {
-                // add error message
-                })
+                .catch(error => console.error('Error fetching match data request: ', error));
                 element.className = "fa-solid fa-eye-slash expander";
                 element.parentElement.append(addDiv);
             }
@@ -83,64 +81,63 @@ document.addEventListener('DOMContentLoaded', () => {
                 else
                     load_change_profile_pic(username);
             })
+            .catch(error => console.error('Error fetching username request: ', error));
             event.preventDefault();
         }
         else {
-            if (!element.classList.contains('profilePicShadowBox')) {
-                if (document.getElementById('profilePic') !== null) {
-                    document.getElementById('profilePic').innerHTML = "";
-                    document.getElementById('profilePic').display = "none";
-                    document.getElementById('profilePic').classList.remove("profilePicShadowBox");
-                }
+            if (!element.classList.contains('profilePicShadowBox') &&
+                document.getElementById('profilePic') !== null) {
+                document.getElementById('profilePic').remove();
             }
         }
     })
     const mainPage = document.getElementById('mainPage');
-    if (mainPage != null)
+    if (mainPage !== null)
         mainPage.addEventListener('click', () => {
             load_main_page();
         });
 })
 
 function    load_change_profile_pic(username) {
-    const   picDiv = document.getElementById("profilePic");
-    picDiv.innerHTML = "";
-    picDiv.style.display = "block";
-    picDiv.classList.add("profilePicShadowBox");
+    if (document.getElementById("profilePic") == null) {
+        const   picDiv = document.createElement("div");
+        picDiv.innerHTML = "";
+        picDiv.className = "profilePicShadowBox container";
+        picDiv.setAttribute("id", "profilePic");
 
-    // Title div
-    const   title = document.createElement("div");
-    title.innerHTML = "Change your avatar";
-    title.className = "title_div gradient-background";
-    title.setAttribute("name", "top");
-    picDiv.append(title);
+        // Title div
+        const   title = document.createElement("div");
+        title.innerHTML = "Change your avatar";
+        title.className = "title_div gradient-background";
+        title.setAttribute("name", "top");
+        picDiv.append(title);
+        document.getElementById("content").append(picDiv);
 
-    // Current profile image
-    fetch(`user/${username}/information`)
-    .then(response => response.json())
-    .then(data => {console.log(data);
-
-        const   divImages = document.createElement("div");
-        const   currentImgTitle = document.createElement("div");
-        const   currentImg = document.createElement("img");
-
-        // Current avatar
-        currentImgTitle.innerHTML = "Current avatar";
-        setAttributes(currentImg, {"src": `${data.img}`, "alt": "avatar", "id": "currentImg"});
-
-        divImages.append(currentImgTitle, currentImg);
-        picDiv.append(divImages);
-
-        // Available avatars
-        fetch("media/")
+        // Current profile image
+        fetch(`user/${username}/information`)
         .then(response => response.json())
-        .then(pics => {
-            console.log(pics);
+        .then(data => {console.log(data);
+
+            const   divImages = document.createElement("div");
+            const   currentImgTitle = document.createElement("div");
+            const   currentImg = document.createElement("img");
+
+            // Current avatar
+            currentImgTitle.innerHTML = "Current avatar";
+            setAttributes(currentImg, {"src": `${data.img}`, "alt": "avatar", "id": "currentImg"});
+
+            divImages.append(currentImgTitle, currentImg);
+            picDiv.append(divImages);
+
+            // Available avatars
+            fetch("media/")
+            .then(response => response.json())
+            .then(pics => {
+                console.log(pics);
+            })
         })
-    })
-    .catch (err => {
-        displayMessage(err, "danger");
-    });
+        .catch(error => console.error('Error fetching username information request: ', error));
+    }
 }
 
 function setAttributes(el, attrs) {
@@ -256,8 +253,6 @@ function    load_stats_page(username) {
     document.getElementById('greetings').style.display = 'none';
     document.getElementById('userDataDiv').style.display = 'none';
     document.getElementById('userDataDiv').innerHTML = "";
-    document.getElementById('profilePic').style.display = 'none';
-    document.getElementById('profilePic').innerHTML = "";
     document.getElementById('friendsDiv').style.display = 'none';
     document.getElementById('friendsDiv').innerHTML = "";
     document.getElementById('statsDiv').style.display = 'block';
@@ -382,7 +377,7 @@ function    load_stats_page(username) {
         mainDivStats.append(chart);
         radioDiv.after(mainDivStats);
     })
-    .catch (err => console.log(err));
+    .catch(error => console.error('Error fetching stats request: ', error));
 
     // Add event listener to all checkboxes to add or remove chart infos
     const   checkBtn = document.getElementsByName('radioBtn');
@@ -517,7 +512,7 @@ function    load_stats_page(username) {
                             radioDiv.after(mainDivStats);
                 }
             })
-            .catch (err => console.log(err));
+            .catch(error => console.error('Error fetching stats request: ', error));
         })
     })
 
@@ -598,7 +593,7 @@ function    load_match_history(username, matchHistory, str) {
             matchHistory.append(tmp);
         }
     })
-    .catch (err => console.log(err));
+    .catch(error => console.error(`Error fetching ${str} matches request: `, error));
 }
 
 function    load_main_page() {

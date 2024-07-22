@@ -278,6 +278,18 @@ class UserGetUsernameView(APIView):
 
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
+class UserGetIsStudView(APIView):
+    def get(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        return JsonResponse(user.get_is_stud(), safe=False)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
 class UserPersonalInformationView(APIView):
     def get(self, request, username):
         try:
@@ -633,3 +645,38 @@ class GetFriendView(APIView):
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
         friendList = user.friends.all().values('username', 'id', 'status', 'image')
         return JsonResponse(list(friendList), safe=False)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class DeleteAccountView(APIView):
+    serializer_class = CheckPassword
+
+    def post(self, request):
+
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        if user.stud42:
+            User.objects.get(id=user.id).delete()
+            message = "Account successfully deleted."
+            return JsonResponse({"success": True, "redirect": True, "redirect_url": "", "message": message})
+
+        serializer = self.serializer_class(data=request.data, context={'user': user})
+        try:
+            serializer.is_valid(raise_exception=True)
+            User.objects.get(id=user.id).delete()
+            message = "Account successfully deleted."
+            return JsonResponse({"success": True, "redirect": True, "redirect_url": "", "message": message})
+        except serializers.ValidationError as e:
+            error_messages = []
+            for field, errors in e.detail.items():
+                for error in errors:
+                    if field == 'non_field_errors':
+                        error_messages.append(f"{error}")
+                    else:
+                        error_messages.append(f"{field}: {error}")
+            error_message = " | ".join(error_messages)
+            return Response({"success": False, "errors": error_message})
