@@ -638,12 +638,29 @@ class GetFriendView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class DeleteAccountView(APIView):
+    serializer_class = CheckPassword
+
     def post(self, request):
+
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
-        User.objects.get(id=user.id).delete()
-        message = "Account successfully deleted."
-        return JsonResponse({"success": True, "redirect": True, "redirect_url": "", "message": message})
+        serializer = self.serializer_class(data=request.data, context={'user': user})
+
+        try:
+            serializer.is_valid(raise_exception=True)
+            User.objects.get(id=user.id).delete()
+            message = "Account successfully deleted."
+            return JsonResponse({"success": True, "redirect": True, "redirect_url": "", "message": message})
+        except serializers.ValidationError as e:
+            error_messages = []
+            for field, errors in e.detail.items():
+                for error in errors:
+                    if field == 'non_field_errors':
+                        error_messages.append(f"{error}")
+                    else:
+                        error_messages.append(f"{field}: {error}")
+            error_message = " | ".join(error_messages)
+            return Response({"success": False, "errors": error_message})

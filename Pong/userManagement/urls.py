@@ -28,12 +28,8 @@ urlpatterns = [
     path('decline_friend', DeclineFriendRequestView.as_view(), name='decline_friend'),
     path('get_friends', GetFriendView.as_view(), name='get_friends'),
     path('remove_friend', RemoveFriendView.as_view(), name='remove_friend'),
-    path('enable_2FA', Security2FAView.as_view(), name='enable_2FA'),
+    path('2FA', Security2FAView.as_view(), name='enable_2FA'),
     path('verifyotp', VerifyOTPView.as_view(), name='verify_otp'),
     path("delete_account", DeleteAccountView.as_view(), name="delete"),
-    # path('disable_2FA', Disable2FAView.as_view(), name='disable_2FA'),
-
-    # #API Routes
-    # path("stats/<str:username>", views.userStatsData, name="userStatsData")
 ]
 

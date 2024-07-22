@@ -45,11 +45,15 @@
     background-image: linear-gradient(241deg, #8360C3, #2EBF91);
 }
 
-.changePW {
+.divProfile {
     width: 60%;
     margin: 10px auto;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.subDivProfile {
+    border: 2px solid black;
 }
 
 .roundBorder {

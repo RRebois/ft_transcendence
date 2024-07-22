@@ -261,3 +261,15 @@ class VerifyOTPSerializer(serializers.ModelSerializer):
             'jwt_access': token,
             'jwt_refresh': refresh
         }
+
+
+class CheckPassword(serializers.Serializer):
+    password = serializers.CharField(max_length=100, min_length=8, write_only=True, required=True)
+
+    def validate(self, attrs):
+        user = self.context['user']
+        password = attrs.get('password')
+
+        if not user.check_password(password):
+            raise serializers.ValidationError("Password is incorrect")
+        return attrs

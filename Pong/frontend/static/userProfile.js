@@ -24,8 +24,8 @@ function    display_user_data(element) {
             .then(user_info => {
                 // Create expand div
                 const   exDiv = document.createElement('div');
-                setAttributes(exDiv, {"id": element.parentElement.parentElement.id + "Child"});
-                exDiv.classList.add("displayAnim");
+                setAttributes(exDiv, {"id": element.parentElement.parentElement.id + "Child", "class": "divProfile"});
+                exDiv.classList.add("displayAnimImg"); //rm
 
                 if (element.id === "info") {
                     // Add img to edit info
@@ -37,6 +37,8 @@ function    display_user_data(element) {
                     // Create span with all data fetched
                     const   divData = document.createElement('div');
                     setAttributes(divData, {'id': 'userDataDisplayed'});
+                    divData.className = "subDivProfile form-check form-switch w-100 h-100 justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+                    divData.setAttribute("style", "--bs-bg-opacity: 0.5;");
                     exDiv.append(divData);
 
                     for (const key in user_info)
@@ -57,7 +59,7 @@ function    display_user_data(element) {
                         img.style.animationPlayState = "paused";
 
                         // rm animation class
-                        exDiv.classList.remove("displayAnim");
+                        exDiv.classList.remove("displayAnimImg"); //rm img
                         img.classList.remove("displayAnimImg");
 
                         element.setAttribute("id", "info");
@@ -75,20 +77,16 @@ function    display_user_data(element) {
                     element.parentElement.parentElement.append(exDiv);
 
                     // Create div to contain change password and 2FA
-                    const   subExDiv = document.createElement('div');
-
-                    // Add content to subExDiv
                     const   togDiv = document.createElement('div');
-                    togDiv.className = 'form-check form-switch';
+                    togDiv.className = "subDivProfile form-check form-switch w-100 h-100 d-flex justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+                    togDiv.setAttribute("style", "--bs-bg-opacity: 0.5;");
+                    togDiv.style.marginBottom = "5px";
 
-                    togDiv.style.margin = 'auto';
-                    togDiv.style.width = 'fit-content';
-
+                    // Create div to have input and label for 2FA
+                    const   divInpLab = document.createElement("div");
                     const   togLabel = document.createElement('label');
                     setAttributes(togLabel, {'for': 'flexSwitchCheckDefault', 'id': 'togLab'});
                     togLabel.className = "form-check-label";
-                    togLabel.style.textAlign = 'center';
-                    togLabel.style.width = '100%';
 
                     const   togInput = document.createElement('input');
                     setAttributes(togInput, {'type': 'checkbox', 'id': 'flexSwitchCheckDefault'});
@@ -103,7 +101,6 @@ function    display_user_data(element) {
                         togInput.checked = false;
                         togLabel.innerHTML = "2FA Deactivated."
                     }
-                    togLabel.style.width = 'fit-content';
                     let new2fa = key2fa;
                     togInput.addEventListener('click', () => {
                         new2fa = !new2fa;
@@ -130,7 +127,8 @@ function    display_user_data(element) {
                                 setAttributes(QR, {'id': 'QRcode'});
                                 QR.classList.add('QRcss');
                                 QR.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?data=' + encodeURIComponent(data.qr_url) + '&size=100x100" alt="QR Code" />';
-                                subExDiv.append(QR);
+                                divInpLab.append(QR);
+                                togDiv.append(divInpLab);
                             }
                             else {
                                 togInput.checked = false;
@@ -146,9 +144,9 @@ function    display_user_data(element) {
                         event.preventDefault();
                     });
 
-                    togDiv.append(togInput, togLabel);
-                    subExDiv.append(togDiv);
-                    exDiv.append(subExDiv);
+                    divInpLab.append(togInput, togLabel);
+                    togDiv.append(divInpLab);
+                    exDiv.append(togDiv);
 
                     // Change password display
                     create_change_password(exDiv);
@@ -162,7 +160,7 @@ function    display_user_data(element) {
                         exDiv.style.animationPlayState = "paused";
 
                         // rm animation class
-                        exDiv.classList.remove("displayAnim");
+                        exDiv.classList.remove("displayAnimImg"); //rm
 
                         // allow click again
                         element.setAttribute("id", "security");
@@ -187,7 +185,7 @@ function    display_user_data(element) {
             var img = document.getElementById(element.parentElement.parentElement.id + "img");
 
             // Add animation class
-            divRM.classList.add("rmAnim");
+            divRM.classList.add("rmAnimImg");//rm img
             img.classList.add("rmAnimImg");
 
             //            divRM.style.opacity = '0px';
@@ -207,7 +205,7 @@ function    display_user_data(element) {
             // Select div displaying infos
             var divRM = document.getElementById(element.parentElement.parentElement.id + "Child");
             // Add animation class
-            divRM.classList.add("rmAnim");
+            divRM.classList.add("rmAnimImg");//rm img
 
             // run animation
             divRM.style.animationPlayState = "running";
@@ -231,13 +229,11 @@ function    create_change_password(mainDiv) {
     const   check = document.getElementById("formChangePW");
 
     if (check === null) {
-        const   mainFormDiv = document.createElement("div");
-        mainFormDiv.className = "changePW";
-
         const   formDiv = document.createElement("div");
-        formDiv.className = "w-100 h-100 d-flex justify-content-center align-items-center bg-white flex-column py-2 px-5 rounded login-card hidden";
+        formDiv.className = "subDivProfile w-100 h-100 d-flex justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+        formDiv.setAttribute("style", "--bs-bg-opacity: 0.5;");
+        formDiv.style.marginBottom = "5px";
         formDiv.setAttribute("id", "formChangePW");
-        formDiv.setAttribute("style", "--bs-bg-opacity: .5;");
 
         const   divTitle = document.createElement("h1");
         divTitle.className = "text-justify play-bold";
@@ -283,8 +279,7 @@ function    create_change_password(mainDiv) {
             });
         });
         formDiv.append(divTitle, old, newPW, confirm, btnPW);
-        mainFormDiv.append(formDiv);
-        mainDiv.append(mainFormDiv);
+        mainDiv.append(formDiv);
     }
     else {
         check.remove();
@@ -294,7 +289,8 @@ function    create_change_password(mainDiv) {
 function    create_delete_account(mainDiv) {
     const   deleteDiv = document.createElement("div");
     setAttributes(deleteDiv, {"id": "deleteAccount"});
-    deleteDiv.style.textAlign = "center";
+    deleteDiv.className = "subDivProfile w-100 h-100 d-flex justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+    deleteDiv.setAttribute("style", "--bs-bg-opacity: 0.5;");
 
     const   deleteBtn = document.createElement("btn");
     deleteBtn.setAttribute("id", "delBtn");
@@ -315,17 +311,22 @@ function    create_delete_account(mainDiv) {
             confirmationDiv.innerHTML = "Are you sure you want to delete your account? This action cannot be undone."
 
             // save and cancel button
-            const   btnGroup = document.createElement("div");
-            btnGroup.style.textAlign = "center";
-            const   del = create_btn("btn btn-danger", "submit", "del", "Yes, I am sure!");
-            del.style.marginRight = '5px';
-            del.disabled = true;
-            const   cancel = create_btn("btn btn-primary", "submit", "stop", "Changed my mind.");
-            cancel.style.marginLeft = '5px';
+            const   delInputDiv = create_div_pattern("enterPW", "Enter your password");
 
-            btnGroup.append(del, cancel);
-            confirmationDiv.append(btnGroup);
-            document.getElementById("section2").append(confirmationDiv);
+            const   del = create_btn("btn btn-danger", "submit", "del", "Yes, I am sure!");
+            del.style.margin = "5px 0";
+            del.disabled = true;
+
+            const   cancelDiv = document.createElement("div");
+            cancelDiv.style.textAlign = "center";
+            const   cancel = create_btn("btn btn-primary", "submit", "stop", "Changed my mind.");
+            cancel.style.margin= "5px 0";
+
+            delInputDiv.append(del);
+            cancelDiv.append(cancel);
+            confirmationDiv.append(delInputDiv, cancelDiv);
+
+            deleteDiv.append(confirmationDiv);
             setTimeout(() => {
                 del.disabled = false;
             }, 3000);
@@ -336,12 +337,12 @@ function    create_delete_account(mainDiv) {
                 deleteBtn.disabled = false;
                 deleteBtn.classList.remove("disabled");
             })
-            del.addEventListener("click", () => {
+            del.addEventListener("click", () => { console.log("clicked!");
                 fetch("/getUsernameConnected")
                 .then(response => response.json())
-                .then(username => {
+                .then(username => { console.log("clicked! to delete");
                     const formData = {
-                        'username': username
+                        "password": document.getElementById("enterPW").value
                     }
                     fetch('delete_account', {
                         method: 'POST',
@@ -351,10 +352,18 @@ function    create_delete_account(mainDiv) {
                         },
                         body: JSON.stringify(formData)
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success)
+                    .then(response => {
+                        if (response.ok) { console.log("HTTP request successful") }
+                        else { console.log("HTTP request unsuccessful") }
+                        return response.json();
+                    })
+                    .then(data => {console.log(data.message)
+                        if (data.success) {
                             displayMessage(data.message, "success");
+                        }
+                        else {
+                            displayMessage(data.errors, "danger");
+                        }
                     })
                     .catch (err => {
                         displayMessage(err, "danger");
@@ -406,7 +415,7 @@ function    create_div_pattern(str, str2) {
         span.className = "helper_txt";
         span.innerHTML = "Password must be at least 8 characters and contain 1 digit, 1 lowercase, and 1 uppercase.";
     }
-    else {
+    else if (str === "confirm_password") {
         setAttributes(input, {"minlength": "8", "pattern": "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{5,12}"});
         span.className = "helper_txt";
         span.innerHTML = "Must match new password input.";
@@ -433,18 +442,19 @@ function    create_btn(classTxt, type, id, str) {
 
 function    load_form_edit_info() {
     const   infoDiv = document.getElementById('section1Child');
-//    const   img = document.getElementById('section1img');
     const   checkForm = document.getElementById('editForm');
 
     // hides displayed data to show form;
     const   divData = document.getElementById('userDataDisplayed');
     divData.style.display = 'none';
 
-    if (checkForm === null)// && img !== null)
+    if (checkForm === null)
     {
         const   infoKeys = document.querySelectorAll('.infoKey');
         const   infoValues = document.querySelectorAll('.infoValue');
         const   newForm = document.createElement('div');
+        newForm.className = "subDivProfile w-100 h-100 d-flex justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+        newForm.setAttribute("style", "--bs-bg-opacity: 0.5;");
         setAttributes(newForm, {'id': 'editForm'});
 
         const   mainDiv = [];
@@ -485,7 +495,7 @@ function    load_form_edit_info() {
                             create_options_select_language(mainInput[i], user_info[key]);
                         }
                         setAttributes(mainInput[i], {"name": names[key], "id": names[key]});
-                        mainInput[i].style.width = "20%";
+                        mainInput[i].style.width = "fit-content";
 
                         mainDiv[i].append(mainSpan[i], mainInput[i]);
                         mainDiv[i].style.textAlign = "center";
