@@ -46,7 +46,7 @@
 }
 
 .divProfile {
-    width: 60%;
+    width: 80%;
     margin: 10px auto;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -390,12 +390,15 @@ gap-1-5 {
 }
 
 .friendPage {
-    width: 80%;
     align-items: center;
     text-align: center;
-    margin-bottom: 10px;
-    min-width: 400px;
+    margin-bottom: 15px;
     justify-content: space-between;
+    border: 2px solid black;
+    font-size: 16px;
+    font-weight: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .acceptBtn {

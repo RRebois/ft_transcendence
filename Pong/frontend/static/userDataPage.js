@@ -168,10 +168,8 @@ function    create_add_friend_icon(username) {
         userMatch = true;
 
     const friendItem = document.createElement('div');
-    friendItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white',
-        'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
-    friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; justify-content: space-between; width: 50%; ' +
-        'display: block; margin-left: auto; margin-right: auto';
+    friendItem.className = "friendPage w-100 h-100 justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+    friendItem.setAttribute("style", "--bs-bg-opacity: 0.5;");
 
     // Check if user already in friend list
     fetch("get_friends")
@@ -208,7 +206,7 @@ function    create_add_friend_icon(username) {
     .catch(error => console.error('Error fetching pending friend requests sent: ', error));
 
     //user not in friend list: Add icon to do so
-    friendItem.innerHTML = "Add user to your friend list";
+    friendItem.innerHTML = "Add user to your friend list ";
     const   friendReq = document.createElement("span");
     friendReq.className = "fa-solid fa-user-plus";
     friendReq.setAttribute("if", "addFriend");
@@ -312,7 +310,7 @@ function    load_stats_page(username) {
 
         // create other div to display elo
         const   stat = document.createElement('div');
-        stat.className = "subDivStats justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+        stat.className = "divStats justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
         stat.setAttribute("style", "--bs-bg-opacity: 0.5;");
 
         const   statEloPong = document.createElement('div');
@@ -421,7 +419,7 @@ function    load_stats_page(username) {
 
                     // create other div to display elo
                     const   stat = document.createElement('div');
-                    stat.className = "subDivStats justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+                    stat.className = "divStats justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
                     stat.setAttribute("style", "--bs-bg-opacity: 0.5;");
                     if (element.value === 'all' || element.value === 'pong') {
                         const   statEloPong = document.createElement('div');
