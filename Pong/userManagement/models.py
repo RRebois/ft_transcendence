@@ -18,10 +18,10 @@ class User(AbstractUser):
         ('offline', 'Offline'),
     ]
     language_choices = [
-        ['English', 'en'],
-        ['French', 'fr'],
-        ['Spanish', 'es'],
-        ['Portuguese', 'pt']
+        ['🇬🇧 English', 'en'],
+        ['🇫🇷 French', 'fr'],
+        ['🇪🇸 Spanish', 'es'],
+        ['🇵🇹 Portuguese', 'pt']
     ]
     language = models.CharField(choices=language_choices, default="English")
     status = models.CharField(max_length=50, choices=status_choices, default='offline')

@@ -620,7 +620,7 @@ function    load_form_edit_info() {
 
 function    create_options_select_language(input, str) {
     // Available languages
-    language_choices = ['English', 'French', 'Spanish', 'Portuguese'];
+    language_choices = ['🇬🇧 English', '🇫🇷 French', '🇪🇸 Spanish', '🇵🇹 Portuguese'];
 
     for (let i = 0; i < language_choices.length; i++) {
         const   opt = document.createElement("option");
