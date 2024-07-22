@@ -67,12 +67,12 @@ function    display_user_data(element) {
                     exDiv.style.opacity = "1px";
 
                     // Add form when editing image is clicked
-                    img.addEventListener('click', () => {
+                    img.addEventListener("click", () => {
                         load_form_edit_info();
                     })
                 }
                 else if (element.id === "security") {
-                    document.getElementById('section3').style.display = 'block';
+                    document.getElementById("section3").style.display = "block";
 
                     element.parentElement.parentElement.append(exDiv);
 

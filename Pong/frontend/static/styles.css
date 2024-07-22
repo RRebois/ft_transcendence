@@ -207,10 +207,14 @@
 
 .matchWon {
     background-color: #209920;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .matchLost {
     background-color: #ED2939;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .matchWonSub {
