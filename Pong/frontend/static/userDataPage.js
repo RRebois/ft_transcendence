@@ -307,11 +307,14 @@ function    load_stats_page(username) {
     .then(values => {
         // Create main div to display stats of selected checkbox
         const   mainDivStats = document.createElement('div');
-        setAttributes(mainDivStats, {'id': 'divall', 'class': 'mainDivStats'});
+        setAttributes(mainDivStats, {'id': 'divall', 'class': 'mainDivStats rounded'});
         mainDivStats.style.width = `${widthV}%`;
 
         // create other div to display elo
         const   stat = document.createElement('div');
+        stat.className = "subDivStats justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+        stat.setAttribute("style", "--bs-bg-opacity: 0.5;");
+
         const   statEloPong = document.createElement('div');
         statEloPong.classList.add("divElo");
         statEloPong.innerHTML = "Pong current elo / highest: " + values['elo_pong'] + " / " + values['elo_highest'][0];
@@ -407,7 +410,7 @@ function    load_stats_page(username) {
                 else {
                     // Create main div to display stats of selected checkbox
                     const   mainDivStats = document.createElement('div');
-                    setAttributes(mainDivStats, {'id': `div${element.value}`, 'class': 'mainDivStats'});
+                    setAttributes(mainDivStats, {'id': `div${element.value}`, 'class': 'mainDivStats rounded'});
 
                     const   allMainDivStats = document.querySelectorAll('.mainDivStats');
                     if (allMainDivStats.length > 0)
@@ -418,6 +421,8 @@ function    load_stats_page(username) {
 
                     // create other div to display elo
                     const   stat = document.createElement('div');
+                    stat.className = "subDivStats justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+                    stat.setAttribute("style", "--bs-bg-opacity: 0.5;");
                     if (element.value === 'all' || element.value === 'pong') {
                         const   statEloPong = document.createElement('div');
                         statEloPong.classList.add("divElo");
@@ -555,7 +560,14 @@ function    load_stats_page(username) {
     rad3.append(radIn3, radLab3);
     header.append(rad1, rad2, rad3);
     matchHistory.append(header);
-    load_match_history(username, matchHistory, "all");
+
+    // Div to display matches
+    const   divMatches = document.createElement("div");
+    divMatches.className = "divStats justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+    divMatches.setAttribute("style", "--bs-bg-opacity: 0.5;");
+    divMatches.style.border = "2px solid black";
+    load_match_history(username, divMatches, "all");
+    matchHistory.append(divMatches);
     document.querySelector('#statsDiv').append(matchHistory);
 
     // Add eventListener to radioGroup
@@ -574,7 +586,7 @@ function    load_stats_page(username) {
         event.preventDefault();
 }
 
-function    load_match_history(username, matchHistory, str) {
+function    load_match_history(username, divMatches, str) {
     fetch(`matches/${username}:${str}`)
     .then(response => response.json())
     .then(matches => {
@@ -582,15 +594,15 @@ function    load_match_history(username, matchHistory, str) {
         if (matches.length > 0)
             for (i; i < matches.length; i++) {
                 if (i === matches.length - 1)
-                    create_div(matches[i], matchHistory, username, 1);
+                    create_div(matches[i], divMatches, username, 1);
                 else
-                    create_div(matches[i], matchHistory, username, 0);
+                    create_div(matches[i], divMatches, username, 0);
             }
         else if (document.getElementById("tmpToRm") === null && i === 0) {
             const   tmp = document.createElement('div');
             tmp.setAttribute("id", "tmpToRm");
             tmp.innerHTML = "No game played yet! Start a pong game here or a purrinha game here."
-            matchHistory.append(tmp);
+            divMatches.append(tmp);
         }
     })
     .catch(error => console.error(`Error fetching ${str} matches request: `, error));
@@ -607,7 +619,7 @@ function    load_main_page() {
     document.getElementById('friendsPage').innerHTML = "";
 }
 
-function    create_div(match, matchHistory, username, value) {
+function    create_div(match, divMatches, username, value) {
     const   tmp = document.createElement('div');
     tmp.classList.add("matchDisplay");
     setAttributes(tmp, {'id': `${match.id}`});
@@ -644,5 +656,5 @@ function    create_div(match, matchHistory, username, value) {
             document.documentElement.scrollTop = 0;
         });
     }
-    matchHistory.append(tmp);
+    divMatches.append(tmp);
 }

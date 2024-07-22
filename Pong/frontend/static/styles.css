@@ -52,6 +52,13 @@
     text-overflow: ellipsis;
 }
 
+.divStats {
+    width: 80%;
+    margin: 10px auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .subDivProfile {
     border: 2px solid black;
 }
@@ -144,19 +151,19 @@
     text-align: center;
 }
 
+.mainDivStats:hover {
+    border: 3px solid black;
+    box-shadow: 2px 2px #100C08;
+}
+
 .PWBtn {
     width: 100%;
     text-align: center;
     margin: 10px 0px;
 }
 
-.mainDivStats:hover {
-    border: 3px solid black;
-    box-shadow: 2px 2px #100C08;
-}
-
 .matchHistoryDiv {
-    width: 80%;
+    width: 100%;
     margin: 50px auto;
 }
 
