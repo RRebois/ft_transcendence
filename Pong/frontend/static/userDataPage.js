@@ -168,7 +168,7 @@ function    create_add_friend_icon(username) {
         userMatch = true;
 
     const friendItem = document.createElement('div');
-    friendItem.className = "friendPage w-100 h-100 justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+    friendItem.className = "friendStatDiv w-100 h-100 justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
     friendItem.setAttribute("style", "--bs-bg-opacity: 0.5;");
 
     // Check if user already in friend list
@@ -330,10 +330,6 @@ function    load_stats_page(username) {
         const   pieChart = document.createElement('canvas');
         setAttributes(pieChart, {'id': 'winratePieall'});
 
-        chart.style.maxWidth = "50vh";
-        chart.style.maxHeight = "50vh";
-        chart.style.minWidth = "30vh";
-        chart.style.minHeight = "30vh";
         chart.style.margin = "0px auto";
 
         let wins, losses, winrate;
@@ -345,9 +341,16 @@ function    load_stats_page(username) {
 
         if (wins + losses === 0) {
             chart.innerHTML = "Pie chart not available yet!";
-            chart.style.textAlign = "center";
+            chart.className = "divStats justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+            chart.setAttribute("style", "--bs-bg-opacity: 0.5;");
+            chart.style.border = "2px solid black";
         }
         else {
+            chart.style.maxWidth = "50vh";
+            chart.style.maxHeight = "50vh";
+            chart.style.minWidth = "30vh";
+            chart.style.minHeight = "30vh";
+
             const winrateData = {
                 labels: [`Defeats (${losses})` , `Victories (${wins})`],
                 datasets: [{
@@ -389,12 +392,13 @@ function    load_stats_page(username) {
             .then(values => {
 
                 // Calculate width depending on how many stats divs are displayed
+                widthValue = 0;
                 for (let i = 0; i < checkBtn.length; i++)
                     if (checkBtn[i].checked === true)
                         widthValue += 1;
                 if (widthValue != 0)
                     widthV = (Math.round(100 / widthValue) - 2);
-
+console.log(widthV);
                 if (element.checked === false) {
                     const   rmDivStats = document.getElementById(`div${element.value}`);
                     if (rmDivStats != null)
@@ -442,10 +446,6 @@ function    load_stats_page(username) {
                     const   pieChart = document.createElement('canvas');
                     setAttributes(pieChart, {'id': `winratePie${element.value}`});
 
-                    chart.style.maxWidth = "50vh";
-                    chart.style.maxHeight = "50vh";
-                    chart.style.minWidth = "30vh";
-                    chart.style.minHeight = "30vh";
                     chart.style.margin = "0px auto";
 
                     if (element.value === 'pong') {
@@ -468,9 +468,16 @@ function    load_stats_page(username) {
 
                     if (wins + losses === 0) {
                         chart.innerHTML = "Pie chart not available yet!";
-                        chart.style.textAlign = "center";
+                        chart.className = "divStats justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+                        chart.setAttribute("style", "--bs-bg-opacity: 0.5;");
+                        chart.style.border = "2px solid black";
                     }
                     else {
+                        chart.style.maxWidth = "50vh";
+                        chart.style.maxHeight = "50vh";
+                        chart.style.minWidth = "30vh";
+                        chart.style.minHeight = "30vh";
+
                         const winrateData = {
                             labels: [`Defeats (${losses})` , `Victories (${wins})`],
                             datasets: [{
@@ -574,10 +581,12 @@ function    load_stats_page(username) {
     const   radAll = document.getElementsByName('radIn');
     radAll.forEach(el => {
         el.addEventListener('click', () => {
-            const   childrenDiv = matchHistory.childNodes;
-            for (let i = childrenDiv.length - 1; i > 0; i--)
+            const   childrenDiv = divMatches.childNodes;
+            for (let i = childrenDiv.length - 1; i >= 0; i--)
                 childrenDiv[i].remove();
-            load_match_history(username, matchHistory, el.value);
+            load_match_history(username, divMatches, el.value);
+            matchHistory.append(divMatches);
+            document.querySelector('#statsDiv').append(matchHistory);
         });
     });
     if (username !== document.getElementById("ownUsername").textContent.trim())
@@ -598,6 +607,10 @@ function    load_match_history(username, divMatches, str) {
             }
         else if (document.getElementById("tmpToRm") === null && i === 0) {
             const   tmp = document.createElement('div');
+//            tmp.className = "divStats justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+//            tmp.setAttribute("style", "--bs-bg-opacity: 0.5;");
+//            tmp.style.border = "2px solid black";
+
             tmp.setAttribute("id", "tmpToRm");
             tmp.innerHTML = "No game played yet! Start a pong game here or a purrinha game here."
             divMatches.append(tmp);

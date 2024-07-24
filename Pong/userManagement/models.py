@@ -23,7 +23,7 @@ class User(AbstractUser):
         ['🇪🇸 Spanish', 'es'],
         ['🇵🇹 Portuguese', 'pt']
     ]
-    language = models.CharField(choices=language_choices, default="English")
+    language = models.CharField(choices=language_choices, default="🇬🇧 English")
     status = models.CharField(max_length=50, choices=status_choices, default='offline')
     totp = models.CharField(max_length=100, blank=True, null=True)
     tfa_activated = models.BooleanField(default=False)
