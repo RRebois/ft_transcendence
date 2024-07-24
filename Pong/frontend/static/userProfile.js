@@ -415,7 +415,10 @@ function    create_div_pattern(str, str2) {
         }
     })
 
-    if (str === "new_password") {
+    if (str === "old_password") {
+        input.autofocus = true;
+    }
+    else if (str === "new_password") {
         setAttributes(input, {"minlength": "8", "pattern": "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{5,12}"});
         span.className = "helper_txt";
         span.innerHTML = "Password must be at least 8 characters and contain 1 digit, 1 lowercase, and 1 uppercase.";
@@ -483,7 +486,7 @@ function    load_form_edit_info() {
                         mainDiv[i] = document.createElement('div');
                         mainDiv[i].classList.add('infoDiv');
                         mainSpan[i] = document.createElement('span');
-                        mainSpan[i].innerHTML = key;
+                        mainSpan[i].innerHTML = key + ":";
                         mainSpan[i].classList.add('infoKey');
                         if (key === "stud42" && user_info[key] === true && names[key] === "email") {
                             mainInput[i] = document.createElement('span');
@@ -508,7 +511,6 @@ function    load_form_edit_info() {
                         i++;
                     }
                 }
-                mainInput[0].autofocus = true;
 
                 // create Div for both buttons
                 const   butDiv = document.createElement('div');
