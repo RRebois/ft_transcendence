@@ -11,6 +11,7 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.urls import reverse
 from django.http import JsonResponse
 from rest_framework.exceptions import AuthenticationFailed
+from django.utils.translation import gettext, activate, get_language
 from PIL import Image
 import jwt
 import pyotp
@@ -49,6 +50,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         if not pattern_username.match(username):
             raise serializers.ValidationError("Username must be alphanumeric. Hyphens are allowed, if it's in the middle and with no repetitions.")
 
+        activate("en")
+        get_language()
         validate_password(password, username)
         return attrs
 
@@ -108,7 +111,6 @@ class LoginSerializer(serializers.ModelSerializer):
 
 
 class EditUserSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'language']
@@ -138,7 +140,9 @@ class EditUserSerializer(serializers.ModelSerializer):
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.email = validated_data.get('email', instance.email)
         instance.language = validated_data.get('language', instance.language)
-        instance.save()
+        # instance.act = validated_data.get('act', instance.language)
+        # activate(instance.act)
+        # get_language()
         return instance
 
 

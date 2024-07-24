@@ -13,6 +13,7 @@ then
 fi
 
 python manage.py flush --no-input
+python manage.py makemessages -l "es"
 python manage.py makemigrations
 python manage.py migrate --noinput
 python manage.py collectstatic

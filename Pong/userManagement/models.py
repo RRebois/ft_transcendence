@@ -4,10 +4,11 @@ from django.core.validators import MinLengthValidator
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.postgres.fields import ArrayField
 from .manager import UserManager
+from django.utils.translation import gettext_lazy as _
 
 
 class User(AbstractUser):
-    username = models.CharField(unique=True, max_length=100)
+    username = models.CharField(_('username'), unique=True, max_length=100)
     email = models.EmailField(unique=True, max_length=100)
     password = models.CharField(max_length=100, blank=True)
     image_url = models.URLField(blank=True)

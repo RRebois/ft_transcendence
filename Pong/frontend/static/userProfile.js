@@ -520,13 +520,23 @@ function    load_form_edit_info() {
                 save.style.marginRight = '5px';
 
                 save.addEventListener('click', () => {
+                    language_choices = {
+                        '🇬🇧 English': 'en-us',
+                        '🇫🇷 French': 'fr',
+                        '🇪🇸 Spanish': 'es',
+                        '🇵🇹 Portuguese': 'pt',
+                    };
                     const   select_div = document.getElementById('language');
+//                    const   newLang = language_choices[select_div.options[select_div.selectedIndex].value];
+//console.log(select_div.options[select_div.selectedIndex].value);
+//console.log(language_choices[select_div.options[select_div.selectedIndex].value]);
                     const formData = {
                         'first_name': document.getElementById('first_name').value,
                         'last_name': document.getElementById('last_name').value,
                         'username': document.getElementById('username').value,
                         'email': document.getElementById('email').value,
-                        'language': select_div.options[select_div.selectedIndex].value
+                        'language': select_div.options[select_div.selectedIndex].value,
+//                        'act': newLang
                     }
                     fetch("edit_data", {
                         method: 'PUT',
@@ -548,7 +558,7 @@ function    load_form_edit_info() {
 
                             fetch(`user/${document.getElementById('username').value}/information`)
                             .then(response => response.json())
-                            .then(user_info => {
+                            .then(user_info => {console.log(user_info);
                                 for (const key in user_info) {
                                     switch(key) {
                                         case 'First name':

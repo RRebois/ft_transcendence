@@ -1,7 +1,8 @@
 {% load static %}
+{% load i18n %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="">
 <head>
     <meta name="csrf-token" content="{{ csrf_token }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -53,9 +54,9 @@
 
 
             <div class="dropdown-menu dropdown-menu-start">
-                <a class="dropdown-item button" href="" id="profile">Profile</a>
-                <a class="dropdown-item button" href="" id="statsPage">Stats</a>
-                <a class="dropdown-item button" href="" id="friendsPage">Friends</a>
+                <a class="dropdown-item button" href="" id="profile">{% trans 'Profile' %}</a>
+                <a class="dropdown-item button" href="" id="statsPage">{% trans 'Game statistics' %}</a>
+                <a class="dropdown-item button" href="" id="friendsPage">{% trans 'Friends' %}</a>
             </div>
         </div>
 
@@ -70,7 +71,7 @@
             <li class="nav-item">
                 <form method="POST" id="logout_form" action="{% url 'logout' %}">
                     {% csrf_token %}
-                    <span class="text-danger" onclick="document.getElementById('logout_form').submit()">Logout</span>
+                    <span class="text-danger" onclick="document.getElementById('logout_form').submit()">{% trans 'Logout' %}</span>
                 </form>
             </li>
         </ul>
