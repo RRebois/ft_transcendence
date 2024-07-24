@@ -598,19 +598,24 @@ function    load_match_history(username, divMatches, str) {
     .then(response => response.json())
     .then(matches => {
         let i = 0;
-        if (matches.length > 0)
-            for (i; i < matches.length; i++) {
-                if (i === matches.length - 1)
-                    create_div(matches[i], divMatches, username, 1);
-                else
-                    create_div(matches[i], divMatches, username, 0);
-            }
+        if (matches.length > 0) {
+            for (i; i < matches.length; i++)
+                create_div(matches[i], divMatches, username);
+
+            const   back_to_top = document.createElement("div");
+            back_to_top.className = "fa-solid fa-up-long";
+            back_to_top.textContent = "Top";
+            const   tmp = document.createElement("div");
+            tmp.innerHTML = "Back to top "
+            tmp.append(back_to_top);
+            divMatches.append(tmp);
+
+            back_to_top.addEventListener("click", () => {
+                document.documentElement.scrollTop = 0;
+            });
+        }
         else if (document.getElementById("tmpToRm") === null && i === 0) {
             const   tmp = document.createElement('div');
-//            tmp.className = "divStats justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
-//            tmp.setAttribute("style", "--bs-bg-opacity: 0.5;");
-//            tmp.style.border = "2px solid black";
-
             tmp.setAttribute("id", "tmpToRm");
             tmp.innerHTML = "No game played yet! Start a pong game here or a purrinha game here."
             divMatches.append(tmp);
@@ -630,7 +635,7 @@ function    load_main_page() {
     document.getElementById('friendsPage').innerHTML = "";
 }
 
-function    create_div(match, divMatches, username, value) {
+function    create_div(match, divMatches, username) {
     const   tmp = document.createElement('div');
     tmp.classList.add("matchDisplay");
     setAttributes(tmp, {'id': `${match.id}`});
@@ -651,21 +656,5 @@ function    create_div(match, divMatches, username, value) {
     eye.className = "fa-solid fa-eye shrink";
     tmp.append(eye);
 
-    if (value)
-    {
-        // Add link to title
-        const   back_to_top = document.createElement("div");
-        back_to_top.className = "fa-solid fa-up-long";
-        back_to_top.textContent = "Top";
-        tmp.style.position = "relative";
-        tmp.append(back_to_top);
-
-        back_to_top.style.position = "absolute";
-        back_to_top.style.right = "0";
-
-        back_to_top.addEventListener("click", () => {
-            document.documentElement.scrollTop = 0;
-        });
-    }
     divMatches.append(tmp);
 }
