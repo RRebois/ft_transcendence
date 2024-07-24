@@ -22,7 +22,7 @@ from datetime import datetime, timedelta, timezone
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=100, min_length=8, write_only=True)
     password2 = serializers.CharField(max_length=100, min_length=8, write_only=True)
-    username = serializers.CharField(max_length=12, min_length=8)
+    username = serializers.CharField(max_length=12, min_length=5)
 
     class Meta:
         model = User
@@ -115,7 +115,7 @@ class LoginSerializer(serializers.ModelSerializer):
 
 
 class EditUserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(max_length=12, min_length=8)
+    username = serializers.CharField(max_length=12, min_length=5)
 
     class Meta:
         model = User
