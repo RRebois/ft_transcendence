@@ -22,6 +22,7 @@ from datetime import datetime, timedelta, timezone
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=100, min_length=8, write_only=True)
     password2 = serializers.CharField(max_length=100, min_length=8, write_only=True)
+    username = serializers.CharField(max_length=12, min_length=8)
 
     class Meta:
         model = User
@@ -33,21 +34,27 @@ class RegisterSerializer(serializers.ModelSerializer):
         password = attrs.get('password', '')
         password2 = attrs.get('password2', '')
         if not password.isalnum() or password.islower() or password.isupper():
-            raise serializers.ValidationError("Passwords must contain at least 1 digit, 1 lowercase and 1 uppercase character.")
+            raise serializers.ValidationError("Passwords must contain at least 1 digit, "
+                                              "1 lowercase and 1 uppercase character.")
         if password != password2:
             raise serializers.ValidationError("Passwords don't match.")
 
         first = attrs.get('first_name', '')
         if not pattern.match(first):
-            raise serializers.ValidationError("All characters of first name must be alphabetic characters. Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
+            raise serializers.ValidationError("All characters of first name must be alphabetic characters. "
+                                              "Spaces, apostrophes and hyphens are allowed, if it's in the middle "
+                                              "and with no repetitions.")
 
         last = attrs.get('last_name', '')
         if not pattern.match(last):
-            raise serializers.ValidationError("All characters of last name must be alphabetic characters. Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
+            raise serializers.ValidationError("All characters of last name must be alphabetic characters. "
+                                              "Spaces, apostrophes and hyphens are allowed, if it's in the middle "
+                                              "and with no repetitions.")
 
         username = attrs.get('username', '')
         if not pattern_username.match(username):
-            raise serializers.ValidationError("Username must be alphanumeric. Hyphens are allowed, if it's in the middle and with no repetitions.")
+            raise serializers.ValidationError("Username must be alphanumeric. Hyphens are allowed, "
+                                              "if it's in the middle and with no repetitions.")
 
         validate_password(password, username)
         return attrs
@@ -108,6 +115,7 @@ class LoginSerializer(serializers.ModelSerializer):
 
 
 class EditUserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(max_length=12, min_length=8)
 
     class Meta:
         model = User
@@ -120,16 +128,19 @@ class EditUserSerializer(serializers.ModelSerializer):
         first = attrs.get('first_name', '')
         if not pattern.match(first):
             raise serializers.ValidationError(
-                "All characters of first name must be alphabetic characters. Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
+                "All characters of first name must be alphabetic characters. "
+                "Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
 
         last = attrs.get('last_name', '')
         if not pattern.match(last):
             raise serializers.ValidationError(
-                "All characters of last name must be alphabetic characters. Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
+                "All characters of last name must be alphabetic characters. "
+                "Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
 
         username = attrs.get('username', '')
         if not pattern_username.match(username):
-            raise serializers.ValidationError("Username must be alphanumeric. Hyphens are allowed, if it's in the middle and with no repetitions.")
+            raise serializers.ValidationError("Username must be alphanumeric. "
+                                              "Hyphens are allowed, if it's in the middle and with no repetitions.")
         return attrs
 
     def update(self, instance, validated_data):
@@ -181,7 +192,8 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         if User.objects.filter(email=email).exists():
             user = User.objects.get(email=attrs.get('email'))
             if user.stud42:
-                raise serializers.ValidationError("This email is associated to a 42 account, you can't change the password.")
+                raise serializers.ValidationError("This email is associated to a 42 account, "
+                                                  "you can't change the password.")
             uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
             request = self.context.get('request')
