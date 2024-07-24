@@ -1,45 +1,30 @@
 import {getCookie} from "../functions/cookie.js";
+import {isUserConnected} from "@js/functions/user_auth.js";
 
 export default class Router {
-
-    /**
-     *
-     * @param routes Array of routes
-     * @param renderNode Where the view will be injected
-     */
     constructor(routes = [], renderNode) {
         this.routes = routes;
         this.renderNode = renderNode;
-        this.initializeConnexion();
-        this.navigate(location.pathname + location.hash);
+        this.init()
     }
 
-    initializeConnexion() {
-        console.log("CALL /TEST");
-        fetch('https://localhost:8443/test', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: "include"
-        })
-            .then(response => response.json())
-            .then(data => console.log(data))
-            .catch(error => console.error('Error:', error));
-        const csrf_token = getCookie('csrftoken');
-        console.log('csrf token: ', csrf_token);
-        const jwt_token = getCookie('jwt_access');
-        console.log('jwt_token');
-        const res = fetch('https://localhost:8443/jwt', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrf_token,
-                'Authorization': `Bearer ${jwt_token}`,
-            },
-            credentials: 'include',
-        });
-        console.log("jwt auth res : ", res);
+    async init() {
+        await this.getCsrf();
+        await this.navigate(location.pathname + location.hash);
+    }
+
+    async getCsrf() {
+        try {
+            await fetch('https://localhost:8443/test', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: "include"
+            });
+        } catch (e) {
+            console.error('[Router] getCsrf Error :', e);
+        }
     }
 
     addRoutes(routes) {
@@ -53,7 +38,7 @@ export default class Router {
             paramNames.push(name);
             return '([^\/]+)';
         }) + '(?:\/|$)';
-        console.log("regex path: ", regexPath);
+        // console.log("regex path: ", regexPath);
 
         let params = {};
         let routeMatch = requestPath.match(new RegExp(regexPath));
@@ -70,12 +55,33 @@ export default class Router {
         return routeMatch;
     }
 
-    navigate(path) {
+    navigate = async (path) => {
+        console.log("navigating to ", path);
+        const publicRoutes = ['/', '/register'];
+        const isUserAuth = await isUserConnected();
+        // const isUserAuth = false;
+        console.log("isUserAuth: ", isUserAuth);
+
         const route = this.routes.filter(route => this.match(route, path))[0];
         if (!route) {
+            console.log("404 Not Found");
             this.renderNode.innerHTML = '<h1>404 Not Found</h1>';
         } else {
-            this.renderNode.innerHTML = route.renderView();
+            if (!publicRoutes.includes(path) && !isUserAuth) {
+                console.log("401 Unauthorized");
+                this.renderNode.innerHTML = '<h1>401 Unauthorized</h1>';
+                window.location.href = '/';
+                return;
+            } else if (publicRoutes.includes(path) && isUserAuth) {
+                console.log("Route found but unauthorized: ", route);
+                window.location.href = '/dashboard';
+                return;
+            }
+            else {
+                console.log("Route found and authorized: ", route);
+                this.renderNode.innerHTML = route.renderView();
+                route.setupEventListeners();
+            }
         }
     }
 }

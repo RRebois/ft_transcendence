@@ -3,6 +3,8 @@ export default class Dashboard {
         this.props = props;
     }
 
+    setupEventListeners() {}
+
     render() {
         document.title = 'ft_transcendence';
         return `

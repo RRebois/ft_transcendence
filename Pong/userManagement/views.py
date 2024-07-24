@@ -36,20 +36,27 @@ logging.basicConfig(
     ]
 )
 
+
 @method_decorator(csrf_protect, name='dispatch')
 class JWTAuthView(APIView):
-    def post(self, request):
-        logging.debug('jwt_auth')
-        logging.debug(str(request.data))
-        logging.debug(str(request.headers))
-        return JsonResponse({'message': 'ok'}, status=200)
+    def get(self, request):
+        user = authenticate_user(request)
+
+        if user is not None:
+            logging.debug("returning isAuthenticated: True")
+            return JsonResponse({'isAuthenticated': True}, status=200)
+        else:
+            logging.debug("returning isAuthenticated: False")
+            return JsonResponse({'isAuthenticated': False}, status=401)
 
 
-
-@method_decorator(csrf_protect, name='dispatch')
+# @method_decorator(csrf_protect, name='dispatch')
 def authenticate_user(request):
+    logging.debug("authenticate_user")
+    logging.debug("request headers: " + str(request.headers))
     auth_header = request.headers.get('Authorization')
     token = None
+    logging.debug("auth_header: " + str(auth_header))
     if auth_header and auth_header.startswith('Bearer '):
         token = auth_header.split(' ')[1]
     if not token:
@@ -73,9 +80,11 @@ def authenticate_user(request):
 
     try:
         user = User.objects.get(id=user_id)
+
     except User.DoesNotExist:
         raise AuthenticationFailed('User not found')
-
+    logging.debug("user found: " + str(model_to_dict(user)))
+    logging.debug("user authenticated: " + str(user.is_authenticated))
     return user
 
 
@@ -117,8 +126,6 @@ class LoginView(APIView):
             server_url = os.environ.get('SERVER_URL')
             user_dict['image_url'] = f"{server_url}/{user.image}" if str(user.image) else None
             response = JsonResponse(data={'user': user_dict}, status=200)
-
-            # response = HttpResponseRedirect(reverse("index"))
             response.set_cookie(key='jwt_access', value=access_token, httponly=True, samesite='Lax', secure=True,
                                 path='/')
             response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True,

@@ -12,4 +12,8 @@ export default class Route {
     renderView() {
         return new this.view(this.props).render();
     }
+
+    setupEventListeners() {
+        return new this.view(this.props).setupEventListeners();
+    }
 }

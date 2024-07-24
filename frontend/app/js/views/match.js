@@ -225,4 +225,6 @@ export default class Match {
         ball.position.set(this.ball_x, this.ball_y, 0);
     }
 
+    setupEventListeners() {}
+
 }

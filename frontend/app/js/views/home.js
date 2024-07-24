@@ -1,24 +1,19 @@
 import ToastComponent from "../components/Toast.js";
 import {getCookie} from "../functions/cookie.js";
+import router from "@js/router/index.js";
 
 export default class Home {
     constructor(props) {
         this.props = props;
+        // this.loginUser = this.loginUser.bind(this);
     }
-
-    // TODO : move this check in main.js
-    // fetchData() {
-    //     fetch('https://localhost:8443/test')
-    //         .then(response => response.json())
-    //         .then(data => console.log(data))
-    //         .catch(error => console.error('Error:', error));
-    // }
 
     loginUser(event) {
         event.preventDefault();
         const username = document.getElementById('login-username').value;
         const password = document.getElementById('login-pwd').value;
         const csrfToken = getCookie('csrftoken');
+        console.log("CALLING LOGIN USER");
         console.log("CSRF Token: ", csrfToken);
         console.log(username, password);
 
@@ -38,7 +33,9 @@ export default class Home {
                     toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
                 } else {
                     console.log('Success:', data);
-                    // Handle success, e.g., redirecting the user or displaying a success message
+                    // window.location.href = '/dashboard';
+                    // router.navigate('/dashboard');
+                    window.location.href = '/dashboard';
                 }
             })
             .catch(error => {
@@ -48,13 +45,20 @@ export default class Home {
             });
     }
 
+    setupEventListeners() {
+        const form = document.getElementById('login-form');
+        if (form) {
+            form.addEventListener('submit', this.loginUser); // Attach the event listener
+        }
+    }
+
     // TODO: check form action link
     render() {
         document.title = 'ft_transcendence | Login';
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('login-form').addEventListener('submit', this.loginUser);
-        })
-        // this.fetchData();
+        // document.addEventListener('DOMContentLoaded', () => {
+        //     document.getElementById('login-form').addEventListener('submit', this.loginUser);
+        // })
+
         return `
          <div class="w-100 h-100 d-flex flex-column justify-content-center align-items-center">
             <div class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card w-50" style="--bs-bg-opacity: .5;">

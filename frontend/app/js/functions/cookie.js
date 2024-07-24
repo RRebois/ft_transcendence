@@ -14,12 +14,6 @@ export function getCookie(cname) {
     return "";
 }
 
-export async function test_server_connexion() {
-    await fetch('https://localhost:8443/test')
-        .then(response => response.json())
-        .then(data => console.log(data))
-        .catch(error => console.error('Error:', error));
-}
 
 export async function is_user_auth() {
     const csrf_token = getCookie('csrftoken');

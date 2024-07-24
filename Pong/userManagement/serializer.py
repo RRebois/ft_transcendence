@@ -127,8 +127,6 @@ class LoginSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         logging.debug("[SERIALIZER VALIDATOR] Validating user login")
-        username_pattern = re.compile("^[a-zA-Z0-9-_]{5,12}$")
-        password_pattern = re.compile("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[?!@$ %^&*]).{8,}$")
 
         username = attrs.get('username')
         password = attrs.get('password')
