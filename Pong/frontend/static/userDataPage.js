@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
             event.preventDefault();
         }
         else {
-            if (!element.classList.contains('profilePicShadowBox') &&
+            if (!element.classList.contains('DivChangeImg') && // Not working when
                 document.getElementById('profilePic') !== null) {
                 document.getElementById('profilePic').remove();
             }
@@ -102,39 +102,47 @@ function    load_change_profile_pic(username) {
     if (document.getElementById("profilePic") == null) {
         const   picDiv = document.createElement("div");
         picDiv.innerHTML = "";
-        picDiv.className = "profilePicShadowBox container";
+        picDiv.className = "profilePicShadowBox container DivChangeImg";
         picDiv.setAttribute("id", "profilePic");
 
         // Title div
         const   title = document.createElement("div");
         title.innerHTML = "Change your avatar";
-        title.className = "title_div gradient-background";
+        title.className = "title_div gradient-background DivChangeImg";
         title.setAttribute("name", "top");
         picDiv.append(title);
         document.getElementById("content").append(picDiv);
 
         // Current profile image
-        fetch(`user/${username}/information`)
+        fetch("getUserAvatar")
         .then(response => response.json())
-        .then(data => {console.log(data);
-
+        .then(data => {
             const   divImages = document.createElement("div");
+            divImages.className = "mainDivImg DivChangeImg";
+
+            // Div for current img
+            const   imgPart1 = document.createElement("div");
+            imgPart1.className = "imgPartDiv DivChangeImg";
+
             const   currentImgTitle = document.createElement("div");
+            currentImgTitle.className = "imgTitleDiv DivChangeImg";
+            currentImgTitle.innerHTML = "Current avatar:";
+
             const   currentImg = document.createElement("img");
+            setAttributes(currentImg, {"src": data, "alt": "Current avatar", "id": "currentImg",
+                    "width": "200vw", "height": "200vh", "class": "DivChangeImg"});
+            imgPart1.append(currentImgTitle, currentImg);
 
-            // Current avatar
-            currentImgTitle.innerHTML = "Current avatar";
-            setAttributes(currentImg, {"src": `${data.img}`, "alt": "avatar", "id": "currentImg"});
+            // Div for available avatars
+            const   imgPart2 = document.createElement("div");
+            imgPart2.className = "imgPartDiv";
+            const   availableImgTitle = document.createElement("div");
+            availableImgTitle.className = "imgTitleDiv";
+            availableImgTitle.innerHTML = "Available avatars:";
+            imgPart2.append(availableImgTitle);
 
-            divImages.append(currentImgTitle, currentImg);
+            divImages.append(imgPart1);
             picDiv.append(divImages);
-
-            // Available avatars
-            fetch("media/")
-            .then(response => response.json())
-            .then(pics => {
-                console.log(pics);
-            })
         })
         .catch(error => console.error('Error fetching username information request: ', error));
     }

@@ -5,6 +5,24 @@
     padding: 0;
 }
 
+.imgPartDiv {
+    margin: 10px auto 20px auto;
+    width: 100%;
+    text-align: center;
+}
+
+.imgPartDiv > img {
+    border-radius: 40%;
+    border: 2px solid black;
+}
+
+.imgTitleDiv {
+    width: 100%;
+    border-bottom: 2px solid black;
+    font-weight: bold;
+    margin: 10px auto;
+}
+
 .mainFriendDiv {
     font-weight: bold;
     margin-bottom: 30px;

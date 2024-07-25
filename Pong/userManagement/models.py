@@ -50,7 +50,7 @@ class User(AbstractUser):
         }
 
     def get_img_url(self):
-        return
+        return self.image_url if self.image_url else self.image.url
 
     def serialize(self):
         return {

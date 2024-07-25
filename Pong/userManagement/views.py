@@ -291,6 +291,18 @@ class UserGetIsStudView(APIView):
 
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
+class UserAvatarView(APIView):
+    def get(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        return JsonResponse(user.get_img_url(), safe=False)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
 class UserPersonalInformationView(APIView):
     def get(self, request, username):
         try:
