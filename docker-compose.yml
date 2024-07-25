@@ -4,6 +4,7 @@ services:
     container_name: django_app
 #    command: gunicorn configFiles.wsgi:application --bind 0.0.0.0:8000 --reload
     command: python manage.py runserver 0.0.0.0:8000          # <-- Add this line for hot reload
+    # command: python manage.py runworker 0.0.0.0:8000          # <-- Add this line for hot reload
     expose:
       - 8000
     volumes:

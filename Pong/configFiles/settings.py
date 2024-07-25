@@ -33,13 +33,14 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'userManagement',
     'matchs',
     'rest_framework',
     'corsheaders',
     'fontawesomefree',
 	'anotherGame',
-    # 'channels'
+    'chat',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -81,7 +82,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'configFiles.wsgi.application'
+# WSGI_APPLICATION = 'configFiles.wsgi.application'
+ASGI_APPLICATION = 'configFiles.asgi.application'
 
 
 # Database
