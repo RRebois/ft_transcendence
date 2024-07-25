@@ -141,6 +141,13 @@ function    load_change_profile_pic(username) {
             availableImgTitle.innerHTML = "Available avatars:";
             imgPart2.append(availableImgTitle);
 
+            // fetch images from other users:
+            fetch("getAllAvatars")
+            .then(response => response.json)
+            .then(data => {
+                console.log(data);
+            })
+
             divImages.append(imgPart1);
             picDiv.append(divImages);
         })

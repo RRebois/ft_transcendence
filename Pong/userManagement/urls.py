@@ -15,6 +15,7 @@ urlpatterns = [
     path("getUsernameConnected", UserGetUsernameView.as_view(), name="getUsername"),
     path("getStudStatus", UserGetIsStudView.as_view(), name="getIsStud"),
     path("getUserAvatar", UserAvatarView.as_view(), name="getAvatar"),
+    path("getAllAvatars", getAllAvatarsView.as_view(), name="getAllAvatars"),
 
     # path('user', UpdateUserView.as_view()),
     path('change_password', PasswordChangeView.as_view(), name='change_password'),

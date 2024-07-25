@@ -303,6 +303,24 @@ class UserAvatarView(APIView):
 
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
+class getAllAvatarsView(APIView):
+    def get(self, request):
+        avatars = []
+        users = User.objects.filter(stud42=False)
+        for username in users:
+            avatar = username.get_img_url()
+            if avatar not in avatars:
+                avatars.append(avatar)
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        return JsonResponse(avatars, safe=False)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
 class UserPersonalInformationView(APIView):
     def get(self, request, username):
         try:
