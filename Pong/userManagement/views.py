@@ -211,10 +211,14 @@ class RegisterView(APIView):
                 messages.error(request, "Username and/or email already taken.")
                 return render(request, "pages/register.html")
 
+            images_uploaded = Avatars.objects.all().exists()
+            if not images_uploaded:
+                Avatars.objects.create(image="profile_pics/default_pp.jpg", image_url="null")
+
             if 'imageFile' in request.FILES:
                 try:
-                    image = validate_image(request.FILES['imageFile'])
-                    user.image = image
+                    image = validate_image(request.FILES['imageFile']) #save img object
+                    user.avatar_id.image = image
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
@@ -222,7 +226,7 @@ class RegisterView(APIView):
                     return HttpResponseRedirect(reverse("index"))
 
                 except :
-                    user.image = "profile_pics/default_pp.jpg"
+                    user.avatar_id = Avatars.objects.get(pk=1)
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
@@ -231,7 +235,7 @@ class RegisterView(APIView):
                     return HttpResponseRedirect(reverse("index"))
 
             else:
-                user.image = "profile_pics/default_pp.jpg"
+                user.avatar_id = Avatars.objects.get(pk=1)
                 user.save()
                 user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                 user_data.save()

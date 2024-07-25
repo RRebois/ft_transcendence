@@ -2,10 +2,16 @@ from django.contrib import admin
 from .models import *
 
 
+@admin.register(Avatars)
+class AvatarsAdmin(admin.ModelAdmin):
+    list_display = ("pk", "image")
+
+
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = ("pk", "first_name", "last_name",
-                    "username", "image")
+                    "username", "get_img_url")
+
 
 @admin.register(FriendRequest)
 class FriendRequest(admin.ModelAdmin):
