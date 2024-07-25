@@ -149,8 +149,14 @@ function    display_user_data(element) {
                     exDiv.append(togDiv);
 
                     // Change password display
-                    create_change_password(exDiv);
-                    create_delete_account(exDiv);
+                    fetch("getStudStatus")
+                    .then(response => response.json())
+                    .then(isStud => {
+                        if (!isStud)
+                            create_change_password(exDiv);
+                        create_delete_account(exDiv);
+                    })
+                    .catch(error => console.error('Error fetching delete account request: ', error));
 
                     // run animation
                     exDiv.style.animationPlayState = "running";

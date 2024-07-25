@@ -78,10 +78,11 @@ class LoginView(APIView):
             serializer.is_valid(raise_exception=True)
             user = serializer.validated_data['user']
             if user.tfa_activated:
-                return JsonResponse({
-                    'otp_required': True,
-                    'user_id': user.id
-                }, status=status.HTTP_200_OK)
+                return Response({"success": True, "opt_required": True})
+                # return JsonResponse({
+                #     'otp_required': True,
+                #     'user_id': user.id
+                # }, status=status.HTTP_200_OK)
 
             access_token = serializer.validated_data['jwt_access']
             refresh_token = serializer.validated_data['jwt_refresh']

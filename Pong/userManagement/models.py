@@ -49,6 +49,9 @@ class User(AbstractUser):
             "access": str(refresh.access_token)
         }
 
+    def get_img_url(self):
+        return
+
     def serialize(self):
         return {
             "First name": self.first_name,
@@ -58,7 +61,6 @@ class User(AbstractUser):
             "Language": self.language,
             "stud42": self.stud42,
             "2fa": self.tfa_activated,
-            # "img": self.image.url
         }
 
 
