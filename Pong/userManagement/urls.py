@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
 from . import views
 from .views import *
 
@@ -32,5 +32,7 @@ urlpatterns = [
     path('2FA', Security2FAView.as_view(), name='enable_2FA'),
     path('verifyotp', VerifyOTPView.as_view(), name='verify_otp'),
     path("delete_account", DeleteAccountView.as_view(), name="delete"),
+    path('get_ws_token/', views.get_ws_token, name='get_ws_token'),
+
 ]
 
