@@ -7,4 +7,5 @@ Pong/env/*
 stopAll
 
 Pong/configFiles/__pycache__/*
-Pong/userManagement/migrations/*_initial.py
+Pong/userManagement/migrations/*
+Pong/warning.log

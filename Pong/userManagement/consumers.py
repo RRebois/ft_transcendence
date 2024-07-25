@@ -42,6 +42,7 @@ class UserConsumer(WebsocketConsumer):
         user = self.scope["user"]
         logging.debug(f"User is {str(self.scope['user'])}")
         if user.is_anonymous:
+            self.accept()
             self.close()
         else:
             self.accept()

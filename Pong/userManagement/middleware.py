@@ -46,7 +46,6 @@ class JWTAuthWSMiddleware:
             try:
                 payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
                 user_id = payload.get('id')
-                logger.warning(f"user id: {user_id}")
                 user = await self.get_user(user_id)
                 scope['user'] = user
                 logger.warning(f"Authenticated user: {user.username}")

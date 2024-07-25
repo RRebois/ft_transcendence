@@ -1,189 +1,62 @@
 JWTAuthWSMiddleware called
-No token provided
-Exception inside application: No route found for path 'ws/user/undefined'.
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.12/site-packages/django/contrib/staticfiles/handlers.py", line 101, in __call__
-    return await self.application(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/routing.py", line 62, in __call__
-    return await application(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/Pong/web/userManagement/middleware.py", line 62, in __call__
-    return await self.app(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/sessions.py", line 47, in __call__
-    return await self.inner(dict(scope, cookies=cookies), receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/sessions.py", line 263, in __call__
-    return await self.inner(wrapper.scope, receive, wrapper.send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/auth.py", line 185, in __call__
-    return await super().__call__(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/middleware.py", line 24, in __call__
-    return await self.inner(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/routing.py", line 150, in __call__
-    raise ValueError("No route found for path %r." % path)
-ValueError: No route found for path 'ws/user/undefined'.
-JWTAuthWSMiddleware called
-No token provided
-Exception inside application: No route found for path 'ws/user/undefined'.
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.12/site-packages/django/contrib/staticfiles/handlers.py", line 101, in __call__
-    return await self.application(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/routing.py", line 62, in __call__
-    return await application(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/Pong/web/userManagement/middleware.py", line 62, in __call__
-    return await self.app(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/sessions.py", line 47, in __call__
-    return await self.inner(dict(scope, cookies=cookies), receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/sessions.py", line 263, in __call__
-    return await self.inner(wrapper.scope, receive, wrapper.send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/auth.py", line 185, in __call__
-    return await super().__call__(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/middleware.py", line 24, in __call__
-    return await self.inner(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/routing.py", line 150, in __call__
-    raise ValueError("No route found for path %r." % path)
-ValueError: No route found for path 'ws/user/undefined'.
-JWTAuthWSMiddleware called
-No token provided
-Exception inside application: No route found for path 'ws/user/undefined'.
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.12/site-packages/django/contrib/staticfiles/handlers.py", line 101, in __call__
-    return await self.application(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/routing.py", line 62, in __call__
-    return await application(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/Pong/web/userManagement/middleware.py", line 62, in __call__
-    return await self.app(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/sessions.py", line 47, in __call__
-    return await self.inner(dict(scope, cookies=cookies), receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/sessions.py", line 263, in __call__
-    return await self.inner(wrapper.scope, receive, wrapper.send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/auth.py", line 185, in __call__
-    return await super().__call__(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/middleware.py", line 24, in __call__
-    return await self.inner(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/routing.py", line 150, in __call__
-    raise ValueError("No route found for path %r." % path)
-ValueError: No route found for path 'ws/user/undefined'.
-JWTAuthWSMiddleware called
-No token provided
-Exception inside application: No route found for path 'ws/user/undefined'.
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.12/site-packages/django/contrib/staticfiles/handlers.py", line 101, in __call__
-    return await self.application(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/routing.py", line 62, in __call__
-    return await application(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/Pong/web/userManagement/middleware.py", line 62, in __call__
-    return await self.app(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/sessions.py", line 47, in __call__
-    return await self.inner(dict(scope, cookies=cookies), receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/sessions.py", line 263, in __call__
-    return await self.inner(wrapper.scope, receive, wrapper.send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/auth.py", line 185, in __call__
-    return await super().__call__(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/middleware.py", line 24, in __call__
-    return await self.inner(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/routing.py", line 150, in __call__
-    raise ValueError("No route found for path %r." % path)
-ValueError: No route found for path 'ws/user/undefined'.
-JWTAuthWSMiddleware called
-No token provided
-Exception inside application: No route found for path 'ws/user/undefined'.
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.12/site-packages/django/contrib/staticfiles/handlers.py", line 101, in __call__
-    return await self.application(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/routing.py", line 62, in __call__
-    return await application(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/Pong/web/userManagement/middleware.py", line 62, in __call__
-    return await self.app(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/sessions.py", line 47, in __call__
-    return await self.inner(dict(scope, cookies=cookies), receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/sessions.py", line 263, in __call__
-    return await self.inner(wrapper.scope, receive, wrapper.send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/auth.py", line 185, in __call__
-    return await super().__call__(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/middleware.py", line 24, in __call__
-    return await self.inner(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/routing.py", line 150, in __call__
-    raise ValueError("No route found for path %r." % path)
-ValueError: No route found for path 'ws/user/undefined'.
-JWTAuthWSMiddleware called
-No token provided
-Exception inside application: No route found for path 'ws/user/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJzdXBlcnVzZXIiLCJleHAiOjE3MjE5MTQ2MzYsImlhdCI6MTcyMTkxNDUxNn0.lCJOcuGsB5ASqnUilQ7unoOPuSWESxGSh9nAXDSQlQI'.
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.12/site-packages/django/contrib/staticfiles/handlers.py", line 101, in __call__
-    return await self.application(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/routing.py", line 62, in __call__
-    return await application(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/Pong/web/userManagement/middleware.py", line 62, in __call__
-    return await self.app(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/sessions.py", line 47, in __call__
-    return await self.inner(dict(scope, cookies=cookies), receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/sessions.py", line 263, in __call__
-    return await self.inner(wrapper.scope, receive, wrapper.send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/auth.py", line 185, in __call__
-    return await super().__call__(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/middleware.py", line 24, in __call__
-    return await self.inner(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/channels/routing.py", line 150, in __call__
-    raise ValueError("No route found for path %r." % path)
-ValueError: No route found for path 'ws/user/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJzdXBlcnVzZXIiLCJleHAiOjE3MjE5MTQ2MzYsImlhdCI6MTcyMTkxNDUxNn0.lCJOcuGsB5ASqnUilQ7unoOPuSWESxGSh9nAXDSQlQI'.
-
-------------------------------
-
-
-Unauthorized: /login
-HTTP POST /login 401 [0.15, 172.18.0.4:46992]
-JWTAuthWSMiddleware called
-user id: None
-Authenticated user: 
-
---------------
-
-JWTAuthWSMiddleware called
-user id: 1
 Authenticated user: superuser
+Exception inside application: Error -3 connecting to redis:6379. -3.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/redis/asyncio/connection.py", line 274, in connect
+    await self.retry.call_with_retry(
+  File "/usr/local/lib/python3.12/site-packages/redis/asyncio/retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/redis/asyncio/connection.py", line 681, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 1080, in create_connection
+    infos = await self._ensure_resolved(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 1456, in _ensure_resolved
+    return await loop.getaddrinfo(host, port, family=family, type=type,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 901, in getaddrinfo
+    return await self.run_in_executor(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socket.py", line 964, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno -3] Temporary failure in name resolution
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/django/contrib/staticfiles/handlers.py", line 101, in __call__
+    return await self.application(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/channels/routing.py", line 62, in __call__
+    return await application(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/Pong/web/userManagement/middleware.py", line 62, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/channels/routing.py", line 132, in __call__
+    return await application(
+           ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/channels/consumer.py", line 94, in app
+    return await consumer(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/channels/consumer.py", line 58, in __call__
+    await await_many_dispatch(
+  File "/usr/local/lib/python3.12/site-packages/channels/utils.py", line 57, in await_many_dispatch
+    await task
+redis.exceptions.ConnectionError: Error -3 connecting to redis:6379. -3.
 JWTAuthWSMiddleware called
-user id: 1
 Authenticated user: superuser
-JWTAuthWSMiddleware called
-user id: 1
-Authenticated user: superuser
+
+
+----
+
+

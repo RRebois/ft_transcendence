@@ -13,5 +13,5 @@ requests==2.32.3
 qrcode[pil]
 channels==4.1.0
 daphne==4.1.2
-#redis==5.0.7
-#channels-redis==4.2.0
+redis==5.0.7
+channels-redis==4.2.0
