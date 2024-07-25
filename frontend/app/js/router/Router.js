@@ -1,5 +1,4 @@
-import {getCookie} from "../functions/cookie.js";
-import {isUserConnected} from "@js/functions/user_auth.js";
+kimport {isUserConnected} from "@js/functions/user_auth.js";
 
 export default class Router {
     constructor(routes = [], renderNode) {
