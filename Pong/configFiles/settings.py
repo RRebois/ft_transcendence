@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 import os
+import logging
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -176,20 +177,32 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_SENDER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_SENDER_PASS')
 
+
+class WarningDebugFilter(logging.Filter):
+    def filter(self, record):
+        return record.levelno in [logging.WARNING, logging.DEBUG]
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'warning_debug_only': {
+            '()': WarningDebugFilter,
+        },
+    },
     'handlers': {
         'file': {
-            'level': 'WARNING',
+            'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'warning.log',
+            'filename': BASE_DIR / 'debug.log',
+            'filters': ['warning_debug_only'],
         },
     },
     'loggers': {
         '': {
             'handlers': ['file'],
-            'level': 'WARNING',
+            'level': 'DEBUG',
             'propagate': True,
         },
     },

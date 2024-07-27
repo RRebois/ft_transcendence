@@ -9,3 +9,4 @@ stopAll
 Pong/configFiles/__pycache__/*
 Pong/userManagement/migrations/*
 Pong/warning.log
+Pong/debug.log

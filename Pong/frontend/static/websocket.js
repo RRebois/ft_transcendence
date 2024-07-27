@@ -6,6 +6,7 @@ async function initializeWebSocket() {
         console.log("token is :", token)
         const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
         const socket = new WebSocket(wsSelect + window.location.host + '/ws/user/' + token + '/');
+
         socket.onopen = function(e) {
             console.log("WebSocket connection established");
         };
