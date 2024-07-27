@@ -21,9 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (status === 200){
                     initializeWebSocket()
                     console.log('Good')
-                //     if (data.redirect) {
-                //         window.location.href = data.redirect_url;
-                // }
+                    if (data.redirect) {
+                        window.location.href = data.redirect_url;
+                }
                 } else if (status !== 401) {
                     if (data.level && data.message) {
                         displayMessage(data.message, data.level);
@@ -54,33 +54,3 @@ function getCookie(name) {
     return cookieValue;
 }
 
-async function initializeWebSocket() {
-    const response = await fetch('/get_ws_token/');
-    const jwt = await response.json();
-    if (response.ok) {
-        const token = jwt.token
-        console.log("token is :", token)
-        const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
-        const socket = new WebSocket(wsSelect + window.location.host + '/ws/user/' + token + '/');
-        socket.onopen = function(e) {
-            console.log("WebSocket connection established");
-        };
-
-        socket.onmessage = function(event) {
-            console.log("Message from server:", event.data);
-        };
-
-        socket.onclose = function(event) {
-            if (event.wasClean) {
-                console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
-            } else {
-                console.log('Connection died');
-            }
-        };
-
-        socket.onerror = function(error) {
-            console.log(`WebSocket Error: ${error.message}`);
-        };
-    window.mySocket = socket; // to access as a global var
-    }
-}
