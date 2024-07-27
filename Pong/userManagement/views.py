@@ -87,8 +87,8 @@ class LoginView(APIView):
 
             access_token = serializer.validated_data['jwt_access']
             refresh_token = serializer.validated_data['jwt_refresh']
-            user.status = 'online'
-            user.save()
+            # user.status = 'online'
+            # user.save()
 
             # response = HttpResponseRedirect(reverse("index"))
             response = JsonResponse({
@@ -187,8 +187,8 @@ class Login42RedirectView(APIView):
                 messages.warning(request, "Username already taken.")
                 return HttpResponseRedirect(reverse("index"))
 
-        user.status = 'online'
-        user.save()
+        # user.status = 'online'
+        # user.save()
         token = generate_JWT(user)
         refresh = generate_refresh_JWT(user)
         response = redirect('index')
@@ -207,8 +207,8 @@ class LogoutView(APIView):
             messages.warning(request, str(e))
             return redirect('index')
 
-        user.status = "offline"
-        user.save()
+        # user.status = "offline"
+        # user.save()
 
         messages.success(request, "Logged out successfully.")
         response = redirect('index')
@@ -488,8 +488,8 @@ class VerifyOTPView(APIView):
 
         access_token = serializer.validated_data['jwt_access']
         refresh_token = serializer.validated_data['jwt_refresh']
-        user.status = 'online'
-        user.save()
+        # user.status = 'online'
+        # user.save()
 
         response = JsonResponse({'redirect': reverse('index')}, status=200)
         response.set_cookie(key='jwt_access', value=access_token, httponly=True)
