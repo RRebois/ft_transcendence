@@ -112,11 +112,12 @@ class Login42View(APIView):
         return redirect(os.environ.get('API_42_CALL'))
 
 
-def exchange_token(code):
+def exchange_token(code, next=False):
+    secret = 'CLIENT42_SECRET_NEXT' if next else 'CLIENT42_SECRET'
     data = {
         "grant_type" : "authorization_code",
         "client_id" : os.environ.get('CLIENT42_ID'),
-        "client_secret" : os.environ.get('CLIENT42_SECRET'),
+        "client_secret" : os.environ.get(secret),
         "code" : code,
         "redirect_uri" : os.environ.get('REDIRECT_42URI'),
     }
@@ -149,8 +150,11 @@ class Login42RedirectView(APIView):
         try:
             user42 = exchange_token(code)
         except:
-            messages.warning(request, "The connexion with 42 failed")
-            return HttpResponseRedirect(reverse("index"))
+            try:
+                user42 = exchange_token(code, next=True)
+            except:
+                messages.warning(request, "The connexion with 42 failed")
+                return HttpResponseRedirect(reverse("index"))
         try:
             user = User.objects.get(email=user42["email"])
             if not user.stud42:
