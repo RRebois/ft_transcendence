@@ -15,6 +15,7 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
+import hashlib
 import pyotp
 import jwt
 import requests
@@ -201,6 +202,8 @@ class LogoutView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 class RegisterView(APIView):
     serializer_class = RegisterSerializer
+    img_serializer_class = ProfilePicSerializer
+
     def post(self, request):
         user_data = request.data
         serializer = self.serializer_class(data=user_data)
@@ -213,24 +216,37 @@ class RegisterView(APIView):
 
             images_uploaded = Avatars.objects.all().exists()
             if not images_uploaded:
-                Avatars.objects.create(image="profile_pics/default_pp.jpg", image_url="null")
+                default_img = Avatars.objects.create(image="profile_pics/default_pp.jpg")
+                # md5_hash = hashlib.md5(default_img.read()).hexdigest()
+                # default_img.image_hash_value = md5_hash
 
             if 'imageFile' in request.FILES:
-                try:
-                    image = validate_image(request.FILES['imageFile']) #save img object
-                    user.avatar_id.image = image
+                image = request.FILES['imageFile']
+                img_serializer = self.img_serializer_class(data={'image': image})
+                if img_serializer.is_valid():
+                    md5_hash = hashlib.md5(image.read()).hexdigest()
+
+                    # Check if image already uploaded
+                    img_found = Avatars.objects.filter(image_hash_value=md5_hash).exists()
+                    if not img_found:
+                        profile_img = Avatars.objects.create(image=image, image_hash_value=md5_hash)
+                    else:
+                        profile_img = Avatars.objects.get(image_hash_value=md5_hash)
+                    user.avatar_id = profile_img
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
                     messages.success(request, "You have successfully registered.")
                     return HttpResponseRedirect(reverse("index"))
 
-                except :
+                else:
                     user.avatar_id = Avatars.objects.get(pk=1)
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
-                    messages.info(request, "Image format not valid. Profile picture set to default.")
+                    messages.info(request, "Image format not valid. "
+                                           "Only jpg/jpeg/gif and png images are allowed. "
+                                           "Profile picture set to default.")
                     messages.success(request, "You have successfully registered.")
                     return HttpResponseRedirect(reverse("index"))
 

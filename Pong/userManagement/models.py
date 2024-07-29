@@ -9,6 +9,7 @@ from .manager import UserManager
 class Avatars(models.Model):
     image_url = models.URLField(blank=True)
     image = models.ImageField(upload_to='profile_pics/')
+    image_hash_value = models.CharField(blank=True)
 
 
 class User(AbstractUser):
@@ -54,7 +55,8 @@ class User(AbstractUser):
         }
 
     def get_img_url(self):
-        return self.avatar_id.image_url if self.avatar_id.image_url else self.avatar_id.image.url
+        if self.avatar_id:
+            return self.avatar_id.image_url if self.avatar_id.image_url else self.avatar_id.image.url
 
     def serialize(self):
         return {

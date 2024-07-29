@@ -1,4 +1,4 @@
-from .models import User
+from .models import *
 from .utils import *
 from rest_framework import serializers
 from django.contrib.auth import authenticate
@@ -151,6 +151,32 @@ class EditUserSerializer(serializers.ModelSerializer):
         instance.language = validated_data.get('language', instance.language)
         instance.save()
         return instance
+
+
+class ProfilePicSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(max_length=255, allow_empty_file=False, use_url=True, required=False)
+
+    class Meta:
+        model = Avatars
+        fields = ['image']
+
+    def validate_image(self, value):
+        # checking extension
+        valid_extension = ['jpg', 'jpeg', 'png', 'gif']
+        ext = os.path.splitext(value.name)[1][1:].lower()
+        if ext not in valid_extension:
+            return
+            # raise serializers.ValidationError("Only jpg/jpeg and png files are allowed")
+
+        # checking file content, that it matches the format given
+        try:
+            img = Image.open(value)
+            if img.format not in ['JPEG', 'PNG']:
+                return
+                # raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
+        except Exception as e:
+            return
+            # raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
 
 
 class PasswordChangeSerializer(serializers.Serializer):

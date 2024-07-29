@@ -4,7 +4,7 @@ from .models import *
 
 @admin.register(Avatars)
 class AvatarsAdmin(admin.ModelAdmin):
-    list_display = ("pk", "image")
+    list_display = ("pk", "image_url", "image", "image_hash_value")
 
 
 @admin.register(User)
