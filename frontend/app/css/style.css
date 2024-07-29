@@ -25,9 +25,10 @@ body.bg-gradient {
   color: black;
 }
 
-password-validator-row {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
+.h-40 {
+  height: 40px;
+}
+
+.w-40 {
+  width: 40px;
 }

@@ -1,5 +1,6 @@
-import { defineConfig } from 'vite'
+import {defineConfig} from 'vite'
 import path from 'path'
+import basicSsl from '@vitejs/plugin-basic-ssl'
 
 export default defineConfig({
     server: {
@@ -16,4 +17,7 @@ export default defineConfig({
     optimizeDeps: {
         include: ['bootstrap']
     },
+    plugins: [
+        basicSsl()
+    ]
 })

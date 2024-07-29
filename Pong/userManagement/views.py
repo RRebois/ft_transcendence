@@ -41,13 +41,13 @@ logging.basicConfig(
 class JWTAuthView(APIView):
     def get(self, request):
         user = authenticate_user(request)
-
+        logging.debug(user)
         if user is not None:
             logging.debug("returning isAuthenticated: True")
-            return JsonResponse({'isAuthenticated': True}, status=200)
+            return JsonResponse({'user': user_as_json(user)}, status=200)
         else:
             logging.debug("returning isAuthenticated: False")
-            return JsonResponse({'isAuthenticated': False}, status=401)
+            return JsonResponse({'user': None}, status=401)
 
 
 # @method_decorator(csrf_protect, name='dispatch')
@@ -104,6 +104,15 @@ class TestView(APIView):
         return response
 
 
+def user_as_json(user):
+    user_dict = model_to_dict(user, fields=[field.name for field in user._meta.fields if
+                                            field.name not in ['image', 'password', 'last_login', 'is_superuser',
+                                                               'is_staff', 'is_active']])
+    server_url = os.environ.get('SERVER_URL')
+    user_dict['image_url'] = f"{server_url}/media/{user.image}" if str(user.image) else None
+    return user_dict
+
+
 @method_decorator(csrf_protect, name='dispatch')
 class LoginView(APIView):
     serializer_class = LoginSerializer
@@ -124,7 +133,7 @@ class LoginView(APIView):
             user.save()
             user_dict = model_to_dict(user, fields=[field.name for field in user._meta.fields if field.name != 'image'])
             server_url = os.environ.get('SERVER_URL')
-            user_dict['image_url'] = f"{server_url}/{user.image}" if str(user.image) else None
+            user_dict['image_url'] = f"{server_url}/media/{user.image}" if str(user.image) else None
             response = JsonResponse(data={'user': user_dict}, status=200)
             response.set_cookie(key='jwt_access', value=access_token, httponly=True, samesite='Lax', secure=True,
                                 path='/')
@@ -135,6 +144,7 @@ class LoginView(APIView):
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
             return JsonResponse(status=401, data={'status': 'false', 'message': str(e)})
+
 
 @method_decorator(csrf_protect, name='dispatch')
 class Login42View(APIView):
@@ -213,21 +223,17 @@ class Login42RedirectView(APIView):
 
 @method_decorator(csrf_protect, name='dispatch')
 class LogoutView(APIView):
-    def post(self, request):
-        try:
-            user = authenticate_user(request)
-        except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return redirect('index')
-
-        user.status = "offline"
-        user.save()
-
-        messages.success(request, "Logged out successfully.")
-        response = redirect('index')
-        response.delete_cookie('jwt_access')
-        response.delete_cookie('jwt_refresh')
-        response.delete_cookie('csrftoken')
+    def get(self, request):
+        user = authenticate_user(request)
+        if user is not None:
+            user.status = "offline"
+            user.save()
+            response = JsonResponse({"redirect": True, "redirect_url": "/"}, status=status.HTTP_200_OK)
+            response.delete_cookie('jwt_access')
+            response.delete_cookie('jwt_refresh')
+            response.delete_cookie('csrftoken')
+        else:
+            response = JsonResponse({"redirect": True, "redirect_url": "/"}, status=status.HTTP_401_UNAUTHORIZED)
         return response
 
 
@@ -292,7 +298,8 @@ class RegisterView(APIView):
                 logging.debug("user_data created")
                 user_data.save()
                 logging.debug("user_data saved")
-                user_dict = model_to_dict(user, fields=[field.name for field in user._meta.fields if field.name != 'image'])
+                user_dict = model_to_dict(user,
+                                          fields=[field.name for field in user._meta.fields if field.name != 'image'])
                 server_url = os.environ.get('SERVER_URL')
                 user_dict['image_url'] = f"{server_url}/{user.image}" if str(user.image) else None
                 logging.debug("user_dict prepared for JSON response: " + str(user_dict))
@@ -309,8 +316,6 @@ class RegisterView(APIView):
     #     logging.debug("serializer is not valid")
     #     errors = serializer.errors
     #     logging.debug("serializer validation errors: ", str(errors))
-
-
 
     # return Response({"message": "test register"}, status=200)
     #     try:

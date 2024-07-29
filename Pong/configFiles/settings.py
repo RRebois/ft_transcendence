@@ -60,8 +60,8 @@ MIDDLEWARE = [
     # 'userManagement.middleware.JWTAuthenticationMiddleware',
 ]
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:8080", "https://localhost:8443", "https://localhost:3000", "http://localhost:4242"]
-CORS_ORIGIN_WHITELIST = ["https://localhost:8443", "https://localhost:3000", "http://localhost:4242"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:8080", "https://localhost:8443", "https://localhost:3000", "https://localhost:4242"]
+CORS_ORIGIN_WHITELIST = ["https://localhost:8443", "https://localhost:3000", "https://localhost:4242"]
 
 ROOT_URLCONF = 'configFiles.urls'
 
@@ -141,7 +141,7 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
@@ -153,7 +153,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS_ORIGIN_ALLOW_ALL = True  # allow all frontend ports to access app
 CORS_ALLOW_CREDENTIALS = True  # for frontend to get the jwt cookies
 CORS_ALLOWED_ORIGINS = [
-    'https://localhost:3000', 'http://localhost:4242',
+    'https://localhost:3000', 'https://localhost:4242',
 ]
 
 REST_FRAMEWORK = {

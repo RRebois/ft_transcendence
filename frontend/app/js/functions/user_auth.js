@@ -11,10 +11,10 @@ export function isUserConnected() {
             .then(response => response.json())
             .then(data => {
                 console.log("isUserConnected response: ", data);
-                if (data.isAuthenticated) {
-                    resolve(true);
+                if (data.user) {
+                    resolve(data.user);
                 } else {
-                    resolve(false);
+                    resolve(null);
                 }
             })
             .catch(error => {

@@ -35,4 +35,3 @@ urlpatterns = [
     # #API Routes
     # path("stats/<str:username>", views.userStatsData, name="userStatsData")
 ]
-

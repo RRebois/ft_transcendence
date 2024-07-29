@@ -1,4 +1,4 @@
-kimport {isUserConnected} from "@js/functions/user_auth.js";
+import {isUserConnected} from "@js/functions/user_auth.js";
 
 export default class Router {
     constructor(routes = [], renderNode) {
@@ -58,10 +58,10 @@ export default class Router {
         console.log("navigating to ", path);
         const publicRoutes = ['/', '/register'];
         const isUserAuth = await isUserConnected();
-        // const isUserAuth = false;
         console.log("isUserAuth: ", isUserAuth);
 
         const route = this.routes.filter(route => this.match(route, path))[0];
+        route.setUser(isUserAuth);
         if (!route) {
             console.log("404 Not Found");
             this.renderNode.innerHTML = '<h1>404 Not Found</h1>';
@@ -70,13 +70,10 @@ export default class Router {
                 console.log("401 Unauthorized");
                 this.renderNode.innerHTML = '<h1>401 Unauthorized</h1>';
                 window.location.href = '/';
-                return;
             } else if (publicRoutes.includes(path) && isUserAuth) {
                 console.log("Route found but unauthorized: ", route);
                 window.location.href = '/dashboard';
-                return;
-            }
-            else {
+            } else {
                 console.log("Route found and authorized: ", route);
                 this.renderNode.innerHTML = route.renderView();
                 route.setupEventListeners();
