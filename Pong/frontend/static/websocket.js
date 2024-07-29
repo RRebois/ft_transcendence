@@ -13,6 +13,13 @@ async function initializeWebSocket() {
 
         socket.onmessage = function(event) {
             console.log("Message from server:", event.data);
+            const data = JSON.parse(event.data);
+            if (data.type === 'status_change') {
+                updateFriendStatus(data.user_id, data.status);
+            }
+            if (data.type === 'test_message') {
+                console.log('Received test message:', data.message);
+            }
         };
 
         socket.onclose = function(event) {
@@ -28,6 +35,17 @@ async function initializeWebSocket() {
             console.log(`WebSocket Error: ${error.message}`);
         };
     window.mySocket = socket; // to access as a global var
+    }
+}
+
+function updateFriendStatus(userId, status) {
+    console.log('In updateFriendStatus')
+    const friendItem = document.querySelector(`[data-id="${userId}"]`);
+    if (friendItem) {
+        const statusElement = friendItem.querySelector('.status');
+        if (statusElement) {
+            statusElement.textContent = `Status: ${status}`;
+        }
     }
 }
 
