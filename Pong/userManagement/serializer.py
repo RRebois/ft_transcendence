@@ -11,12 +11,15 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.urls import reverse
 from django.http import JsonResponse
 from rest_framework.exceptions import AuthenticationFailed
+from configFiles.settings import FILE_UPLOAD_MAX_MEMORY_SIZE
 from PIL import Image
+import math
 import jwt
 import pyotp
 import os
 import re
 from datetime import datetime, timedelta, timezone
+
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -153,6 +156,11 @@ class EditUserSerializer(serializers.ModelSerializer):
         return instance
 
 
+def convert_to_megabyte(file_size):
+    file_size_in_mb = round(file_size / (1000 * 1000))
+    return math.ceil(file_size_in_mb)
+
+
 class ProfilePicSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(max_length=255, allow_empty_file=False, use_url=True, required=False)
 
@@ -165,18 +173,18 @@ class ProfilePicSerializer(serializers.ModelSerializer):
         valid_extension = ['jpg', 'jpeg', 'png', 'gif']
         ext = os.path.splitext(value.name)[1][1:].lower()
         if ext not in valid_extension:
-            return
-            # raise serializers.ValidationError("Only jpg/jpeg and png files are allowed")
+            raise serializers.ValidationError("Only jpg/jpeg and png files are allowed")
 
         # checking file content, that it matches the format given
         try:
             img = Image.open(value)
             if img.format not in ['JPEG', 'PNG']:
-                return
-                # raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
+                raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
         except Exception as e:
-            return
-            # raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
+            raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
+        if value.size > FILE_UPLOAD_MAX_MEMORY_SIZE:
+            raise serializers.ValidationError("File cannot be larger than "
+                                              f"{convert_to_megabyte(FILE_UPLOAD_MAX_MEMORY_SIZE)}MB.")
 
 
 class PasswordChangeSerializer(serializers.Serializer):

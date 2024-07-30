@@ -8,7 +8,7 @@ from .manager import UserManager
 
 class Avatars(models.Model):
     image_url = models.URLField(blank=True)
-    image = models.ImageField(upload_to='profile_pics/')
+    image = models.ImageField(upload_to='profile_pics/', max_length=255)
     image_hash_value = models.CharField(blank=True)
 
 

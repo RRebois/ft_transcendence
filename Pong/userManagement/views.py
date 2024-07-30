@@ -10,12 +10,14 @@ from django.urls import reverse
 from django.db import IntegrityError
 from django.contrib import messages
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
+from configFiles.settings import FILE_UPLOAD_MAX_MEMORY_SIZE
 from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
 import hashlib
+from PIL import Image
 import pyotp
 import jwt
 import requests
@@ -214,11 +216,8 @@ class RegisterView(APIView):
                 messages.error(request, "Username and/or email already taken.")
                 return render(request, "pages/register.html")
 
-            images_uploaded = Avatars.objects.all().exists()
-            if not images_uploaded:
-                default_img = Avatars.objects.create(image="profile_pics/default_pp.jpg")
-                # md5_hash = hashlib.md5(default_img.read()).hexdigest()
-                # default_img.image_hash_value = md5_hash
+            if not Avatars.objects.all().exists():
+                Avatars.objects.create(image="profile_pics/default_pp.jpg")
 
             if 'imageFile' in request.FILES:
                 image = request.FILES['imageFile']
@@ -227,8 +226,7 @@ class RegisterView(APIView):
                     md5_hash = hashlib.md5(image.read()).hexdigest()
 
                     # Check if image already uploaded
-                    img_found = Avatars.objects.filter(image_hash_value=md5_hash).exists()
-                    if not img_found:
+                    if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
                         profile_img = Avatars.objects.create(image=image, image_hash_value=md5_hash)
                     else:
                         profile_img = Avatars.objects.get(image_hash_value=md5_hash)
@@ -244,8 +242,10 @@ class RegisterView(APIView):
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
-                    messages.info(request, "Image format not valid. "
+                    messages.info(request, "Image format and/or size not valid. "
                                            "Only jpg/jpeg/gif and png images are allowed. "
+                                           "images cannot be larger than "
+                                           f"{convert_to_megabyte(FILE_UPLOAD_MAX_MEMORY_SIZE)}MB. "
                                            "Profile picture set to default.")
                     messages.success(request, "You have successfully registered.")
                     return HttpResponseRedirect(reverse("index"))
