@@ -10,6 +10,7 @@ class Avatars(models.Model):
     image_url = models.URLField(blank=True)
     image = models.ImageField(upload_to='profile_pics/', max_length=255)
     image_hash_value = models.CharField(blank=True)
+    uploaded_from = models.ManyToManyField("User", blank=True)
 
 
 class User(AbstractUser):
@@ -85,6 +86,11 @@ class FriendRequest(models.Model):
 
     def get_to_user(self):
         return self.from_user.username
+
+    def get_friends_avatars(self):
+        return {
+            "avatar": self.to_user.get_img_url()
+        }
 
 
 class UserData(models.Model):

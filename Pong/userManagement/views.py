@@ -16,6 +16,7 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
+from django.core.files.storage import default_storage
 import hashlib
 from PIL import Image
 import pyotp
@@ -230,6 +231,8 @@ class RegisterView(APIView):
                         profile_img = Avatars.objects.create(image=image, image_hash_value=md5_hash)
                     else:
                         profile_img = Avatars.objects.get(image_hash_value=md5_hash)
+                    profile_img.uploaded_from.add(user)
+                    profile_img.save()
                     user.avatar_id = profile_img
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
@@ -312,31 +315,37 @@ class UserGetIsStudView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class UserAvatarView(APIView):
-    def get(self, request):
+    def get(self, request, username):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        if user.username != username:
+            try:
+                user_to_check = User.objects.get(username=username)
+            except User.DoesNotExist:
+                raise Http404("error: User does not exists.")
+            return JsonResponse(user_to_check.get_img_url(), safe=False)
         return JsonResponse(user.get_img_url(), safe=False)
 
 
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
-class getAllAvatarsView(APIView):
+class GetFriendsAvatarsView(APIView):
     def get(self, request):
-        avatars = []
-        users = User.objects.filter(stud42=False)
-        for username in users:
-            avatar = username.get_img_url()
-            if avatar not in avatars:
-                avatars.append(avatar)
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
-        return JsonResponse(avatars, safe=False)
+            return JsonResponse({"redirect": True, "redirect_url": ""},
+                                status=status.HTTP_401_UNAUTHORIZED)
+        friend_list = []
+        friends = FriendRequest.objects.filter(from_user=user, status="accepted")
+        for friend in friends:
+            if not friend.to_user.stud42:
+                friend_list.append(friend)
+        return JsonResponse([friend.get_friends_avatars() for friend in friend_list], safe=False)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -588,6 +597,7 @@ class PendingFriendRequestsView(APIView):
                           values('to_user__username', 'time', 'status', 'to_user_id'))
         return JsonResponse(list(friendRequests), safe=False)
 
+
 class GetFriendRequestView(APIView):
     def get(self, request):
         try:
@@ -694,7 +704,7 @@ class GetFriendView(APIView):
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
-        friendList = user.friends.all().values('username', 'id', 'status', 'image')
+        friendList = user.friends.all().values('username', 'id', 'status', 'get_img_url')
         return JsonResponse(list(friendList), safe=False)
 
 
@@ -719,6 +729,16 @@ class DeleteAccountView(APIView):
         try:
             serializer.is_valid(raise_exception=True)
             User.objects.get(id=user.id).delete()
+            avatars_uploaded = Avatars.objects.all()
+            for avatar in avatars_uploaded:
+                if not avatar.uploaded_from.exists() and avatar.pk != 1:
+                    # url = "media/" + avatar.image
+                    # if os.path.exists(url):
+                    #     try:
+                    #         default_storage.delete(url)
+                    #     except:
+                    #         pass
+                    avatar.delete()
             message = "Account successfully deleted."
             return JsonResponse({"success": True, "redirect": True, "redirect_url": "", "message": message})
         except serializers.ValidationError as e:
