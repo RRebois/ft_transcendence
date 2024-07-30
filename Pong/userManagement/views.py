@@ -504,6 +504,7 @@ class VerifyOTPView(APIView):
     #         "form": serializer
     #     })
 
+
 @method_decorator(csrf_protect, name='dispatch')
 class SendFriendRequestView(APIView):
     def post(self, request):
@@ -545,6 +546,7 @@ class SendFriendRequestView(APIView):
         message = "Friend request sent."
         return JsonResponse({"message": message, "user": user.serialize(), "level": "success"}, status=status.HTTP_200_OK)
 
+
 @method_decorator(csrf_protect, name='dispatch')
 class PendingFriendRequestsView(APIView):
     def get(self, request):
@@ -556,6 +558,7 @@ class PendingFriendRequestsView(APIView):
         friendRequests = (FriendRequest.objects.filter(from_user=user, status='pending').
                           values('to_user__username', 'time', 'status', 'to_user_id'))
         return JsonResponse(list(friendRequests), safe=False)
+
 
 class GetFriendRequestView(APIView):
     def get(self, request):

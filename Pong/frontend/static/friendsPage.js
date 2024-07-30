@@ -81,6 +81,7 @@ function load_friends_page(username) {
 
     const headerFriends = document.createElement('div');
     headerFriends.classList.add("txtSectionDiv");
+    headerFriends.id = 'headerFriends';
     headerFriends.innerHTML = "Friends";
 
     friendRequestContainer.appendChild(headerReq);
@@ -118,6 +119,12 @@ function load_friends_page(username) {
         .catch(error => console.error('Error fetching send request: ', error));
     });
 
+    load_friend_requests();
+    load_friends_list();
+}
+
+function load_friend_requests(){
+    const friendRequestListElem = document.getElementById('friendRequest')
     fetch('get_friend_requests')
     .then(response => {
         if (response.ok) { console.log("HTTP request successful")}
@@ -142,7 +149,7 @@ function load_friends_page(username) {
                         <button type="button" class="declineBtn btn btn-primary" style="background: #e3031c; border-color: #040303" data-id="${request.from_user_id}">Decline</button>
                     </div>
                 `;
-                friendRequestContainer.appendChild(friendRequestItem);
+                friendRequestListElem.appendChild(friendRequestItem);
             });
         }
         else {
@@ -150,7 +157,7 @@ function load_friends_page(username) {
                 friendRequestItem.innerHTML = `
                 <div>No friend request yet</div>
                 `;
-                friendRequestContainer.appendChild(friendRequestItem);
+                friendRequestListElem.appendChild(friendRequestItem);
         }
 
         document.querySelectorAll('.acceptBtn').forEach(button => {
@@ -185,7 +192,7 @@ function load_friends_page(username) {
                         if (data.level && data.message) {
                             displayMessage(data.message, data.level);
                         }
-                        load_friends_list()
+                        load_friends_list();
                     }
                 })
             });
@@ -219,24 +226,24 @@ function load_friends_page(username) {
                         acceptBtn.classList.remove('btn-primary');
                         acceptBtn.style.background= '';
                         acceptBtn.classList.add('btn-success', 'acceptedBtn');
+                        load_friends_list();
                     }
                 })
             });
         });
     })
     .catch(error => console.error('Error fetching friend requests: ', error));
-
-    load_friends_list();
 }
-
 
 function load_friends_list(){
     const friendListElem = document.getElementById('friendList');
+    const friendHeaderElem = document.getElementById('headerFriends');
     fetch ('get_friends')
     .then(response => response.json())
     .then(data => {
         console.log(data);
         friendListElem.innerHTML = '';
+        friendListElem.appendChild(friendHeaderElem);
         if (Array.isArray(data) && data.length > 0) {
             data.forEach(request => {
                 const friendItem = document.createElement('div');
@@ -290,6 +297,7 @@ function load_friends_list(){
                             if (data.level && data.message) {
                                 displayMessage(data.message, data.level);
                             }
+                            load_friends_list();
                         }
                     })
             });
