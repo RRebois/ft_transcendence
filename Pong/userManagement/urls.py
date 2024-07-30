@@ -33,6 +33,5 @@ urlpatterns = [
     path('verifyotp', VerifyOTPView.as_view(), name='verify_otp'),
     path("delete_account", DeleteAccountView.as_view(), name="delete"),
     path('get_ws_token/', views.get_ws_token, name='get_ws_token'),
-
 ]
 

@@ -78,6 +78,14 @@ class LoginView(APIView):
         try:
             serializer.is_valid(raise_exception=True)
             user = serializer.validated_data['user']
+            if user.status == "online":
+                messages.warning(request, "User already have an active session")
+                return JsonResponse({
+                    # 'message': messages,
+                    'is_authenticated': False,
+                    'redirect': True,
+                    'redirect_url': ""
+                }, status=status.HTTP_401_UNAUTHORIZED)
             if user.tfa_activated:
                 return Response({"success": True, "opt_required": True})
                 # return JsonResponse({
@@ -87,10 +95,7 @@ class LoginView(APIView):
 
             access_token = serializer.validated_data['jwt_access']
             refresh_token = serializer.validated_data['jwt_refresh']
-            # user.status = 'online'
-            # user.save()
 
-            # response = HttpResponseRedirect(reverse("index"))
             response = JsonResponse({
                 'message': 'Login successful',
                 'user_id': user.id,
@@ -105,7 +110,6 @@ class LoginView(APIView):
             return response
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
-            # return HttpResponseRedirect(reverse("index"))
             return JsonResponse({
                 'message': str(e),
                 'is_authenticated': False,
