@@ -14,17 +14,15 @@ class UserConsumer(AsyncWebsocketConsumer):
             user_connected = User.objects.get(id=user.id)
             user_connected.status = status
             user_connected.save(update_fields=['status'])
+            logging.debug(f"User {str(self.scope['user'])} is now {user_connected.status}")
             return True
         except:
-            logging.debug(f"IN update EXCEPT")
             return False
 
     async def user_online(self, user):
-        logging.debug(f"IN ONLINE")
         update = await self.update_user_status(user, "online")
         if update:
-            logging.debug("IN UPDATE")
-            self.channel_layer.group_send(
+            await self.channel_layer.group_send(
                 "Connected_users_group",
                 {
                     "type": "status_change",
@@ -33,14 +31,12 @@ class UserConsumer(AsyncWebsocketConsumer):
                 }
             )
         else:
-            logging.debug(f"IN ELSE")
             return
 
     async def user_offline(self, user):
-        logging.debug(f"IN OFFLINE")
         update = await self.update_user_status(user, "offline")
         if update:
-            self.channel_layer.group_send(
+            await self.channel_layer.group_send(
                 "Connected_users_group",
                 {
                     "type": "status_change",
@@ -49,7 +45,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                 }
             )
         else:
-            logging.debug(f"IN EXCEPT")
             return
 
     async def connect(self):
@@ -62,7 +57,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_add(f"user_{user.id}_group", self.channel_name)
             await self.channel_layer.group_add("Connected_users_group", self.channel_name)
             await self.user_online(user)
-            logging.debug(f"Connected: User {str(self.scope['user'])} is now {user.status}")
             await self.send(text_data=json.dumps({
                 'type': 'test_message',
                 'message': 'Hello from server!'
@@ -73,7 +67,10 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.user_offline(user)
         await self.channel_layer.group_discard(f"user_{user.id}_group", self.channel_name)
         await self.channel_layer.group_discard("Connected_users_group", self.channel_name)
-        logging.debug(f"Disconnected: User {str(self.scope['user'])} is now {user.status}")
+        await self.send(text_data=json.dumps({
+            'type': 'test_message',
+            'message': 'Goodbye from server!'
+        }))
 
     async def receive(self, text_data):
         print(f"Received message: {text_data}")

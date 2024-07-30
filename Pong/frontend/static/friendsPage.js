@@ -118,7 +118,6 @@ function load_friends_page(username) {
         .catch(error => console.error('Error fetching send request: ', error));
     });
 
-
     fetch('get_friend_requests')
     .then(response => {
         if (response.ok) { console.log("HTTP request successful")}
@@ -186,6 +185,7 @@ function load_friends_page(username) {
                         if (data.level && data.message) {
                             displayMessage(data.message, data.level);
                         }
+                        load_friends_list()
                     }
                 })
             });
@@ -226,16 +226,23 @@ function load_friends_page(username) {
     })
     .catch(error => console.error('Error fetching friend requests: ', error));
 
+    load_friends_list();
+}
 
+
+function load_friends_list(){
+    const friendListElem = document.getElementById('friendList');
     fetch ('get_friends')
     .then(response => response.json())
     .then(data => {
         console.log(data);
+        friendListElem.innerHTML = '';
         if (Array.isArray(data) && data.length > 0) {
             data.forEach(request => {
                 const friendItem = document.createElement('div');
                 friendItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white',
                     'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
+                friendItem.setAttribute('data-id', request.id);
                 friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; justify-content: space-between; width: 50%; ' +
                     'display: block; margin-left: auto; margin-right: auto';
                 friendItem.innerHTML = `
@@ -243,17 +250,17 @@ function load_friends_page(username) {
                         <img src="media/${request.image}" alt="avatar">
                     </a>
                     <a class="mb-1" style="display: flex" onclick="load_stats_page('${ request.username }')" href="">${request.username}</a>
-                    <p class="mb-1" style="display: flex">Status: ${request.status}</p>
+                    <p class="status mb-1" style="display: flex">Status: ${request.status}</p>
                     <button type="button" class="removeBtn btn btn-primary" style="background: #e3031c; border-color: #040303" data-id="${request.id}">Remove</button>
                     `;
-                friendListContainer.appendChild(friendItem);
+                friendListElem.appendChild(friendItem);
             });
         } else {
             const friendItem = document.createElement('div');
             friendItem.innerHTML = `
                 <div>No friends yet</div>
             `;
-            friendListContainer.appendChild(friendItem);
+            friendListElem.appendChild(friendItem);
         }
 
 
@@ -288,9 +295,8 @@ function load_friends_page(username) {
             });
         });
     })
-    .catch(error => console.error('Error fetching friend requests: ', error));
+    .catch(error => console.error('Error fetching friend list: ', error));
 }
-
 
 function displayMessage(message, level) {
     const messagesContainer = document.getElementById('messagesContainer');

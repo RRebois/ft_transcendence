@@ -488,8 +488,6 @@ class VerifyOTPView(APIView):
 
         access_token = serializer.validated_data['jwt_access']
         refresh_token = serializer.validated_data['jwt_refresh']
-        # user.status = 'online'
-        # user.save()
 
         response = JsonResponse({'redirect': reverse('index')}, status=200)
         response.set_cookie(key='jwt_access', value=access_token, httponly=True)
