@@ -72,6 +72,7 @@ function load_friends_page(username) {
 
     const headerReq = document.createElement('div');
     headerReq.classList.add("txtSectionDiv");
+    headerReq.id = 'headerRequests';
     headerReq.innerHTML = "Friend requests";
 
     const friendListContainer = document.createElement('div')
@@ -124,7 +125,8 @@ function load_friends_page(username) {
 }
 
 function load_friend_requests(){
-    const friendRequestListElem = document.getElementById('friendRequest')
+    const friendRequestListElem = document.getElementById('friendRequest');
+    const friendRequestHeaderElem = document.getElementById('headerRequests')
     fetch('get_friend_requests')
     .then(response => {
         if (response.ok) { console.log("HTTP request successful")}
@@ -133,6 +135,8 @@ function load_friend_requests(){
     })
     .then(data => {
         console.log(data);
+        friendRequestListElem.innerHTML = '';
+        friendRequestListElem.appendChild(friendRequestHeaderElem);
         if (Array.isArray(data) && data.length > 0) {
             data.forEach(request => {
                 const friendRequestItem = document.createElement('div');
@@ -193,6 +197,7 @@ function load_friend_requests(){
                             displayMessage(data.message, data.level);
                         }
                         load_friends_list();
+                        load_friend_requests();
                     }
                 })
             });
@@ -227,6 +232,7 @@ function load_friend_requests(){
                         acceptBtn.style.background= '';
                         acceptBtn.classList.add('btn-success', 'acceptedBtn');
                         load_friends_list();
+                        load_friend_requests();
                     }
                 })
             });
