@@ -81,7 +81,6 @@ class LoginView(APIView):
             if user.status == "online":
                 messages.warning(request, "User already have an active session")
                 return JsonResponse({
-                    # 'message': messages,
                     'is_authenticated': False,
                     'redirect': True,
                     'redirect_url': ""
@@ -90,7 +89,7 @@ class LoginView(APIView):
                 return Response({"success": True, "opt_required": True})
                 # return JsonResponse({
                 #     'otp_required': True,
-                #     'user_id': user.id
+                #     'user_id': user.id,
                 # }, status=status.HTTP_200_OK)
 
             access_token = serializer.validated_data['jwt_access']
@@ -191,8 +190,9 @@ class Login42RedirectView(APIView):
                 messages.warning(request, "Username already taken.")
                 return HttpResponseRedirect(reverse("index"))
 
-        # user.status = 'online'
-        # user.save()
+        if user.status == "online":
+            messages.warning(request, "User already have an active session")
+            return HttpResponseRedirect(reverse("index"))
         token = generate_JWT(user)
         refresh = generate_refresh_JWT(user)
         response = redirect('index')
@@ -210,9 +210,6 @@ class LogoutView(APIView):
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
             return redirect('index')
-
-        # user.status = "offline"
-        # user.save()
 
         messages.success(request, "Logged out successfully.")
         response = redirect('index')
@@ -428,7 +425,6 @@ class SetNewPasswordView(APIView):
 
 
 class PasswordResetConfirmedView(APIView):
-
     def get(self, request, uidb64, token):
         try:
             user_id = smart_str(urlsafe_base64_decode(uidb64))
