@@ -77,9 +77,17 @@ class UserConsumer(AsyncWebsocketConsumer):
         pass
 
     async def status_change(self, event):
-        logging.debug(f"$$$ Received status change event: {event}")
         await self.send(text_data=json.dumps({
             'type': 'status_change',
             'user_id': event['user_id'],
+            'status': event['status']
+        }))
+
+    async def friend_request(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'friend_request',
+            'from_user': event['from_user'],
+            'from_user_id': event['from_user_id'],
+            'time': event['time'],
             'status': event['status']
         }))

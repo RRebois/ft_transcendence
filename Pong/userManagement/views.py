@@ -15,10 +15,11 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 import pyotp
 import jwt
 import requests
-from django.contrib.auth import login
 
 
 from .models import *
@@ -542,7 +543,20 @@ class SendFriendRequestView(APIView):
             return JsonResponse({"message": message, "user": user.serialize(), "level": "warning"},
                                 status=status.HTTP_403_FORBIDDEN)
 
-        FriendRequest.objects.create(from_user=user, to_user=to_user)
+        friend_request = FriendRequest.objects.create(from_user=user, to_user=to_user)
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"user_{to_user.id}_group",
+            {
+                'type': 'friend_request',
+                'from_user': user.username,
+                'from_user_id': user.id,
+                'time': str(friend_request.time),
+                'status': friend_request.status
+            }
+        )
+
         message = "Friend request sent."
         return JsonResponse({"message": message, "user": user.serialize(), "level": "success"}, status=status.HTTP_200_OK)
 
