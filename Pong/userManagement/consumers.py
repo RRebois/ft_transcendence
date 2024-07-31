@@ -99,3 +99,10 @@ class UserConsumer(AsyncWebsocketConsumer):
             'from_user_id': event['from_user_id'],
             'status': event['status']
         }))
+
+    async def friend_remove(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'friend_remove',
+            'from_user': event['from_user'],
+            'from_user_id': event['from_user_id'],
+        }))

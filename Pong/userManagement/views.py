@@ -679,6 +679,15 @@ class RemoveFriendView(APIView):
             except FriendRequest.DoesNotExist:
                 pass
 
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f"user_{friend.id}_group",
+                {
+                    'type': 'friend_remove',
+                    'from_user': user.username,
+                    'from_user_id': user.id,
+                }
+            )
             return JsonResponse({"message": "User removed from your friends.", "level": "success"}, status=status.HTTP_200_OK)
 
         return JsonResponse({"message": "User is not in your friends.", "level": "warning"}, status=status.HTTP_400_BAD_REQUEST)
