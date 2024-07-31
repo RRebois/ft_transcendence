@@ -44,6 +44,8 @@ async function initializeWebSocket() {
             }
             if (data.type === 'friend_request')
                 load_friend_requests(data);
+            if (data.type === 'friend_req_accept')
+                load_friends_list(data);
         };
 
         socket.onclose = function(event) {

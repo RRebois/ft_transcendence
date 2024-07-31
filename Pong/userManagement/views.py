@@ -614,6 +614,17 @@ class AcceptFriendRequestView(APIView):
 
         friend_request.to_user.friends.add(friend_request.from_user)
         friend_request.from_user.friends.add(friend_request.to_user)
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"user_{friend_request.from_user_id}_group",
+            {
+                'type': 'friend_req_accept',
+                'from_user': user.username,
+                'from_user_id': user.id,
+                'status': friend_request.status
+            }
+        )
         return JsonResponse({"message": "Friend request accepted.", "level": "success"}, status=status.HTTP_200_OK)
 
 

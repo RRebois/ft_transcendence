@@ -91,3 +91,11 @@ class UserConsumer(AsyncWebsocketConsumer):
             'time': event['time'],
             'status': event['status']
         }))
+
+    async def friend_req_accept(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'friend_req_accept',
+            'from_user': event['from_user'],
+            'from_user_id': event['from_user_id'],
+            'status': event['status']
+        }))
