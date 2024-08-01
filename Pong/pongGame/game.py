@@ -1,7 +1,7 @@
 from random import choice, randrange
 
-GAME_WIDTH = 1920
-GAME_HEIGHT = 1080
+GAME_WIDTH = 800
+GAME_HEIGHT = 400
 
 WINNING_SCORE = 10
 
@@ -39,6 +39,12 @@ class Paddle:
             self.move(up=key_up)
         if not key_up and self.y + PADDLE_START_VEL + self.height <= GAME_HEIGHT:
             self.move(up=key_up)
+            
+    def serialize(self):
+        return {
+            'x' : self.x,
+            'y' : self.y,
+        }
 
 class Ball:
 
@@ -66,6 +72,12 @@ class Ball:
             self.x_vel += BALL_ACC
         else:
             self.x_vel -= BALL_ACC
+
+    def serialize(self):
+        return {
+            'x' : self.x,
+            'y' : self.y,
+        }
 
 def find_new_direction(ball, paddle):
     
@@ -108,9 +120,9 @@ class   PongMatch():
 
     def get_coordinates(self):
             return {
-                'ball' : self.ball,
-                'player1' : self.left_paddle,
-                'player2' : self.right_paddle,
+                'ball' : self.ball.serialize(),
+                'player1' : self.left_paddle.serialize(),
+                'player2' : self.right_paddle.serialize(),
                 'player1_score' : self.left_score,
                 'player2_score' : self.right_score,
             }
@@ -140,87 +152,112 @@ class   PongMatch():
         self.ball.reset()
 
 
-import pygame
+class   PongGame():
 
-pygame.init()
+    def __init__(self):
+        self.match = PongMatch()
 
-WIN = pygame.display.set_mode((GAME_WIDTH, GAME_HEIGHT))
-pygame.display.set_caption("Pong")
+    def move_player_paddle(self, player_move):
+        self.match.paddle_movement(left=True, key_up=(player_move < 0))
 
-FPS = 60
+    def update(self):
+        self.match.routine()
 
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
+    def serialize(self):
+        return self.match.get_coordinates()
 
 
-SCORE_FONT = pygame.font.SysFont("comicsans", 50)
 
-def draw(win, paddles, ball, left_score, right_score):
-    win.fill(BLACK)
 
-    left_score_text = SCORE_FONT.render(f"{left_score}", 1, WHITE)
-    right_score_text = SCORE_FONT.render(f"{right_score}", 1, WHITE)
-    win.blit(left_score_text, (GAME_WIDTH//4 - left_score_text.get_width()//2, 20))
-    win.blit(right_score_text, (GAME_WIDTH * (3/4) -
-                                right_score_text.get_width()//2, 20))
 
-    for paddle in paddles:
-        pygame.draw.rect(
-            win, WHITE, (paddle.x, paddle.y, paddle.width, paddle.height))
 
-    for i in range(10, GAME_HEIGHT, GAME_HEIGHT//20):
-        if i % 5 == 1:
-            continue
-        pygame.draw.rect(win, WHITE, (GAME_WIDTH//2 - 10, i, 5, GAME_HEIGHT//20))
 
-    pygame.draw.circle(win, WHITE, (ball.x, ball.y), ball.radius)
-    pygame.display.update()
 
-def main():
-    run = True
-    clock = pygame.time.Clock()
-    pong_match = PongMatch()
+# import pygame
 
-    while run:
-        clock.tick(FPS)
-        coor = pong_match.get_coordinates()
-        draw(WIN, [coor['player1'], coor['player2']], coor['ball'], coor['player1_score'], coor['player2_score'])
+# pygame.init()
+
+# WIN = pygame.display.set_mode((GAME_WIDTH, GAME_HEIGHT))
+# pygame.display.set_caption("Pong")
+
+# FPS = 60
+
+# WHITE = (255, 255, 255)
+# BLACK = (0, 0, 0)
+
+
+# SCORE_FONT = pygame.font.SysFont("comicsans", 50)
+
+# def draw(win, paddles, ball, left_score, right_score):
+#     win.fill(BLACK)
+
+#     left_score_text = SCORE_FONT.render(f"{left_score}", 1, WHITE)
+#     right_score_text = SCORE_FONT.render(f"{right_score}", 1, WHITE)
+#     win.blit(left_score_text, (GAME_WIDTH//4 - left_score_text.get_width()//2, 20))
+#     win.blit(right_score_text, (GAME_WIDTH * (3/4) -
+#                                 right_score_text.get_width()//2, 20))
+
+#     for paddle in paddles:
+#         pygame.draw.rect(
+#             win, WHITE, (paddle.x, paddle.y, paddle.width, paddle.height))
+
+#     for i in range(10, GAME_HEIGHT, GAME_HEIGHT//20):
+#         if i % 5 == 1:
+#             continue
+#         pygame.draw.rect(win, WHITE, (GAME_WIDTH//2 - 10, i, 5, GAME_HEIGHT//20))
+
+#     pygame.draw.circle(win, WHITE, (ball.x, ball.y), ball.radius)
+#     pygame.display.update()
+
+
+
+
+
+# def main():
+#     run = True
+#     clock = pygame.time.Clock()
+#     pong_match = PongMatch()
+
+#     while run:
+#         clock.tick(FPS)
+#         coor = pong_match.get_coordinates()
+#         draw(WIN, [coor['player1'], coor['player2']], coor['ball'], coor['player1_score'], coor['player2_score'])
         
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                break
+#         for event in pygame.event.get():
+#             if event.type == pygame.QUIT:
+#                 run = False
+#                 break
 
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_w] or keys[pygame.K_s]:
-            pong_match.paddle_movement(left=True, key_up=(not keys[pygame.K_s]))
-        if keys[pygame.K_UP] or keys[pygame.K_DOWN]:
-            pong_match.paddle_movement(left=False, key_up=keys[pygame.K_UP])
+#         keys = pygame.key.get_pressed()
+#         if keys[pygame.K_w] or keys[pygame.K_s]:
+#             pong_match.paddle_movement(left=True, key_up=(not keys[pygame.K_s]))
+#         if keys[pygame.K_UP] or keys[pygame.K_DOWN]:
+#             pong_match.paddle_movement(left=False, key_up=keys[pygame.K_UP])
             
-        pong_match.routine()
-        won = False
-        if pong_match.left_score >= WINNING_SCORE:
-            won = True
-            win_text = "Left Player Won!"
-        elif pong_match.right_score >= WINNING_SCORE:
-            won = True
-            win_text = "Right Player Won!"
+#         pong_match.routine()
+#         won = False
+#         if pong_match.left_score >= WINNING_SCORE:
+#             won = True
+#             win_text = "Left Player Won!"
+#         elif pong_match.right_score >= WINNING_SCORE:
+#             won = True
+#             win_text = "Right Player Won!"
 
-        if won:
-            text = SCORE_FONT.render(win_text, 1, WHITE)
-            WIN.blit(text, (GAME_WIDTH//2 - text.get_width() //
-                            2, GAME_HEIGHT//2 - text.get_height()//2))
-            pygame.display.update()
-            pygame.time.delay(5000)
-            pong_match.reset()
-            pong_match.left_score = 0
-            pong_match.right_score = 0
-
-
-
-    pygame.quit()
+#         if won:
+#             text = SCORE_FONT.render(win_text, 1, WHITE)
+#             WIN.blit(text, (GAME_WIDTH//2 - text.get_width() //
+#                             2, GAME_HEIGHT//2 - text.get_height()//2))
+#             pygame.display.update()
+#             pygame.time.delay(5000)
+#             pong_match.reset()
+#             pong_match.left_score = 0
+#             pong_match.right_score = 0
 
 
-if __name__ == '__main__':
-    main()
+
+#     pygame.quit()
+
+
+# if __name__ == '__main__':
+#     main()
 

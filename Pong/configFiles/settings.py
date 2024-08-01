@@ -33,12 +33,14 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'userManagement',
     'matchs',
     'rest_framework',
     'corsheaders',
     'fontawesomefree',
 	'anotherGame',
+    'pongGame',
     # 'channels'
     'django.contrib.admin',
     'django.contrib.auth',
@@ -81,7 +83,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'configFiles.wsgi.application'
+# WSGI_APPLICATION = 'configFiles.wsgi.application'
+ASGI_APPLICATION = 'configFiles.asgi.application'
 
 
 # Database
@@ -96,6 +99,12 @@ DATABASES = {
         'HOST': os.environ.get('SQL_HOST', 'localhost'),
         'PORT': os.environ.get('SQL_PORT', '5432'),
     }
+}
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
 }
 
 AUTH_USER_MODEL = "userManagement.User"

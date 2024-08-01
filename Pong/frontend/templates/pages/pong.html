@@ -1,0 +1,41 @@
+{% extends "pages/layout.html" %}
+{% load static %}
+
+
+{% block body %}
+<div>
+<canvas id="gameCanvas" width="800" height="400" style="border: 4px solid white;"></canvas>
+</div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const socket = new WebSocket(
+            'wss://'
+            + window.location.host
+            + '/ws/pong/'
+            );
+
+        socket.onmessage = function(event) {
+            const gameState = JSON.parse(event.data);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Draw ball
+            ctx.beginPath();
+            ctx.arc(gameState.ball.x, gameState.ball.y, 10, 0, Math.PI * 2);
+            ctx.fillStyle = "#fff";
+            ctx.fill();
+            ctx.closePath();
+
+            // Draw paddles
+            ctx.fillRect(10, gameState.player1.y, 10, 100);
+            ctx.fillRect(canvas.width - 20, gameState.player2.y, 10, 100);
+        };
+
+        // Handle player input
+        document.addEventListener('keydown', (e) => {
+            let playerMove = 0;
+            if (e.key === 'ArrowUp') playerMove = -10;
+            if (e.key === 'ArrowDown') playerMove = 10;
+            socket.send(JSON.stringify({player_move: playerMove}));
+        });
+    </script>
+{% endblock %}
