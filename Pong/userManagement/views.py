@@ -143,8 +143,8 @@ def exchange_token(code):
 
 @method_decorator(csrf_protect, name='dispatch')
 class Login42RedirectView(APIView):
-
     serializer_class = Register42Serializer
+
     def post(self, request):
         return HttpResponseRedirect(reverse("index"))
 
@@ -217,8 +217,11 @@ class RegisterView(APIView):
                 messages.error(request, "Username and/or email already taken.")
                 return render(request, "pages/register.html")
 
-            if not Avatars.objects.all().exists():
-                Avatars.objects.create(image="profile_pics/default_pp.jpg")
+            default_img = "/profile_pics/default_pp.jpg"
+            default_path = "media" + default_img
+            with open(default_path, 'rb') as f:
+                default_pic_content = f.read()
+            md5_hash = hashlib.md5(default_pic_content).hexdigest()
 
             if 'imageFile' in request.FILES:
                 image = request.FILES['imageFile']
@@ -241,7 +244,15 @@ class RegisterView(APIView):
                     return HttpResponseRedirect(reverse("index"))
 
                 else:
-                    user.avatar_id = Avatars.objects.get(pk=1)
+                    # Check if image already uploaded
+                    if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
+                        profile_img = Avatars.objects.create(image=default_img, image_hash_value=md5_hash)
+                    else:
+                        profile_img = Avatars.objects.get(image_hash_value=md5_hash)
+                    profile_img.uploaded_from.add(user)
+                    profile_img.save()
+                    user.avatar_id = profile_img
+
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
@@ -254,7 +265,15 @@ class RegisterView(APIView):
                     return HttpResponseRedirect(reverse("index"))
 
             else:
-                user.avatar_id = Avatars.objects.get(pk=1)
+                # Check if image already uploaded
+                if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
+                    profile_img = Avatars.objects.create(image=default_img, image_hash_value=md5_hash)
+                else:
+                    profile_img = Avatars.objects.get(image_hash_value=md5_hash)
+                profile_img.uploaded_from.add(user)
+                profile_img.save()
+                user.avatar_id = profile_img
+
                 user.save()
                 user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                 user_data.save()
@@ -721,6 +740,7 @@ class DeleteAccountView(APIView):
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
         if user.stud42:
+            Avatars.objects.get(pk=user.avatar_id.pk).delete()
             User.objects.get(id=user.id).delete()
             message = "Account successfully deleted."
             return JsonResponse({"success": True, "redirect": True, "redirect_url": "", "message": message})
@@ -728,17 +748,11 @@ class DeleteAccountView(APIView):
         serializer = self.serializer_class(data=request.data, context={'user': user})
         try:
             serializer.is_valid(raise_exception=True)
-            User.objects.get(id=user.id).delete()
-            avatars_uploaded = Avatars.objects.all()
+            avatars_uploaded = Avatars.objects.filter(uploaded_from=user)
             for avatar in avatars_uploaded:
-                if not avatar.uploaded_from.exists() and avatar.pk != 1:
-                    # url = "media/" + avatar.image
-                    # if os.path.exists(url):
-                    #     try:
-                    #         default_storage.delete(url)
-                    #     except:
-                    #         pass
+                if avatar.uploaded_from.count() == 1:
                     avatar.delete()
+            User.objects.get(id=user.id).delete()
             message = "Account successfully deleted."
             return JsonResponse({"success": True, "redirect": True, "redirect_url": "", "message": message})
         except serializers.ValidationError as e:

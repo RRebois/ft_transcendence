@@ -370,7 +370,7 @@ function    create_delete_account(mainDiv) {
                             body: JSON.stringify(formData)
                         })
                         .then(response => response.json())
-                        .then(data => {
+                        .then(data => {console.log("data")
                             if (data.success) {
                                 displayMessage(data.message, "success");
                             }
@@ -681,7 +681,7 @@ function    load_profile_page(username) {
     const   arrowSpan1 = document.createElement('span');
     const   arrowSpan2 = document.createElement('span');
 
-    arrowSpan1.className = "fa-regular fa-square-caret-down";
+    arrowSpan1.className = "fa-regular fa-square-caret-up";
     setAttributes(arrowSpan1, {"id": "info"});
     arrowSpan1.style.margin = "0 10px";
     arrowSpan2.className = "fa-regular fa-square-caret-down";
