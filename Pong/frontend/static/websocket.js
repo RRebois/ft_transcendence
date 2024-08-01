@@ -43,6 +43,8 @@ async function initializeWebSocket() {
                 load_friends_list(data);
             if (data.type === 'friend_remove')
                 load_friends_list(data);
+            if (data.type === 'friend_delete_acc')
+                load_friends_list(data);
         };
 
         socket.onclose = function(event) {
@@ -51,7 +53,7 @@ async function initializeWebSocket() {
             } else {
                 console.log('Connection died');
             }
-            setTimeout(initializeWebSocket, 3000);
+            setTimeout(initializeWebSocket, 2000);
         };
 
         socket.onerror = function(error) {

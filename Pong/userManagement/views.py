@@ -793,17 +793,29 @@ class DeleteAccountView(APIView):
         serializer = self.serializer_class(data=request.data, context={'user': user})
         try:
             serializer.is_valid(raise_exception=True)
+            friend_list = list(user.friends.all())
             User.objects.get(id=user.id).delete()
             avatars_uploaded = Avatars.objects.all()
-            for avatar in avatars_uploaded:
-                if not avatar.uploaded_from.exists() and avatar.pk != 1:
+            # for avatar in avatars_uploaded:
+            #     if not avatar.uploaded_from.exists() and avatar.pk != 1:
                     # url = "media/" + avatar.image
                     # if os.path.exists(url):
                     #     try:
                     #         default_storage.delete(url)
                     #     except:
                     #         pass
-                    avatar.delete()
+                    # avatar.delete()
+
+            channel_layer = get_channel_layer()
+            for friend in friend_list:
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{friend.id}_group",
+                    {
+                        'type': 'friend_delete_acc',
+                        'from_user': user.username,
+                        'from_user_id': user.id,
+                    }
+                )
             message = "Account successfully deleted."
             return JsonResponse({"success": True, "redirect": True, "redirect_url": "", "message": message})
         except serializers.ValidationError as e:

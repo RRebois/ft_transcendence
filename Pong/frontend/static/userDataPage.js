@@ -137,7 +137,7 @@ function    create_add_friend_icon(username) {
             if (username === data[i].username) {
                 friendItem.innerHTML = `User in your friend list
                     <p class="roundBorder nav-item friendImg" style="/*display: flex*/">
-                        <img src="media/${data[i].image}" alt="avatar">
+                        <img src="${data[i].image}" alt="avatar">
                     </p>
                     <p class="mb-1" style="display: flex">Friend status: ${data[i].status}</p>
                     `;

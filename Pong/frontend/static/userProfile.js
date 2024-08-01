@@ -373,6 +373,9 @@ function    create_delete_account(mainDiv) {
                         .then(data => {
                             if (data.success) {
                                 displayMessage(data.message, "success");
+                                if (data.redirect) {
+                                    window.location.href = data.redirect_url;
+                                }
                             }
                             else {
                                 displayMessage(data.errors, "danger");
