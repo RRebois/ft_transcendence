@@ -45,6 +45,8 @@ async function initializeWebSocket() {
                 load_friends_list(data);
             if (data.type === 'friend_delete_acc')
                 load_friends_list(data);
+            if (data.type === 'friend_data_edit')
+                load_friends_list(data);
         };
 
         socket.onclose = function(event) {

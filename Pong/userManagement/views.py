@@ -399,6 +399,17 @@ class EditDataView(APIView):
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
+            friend_list = user.friends.all()
+            channel_layer = get_channel_layer()
+            for friend in friend_list:
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{friend.id}_group",
+                    {
+                        'type': 'friend_data_edit',
+                        'from_user': user.username,
+                        'from_user_id': user.id,
+                    }
+                )
             return Response({"success": True})
         except serializers.ValidationError as e:
             error_messages = []

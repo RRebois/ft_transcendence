@@ -113,3 +113,10 @@ class UserConsumer(AsyncWebsocketConsumer):
             'from_user': event['from_user'],
             'from_user_id': event['from_user_id'],
         }))
+
+    async def friend_data_edit(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'friend_data_edit',
+            'from_user': event['from_user'],
+            'from_user_id': event['from_user_id'],
+        }))
