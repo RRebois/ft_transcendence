@@ -12,9 +12,9 @@ class Avatars(models.Model):
     image_hash_value = models.CharField(blank=True)
     uploaded_from = models.ManyToManyField("User", blank=True)
 
-    def test(self):
+    def serialize(self):
         return {
-            "image": self.image,
+            "image": self.image.url,
         }
 
 
