@@ -11,6 +11,7 @@ from django.db import IntegrityError
 from django.contrib import messages
 from django.core.files.storage import default_storage
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
+from configFiles.settings import FILE_UPLOAD_MAX_MEMORY_SIZE
 from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework import status
@@ -168,8 +169,8 @@ def exchange_token(code):
 
 @method_decorator(csrf_protect, name='dispatch')
 class Login42RedirectView(APIView):
-
     serializer_class = Register42Serializer
+
     def post(self, request):
         return HttpResponseRedirect(reverse("index"))
 
@@ -240,8 +241,11 @@ class RegisterView(APIView):
                 messages.error(request, "Username and/or email already taken.")
                 return render(request, "pages/register.html")
 
-            if not Avatars.objects.all().exists():
-                Avatars.objects.create(image="profile_pics/default_pp.jpg")
+            default_img = "/profile_pics/default_pp.jpg"
+            default_path = "media" + default_img
+            with open(default_path, 'rb') as f:
+                default_pic_content = f.read()
+            md5_hash = hashlib.md5(default_pic_content).hexdigest()
 
             if 'imageFile' in request.FILES:
                 image = request.FILES['imageFile']
@@ -264,7 +268,15 @@ class RegisterView(APIView):
                     return HttpResponseRedirect(reverse("index"))
 
                 else:
-                    user.avatar_id = Avatars.objects.get(pk=1)
+                    # Check if image already uploaded
+                    if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
+                        profile_img = Avatars.objects.create(image=default_img, image_hash_value=md5_hash)
+                    else:
+                        profile_img = Avatars.objects.get(image_hash_value=md5_hash)
+                    profile_img.uploaded_from.add(user)
+                    profile_img.save()
+                    user.avatar_id = profile_img
+
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
@@ -277,7 +289,15 @@ class RegisterView(APIView):
                     return HttpResponseRedirect(reverse("index"))
 
             else:
-                user.avatar_id = Avatars.objects.get(pk=1)
+                # Check if image already uploaded
+                if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
+                    profile_img = Avatars.objects.create(image=default_img, image_hash_value=md5_hash)
+                else:
+                    profile_img = Avatars.objects.get(image_hash_value=md5_hash)
+                profile_img.uploaded_from.add(user)
+                profile_img.save()
+                user.avatar_id = profile_img
+
                 user.save()
                 user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                 user_data.save()
@@ -496,6 +516,7 @@ class SetNewPasswordView(APIView):
 
 
 class PasswordResetConfirmedView(APIView):
+
     def get(self, request, uidb64, token):
         try:
             user_id = smart_str(urlsafe_base64_decode(uidb64))
@@ -797,6 +818,7 @@ class DeleteAccountView(APIView):
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
         if user.stud42:
+            Avatars.objects.get(pk=user.avatar_id.pk).delete()
             User.objects.get(id=user.id).delete()
             message = "Account successfully deleted."
             return JsonResponse({"success": True, "redirect": True, "redirect_url": "", "message": message})
@@ -805,18 +827,11 @@ class DeleteAccountView(APIView):
         try:
             serializer.is_valid(raise_exception=True)
             friend_list = list(user.friends.all())
+            avatars_uploaded = Avatars.objects.filter(uploaded_from=user)
+            for avatar in avatars_uploaded:
+                if avatar.uploaded_from.count() == 1:
+                    avatar.delete()
             User.objects.get(id=user.id).delete()
-            avatars_uploaded = Avatars.objects.all()
-            # for avatar in avatars_uploaded:
-            #     if not avatar.uploaded_from.exists() and avatar.pk != 1:
-                    # url = "media/" + avatar.image
-                    # if os.path.exists(url):
-                    #     try:
-                    #         default_storage.delete(url)
-                    #     except:
-                    #         pass
-                    # avatar.delete()
-
             channel_layer = get_channel_layer()
             for friend in friend_list:
                 async_to_sync(channel_layer.group_send)(

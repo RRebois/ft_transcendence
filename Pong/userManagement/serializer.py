@@ -21,7 +21,6 @@ import re
 from datetime import datetime, timedelta, timezone
 
 
-
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=100, min_length=8, write_only=True)
     password2 = serializers.CharField(max_length=100, min_length=8, write_only=True)
@@ -86,7 +85,8 @@ class Register42Serializer(serializers.ModelSerializer):
             username=data.get('username'),
             avatar_id=avatar
         )
-
+        avatar.uploaded_from.add(user)
+        avatar.save()
         return user
 
 

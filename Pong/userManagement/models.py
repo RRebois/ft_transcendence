@@ -8,16 +8,21 @@ from .manager import UserManager
 
 class Avatars(models.Model):
     image_url = models.URLField(blank=True)
-    image = models.ImageField(upload_to='profile_pics/', max_length=255)
+    image = models.ImageField(upload_to='profile_pics/', max_length=255, blank=True)
     image_hash_value = models.CharField(blank=True)
     uploaded_from = models.ManyToManyField("User", blank=True)
+
+    def test(self):
+        return {
+            "image": self.image,
+        }
 
 
 class User(AbstractUser):
     username = models.CharField(unique=True, max_length=100)
     email = models.EmailField(unique=True, max_length=100)
     password = models.CharField(max_length=100, blank=True)
-    avatar_id = models.ForeignKey(Avatars, on_delete=models.PROTECT, blank=True, null=True)  # id of image
+    avatar_id = models.ForeignKey(Avatars, on_delete=models.SET_NULL, blank=True, null=True)  # id of image
     friends = models.ManyToManyField("User", blank=True)
     status_choices = [
         ('online', 'Online'),
@@ -58,6 +63,8 @@ class User(AbstractUser):
     def get_img_url(self):
         if self.avatar_id:
             return self.avatar_id.image_url if self.avatar_id.image_url else self.avatar_id.image.url
+        else:
+            return "media/profile_pics/default_pp.jpg"
 
     def serialize(self):
         return {

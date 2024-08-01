@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
             event.preventDefault();
         }
         else if (element.id === "statsPage" || element.id === "profile" || element.id === "userImg" ||
-                element.id === "friendsPage") {
+                element.id === "userImgDefault" || element.id === "friendsPage") {
             fetch("/getUsernameConnected")
             .then(response => response.json())
             .then(username => {

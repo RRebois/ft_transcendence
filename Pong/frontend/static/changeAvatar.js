@@ -30,18 +30,18 @@ function    load_change_profile_pic(username) {
             const   imgPart4 = create_part_avatar("Select a new Avatar among your friends avatars:");
 
             // fetch images from other users:
-            fetch("getFriendsAvatars")
-            .then(response => response.json())
-            .then(avatars => {
-                const   friend_avatars = []
-                for (let i = 0; i < avatars.length; i++) {
-                    friend_avatars[i]  = create_img_avatar(avatars[i].avatar, "Friends avatar", "friendAvatar" + `${i}`);
-                    friend_avatar[i].style.margin = "0 5px";
-                    imgPart2.append(friend_avatars[i]);
-                }
-            })
+//            fetch("getFriendsAvatars")
+//            .then(response => response.json())
+//            .then(avatars => {
+//                const   friend_avatars = []
+//                for (let i = 0; i < avatars.length; i++) {
+//                    friend_avatars[i]  = create_img_avatar(avatars[i].avatar, "Friends avatar", "friendAvatar" + `${i}`);
+//                    friend_avatar[i].style.margin = "0 5px";
+//                    imgPart2.append(friend_avatars[i]);
+//                }
+//            })
 
-            divImages.append(imgPart1, imgPart2);
+            divImages.append(imgPart1);//, imgPart2);
             picDiv.append(divImages);
         })
         .catch(error => console.error('Error fetching user avatar request: ', error));
