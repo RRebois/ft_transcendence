@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
             event.preventDefault();
         }
         else {
-            if (!element.classList.contains('profilePicShadowBox') &&
+            if (!element.classList.contains('DivChangeImg') && // Not working when
                 document.getElementById('profilePic') !== null) {
                 document.getElementById('profilePic').remove();
             }
@@ -97,48 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
             load_main_page();
         });
 })
-
-function    load_change_profile_pic(username) {
-    if (document.getElementById("profilePic") == null) {
-        const   picDiv = document.createElement("div");
-        picDiv.innerHTML = "";
-        picDiv.className = "profilePicShadowBox container";
-        picDiv.setAttribute("id", "profilePic");
-
-        // Title div
-        const   title = document.createElement("div");
-        title.innerHTML = "Change your avatar";
-        title.className = "title_div gradient-background";
-        title.setAttribute("name", "top");
-        picDiv.append(title);
-        document.getElementById("content").append(picDiv);
-
-        // Current profile image
-        fetch(`user/${username}/information`)
-        .then(response => response.json())
-        .then(data => {console.log(data);
-
-            const   divImages = document.createElement("div");
-            const   currentImgTitle = document.createElement("div");
-            const   currentImg = document.createElement("img");
-
-            // Current avatar
-            currentImgTitle.innerHTML = "Current avatar";
-            setAttributes(currentImg, {"src": `${data.img}`, "alt": "avatar", "id": "currentImg"});
-
-            divImages.append(currentImgTitle, currentImg);
-            picDiv.append(divImages);
-
-            // Available avatars
-            fetch("media/")
-            .then(response => response.json())
-            .then(pics => {
-                console.log(pics);
-            })
-        })
-        .catch(error => console.error('Error fetching username information request: ', error));
-    }
-}
 
 function setAttributes(el, attrs) {
   for(var key in attrs) {
@@ -398,7 +356,7 @@ function    load_stats_page(username) {
                         widthValue += 1;
                 if (widthValue != 0)
                     widthV = (Math.round(100 / widthValue) - 2);
-console.log(widthV);
+
                 if (element.checked === false) {
                     const   rmDivStats = document.getElementById(`div${element.value}`);
                     if (rmDivStats != null)

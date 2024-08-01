@@ -9,6 +9,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.urls import reverse
 from django.db import IntegrityError
 from django.contrib import messages
+from django.core.files.storage import default_storage
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from rest_framework.response import Response
 from rest_framework import serializers
@@ -17,7 +18,10 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from configFiles.settings import FILE_UPLOAD_MAX_MEMORY_SIZE
+from PIL import Image
 import pyotp
+import hashlib
 import jwt
 import requests
 
@@ -224,6 +228,8 @@ class LogoutView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 class RegisterView(APIView):
     serializer_class = RegisterSerializer
+    img_serializer_class = ProfilePicSerializer
+
     def post(self, request):
         user_data = request.data
         serializer = self.serializer_class(data=user_data)
@@ -234,27 +240,44 @@ class RegisterView(APIView):
                 messages.error(request, "Username and/or email already taken.")
                 return render(request, "pages/register.html")
 
+            if not Avatars.objects.all().exists():
+                Avatars.objects.create(image="profile_pics/default_pp.jpg")
+
             if 'imageFile' in request.FILES:
-                try:
-                    image = validate_image(request.FILES['imageFile'])
-                    user.image = image
+                image = request.FILES['imageFile']
+                img_serializer = self.img_serializer_class(data={'image': image})
+                if img_serializer.is_valid():
+                    md5_hash = hashlib.md5(image.read()).hexdigest()
+
+                    # Check if image already uploaded
+                    if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
+                        profile_img = Avatars.objects.create(image=image, image_hash_value=md5_hash)
+                    else:
+                        profile_img = Avatars.objects.get(image_hash_value=md5_hash)
+                    profile_img.uploaded_from.add(user)
+                    profile_img.save()
+                    user.avatar_id = profile_img
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
                     messages.success(request, "You have successfully registered.")
                     return HttpResponseRedirect(reverse("index"))
 
-                except :
-                    user.image = "profile_pics/default_pp.jpg"
+                else:
+                    user.avatar_id = Avatars.objects.get(pk=1)
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
-                    messages.info(request, "Image format not valid. Profile picture set to default.")
+                    messages.info(request, "Image format and/or size not valid. "
+                                           "Only jpg/jpeg/gif and png images are allowed. "
+                                           "images cannot be larger than "
+                                           f"{convert_to_megabyte(FILE_UPLOAD_MAX_MEMORY_SIZE)}MB. "
+                                           "Profile picture set to default.")
                     messages.success(request, "You have successfully registered.")
                     return HttpResponseRedirect(reverse("index"))
 
             else:
-                user.image = "profile_pics/default_pp.jpg"
+                user.avatar_id = Avatars.objects.get(pk=1)
                 user.save()
                 user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                 user_data.save()
@@ -310,6 +333,42 @@ class UserGetIsStudView(APIView):
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
         return JsonResponse(user.get_is_stud(), safe=False)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class UserAvatarView(APIView):
+    def get(self, request, username):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        if user.username != username:
+            try:
+                user_to_check = User.objects.get(username=username)
+            except User.DoesNotExist:
+                raise Http404("error: User does not exists.")
+            return JsonResponse(user_to_check.get_img_url(), safe=False)
+        return JsonResponse(user.get_img_url(), safe=False)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class GetFriendsAvatarsView(APIView):
+    def get(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""},
+                                status=status.HTTP_401_UNAUTHORIZED)
+        friend_list = []
+        friends = FriendRequest.objects.filter(from_user=user, status="accepted")
+        for friend in friends:
+            if not friend.to_user.stud42:
+                friend_list.append(friend)
+        return JsonResponse([friend.get_friends_avatars() for friend in friend_list], safe=False)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -700,8 +759,18 @@ class GetFriendView(APIView):
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
-        friendList = user.friends.all().values('username', 'id', 'status', 'image')
-        return JsonResponse(list(friendList), safe=False)
+        friend_list = user.friends.all()
+        serialized_values = [
+            {
+                'username': friend.username,
+                'id': friend.id,
+                'status': friend.status,
+                'image': friend.get_img_url()
+            }
+            for friend in friend_list
+        ]
+
+        return JsonResponse(serialized_values, safe=False)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -725,6 +794,16 @@ class DeleteAccountView(APIView):
         try:
             serializer.is_valid(raise_exception=True)
             User.objects.get(id=user.id).delete()
+            avatars_uploaded = Avatars.objects.all()
+            for avatar in avatars_uploaded:
+                if not avatar.uploaded_from.exists() and avatar.pk != 1:
+                    # url = "media/" + avatar.image
+                    # if os.path.exists(url):
+                    #     try:
+                    #         default_storage.delete(url)
+                    #     except:
+                    #         pass
+                    avatar.delete()
             message = "Account successfully deleted."
             return JsonResponse({"success": True, "redirect": True, "redirect_url": "", "message": message})
         except serializers.ValidationError as e:

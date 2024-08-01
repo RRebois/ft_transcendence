@@ -25,7 +25,7 @@ function load_friends_page(username) {
     globalContainer.className = "friendPage w-100 h-100 d-flex flex-column justify-content-center align-items-center";
     globalContainer.appendChild(sendRequestForm);
 
-    sendRequestForm.className = "friendPage bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card";
+    sendRequestForm.className = "friendPage bg-white flex-column align-items-center py-2 px-5 rounded login-card";
     sendRequestForm.style.cssText = "--bs-bg-opacity: .5; width: 50%";
     sendRequestForm.id = "addFriend"
     sendRequestForm.appendChild(sendReqTitle);
@@ -140,7 +140,7 @@ function load_friend_requests(){
         if (Array.isArray(data) && data.length > 0) {
             data.forEach(request => {
                 const friendRequestItem = document.createElement('div');
-                friendRequestItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white', 'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
+                friendRequestItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white', 'login-card', 'py-2', 'px-5', 'rounded');
                 friendRequestItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto';
                 friendRequestItem.innerHTML = `
                     <div class="d-flex w-100 justify-content-between">
@@ -260,7 +260,7 @@ function load_friends_list(){
                     'display: block; margin-left: auto; margin-right: auto';
                 friendItem.innerHTML = `
                     <a class="roundBorder nav-item friendImg" style="/*display: flex*/" onclick="load_stats_page('${ request.username }')" href="">
-                        <img src="media/${request.image}" alt="avatar">
+                        <img src="${request.image}" alt="avatar">
                     </a>
                     <a class="mb-1" style="display: flex" onclick="load_stats_page('${ request.username }')" href="">${request.username}</a>
                     <p class="status mb-1" style="display: flex">Status: ${request.status}</p>

@@ -1,4 +1,4 @@
-from .models import User
+from .models import *
 from .utils import *
 from rest_framework import serializers
 from django.contrib.auth import authenticate
@@ -11,12 +11,15 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.urls import reverse
 from django.http import JsonResponse
 from rest_framework.exceptions import AuthenticationFailed
+from configFiles.settings import FILE_UPLOAD_MAX_MEMORY_SIZE
 from PIL import Image
+import math
 import jwt
 import pyotp
 import os
 import re
 from datetime import datetime, timedelta, timezone
+
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -73,13 +76,17 @@ class RegisterSerializer(serializers.ModelSerializer):
 class Register42Serializer(serializers.ModelSerializer):
 
     def create(self, data):
+        avatar = Avatars.objects.create(
+            image_url=data.get('image')
+        )
         user = User.objects.create_42user(
             email=data['email'],
             first_name=data.get('first_name'),
             last_name=data.get('last_name'),
             username=data.get('username'),
-            image_url=data.get('image'),
+            avatar_id=avatar
         )
+
         return user
 
 
@@ -151,6 +158,37 @@ class EditUserSerializer(serializers.ModelSerializer):
         instance.language = validated_data.get('language', instance.language)
         instance.save()
         return instance
+
+
+def convert_to_megabyte(file_size):
+    file_size_in_mb = round(file_size / (1000 * 1000))
+    return math.ceil(file_size_in_mb)
+
+
+class ProfilePicSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(max_length=255, allow_empty_file=False, use_url=True, required=False)
+
+    class Meta:
+        model = Avatars
+        fields = ['image']
+
+    def validate_image(self, value):
+        # checking extension
+        valid_extension = ['jpg', 'jpeg', 'png', 'gif']
+        ext = os.path.splitext(value.name)[1][1:].lower()
+        if ext not in valid_extension:
+            raise serializers.ValidationError("Only jpg/jpeg and png files are allowed")
+
+        # checking file content, that it matches the format given
+        try:
+            img = Image.open(value)
+            if img.format not in ['JPEG', 'PNG']:
+                raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
+        except Exception as e:
+            raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
+        if value.size > FILE_UPLOAD_MAX_MEMORY_SIZE:
+            raise serializers.ValidationError("File cannot be larger than "
+                                              f"{convert_to_megabyte(FILE_UPLOAD_MAX_MEMORY_SIZE)}MB.")
 
 
 class PasswordChangeSerializer(serializers.Serializer):

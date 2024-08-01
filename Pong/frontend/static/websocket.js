@@ -15,11 +15,6 @@ function updateFriendStatus(userId, status) {
     }
 }
 
-// function updateFriendRequests(data){
-//     console.log('In updateFriendREQUESTS');
-//     load_friend_requests();
-// }
-
 async function initializeWebSocket() {
     const response = await fetch('/get_ws_token/');
     const jwt = await response.json();

@@ -14,6 +14,8 @@ urlpatterns = [
     path("user/<str:username>/information", UserPersonalInformationView.as_view(), name="infos"),
     path("getUsernameConnected", UserGetUsernameView.as_view(), name="getUsername"),
     path("getStudStatus", UserGetIsStudView.as_view(), name="getIsStud"),
+    path("getUserAvatar/<str:username>", UserAvatarView.as_view(), name="getAvatar"),
+    path("getFriendsAvatars", GetFriendsAvatarsView.as_view(), name="getAllAvatars"),
 
     # path('user', UpdateUserView.as_view()),
     path('change_password', PasswordChangeView.as_view(), name='change_password'),
