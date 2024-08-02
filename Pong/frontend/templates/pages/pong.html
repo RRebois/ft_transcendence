@@ -12,7 +12,7 @@
         const socket = new WebSocket(
             'wss://'
             + window.location.host
-            + '/ws/pong/'
+            + '/ws/game/pong/1/'
             );
 
         socket.onmessage = function(event) {
@@ -33,8 +33,10 @@
         // Handle player input
         document.addEventListener('keydown', (e) => {
             let playerMove = 0;
-            if (e.key === 'ArrowUp') playerMove = -10;
-            if (e.key === 'ArrowDown') playerMove = 10;
+            if (e.key === 'ArrowUp') playerMove = {'player': 2, 'direction': -10};
+            if (e.key === 'ArrowDown') playerMove = {'player': 2, 'direction': 10};
+            if (e.key === 'w') playerMove = {'player': 1, 'direction': -10};
+            if (e.key === 's') playerMove = {'player': 1, 'direction': 10};
             socket.send(JSON.stringify({player_move: playerMove}));
         });
     </script>

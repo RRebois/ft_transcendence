@@ -158,7 +158,9 @@ class   PongGame():
         self.match = PongMatch()
 
     def move_player_paddle(self, player_move):
-        self.match.paddle_movement(left=True, key_up=(player_move < 0))
+        player = player_move['player'] == 1
+        move = player_move['direction'] < 0
+        self.match.paddle_movement(left=player, key_up=move)
 
     def update(self):
         self.match.routine()
