@@ -72,6 +72,7 @@ function    load_change_profile_pic(username) {
                 document.getElementById('profilePic').remove();
             })
 
+// only to upload new img
             upNewImg.addEventListener("click", () => {
                 let     img;
                 const   test = document.querySelector(".selectedImg");
