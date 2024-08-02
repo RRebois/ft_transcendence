@@ -19,6 +19,15 @@ import pyotp
 import os
 import re
 from datetime import datetime, timedelta, timezone
+import logging
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()  # This handler writes logs to stdout
+    ]
+)
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -31,34 +40,33 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['email', 'first_name', 'last_name', 'username', 'password', 'password2']
 
     def validate(self, attrs):
-        pattern = re.compile("^[a-zA-Z]+([ '-][a-zA-Z]+)*$")
-        pattern_username = re.compile("^[a-zA-Z0-9]+([-][a-zA-Z0-9]+)*$")
+        logging.debug("Validating user registration")
+        username_pattern = re.compile("^[a-zA-Z0-9-_]{5,12}$")
+        name_pattern = re.compile("^[a-zA-ZàâäéèêëïîôöùûüçÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ\\-]+$")
+        password_pattern = re.compile("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[?!@$ %^&*]).{8,}$")
+        email_pattern = re.compile("^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$")
+
+        email = attrs.get('email', '')
+        first_name = attrs.get('first_name', '')
+        last_name = attrs.get('last_name', '')
+        username = attrs.get('username', '')
         password = attrs.get('password', '')
         password2 = attrs.get('password2', '')
-        if not password.isalnum() or password.islower() or password.isupper():
-            raise serializers.ValidationError("Passwords must contain at least 1 digit, "
-                                              "1 lowercase and 1 uppercase character.")
+        logging.debug(f"Email: {email}, First name: {first_name}, Last name: {last_name}, Username: {username}, Password: {password}, Password2: {password2}")
+
+        # logging.debug(f"Email pattern: {email_pattern.match(email)}")
+        if not email_pattern.match(email):
+            raise serializers.ValidationError("Invalid email format")
+        if not name_pattern.match(first_name):
+            raise serializers.ValidationError("Firstname must contain only alphabetic characters and hyphens (-)")
+        if not name_pattern.match(last_name):
+            raise serializers.ValidationError("Lastname must contain only alphabetic characters and hyphens (-)")
+        if not username_pattern.match(username):
+            raise serializers.ValidationError("Username must contain only alphanumeric characters and hyphens (- or _)")
+        if not password_pattern.match(password):
+            raise serializers.ValidationError("Password must contain at least 8 characters, including uppercase, lowercase, number and special character (?!@$ %^&*)")
         if password != password2:
-            raise serializers.ValidationError("Passwords don't match.")
-
-        first = attrs.get('first_name', '')
-        if not pattern.match(first):
-            raise serializers.ValidationError("All characters of first name must be alphabetic characters. "
-                                              "Spaces, apostrophes and hyphens are allowed, if it's in the middle "
-                                              "and with no repetitions.")
-
-        last = attrs.get('last_name', '')
-        if not pattern.match(last):
-            raise serializers.ValidationError("All characters of last name must be alphabetic characters. "
-                                              "Spaces, apostrophes and hyphens are allowed, if it's in the middle "
-                                              "and with no repetitions.")
-
-        username = attrs.get('username', '')
-        if not pattern_username.match(username):
-            raise serializers.ValidationError("Username must be alphanumeric. Hyphens are allowed, "
-                                              "if it's in the middle and with no repetitions.")
-
-        validate_password(password, username)
+            raise serializers.ValidationError("Passwords don't match")
         return attrs
 
     def create(self, validated_data):
@@ -103,11 +111,15 @@ class LoginSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, attrs):
+        logging.debug("[SERIALIZER VALIDATOR] Validating user login")
+
         username = attrs.get('username')
         password = attrs.get('password')
+        logging.debug(f"Username: {username}, Password: {password}")
         request = self.context.get('request')
 
         user = authenticate(request, username=username, password=password)
+        logging.debug(str(user))
         if not user:
             raise AuthenticationFailed("Invalid credentials, please try again")
 
@@ -129,25 +141,23 @@ class EditUserSerializer(serializers.ModelSerializer):
         fields = ['username', 'first_name', 'last_name', 'email', 'language']
 
     def validate(self, attrs):
-        pattern = re.compile("^[a-zA-Z]+([ '-][a-zA-Z]+)*$")
-        pattern_username = re.compile("^[a-zA-Z0-9]+([-][a-zA-Z0-9]+)*$")
+        username_pattern = re.compile("^[a-zA-Z0-9-_]{5,12}$")
+        name_pattern = re.compile("^[a-zA-ZàâäéèêëïîôöùûüçÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ\\-]+$")
+        email_pattern = re.compile("^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$")
 
-        first = attrs.get('first_name', '')
-        if not pattern.match(first):
-            raise serializers.ValidationError(
-                "All characters of first name must be alphabetic characters. "
-                "Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
-
-        last = attrs.get('last_name', '')
-        if not pattern.match(last):
-            raise serializers.ValidationError(
-                "All characters of last name must be alphabetic characters. "
-                "Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
-
+        email = attrs.get('email', '')
+        first_name = attrs.get('first_name', '')
+        last_name = attrs.get('last_name', '')
         username = attrs.get('username', '')
-        if not pattern_username.match(username):
-            raise serializers.ValidationError("Username must be alphanumeric. "
-                                              "Hyphens are allowed, if it's in the middle and with no repetitions.")
+
+        if not email_pattern.match(email):
+            raise serializers.ValidationError("Invalid email format")
+        if not name_pattern.match(first_name):
+            raise serializers.ValidationError("Firstname must contain only alphabetic characters and hyphens (-)")
+        if not name_pattern.match(last_name):
+            raise serializers.ValidationError("Lastname must contain only alphabetic characters and hyphens (-)")
+        if not username_pattern.match(username):
+            raise serializers.ValidationError("Username must contain only alphanumeric characters and hyphens (- or _)")
         return attrs
 
     def update(self, instance, validated_data):

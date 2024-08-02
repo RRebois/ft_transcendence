@@ -1,8 +1,21 @@
 services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: docker/Dockerfile
+    container_name: frontend
+    ports:
+    - 3000:443
+    networks:
+      - front
+    depends_on:
+      web:
+        condition: service_healthy
+
   web:
     build: Pong
     container_name: django_app
-#    command: gunicorn configFiles.wsgi:application --bind 0.0.0.0:8000 --reload
+    #    command: gunicorn configFiles.wsgi:application --bind 0.0.0.0:8000 --reload
     command: python manage.py runserver 0.0.0.0:8000          # <-- Add this line for hot reload
     expose:
       - 8000
@@ -17,8 +30,8 @@ services:
       - redis
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000"]
-  
+      test: ["CMD", "curl", "-k", "http://localhost:8000/test"]
+
   db:
     container_name: postgreSQL
     build: ./postgresql
@@ -50,18 +63,6 @@ services:
         condition: service_healthy
     restart: on-failure
 
-#  redis:
-#    hostname: redis
-#    container_name: redis
-#    image: redis:latest
-#    expose:
-#      - "6379"
-#    ports:
-#      - "6379:6379"
-#    depends_on:
-#      web:
-#        condition: service_healthy
-
   redis:
     image: redis:latest
     container_name: redis
@@ -74,7 +75,13 @@ services:
       retries: 50
     restart: always
 
+networks:
+  transcendence:
+  front:
+
 volumes:
   postgres_data:
   static_volume:
   media_volume:
+  app:
+  build:
