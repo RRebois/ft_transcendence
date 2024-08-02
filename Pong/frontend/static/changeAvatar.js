@@ -1,7 +1,7 @@
 function    load_change_profile_pic(username) {
     if (document.getElementById("profilePic") === null) {
         const   picDiv = document.createElement("div");
-        picDiv.innerHTML = ""; //rm DivChangeImg from all
+        picDiv.innerHTML = ""; //rm DivChangeImg from all and userDataPage
         picDiv.className = "profilePicShadowBox container DivChangeImg";
         picDiv.setAttribute("id", "profilePic");
 
@@ -60,7 +60,7 @@ function    load_change_profile_pic(username) {
             imgPart4.style.width = "100%";
             const   upNewImg = create_btn("btn btn-primary DivChangeImg", "submit", "uploadNewAvatar", "upload");
             upNewImg.style.margin = "5px";
-            upNewImg.disabled = true;
+
             const   cancelUpImg = create_btn("btn btn-danger DivChangeImg", "submit", "cancelUploadNewAvatar", "cancel");
             cancelUpImg.style.margin = "5px";
             imgPart4.append(upNewImg, cancelUpImg);
@@ -73,25 +73,40 @@ function    load_change_profile_pic(username) {
             })
 
             upNewImg.addEventListener("click", () => {
-                const   formData = {
-                    'newAvatar': document.querySelector(".selectedImg")
-                }
+                let     img;
+                const   test = document.querySelector(".selectedImg");
+                if test.src:
+                    img = test.src;
+                else:
+                    img = test.value;
+
+                var formData = new FormData();
+                formData.append("image", img.files[0]);
+//                const   formData = new FormData();
+//                if test.files[0]:
+//                    formData.append('file', test.files[0]);
+//                else
+//                    test = document.querySelector(".selectedImg").src;
+//                    formData = test;
                 fetch("uploadAvatar", {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json",
+                        "Accept": "application/json",
                         "X-CSRFToken": document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    }
+                    },
+                    JSON.stringify(img.url),
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        displayMessage(data.message, data.level);
+                        displayMessage(data.message, "success");
                         document.getElementById('profilePic').remove();
+
+
                         // + fetch to upload new img
                     }
                     else
-                        displayMessage(data.message, data.level);
+                        displayMessage(data.message, "danger");
                 })
             })
 

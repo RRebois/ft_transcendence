@@ -84,12 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error('Error fetching username request: ', error));
             event.preventDefault();
         }
-//        else {
-//            if (!element.classList.contains('DivChangeImg') && // Not working when
-//                document.getElementById('profilePic') !== null) {
-//                document.getElementById('profilePic').remove();
-//            }
-//        }
+        else {
+            if (!element.classList.contains('DivChangeImg') && // Not working when
+                document.getElementById('profilePic') !== null) {
+                document.getElementById('profilePic').remove();
+            }
+        }
     })
     const mainPage = document.getElementById('mainPage');
     if (mainPage !== null)

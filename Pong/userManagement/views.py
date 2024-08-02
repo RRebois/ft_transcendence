@@ -361,11 +361,50 @@ class GetAllUserAvatarsView(APIView):
                                 status=status.HTTP_401_UNAUTHORIZED)
         avatar_list = []
         avatars = Avatars.objects.filter(uploaded_from=user)
-        current = Avatars.objects.get(pk=user.avatar_id.pk)
-        for avatar in avatars:
-            if avatar != current:
-                avatar_list.append(avatar)
+        if user.avatar_id:
+            current = Avatars.objects.get(pk=user.avatar_id.pk)
+            for avatar in avatars:
+                if avatar != current:
+                    avatar_list.append(avatar)
         return JsonResponse([avatar.serialize() for avatar in avatar_list], safe=False)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class UpNewAvatarView(APIView):
+    serializer_class = ProfilePicSerializer
+
+    def post(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if 'newImageFile' in request.FILES:
+            image = request.FILES['newImageFile']
+            serializer = self.serializer_class(data={'image': image})
+            if serializer.is_valid():
+                md5_hash = hashlib.md5(image.read()).hexdigest()
+
+                if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
+                    if Avatars.objects.get(image_hash_value=md5_hash) == Avatars.objects.get(pk=user.avatar_id.pk):
+                        return Response({"success": False, "message": "You already have that same avatar. Don't mess with me"})  # A modifier
+                    profile_img = Avatars.objects.create(image=image, image_hash_value=md5_hash)
+                else:
+                    profile_img = Avatars.objects.get(image_hash_value=md5_hash)
+                profile_img.uploaded_from.add(user)
+                profile_img.save()
+                user.avatar_id = profile_img
+                user.save()
+                return Response(
+                    {"success": True, "message": "You have successfully updated your avatar"})  # A modifier
+            else:
+                return Response(
+                    {"success": False, "message": "An error occurred. Could not change avatar."})  # A modifier
+        else:
+            return Response(
+                {"success": False, "message": "An error occurred. No new profile pic provided"})  # A modifier
 
 
 @method_decorator(csrf_protect, name='dispatch')
