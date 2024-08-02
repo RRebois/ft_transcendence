@@ -375,7 +375,7 @@ class UserAvatarView(APIView):
 
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
-class GetFriendsAvatarsView(APIView):
+class GetAllUserAvatarsView(APIView):
     def get(self, request):
         try:
             user = authenticate_user(request)
@@ -383,12 +383,13 @@ class GetFriendsAvatarsView(APIView):
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""},
                                 status=status.HTTP_401_UNAUTHORIZED)
-        friend_list = []
-        friends = FriendRequest.objects.filter(from_user=user, status="accepted")
-        for friend in friends:
-            if not friend.to_user.stud42:
-                friend_list.append(friend)
-        return JsonResponse([friend.get_friends_avatars() for friend in friend_list], safe=False)
+        avatar_list = []
+        avatars = Avatars.objects.filter(uploaded_from=user)
+        current = Avatars.objects.get(pk=user.avatar_id.pk)
+        for avatar in avatars:
+            if avatar != current:
+                avatar_list.append(avatar)
+        return JsonResponse([avatar.serialize() for avatar in avatar_list], safe=False)
 
 
 @method_decorator(csrf_protect, name='dispatch')

@@ -370,7 +370,7 @@ function    create_delete_account(mainDiv) {
                             body: JSON.stringify(formData)
                         })
                         .then(response => response.json())
-                        .then(data => {console.log("data")
+                        .then(data => {
                             if (data.success) {
                                 displayMessage(data.message, "success");
                                 if (data.redirect) {

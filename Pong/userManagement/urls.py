@@ -15,15 +15,15 @@ urlpatterns = [
     path("getUsernameConnected", UserGetUsernameView.as_view(), name="getUsername"),
     path("getStudStatus", UserGetIsStudView.as_view(), name="getIsStud"),
     path("getUserAvatar/<str:username>", UserAvatarView.as_view(), name="getAvatar"),
-    path("getFriendsAvatars", GetFriendsAvatarsView.as_view(), name="getAllAvatars"),
+    path("getAllTimeUserAvatars", GetAllUserAvatarsView.as_view(), name="getAllAvatars"),
 
-    # path('user', UpdateUserView.as_view()),
+
     path('change_password', PasswordChangeView.as_view(), name='change_password'),
     path('reset_password', PasswordResetRequestView.as_view(), name='reset_password'),
     path('change_reset_password/<uidb64>/<token>/', SetNewPasswordView.as_view(), name='change_reset_password'),
     path('reset_password_confirmed/<uidb64>/<token>/', PasswordResetConfirmedView.as_view(), name='reset_confirmed'),
     path("edit_data", EditDataView.as_view(), name="editData"),
-    # path('search_user', SearchUsersView.as_view(), name='search_user'),
+
     path('send_friend', SendFriendRequestView.as_view(), name='send_friend'),
     path("pending_friend_requests", PendingFriendRequestsView.as_view(), name="pending"),
     path('get_friend_requests', GetFriendRequestView.as_view(), name='get_friend_requests'),
