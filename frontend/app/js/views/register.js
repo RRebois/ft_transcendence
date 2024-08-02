@@ -251,6 +251,7 @@ export default class Register {
                                     </li>
                                 </ul>
                             </div>
+                        </div>
                         
                         <!-- Confirm password input -->
                         <div class="row g-2">

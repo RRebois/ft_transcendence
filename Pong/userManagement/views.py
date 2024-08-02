@@ -269,7 +269,7 @@ class RegisterView(APIView):
                 user = serializer.save()
                 logging.debug("serializer save (after)")
             except IntegrityError:
-                logger.debug("Username and/or email already taken.")
+                logging.debug("Username and/or email already taken.")
                 return Response("username or email already taken", status=400)
             logging.debug("here (test 1)")
             if 'imageFile' in request.FILES:

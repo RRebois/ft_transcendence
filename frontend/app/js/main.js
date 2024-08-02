@@ -5,13 +5,14 @@ import homeView from "./views/home.js";
 import registerView from "./views/register.js";
 import matchView from "./views/match.js";
 import dashboardView from './views/dashboard.js';
-import Layout from "@js/Layout.js";
+import settingsView from './views/settings.js';
 
 const routes = [
     new Route('/home', '/', homeView),
     new Route('/register', '/register', registerView),
     new Route('/match', '/match', matchView),
     new Route('/dashboard', '/dashboard', dashboardView),
+    new Route('/settings', '/settings', settingsView),
 ];
 
 initializeRouter(routes);

@@ -32,3 +32,30 @@ body.bg-gradient {
 .w-40 {
   width: 40px;
 }
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    grid-gap: 10px;
+}
+
+.grid-item-match-ia {
+  grid-area: 1 / 1 / 2 / 3;
+}
+
+.grid-item-match-2p {
+  grid-area: 1 / 3 / 2 / 5;
+}
+
+.grid-item-match-4p {
+    grid-area: 1 / 5 / 2 / 7;
+}
+
+.grid-item-tournament-join {
+    grid-area: 2 / 1 / 3 / 4;
+}
+
+.grid-item-tournament-create {
+    grid-area: 2 / 4 / 3 / 7;
+}
