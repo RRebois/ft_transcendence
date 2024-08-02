@@ -95,11 +95,14 @@ def generate_short_lived_JWT(user):
         'exp': datetime.now(timezone.utc) + timedelta(minutes=2),  # time before expiration
         'iat': datetime.now(timezone.utc),  # Issued AT
     }
+    logger.warning(f"In get_ws_token: user is  {user.username}")
     secret = os.environ.get('SECRET_KEY')
     token = jwt.encode(payload, secret, algorithm='HS256')
     return token
 
+
 def get_ws_token(request):
+    logger.warning(f"In get_ws_token: user is {request.user.username}")
     if request.user.is_authenticated:
         token = generate_short_lived_JWT(request.user)
         return JsonResponse({'token': token})

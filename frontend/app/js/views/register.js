@@ -106,6 +106,9 @@ export default class Register {
                     toastComponent.throwToast('Error', data || 'Something went wrong', 5000, 'error');
                 } else {
                     console.log('Success:', data);
+                    const toastComponent = new ToastComponent();
+                    toastComponent.throwToast('Success', data || 'Account created', 5000, 'error');
+                    window.location.href = '/';
                     // Handle success, e.g., redirecting the user or displaying a success message
                 }
             })
