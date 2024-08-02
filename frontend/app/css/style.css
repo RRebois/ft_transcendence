@@ -33,6 +33,14 @@ body.bg-gradient {
   width: 40px;
 }
 
+.h-128 {
+    height: 128px;
+}
+
+.w-128 {
+    width: 128px;
+}
+
 .grid-container {
     display: grid;
     grid-template-columns: repeat(6, 1fr);

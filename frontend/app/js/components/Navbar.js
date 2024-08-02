@@ -30,20 +30,58 @@ export default class Navbar {
 			<nav class="navbar navbar-expand-lg bg-light">
 				<div class="container-fluid">
 					<a href="/dashboard" class="navbar-brand play-bold">ft_transcendence 🏓</a>
-					<div class="dropdown">
-						<button class="btn dropdown-toggle d-flex align-items-center" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+					<div class="d-flex align-items-center">
+						<a role="button" data-bs-toggle="modal" data-bs-target="#update-user-picture">
 							<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">
-							<p class="d-none d-md-block mb-0 me-2">${this.user?.username}</p>
-						</button>
-						<ul class="dropdown-menu">
-							<li><a class="dropdown-item" href="#">My profile</a></li>
-							<li><a class="dropdown-item" href="#">My stats</a></li>
-							<li><a class="dropdown-item" href="#">Friends</a></li>
-							<li><hr class="dropdown-divider"></li>
-							<li><a class="dropdown-item" href="/settings">Settings</a></li>
-							<li><a role="button" id="logout-btn" class="dropdown-item text-danger">Logout</a></li>
-						</ul>
-					</div>               
+						</a>
+						<div class="dropdown">
+							<button class="btn dropdown-toggle d-flex align-items-center" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+								<p class="d-none d-md-block mb-0 me-2">${this.user?.username}</p>
+							</button>
+							<ul class="dropdown-menu">
+								<li><a class="dropdown-item" href="#">My profile</a></li>
+								<li><a class="dropdown-item" href="#">My stats</a></li>
+								<li><a class="dropdown-item" href="#">Friends</a></li>
+								<li><hr class="dropdown-divider"></li>
+								<li><a class="dropdown-item" href="/settings">Settings</a></li>
+								<li><a role="button" id="logout-btn" class="dropdown-item text-danger">Logout</a></li>
+							</ul>
+						</div>   
+					</div>            
+				</div>
+				<!--	MODAL PART		-->
+				<div class="modal fade" id="update-user-picture" tabindex="-1" aria-labelledby="create match modal" aria-hidden="true">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h1 class="modal-title fs-5">Update your profile picture</h1>
+								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+							</div>
+							<div class="modal-body">
+								<img src="${this.user?.image_url}" class="rounded-circle h-128 w-128" alt="avatar">
+								<div>
+									<p>Select a new profile picture from your old ones</p>
+									<!-- Previous profile pictures to load here -->
+									<div class="d-flex" id="previous-pp-list">
+										<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">
+										<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">
+										<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">
+									</div>
+								</div>
+								<hr />
+								<div class="row g-2">
+									<label for="profile-picture" class="form-label">Or upload a new one</label>
+									<input type="file" id="profile-picture" accept=".png, .jpg, .jpeg" class="form-control" />
+									<div class="form-text">Supported format: <code>png</code>, <code>jpg</code> and <code>jpeg</code></div>
+								<div class="invalid-feedback">test</div>
+                        </div>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn text-danger" data-bs-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-primary">Save changes</button>
+							</div>
+						</div>
+					</div>
 				</div>
 			</nav>
         `;
