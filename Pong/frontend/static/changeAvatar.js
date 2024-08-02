@@ -1,7 +1,7 @@
 function    load_change_profile_pic(username) {
     if (document.getElementById("profilePic") === null) {
         const   picDiv = document.createElement("div");
-        picDiv.innerHTML = "";
+        picDiv.innerHTML = ""; //rm DivChangeImg from all
         picDiv.className = "profilePicShadowBox container DivChangeImg";
         picDiv.setAttribute("id", "profilePic");
 
