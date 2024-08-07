@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'fontawesomefree',
+	'gamesManager',
 	'anotherGame',
     'pongGame',
     # 'channels'

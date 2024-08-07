@@ -24,6 +24,7 @@ urlpatterns = [
     path('', include("userManagement.urls")),
     path('', include("matchs.urls")),
     path('pong/', include("pongGame.urls")),
+    path('game/', include("gameManager.urls")),
 ]
 
 from django.conf import settings
