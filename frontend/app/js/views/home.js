@@ -36,7 +36,7 @@ export default class Home {
                     console.log('Success:', data);
                     // router.navigate('/dashboard');
                     initializeWebSocket();
-                    window.location.href = '/dashboard';
+                    // window.location.href = '/dashboard';
                 }
             })
             .catch(error => {
