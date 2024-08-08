@@ -4,8 +4,14 @@ Pong/env/*
 *.pyc
 .idea
 .code
+stopAll
 
 Pong/configFiles/__pycache__/*
+Pong/userManagement/migrations/*
+Pong/warning.log
+Pong/debug.log
+
 Pong/userManagement/migrations/*_initial.py
+Pong/matchs/migrations/*_initial.py
 frontend/app/node_modules/
 frontend/app/dist/

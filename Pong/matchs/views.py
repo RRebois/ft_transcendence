@@ -12,25 +12,33 @@ from .models import *
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class MatchHistoryView(APIView):
-    def get(self, request, username):
+    def get(self, request, username, word):
         try:
-            matchs = Match.objects.filter(players=User.objects.get(username=username))
+            user = User.objects.get(username=username)
         except User.DoesNotExist:
             raise Http404("error: User does not exists.")
-
-        return JsonResponse([match.serialize() for match in matchs], safe=False)
+        if word == 'all':
+            matches = Match.objects.filter(players=user)
+        elif word == 'pong':
+            matches = Match.objects.filter(players=user, is_pong=True)
+        elif word == 'purrinha':
+            matches = Match.objects.filter(players=user, is_pong=False)
+        else:
+            raise Http404("error: Data does not exists.")
+        return JsonResponse([match.serialize() for match in matches], safe=False)
 
 
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class MatchScoreView(APIView):
-    def get(selfself, request, match_id):
+    def get(self, request, match_id):
         try:
             game = Match.objects.get(pk=match_id)
         except Match.DoesNotExist:
             raise Http404("Error: Match does not exists.")
 
         return JsonResponse(game.serialize())
+
 
 def get_new_elo(player_elo, opponent_elo, win):
     
@@ -45,6 +53,7 @@ def get_new_elo(player_elo, opponent_elo, win):
     new_elo = player_elo + k * (win - expected)
 
     return new_elo
+
 
 def update_match_data(players_data, winner, is_pong=True):
     elo = 'user_elo_pong' if is_pong else 'user_elo_purrinha'
@@ -74,14 +83,15 @@ def update_match_data(players_data, winner, is_pong=True):
         elo_lst.append(new_elo)
         data.save()
 
+
 def create_match(match_result, winner, is_pong=True):
-    match = Match.objects.create(is_pong=is_pong)
+    match = Match.objects.create(is_pong=is_pong, count=match_result.length())
     players_data = []
 
     for player_username in match_result.keys():
         player = User.objects.get(username=player_username)
         players_data.append(UserData.objects.get(user_id=player))
-        score = PlayerScore.objects.create(
+        score = Score.objects.create(
             player=player, 
             match=match, 
             score=match_result[player_username]

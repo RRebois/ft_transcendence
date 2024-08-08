@@ -6,17 +6,35 @@ from django.contrib.postgres.fields import ArrayField
 from .manager import UserManager
 
 
+class Avatars(models.Model):
+    image_url = models.URLField(blank=True)
+    image = models.ImageField(upload_to='profile_pics/', max_length=255, blank=True)
+    image_hash_value = models.CharField(blank=True)
+    uploaded_from = models.ManyToManyField("User", blank=True)
+
+    def serialize(self):
+        return {
+            "image": self.image.url,
+        }
+
+
 class User(AbstractUser):
     username = models.CharField(unique=True, max_length=100)
     email = models.EmailField(unique=True, max_length=100)
     password = models.CharField(max_length=100, blank=True)
-    image_url = models.URLField(blank=True)
-    image = models.ImageField(default='profile_pics/default_pp.jpg', upload_to='profile_pics/')
+    avatar_id = models.ForeignKey(Avatars, on_delete=models.SET_NULL, blank=True, null=True)  # id of image
     friends = models.ManyToManyField("User", blank=True)
     status_choices = [
         ('online', 'Online'),
         ('offline', 'Offline'),
     ]
+    language_choices = [
+        ['🇬🇧 English', 'en'],
+        ['🇫🇷 French', 'fr'],
+        ['🇪🇸 Spanish', 'es'],
+        ['🇵🇹 Portuguese', 'pt']
+    ]
+    language = models.CharField(choices=language_choices, default="🇬🇧 English")
     status = models.CharField(max_length=50, choices=status_choices, default='offline')
     totp = models.CharField(max_length=100, blank=True, null=True)
     tfa_activated = models.BooleanField(default=False)
@@ -29,6 +47,9 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+    def get_is_stud(self):
+        return self.stud42
+
     def get_username(self):
         return self.username
 
@@ -39,13 +60,21 @@ class User(AbstractUser):
             "access": str(refresh.access_token)
         }
 
+    def get_img_url(self):
+        if self.avatar_id:
+            return self.avatar_id.image_url if self.avatar_id.image_url else self.avatar_id.image.url
+        else:
+            return "media/profile_pics/default_pp.jpg"
+
     def serialize(self):
         return {
             "First name": self.first_name,
             "Last name": self.last_name,
             "Email": self.email,
             "Username": self.username,
+            "Language": self.language,
             "stud42": self.stud42,
+            "2fa": self.tfa_activated,
         }
 
 
@@ -64,6 +93,11 @@ class FriendRequest(models.Model):
 
     def get_to_user(self):
         return self.from_user.username
+
+    def get_friends_avatars(self):
+        return {
+            "avatar": self.to_user.get_img_url()
+        }
 
 
 class UserData(models.Model):

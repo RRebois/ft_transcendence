@@ -9,7 +9,9 @@ from PIL import Image
 from .models import User, FriendRequest
 import jwt
 import os
+import logging
 
+logger = logging.getLogger('userManagement')
 
 def send_email(data):
     email = EmailMessage(
@@ -85,3 +87,23 @@ def validate_image(image_path):
         raise serializers.ValidationError("Only jpg/jpeg/png/gif and png images are allowed")
 
     return image_path
+
+def generate_short_lived_JWT(user):
+    payload = {
+        'id': user.id,
+        'username': user.username,
+        'exp': datetime.now(timezone.utc) + timedelta(minutes=2),  # time before expiration
+        'iat': datetime.now(timezone.utc),  # Issued AT
+    }
+    logger.warning(f"In get_ws_token: user is  {user.username}")
+    secret = os.environ.get('SECRET_KEY')
+    token = jwt.encode(payload, secret, algorithm='HS256')
+    return token
+
+
+def get_ws_token(request):
+    logger.warning(f"In get_ws_token: user is {request.user.username}")
+    if request.user.is_authenticated:
+        token = generate_short_lived_JWT(request.user)
+        return JsonResponse({'token': token})
+    return JsonResponse({'error': 'Not authenticated'}, status=401)

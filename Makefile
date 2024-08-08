@@ -33,6 +33,7 @@ clean: down
 fclean: confirm_clean clean clear_migrations
 	docker volume rm $(DOCKER_VOLUMES)
 	docker rmi $(DOCKER_IMAGES)
+	find ./Pong/media/profile_pics/ -type f -not -name 'default_pp.jpg' -delete
 
 clear_migrations:
 	@rm -rf ./Pong/userManagement/migrations/0*.py

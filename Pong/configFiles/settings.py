@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 import os
+import logging
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,19 +33,20 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'userManagement',
     'matchs',
     'rest_framework',
     'corsheaders',
     'fontawesomefree',
-	'anotherGame',
-    # 'channels'
+    'anotherGame',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_cleanup'
 ]
 
 
@@ -82,6 +84,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'configFiles.wsgi.application'
+
+ASGI_APPLICATION = 'configFiles.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}
 
 
 # Database
@@ -141,8 +154,10 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-MEDIA_URL = '/media/'
+MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 
 
 # Default primary key field type
@@ -153,7 +168,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS_ORIGIN_ALLOW_ALL = True  # allow all frontend ports to access app
 CORS_ALLOW_CREDENTIALS = True  # for frontend to get the jwt cookies
 CORS_ALLOWED_ORIGINS = [
-    'https://localhost:3000', 'https://localhost:4242',
+    'https://localhost:3000', 'http://localhost:4242',
 ]
 
 REST_FRAMEWORK = {
@@ -168,3 +183,34 @@ EMAIL_PORT = '587'
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_SENDER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_SENDER_PASS')
+
+
+class WarningDebugFilter(logging.Filter):
+    def filter(self, record):
+        return record.levelno in [logging.WARNING, logging.DEBUG]
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'warning_debug_only': {
+            '()': WarningDebugFilter,
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'debug.log',
+            'filters': ['warning_debug_only'],
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

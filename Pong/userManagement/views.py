@@ -9,17 +9,25 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.urls import reverse
 from django.db import IntegrityError
 from django.contrib import messages
+from django.core.files.storage import default_storage
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
+from configFiles.settings import FILE_UPLOAD_MAX_MEMORY_SIZE
 from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from configFiles.settings import FILE_UPLOAD_MAX_MEMORY_SIZE
+from PIL import Image
 from django.forms.models import model_to_dict
 import pyotp
+import hashlib
 import jwt
 import requests
 import os
+
 
 from .models import *
 from .forms import *
@@ -36,7 +44,6 @@ logging.basicConfig(
     ]
 )
 
-
 @method_decorator(csrf_protect, name='dispatch')
 class JWTAuthView(APIView):
     def get(self, request):
@@ -52,11 +59,8 @@ class JWTAuthView(APIView):
 
 # @method_decorator(csrf_protect, name='dispatch')
 def authenticate_user(request):
-    logging.debug("authenticate_user")
-    logging.debug("request headers: " + str(request.headers))
     auth_header = request.headers.get('Authorization')
     token = None
-    logging.debug("auth_header: " + str(auth_header))
     if auth_header and auth_header.startswith('Bearer '):
         token = auth_header.split(' ')[1]
     if not token:
@@ -83,8 +87,7 @@ def authenticate_user(request):
 
     except User.DoesNotExist:
         raise AuthenticationFailed('User not found')
-    logging.debug("user found: " + str(model_to_dict(user)))
-    logging.debug("user authenticated: " + str(user.is_authenticated))
+
     return user
 
 
@@ -103,13 +106,12 @@ class TestView(APIView):
         response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True, path='/')
         return response
 
-
 def user_as_json(user):
     user_dict = model_to_dict(user, fields=[field.name for field in user._meta.fields if
                                             field.name not in ['image', 'password', 'last_login', 'is_superuser',
                                                                'is_staff', 'is_active']])
     server_url = os.environ.get('SERVER_URL')
-    user_dict['image_url'] = f"{server_url}/media/{user.image}" if str(user.image) else None
+    user_dict['image_url'] = server_url + "/" + user.get_img_url()
     return user_dict
 
 
@@ -122,27 +124,44 @@ class LoginView(APIView):
         try:
             serializer.is_valid(raise_exception=True)
             user = serializer.validated_data['user']
+            if user.status == "online":
+                messages.warning(request, "User already have an active session")
+                return JsonResponse({
+                    'is_authenticated': False,
+                    'redirect': True,
+                    'redirect_url': ""
+                }, status=status.HTTP_401_UNAUTHORIZED)
+
             if user.tfa_activated:
+                # return Response({"success": True, "opt_required": True})
                 return JsonResponse({
                     'otp_required': True,
-                    'user_id': user.id
-                }, status=200)
+                    'user_id': user.id,
+                }, status=status.HTTP_200_OK)
+
             access_token = serializer.validated_data['jwt_access']
             refresh_token = serializer.validated_data['jwt_refresh']
-            user.status = 'online'
-            user.save()
-            user_dict = model_to_dict(user, fields=[field.name for field in user._meta.fields if field.name != 'image'])
+
+            # response = JsonResponse({
+            #     'message': 'Login successful',
+            #     'user_id': user.id,
+            #     'username': user.username,
+            #     'is_authenticated': True,
+            #     'redirect': True,
+            #     'redirect_url': ""
+            # }, status=status.HTTP_200_OK)
+
+            user_dict = model_to_dict(user)
             server_url = os.environ.get('SERVER_URL')
-            user_dict['image_url'] = f"{server_url}/media/{user.image}" if str(user.image) else None
+            image_url = user.get_img_url()
+            user_dict['image_url'] = server_url + '/' + image_url
+
             response = JsonResponse(data={'user': user_dict}, status=200)
-            response.set_cookie(key='jwt_access', value=access_token, httponly=True, samesite='Lax', secure=True,
-                                path='/')
-            response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True,
-                                path='/')
+            response.set_cookie(key='jwt_access', value=access_token, httponly=True,  samesite='Lax', secure=True, path='/')
+            response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True, path='/')
             response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True, path='/')
             return response
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
             return JsonResponse(status=401, data={'status': 'false', 'message': str(e)})
 
 
@@ -210,8 +229,8 @@ class Login42RedirectView(APIView):
                 messages.warning(request, "Username already taken.")
                 return HttpResponseRedirect(reverse("index"))
 
-        user.status = 'online'
-        user.save()
+        if user.status == "online":
+            return JsonResponse(status=401, data={'status': 'false', 'message': "User already have an active session"})
         token = generate_JWT(user)
         refresh = generate_refresh_JWT(user)
         response = redirect('index')
@@ -226,8 +245,6 @@ class LogoutView(APIView):
     def get(self, request):
         user = authenticate_user(request)
         if user is not None:
-            user.status = "offline"
-            user.save()
             response = JsonResponse({"redirect": True, "redirect_url": "/"}, status=status.HTTP_200_OK)
             response.delete_cookie('jwt_access')
             response.delete_cookie('jwt_refresh')
@@ -238,16 +255,14 @@ class LogoutView(APIView):
 
 
 # https://www.django-rest-framework.org/api-guide/renderers/#templatehtmlrenderer
-# TODO : handling username or email already taken
 @method_decorator(csrf_protect, name='dispatch')
 class RegisterView(APIView):
     serializer_class = RegisterSerializer
+    img_serializer_class = ProfilePicSerializer
 
     def post(self, request):
         user_data = request.data
         serializer = self.serializer_class(data=user_data)
-        logging.debug("-----------------------------------------------------------------------------------")
-        logging.debug("request.data: " + str(request.data))
 
         try:
             serializer_response = serializer.is_valid(raise_exception=True)
@@ -262,113 +277,78 @@ class RegisterView(APIView):
                     elif key == 'username' and error.code == 'unique':
                         return Response('username already taken', status=400)
             return Response('Something went wrong', status=400)
+
+
         if serializer_response:
-            logging.debug("serializer is valid")
             try:
-                logging.debug("serializer save (before)")
                 user = serializer.save()
-                logging.debug("serializer save (after)")
             except IntegrityError:
-                logging.debug("Username and/or email already taken.")
                 return Response("username or email already taken", status=400)
-            logging.debug("here (test 1)")
+
+            default_img = "/profile_pics/default_pp.jpg"
+            default_path = "media" + default_img
+            with open(default_path, 'rb') as f:
+                default_pic_content = f.read()
+            md5_hash = hashlib.md5(default_pic_content).hexdigest()
+
             if 'imageFile' in request.FILES:
-                try:
-                    logging.debug("imageFile in request.FILES")
-                    image = validate_image(request.FILES['imageFile'])
-                    user.image = image
+                image = request.FILES['imageFile']
+                img_serializer = self.img_serializer_class(data={'image': image})
+                if img_serializer.is_valid():
+                    md5_hash = hashlib.md5(image.read()).hexdigest()
+
+                    # Check if image already uploaded
+                    if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
+                        profile_img = Avatars.objects.create(image=image, image_hash_value=md5_hash)
+                    else:
+                        profile_img = Avatars.objects.get(image_hash_value=md5_hash)
+                    profile_img.uploaded_from.add(user)
+                    profile_img.save()
+                    user.avatar_id = profile_img
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
                     return Response(model_to_dict(user), status=201)
-                except:
-                    logging.debug("image format not valid (EXCEPT)")
-                    user.image = "profile_pics/default_pp.jpg"
+
+                else:
+                    # Check if image already uploaded
+                    if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
+                        profile_img = Avatars.objects.create(image=default_img, image_hash_value=md5_hash)
+                    else:
+                        profile_img = Avatars.objects.get(image_hash_value=md5_hash)
+                    profile_img.uploaded_from.add(user)
+                    profile_img.save()
+                    user.avatar_id = profile_img
+
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
-                    return Response(model_to_dict(user), status=201)
+
+                    # TODO revoir front
+                    return Response({"user": model_to_dict(user),
+                                     "message": f"Image format and/or size not valid. Only jpg/jpeg/gif and png images are allowed. images cannot be larger than {convert_to_megabyte(FILE_UPLOAD_MAX_MEMORY_SIZE)}MB. Profile picture set to default."},
+                                    status=201)
             else:
-                logging.debug("no imageFile in request.FILES")
-                user.image = "profile_pics/default_pp.jpg"
-                logging.debug("user.image: " + str(user.image))
+                # Check if image already uploaded
+                if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
+                    profile_img = Avatars.objects.create(image=default_img, image_hash_value=md5_hash)
+                else:
+                    profile_img = Avatars.objects.get(image_hash_value=md5_hash)
+                profile_img.uploaded_from.add(user)
+                profile_img.save()
+                user.avatar_id = profile_img
+
                 user.save()
-                logging.debug("user saved")
                 user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
-                logging.debug("user_data created")
                 user_data.save()
-                logging.debug("user_data saved")
-                user_dict = model_to_dict(user,
-                                          fields=[field.name for field in user._meta.fields if field.name != 'image'])
-                server_url = os.environ.get('SERVER_URL')
-                user_dict['image_url'] = f"{server_url}/{user.image}" if str(user.image) else None
-                logging.debug("user_dict prepared for JSON response: " + str(user_dict))
-                return Response(user_dict, status=201)
+                # TODO check envoyer URL
+                return Response({"user": model_to_dict(user),
+                                 "message": "No profile image selected. Profile picture set to default."},
+                                status=201)
+
         else:
-            logging.debug("serializer is not valid")
             errors = serializer.errors
-            logging.debug("serializer validation errors: ", str(errors))
             return Response(str(errors), status=400)
-
-    # if serializer.is_valid():
-    #     logging.debug("serializer is valid")
-    # else:
-    #     logging.debug("serializer is not valid")
-    #     errors = serializer.errors
-    #     logging.debug("serializer validation errors: ", str(errors))
-
-    # return Response({"message": "test register"}, status=200)
-    #     try:
-    #         user = serializer.save()
-    #     except IntegrityError:
-    #         messages.error(request, "Username and/or email already taken.")
-    #         logger.debug("Username and/or email already taken.")
-    #         return JsonResponse("username or email already taken", status=400)
-    # return render(request, "pages/register.html")
-
-    # if 'imageFile' in request.FILES:
-    #     try:
-    #         image = validate_image(request.FILES['imageFile'])
-    #         user.image = image
-    #         user.save()
-    #         user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
-    #         user_data.save()
-    #         messages.success(request, "You have successfully registered.")
-    #         # return HttpResponseRedirect(reverse("index"))
-    #         return JsonResponse("ok with image", status=200)
-    #
-    #     except :
-    #         user.image = "profile_pics/default_pp.jpg"
-    #         user.save()
-    #         user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
-    #         user_data.save()
-    #         messages.info(request, "Image format not valid. Profile picture set to default.")
-    #         messages.success(request, "You have successfully registered.")
-    #         # return HttpResponseRedirect(reverse("index"))
-    #         return JsonResponse("ok with default image", status=200)
-    #
-    # else:
-    #     user.image = "profile_pics/default_pp.jpg"
-    #     user.save()
-    #     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
-    #     user_data.save()
-    #     messages.info(request, "No profile image selected. Profile picture set to default.")
-    #     messages.success(request, "You have successfully registered.")
-    #     # return HttpResponseRedirect(reverse("index"))
-    #     return JsonResponse("ok with default image because no image provided", status=200)
-    # return JsonResponse("faux", status=400)
-
-    # return render(request, "pages/register.html", {
-    #     "form": serializer,
-    #     "errors": serializer.errors
-    # })
-
-    # def get(self, request):
-    #     return Response({"message": "test register"}, status=200)
-    # serializer = self.serializer_class()
-    # return render(request, "pages/register.html", {
-    #     "form": serializer
-    # })
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -389,8 +369,61 @@ class UserStatsDataView(APIView):
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class UserGetUsernameView(APIView):
     def get(self, request):
-        user = authenticate_user(request)
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
         return JsonResponse(user.get_username(), safe=False)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class UserGetIsStudView(APIView):
+    def get(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        return JsonResponse(user.get_is_stud(), safe=False)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class UserAvatarView(APIView):
+    def get(self, request, username):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        if user.username != username:
+            try:
+                user_to_check = User.objects.get(username=username)
+            except User.DoesNotExist:
+                raise Http404("error: User does not exists.")
+            return JsonResponse(user_to_check.get_img_url(), safe=False)
+        return JsonResponse(user.get_img_url(), safe=False)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class GetAllUserAvatarsView(APIView):
+    def get(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""},
+                                status=status.HTTP_401_UNAUTHORIZED)
+        avatar_list = []
+        avatars = Avatars.objects.filter(uploaded_from=user)
+        current = Avatars.objects.get(pk=user.avatar_id.pk)
+        for avatar in avatars:
+            if avatar != current:
+                avatar_list.append(avatar)
+        return JsonResponse([avatar.serialize() for avatar in avatar_list], safe=False)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -405,22 +438,34 @@ class UserPersonalInformationView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-class PasswordChangeView(APIView):
-    serializer_class = PasswordChangeSerializer
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class EditDataView(APIView):
+    serializer_class = EditUserSerializer
 
-    def post(self, request):
+    def put(self, request):
+        user_data = request.data
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
-            return redirect('index')
-        serializer = self.serializer_class(data=request.data, context={'user': user})
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = self.serializer_class(user, data=user_data, partial=True)
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            response = redirect('index')
-            messages.success(request, "Your password has been changed.")
-            return response
+            friend_list = user.friends.all()
+            channel_layer = get_channel_layer()
+            for friend in friend_list:
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{friend.id}_group",
+                    {
+                        'type': 'friend_data_edit',
+                        'from_user': user.username,
+                        'from_user_id': user.id,
+                    }
+                )
+            return Response({"success": True})
         except serializers.ValidationError as e:
             error_messages = []
             for field, errors in e.detail.items():
@@ -430,27 +475,36 @@ class PasswordChangeView(APIView):
                     else:
                         error_messages.append(f"{field}: {error}")
             error_message = " | ".join(error_messages)
-            messages.warning(request, error_message)
-            return render(request, "pages/changePassword.html", {
-                "form": serializer,
-                "user": user
-            })
+            return Response({"success": False, "errors": error_message})
 
-    def get(self, request):
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class PasswordChangeView(APIView):
+    serializer_class = PasswordChangeSerializer
+
+    def put(self, request):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
-            return redirect('index')
-        if user.stud42:
-            response = redirect('index')
-            messages.warning(request, "You can't change your password when using a 42 account.")
-            return response
-        serializer = self.serializer_class()
-        return render(request, "pages/changePassword.html", {
-            "form": serializer,
-            "user": user
-        })
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        serializer = self.serializer_class(data=request.data, context={'user': user})
+
+        try:
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response({"success": True})
+        except serializers.ValidationError as e:
+            error_messages = []
+            for field, errors in e.detail.items():
+                for error in errors:
+                    if field == 'non_field_errors':
+                        error_messages.append(f"{error}")
+                    else:
+                        error_messages.append(f"{field}: {error}")
+            error_message = " | ".join(error_messages)
+            return Response({"success": False, "errors": error_message})
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -496,8 +550,8 @@ class SetNewPasswordView(APIView):
             return HttpResponseRedirect(reverse('index'))
 
 
+@method_decorator(csrf_protect, name='dispatch')
 class PasswordResetConfirmedView(APIView):
-
     def get(self, request, uidb64, token):
         try:
             user_id = smart_str(urlsafe_base64_decode(uidb64))
@@ -516,34 +570,38 @@ class PasswordResetConfirmedView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-class Enable2FAView(APIView):
-    def post(self, request):
+class Security2FAView(APIView):
+    def put(self, request):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
-            return redirect('index')
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
 
-        if user.tfa_activated is True:
-            messages.warning(request, "2FA already activated.")
-            response = redirect('index')
-            return response
-        secret_key = pyotp.random_base32()
-        user.totp = secret_key
-        user.tfa_activated = True
-        user.save()
+        data = request.data
+        value = data.get('value')
 
-        qr_url = pyotp.totp.TOTP(secret_key).provisioning_uri(user.username)
-        message = "2FA activated, please scan the QR-code in authenticator to save your account code."
-        return JsonResponse({"qr_url": qr_url, "message": message})
+        if value:
+            try:
+                secret_key = pyotp.random_base32()
+                user.totp = secret_key
+                user.tfa_activated = True
+                user.save()
 
-    def get(self, request):
-        try:
-            user = authenticate_user(request)
-        except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return redirect('index')
-        return render(request, "pages/2FA.html", {"user": user})
+                qr_url = pyotp.totp.TOTP(secret_key).provisioning_uri(user.username)
+                message = "2FA activated, please scan the QR-code in authenticator to save your account code."
+                return JsonResponse({"qr_url": qr_url, "message": message})
+            except Exception as e:
+                return Response({"success": False, "error": str(e)}, status=500)
+        else:
+            try:
+                user.totp = None
+                user.tfa_activated = False
+                user.save()
+                message = "2FA successfully deactivated."
+                return Response({"success": True, "message": message})
+            except Exception as e:
+                return Response({"success": False, "error": str(e)}, status=500)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -557,8 +615,6 @@ class VerifyOTPView(APIView):
 
         access_token = serializer.validated_data['jwt_access']
         refresh_token = serializer.validated_data['jwt_refresh']
-        user.status = 'online'
-        user.save()
 
         response = JsonResponse({'redirect': reverse('index')}, status=200)
         response.set_cookie(key='jwt_access', value=access_token, httponly=True)
@@ -567,35 +623,13 @@ class VerifyOTPView(APIView):
 
         return response
 
-    def get(self, request):
-        user_id = request.GET.get('user_id')
-        serializer = self.serializer_class()
-        return render(request, "pages/otp.html", {
-            "user_id": user_id,
-            "form": serializer
-        })
-
-
-@method_decorator(csrf_protect, name='dispatch')
-class Disable2FAView(APIView):
-
-    def post(self, request):
-        try:
-            user = authenticate_user(request)
-        except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return redirect('index')
-
-        if user.tfa_activated is False:
-            messages.warning(request, "2FA already deactivated.")
-            response = redirect('index')
-            return response
-        user.totp = None
-        user.tfa_activated = False
-        user.save()
-        messages.success(request, "2FA deactivated.")
-        response = redirect('index')
-        return response
+    # def get(self, request):
+    #     user_id = request.GET.get('user_id')
+    #     serializer = self.serializer_class()
+    #     return render(request, "pages/otp.html", {
+    #         "user_id": user_id,
+    #         "form": serializer
+    #     })
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -635,10 +669,36 @@ class SendFriendRequestView(APIView):
             return JsonResponse({"message": message, "user": user.serialize(), "level": "warning"},
                                 status=status.HTTP_403_FORBIDDEN)
 
-        FriendRequest.objects.create(from_user=user, to_user=to_user)
+        friend_request = FriendRequest.objects.create(from_user=user, to_user=to_user)
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"user_{to_user.id}_group",
+            {
+                'type': 'friend_request',
+                'from_user': user.username,
+                'from_user_id': user.id,
+                'time': str(friend_request.time),
+                'status': friend_request.status
+            }
+        )
+
         message = "Friend request sent."
         return JsonResponse({"message": message, "user": user.serialize(), "level": "success"},
                             status=status.HTTP_200_OK)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class PendingFriendRequestsView(APIView):
+    def get(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        friendRequests = (FriendRequest.objects.filter(from_user=user, status='pending').
+                          values('to_user__username', 'time', 'status', 'to_user_id'))
+        return JsonResponse(list(friendRequests), safe=False)
 
 
 class GetFriendRequestView(APIView):
@@ -681,6 +741,17 @@ class AcceptFriendRequestView(APIView):
 
         friend_request.to_user.friends.add(friend_request.from_user)
         friend_request.from_user.friends.add(friend_request.to_user)
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"user_{friend_request.from_user_id}_group",
+            {
+                'type': 'friend_req_accept',
+                'from_user': user.username,
+                'from_user_id': user.id,
+                'status': friend_request.status
+            }
+        )
         return JsonResponse({"message": "Friend request accepted.", "level": "success"}, status=status.HTTP_200_OK)
 
 
@@ -735,6 +806,15 @@ class RemoveFriendView(APIView):
             except FriendRequest.DoesNotExist:
                 pass
 
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f"user_{friend.id}_group",
+                {
+                    'type': 'friend_remove',
+                    'from_user': user.username,
+                    'from_user_id': user.id,
+                }
+            )
             return JsonResponse({"message": "User removed from your friends.", "level": "success"},
                                 status=status.HTTP_200_OK)
 
@@ -749,5 +829,66 @@ class GetFriendView(APIView):
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
-        friendList = user.friends.all().values('username', 'id', 'status', 'image')
-        return JsonResponse(list(friendList), safe=False)
+        friend_list = user.friends.all()
+        serialized_values = [
+            {
+                'username': friend.username,
+                'id': friend.id,
+                'status': friend.status,
+                'image': friend.get_img_url()
+            }
+            for friend in friend_list
+        ]
+
+        return JsonResponse(serialized_values, safe=False)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class DeleteAccountView(APIView):
+    serializer_class = CheckPassword
+
+    def post(self, request):
+
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        if user.stud42:
+            Avatars.objects.get(pk=user.avatar_id.pk).delete()
+            User.objects.get(id=user.id).delete()
+            message = "Account successfully deleted."
+            return JsonResponse({"success": True, "redirect": True, "redirect_url": "", "message": message})
+
+        serializer = self.serializer_class(data=request.data, context={'user': user})
+        try:
+            serializer.is_valid(raise_exception=True)
+            friend_list = list(user.friends.all())
+            avatars_uploaded = Avatars.objects.filter(uploaded_from=user)
+            for avatar in avatars_uploaded:
+                if avatar.uploaded_from.count() == 1:
+                    avatar.delete()
+            User.objects.get(id=user.id).delete()
+            channel_layer = get_channel_layer()
+            for friend in friend_list:
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{friend.id}_group",
+                    {
+                        'type': 'friend_delete_acc',
+                        'from_user': user.username,
+                        'from_user_id': user.id,
+                    }
+                )
+            message = "Account successfully deleted."
+            return JsonResponse({"success": True, "redirect": True, "redirect_url": "", "message": message})
+        except serializers.ValidationError as e:
+            error_messages = []
+            for field, errors in e.detail.items():
+                for error in errors:
+                    if field == 'non_field_errors':
+                        error_messages.append(f"{error}")
+                    else:
+                        error_messages.append(f"{field}: {error}")
+            error_message = " | ".join(error_messages)
+            return Response({"success": False, "errors": error_message})

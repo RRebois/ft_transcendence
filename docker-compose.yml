@@ -27,6 +27,7 @@ services:
       - ./.env
     depends_on:
       - db
+      - redis
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-k", "http://localhost:8000/test"]
@@ -61,6 +62,18 @@ services:
       web:
         condition: service_healthy
     restart: on-failure
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    expose:
+      - "6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 30s
+      retries: 50
+    restart: always
 
 networks:
   transcendence:

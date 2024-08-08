@@ -1,5 +1,6 @@
 import ToastComponent from "../components/Toast.js";
 import {getCookie} from "../functions/cookie.js";
+import {initializeWebSocket} from "../functions/websocket.js";
 import router from "@js/router/index.js";
 
 export default class Home {
@@ -33,9 +34,9 @@ export default class Home {
                     toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
                 } else {
                     console.log('Success:', data);
-                    // window.location.href = '/dashboard';
                     // router.navigate('/dashboard');
-                    window.location.href = '/dashboard';
+                    initializeWebSocket();
+                    // window.location.href = '/dashboard';
                 }
             })
             .catch(error => {

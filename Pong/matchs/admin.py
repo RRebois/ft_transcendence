@@ -5,21 +5,19 @@ from userManagement.models import User
 
 
 #https://books.agiliq.com/projects/django-admin-cookbook/en/latest/many_to_many.html
-@admin.register(PlayerScore)
-class PlayerScoreAdmin(admin.ModelAdmin):
-    list_display = ('player', 'match', 'score')
-    search_fields = ('player__username', 'match__id')
-
 @admin.register(Match)
 class MatchAdmin(admin.ModelAdmin):
     def players_display(self, obj):
         return ", ".join([
             score.player.username if score.player else "deleted_user" for score in obj.scores.all()
         ])
+
     players_display.short_description = "Players"
-    
+
     def scores_display(self, obj):
-        return ", ".join([f"{score.player.username if score.player else "deleted_user"}: {score.score}" for score in obj.scores.all()])
+        return ", ".join([f"{score.player.username if score.player else 'deleted_user'}: {score.score}" for score in
+                          obj.scores.all()])
+
     scores_display.short_description = "Scores"
 
     list_display = ("pk", "winner", "players_display", "scores_display", "timeMatch")
@@ -36,4 +34,8 @@ class MatchAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         request._obj_ = obj
         return super().get_form(request, obj, **kwargs)
-    
+
+@admin.register(Score)
+class ScoreAdmin(admin.ModelAdmin):
+    list_display = ("player", "match", "score")
+    search_fields = ('player__username', 'match__id')

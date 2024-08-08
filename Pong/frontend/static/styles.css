@@ -5,8 +5,80 @@
     padding: 0;
 }
 
+.imgPartDiv {
+    margin: 10px auto 20px auto;
+    width: 100%;
+    text-align: center;
+}
+
+.imgPartDiv > img {
+    border-radius: 40%;
+    border: 2px solid black;
+}
+
+.imgTitleDiv {
+    width: 100%;
+    border-bottom: 2px solid black;
+    font-weight: bold;
+    margin: 10px auto;
+}
+
+.mainFriendDiv {
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
 .invalidColor {
     color:  #99251B;
+}
+
+.deletion {
+    color: red;
+    font-weight: bold;
+    font-size: 16px;
+    margin: 5px 0;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.indexLink {
+    width: fit-content;
+}
+
+#profilePic {
+    width: 80vw;
+    height: 80vh;
+    position: fixed;
+    top: 10%;
+    left : 10%;
+}
+
+.profilePicShadowBox {
+    z-index: 10;
+    border: 2px solid #333;
+    box-shadow: 8px 8px 5px #444;
+    padding: 8px 12px;
+    overflow: auto;
+    background-image: linear-gradient(241deg, #8360C3, #2EBF91);
+}
+
+.divProfile {
+    width: 80%;
+    margin: 10px auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.divStats {
+    width: 80%;
+    margin: 10px auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.subDivProfile {
+    border: 2px solid black;
 }
 
 .roundBorder {
@@ -32,6 +104,8 @@
 .alertSize{
     width: 50%;
     margin: auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .dropdown {
@@ -44,6 +118,7 @@
 }
 
 .title_div {
+    text-align: center;
     color: black;
     font-size: 30px;
     font-weight: bold;
@@ -54,19 +129,61 @@
     border-radius: 50%;
     box-shadow: 10px 10px #100C08;
     text-decoration: underline;
+    --borderWidth: 3px;
+    position: relative;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.title_div:after {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--borderWidth));
+  left: calc(-1 * var(--borderWidth));
+  height: calc(100% + var(--borderWidth) * 2);
+  width: calc(100% + var(--borderWidth) * 2);
+  background: linear-gradient(80deg, #f79533, #f37055, #ef4e7b, #a166ab, #5073b8, #1098ad, #07b39b, #6fba82);
+  border-radius: 50%;
+  z-index: -1;
+  animation: animatedgradient 3s ease alternate infinite;
+  background-size: 300% 300%;
+}
+
+#statsDiv {
+    text-align: center;
 }
 
 .divElo {
     color: black;
-    font-size: 15px;
     margin: 5px auto;
     padding: 5px;
-    max-width: fit-content;
-    border-bottom: 1px solid black;
+    text-decoration: underline;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mainDivStats {
+    border: 2px solid black;
+    min-width: fit-content;
+    display: inline-block;
+    margin: 10px 2px;
+    text-align: center;
+}
+
+.mainDivStats:hover {
+    border: 3px solid black;
+    box-shadow: 2px 2px #100C08;
+}
+
+.PWBtn {
+    width: 100%;
+    text-align: center;
+    margin: 10px 0px;
 }
 
 .matchHistoryDiv {
-    width: 80%;
+    width: 100%;
     margin: 50px auto;
 }
 
@@ -77,12 +194,31 @@
     font-style: italic;
     font-family: Arial, Helvetica, sans-serif;
     width: 100%;
-    margin-bottom: 10px;
+    margin: 10px 0px;
     border-top: 2px solid black;
     border-bottom: 2px solid black;
 }
 
+.rad {
+    font-size: 16px;
+    font-weight: normal;
+    font-style: normal;
+}
+
+.QRcss {
+    max-height: 100px;
+    min-height: 100px;
+    max-width: 100px;
+    min-width: 100px;
+    margin: auto;
+    width: 50%;
+}
+
 .expander {
+    display: inline-block;
+}
+
+.shrink {
     display: inline-block;
 }
 
@@ -98,10 +234,14 @@
 
 .matchWon {
     background-color: #209920;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .matchLost {
     background-color: #ED2939;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .matchWonSub {
@@ -150,31 +290,55 @@
     font-style: italic;
 }
 
-#mainDiv {
-    border: 2px dotted black;
-}
-
 .displayAnim  {
     animation-name: display;
-    animation-duration: 2s;
+    animation-duration: .5s;
     animation-fill-mode: forwards;
+    animation-play-state: "paused";
 }
 
 .displayAnimImg {
     animation-name: displayImg;
-    animation-duration: 2s;
+    animation-duration: .5s;
     animation-fill-mode: forwards;
+    animation-play-state: "paused";
+}
+
+.rmAnimImg {
+    animation-name: displayImg;
+    animation-duration: .5s;
+    animation-direction: reverse;
+    animation-fill-mode: forwards;
+    animation-play-state: "paused";
 }
 
 .rmAnim {
     animation-name: display;
-    animation-duration: 2s;
-    animation-fill-mode: backwards;
-    animation-play-state: paused;
+    animation-duration: .5s;
+    animation-direction: reverse;
+    animation-fill-mode: forwards;
+    animation-play-state: "paused";
 }
 
 .infoDiv {
+    text-align: center;
+}
 
+.infoKey {
+    margin-right: 5px;
+    font-weight: bold;
+    text-decoration: underline;
+    min-width: fit-content;
+    display: inline-block;
+    width: 100%;
+}
+
+.infoValue {
+    max-width: 300px;
+    overflow: auto;
+    text-overflow: ellipsis;
+    display: inline-flex;
+    white-space: nowrap;
 }
 
 .play-regular {
@@ -246,16 +410,39 @@ gap-1-5 {
 }
 
 .friendPage {
-    width: 80%;
     align-items: center;
     text-align: center;
-    margin-bottom: 10px;
-    min-width: 400px;
+    margin-bottom: 15px;
     justify-content: space-between;
+    font-size: 16px;
+    font-weight: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.friendStatDiv {
+    align-items: center;
+    text-align: center;
+    margin-bottom: 15px;
+    justify-content: space-between;
+    border: 2px solid black;
+    font-size: 16px;
+    font-weight: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .acceptBtn {
     float: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.declineBtn {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .acceptedBtn {
@@ -263,6 +450,8 @@ gap-1-5 {
     border-color: black;
     cursor: not-allowed;
     pointer-events: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .buttonsContainer {

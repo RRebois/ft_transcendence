@@ -1,4 +1,4 @@
-from .models import User
+from .models import *
 from .utils import *
 from rest_framework import serializers
 from django.contrib.auth import authenticate
@@ -11,7 +11,9 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.urls import reverse
 from django.http import JsonResponse
 from rest_framework.exceptions import AuthenticationFailed
+from configFiles.settings import FILE_UPLOAD_MAX_MEMORY_SIZE
 from PIL import Image
+import math
 import jwt
 import pyotp
 import os
@@ -31,6 +33,7 @@ logging.basicConfig(
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=100, min_length=8, write_only=True)
     password2 = serializers.CharField(max_length=100, min_length=8, write_only=True)
+    username = serializers.CharField(max_length=12, min_length=5)
 
     class Meta:
         model = User
@@ -66,29 +69,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Passwords don't match")
         return attrs
 
-        # pattern = re.compile("^[a-zA-Z]+([ '-][a-zA-Z]+)*$")
-        # pattern_username = re.compile("^[a-zA-Z0-9]+([-][a-zA-Z0-9]+)*$")
-        # password = attrs.get('password', '')
-        # password2 = attrs.get('password2', '')
-        # if not password.isalnum() or password.islower() or password.isupper():
-        #     raise serializers.ValidationError("Passwords must contain at least 1 digit, 1 lowercase and 1 uppercase character.")
-        # if password != password2:
-        #     raise serializers.ValidationError("Passwords don't match.")
-        #
-        # first = attrs.get('first_name', '')
-        # if not pattern.match(first):
-        #     raise serializers.ValidationError("All characters of first name must be alphabetic characters. Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
-        #
-        # last = attrs.get('last_name', '')
-        # if not pattern.match(last):
-        #     raise serializers.ValidationError("All characters of last name must be alphabetic characters. Spaces, apostrophes and hyphens are allowed, if it's in the middle and with no repetitions.")
-        #
-        # username = attrs.get('username', '')
-        # if not pattern_username.match(username):
-        #     raise serializers.ValidationError("Username must be alphanumeric only. Hyphens are allowed, if it's in the middle and with no repetitions.")
-        #
-        # return attrs
-
     def create(self, validated_data):
         user = User.objects.create_user(
             email=validated_data['email'],
@@ -103,13 +83,18 @@ class RegisterSerializer(serializers.ModelSerializer):
 class Register42Serializer(serializers.ModelSerializer):
 
     def create(self, data):
+        avatar = Avatars.objects.create(
+            image_url=data.get('image')
+        )
         user = User.objects.create_42user(
             email=data['email'],
             first_name=data.get('first_name'),
             last_name=data.get('last_name'),
             username=data.get('username'),
-            image_url=data.get('image'),
+            avatar_id=avatar
         )
+        avatar.uploaded_from.add(user)
+        avatar.save()
         return user
 
 
@@ -148,18 +133,54 @@ class LoginSerializer(serializers.ModelSerializer):
         }
 
 
-class UserSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(max_length=255, allow_empty_file=False, use_url=True, required=False)
+class EditUserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(max_length=12, min_length=5)
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'image']
-        extra_kwargs = {
-            'username': {'required': False},
-            'first_name': {'required': False},
-            'last_name': {'required': False},
-            'image': {'required': False},
-        }
+        fields = ['username', 'first_name', 'last_name', 'email', 'language']
+
+    def validate(self, attrs):
+        username_pattern = re.compile("^[a-zA-Z0-9-_]{5,12}$")
+        name_pattern = re.compile("^[a-zA-ZàâäéèêëïîôöùûüçÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ\\-]+$")
+        email_pattern = re.compile("^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$")
+
+        email = attrs.get('email', '')
+        first_name = attrs.get('first_name', '')
+        last_name = attrs.get('last_name', '')
+        username = attrs.get('username', '')
+
+        if not email_pattern.match(email):
+            raise serializers.ValidationError("Invalid email format")
+        if not name_pattern.match(first_name):
+            raise serializers.ValidationError("Firstname must contain only alphabetic characters and hyphens (-)")
+        if not name_pattern.match(last_name):
+            raise serializers.ValidationError("Lastname must contain only alphabetic characters and hyphens (-)")
+        if not username_pattern.match(username):
+            raise serializers.ValidationError("Username must contain only alphanumeric characters and hyphens (- or _)")
+        return attrs
+
+    def update(self, instance, validated_data):
+        instance.username = validated_data.get('username', instance.username)
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.email = validated_data.get('email', instance.email)
+        instance.language = validated_data.get('language', instance.language)
+        instance.save()
+        return instance
+
+
+def convert_to_megabyte(file_size):
+    file_size_in_mb = round(file_size / (1000 * 1000))
+    return math.ceil(file_size_in_mb)
+
+
+class ProfilePicSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(max_length=255, allow_empty_file=False, use_url=True, required=False)
+
+    class Meta:
+        model = Avatars
+        fields = ['image']
 
     def validate_image(self, value):
         # checking extension
@@ -175,14 +196,9 @@ class UserSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
         except Exception as e:
             raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
-
-    def update(self, instance, validated_data):
-        instance.username = validated_data.get('username', instance.username)
-        instance.first_name = validated_data.get('first_name', instance.first_name)
-        instance.last_name = validated_data.get('last_name', instance.last_name)
-        instance.image = validated_data.get('image', instance.image)
-
-        instance.save()
+        if value.size > FILE_UPLOAD_MAX_MEMORY_SIZE:
+            raise serializers.ValidationError("File cannot be larger than "
+                                              f"{convert_to_megabyte(FILE_UPLOAD_MAX_MEMORY_SIZE)}MB.")
 
 
 class PasswordChangeSerializer(serializers.Serializer):
@@ -204,11 +220,12 @@ class PasswordChangeSerializer(serializers.Serializer):
         validate_password(new_password, user)
         return attrs
 
-    def save(self, **kwargs):
-        user = self.context['user']
-        new_password = self.validated_data['new_password']
-        user.set_password(new_password)
-        user.save()
+    def update(self, instance, validated_data):
+        instance.old_password = validated_data.get('old_password', instance.username)
+        instance.new_password = validated_data.get('new_password', instance.first_name)
+        instance.confirm_password = validated_data.get('confirm_password', instance.last_name)
+        instance.save()
+        return instance
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):
@@ -223,7 +240,8 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         if User.objects.filter(email=email).exists():
             user = User.objects.get(email=attrs.get('email'))
             if user.stud42:
-                raise serializers.ValidationError("This email is associated to a 42 account, you can't change the password.")
+                raise serializers.ValidationError("This email is associated to a 42 account, "
+                                                  "you can't change the password.")
             uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
             request = self.context.get('request')
@@ -303,3 +321,15 @@ class VerifyOTPSerializer(serializers.ModelSerializer):
             'jwt_access': token,
             'jwt_refresh': refresh
         }
+
+
+class CheckPassword(serializers.Serializer):
+    password = serializers.CharField(max_length=100, min_length=8, write_only=True, required=True)
+
+    def validate(self, attrs):
+        user = self.context['user']
+        password = attrs.get('password')
+
+        if not user.check_password(password):
+            raise serializers.ValidationError("Password is incorrect")
+        return attrs
