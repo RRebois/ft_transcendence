@@ -24,23 +24,23 @@ class Paddle:
         self.width = width
         self.height = height
 
-    def move(self, up=True):
+    async def move(self, up=True):
         if up:
             self.y -= PADDLE_START_VEL
         else:
             self.y += PADDLE_START_VEL
 
-    def reset(self):
+    async def reset(self):
         self.x = self.original_x
         self.y = self.original_y
 
-    def handle_movement(self, key_up=True):
+    async def handle_movement(self, key_up=True):
         if key_up and self.y - PADDLE_START_VEL >= 0:
-            self.move(up=key_up)
+            await self.move(up=key_up)
         if not key_up and self.y + PADDLE_START_VEL + self.height <= GAME_HEIGHT:
-            self.move(up=key_up)
+            await self.move(up=key_up)
 
-    def serialize(self):
+    async def serialize(self):
         return {
             'x' : self.x,
             'y' : self.y,
@@ -55,17 +55,17 @@ class Ball:
         self.x_vel = BALL_START_VEL * choice([1, -1])
         self.y_vel = randrange(6) * choice([1, -1])
 
-    def move(self):
+    async def move(self):
         self.x += self.x_vel
         self.y += self.y_vel
 
-    def reset(self):
+    async def reset(self):
         self.x = self.original_x
         self.y = self.original_y
         self.y_vel = randrange(6) * choice([1, -1])
         self.x_vel = BALL_START_VEL * choice([1, -1])
 
-    def accelerate(self):
+    async def accelerate(self):
         if abs(self.x_vel) >= MAX_VEL:
             pass
         if self.x_vel > 0:
@@ -73,13 +73,13 @@ class Ball:
         else:
             self.x_vel -= BALL_ACC
 
-    def serialize(self):
+    async def serialize(self):
         return {
             'x' : self.x,
             'y' : self.y,
         }
 
-def find_new_direction(ball, paddle):
+async def find_new_direction(ball, paddle):
 
     ball.x_vel *= -1
     middle_y = paddle.y + paddle.height / 2
@@ -90,22 +90,22 @@ def find_new_direction(ball, paddle):
         y_vel = 0.1
     ball.y_vel = -1 * y_vel
 
-def handle_collision(ball, left_paddle, right_paddle):
+async def handle_collision(ball, left_paddle, right_paddle):
     if ball.y + ball.radius >= GAME_HEIGHT or ball.y - ball.radius <= 0:
         ball.y_vel *= -1
-        ball.accelerate()
+        await ball.accelerate()
 
     if ball.x_vel < 0:
         if ball.y >= left_paddle.y and ball.y <= left_paddle.y + left_paddle.height:
             if ball.x - ball.radius <= left_paddle.x + left_paddle.width:
-                find_new_direction(ball, left_paddle)
-                ball.accelerate()
+                await find_new_direction(ball, left_paddle)
+                await ball.accelerate()
 
     elif ball.x_vel >= 0:
         if ball.y >= right_paddle.y and ball.y <= right_paddle.y + right_paddle.height:
             if ball.x + ball.radius >= right_paddle.x:
-                find_new_direction(ball, right_paddle)
-                ball.accelerate()
+                await find_new_direction(ball, right_paddle)
+                await ball.accelerate()
 
 class   PongMatch():
 
@@ -120,42 +120,50 @@ class   PongMatch():
         self.players_name = players_name
 
 
-    def get_coordinates(self):
-            return {
-                'ball' : self.ball.serialize(),
-                'player1' : self.left_paddle.serialize(),
-                'player2' : self.right_paddle.serialize(),
-                'player1_name': self.players_name[0] if self.players_name[0] else None,
-                'player2_name': self.players_name[1] if self.players_name[1] else None,
-                'player3_name': self.players_name[2] if self.players_name[2] else None,
-                'player4_name': self.players_name[3] if self.players_name[3] else None,
+    async def get_coordinates(self):
+            right_paddle = await self.right_paddle.serialize()
+            left_paddle = await self.left_paddle.serialize()
+            ball = await self.ball.serialize()
+            coord = {
+                'ball' : ball,
+                'player1' : left_paddle,
+                'player2' : right_paddle,
                 'player1_score' : self.left_score,
                 'player2_score' : self.right_score,
+                'game_width': GAME_WIDTH,
+                'game_height': GAME_HEIGHT,
+                'paddle_width': PADDLE_WIDTH,
+                'paddle_height': PADDLE_HEIGHT,
+                'ball_radius': BALL_RADIUS,
             }
+            for i, name in enumerate(self.players_name):
+                key_name = f"player{i + 1}_name"
+                coord[key_name] = name
+            return coord
 
-    def check_score(self):
+    async def check_score(self):
             if self.ball.x <= 0:
                 self.right_score += 1
-                self.reset()
+                await self.reset()
             elif self.ball.x >= GAME_WIDTH:
                 self.left_score += 1
-                self.reset()
+                await self.reset()
 
-    def paddle_movement(self, left=True, key_up=True):
+    async def paddle_movement(self, left=True, key_up=True):
         if left:
-            self.left_paddle.handle_movement(key_up=key_up)
+            await self.left_paddle.handle_movement(key_up=key_up)
         else:
-            self.right_paddle.handle_movement(key_up=key_up)
+            await self.right_paddle.handle_movement(key_up=key_up)
 
-    def routine(self):
-        self.ball.move()
-        handle_collision(self.ball, self.left_paddle, self.right_paddle)
-        self.check_score()
+    async def routine(self):
+        await self.ball.move()
+        await handle_collision(self.ball, self.left_paddle, self.right_paddle)
+        await self.check_score()
 
-    def reset(self):
-        self.left_paddle.reset()
-        self.right_paddle.reset()
-        self.ball.reset()
+    async def reset(self):
+        await self.left_paddle.reset()
+        await self.right_paddle.reset()
+        await self.ball.reset()
 
 
 class   PongGame():
@@ -163,109 +171,15 @@ class   PongGame():
     def __init__(self, players_name):
         self.match = PongMatch(players_name)
 
-    def move_player_paddle(self, player_move):
+    async def move_player_paddle(self, player_move):
         player = player_move['player'] == 1
         move = player_move['direction'] < 0
-        self.match.paddle_movement(left=player, key_up=move)
+        if player_move['direction'] != 0:
+            await self.match.paddle_movement(left=player, key_up=move)
 
-    def update(self):
-        self.match.routine()
+    async def update(self):
+        await self.match.routine()
 
-    def serialize(self):
-        return self.match.get_coordinates()
-
-
-
-
-
-
-
-
-# import pygame
-
-# pygame.init()
-
-# WIN = pygame.display.set_mode((GAME_WIDTH, GAME_HEIGHT))
-# pygame.display.set_caption("Pong")
-
-# FPS = 60
-
-# WHITE = (255, 255, 255)
-# BLACK = (0, 0, 0)
-
-
-# SCORE_FONT = pygame.font.SysFont("comicsans", 50)
-
-# def draw(win, paddles, ball, left_score, right_score):
-#     win.fill(BLACK)
-
-#     left_score_text = SCORE_FONT.render(f"{left_score}", 1, WHITE)
-#     right_score_text = SCORE_FONT.render(f"{right_score}", 1, WHITE)
-#     win.blit(left_score_text, (GAME_WIDTH//4 - left_score_text.get_width()//2, 20))
-#     win.blit(right_score_text, (GAME_WIDTH * (3/4) -
-#                                 right_score_text.get_width()//2, 20))
-
-#     for paddle in paddles:
-#         pygame.draw.rect(
-#             win, WHITE, (paddle.x, paddle.y, paddle.width, paddle.height))
-
-#     for i in range(10, GAME_HEIGHT, GAME_HEIGHT//20):
-#         if i % 5 == 1:
-#             continue
-#         pygame.draw.rect(win, WHITE, (GAME_WIDTH//2 - 10, i, 5, GAME_HEIGHT//20))
-
-#     pygame.draw.circle(win, WHITE, (ball.x, ball.y), ball.radius)
-#     pygame.display.update()
-
-
-
-
-
-# def main():
-#     run = True
-#     clock = pygame.time.Clock()
-#     pong_match = PongMatch()
-
-#     while run:
-#         clock.tick(FPS)
-#         coor = pong_match.get_coordinates()
-#         draw(WIN, [coor['player1'], coor['player2']], coor['ball'], coor['player1_score'], coor['player2_score'])
-
-#         for event in pygame.event.get():
-#             if event.type == pygame.QUIT:
-#                 run = False
-#                 break
-
-#         keys = pygame.key.get_pressed()
-#         if keys[pygame.K_w] or keys[pygame.K_s]:
-#             pong_match.paddle_movement(left=True, key_up=(not keys[pygame.K_s]))
-#         if keys[pygame.K_UP] or keys[pygame.K_DOWN]:
-#             pong_match.paddle_movement(left=False, key_up=keys[pygame.K_UP])
-
-#         pong_match.routine()
-#         won = False
-#         if pong_match.left_score >= WINNING_SCORE:
-#             won = True
-#             win_text = "Left Player Won!"
-#         elif pong_match.right_score >= WINNING_SCORE:
-#             won = True
-#             win_text = "Right Player Won!"
-
-#         if won:
-#             text = SCORE_FONT.render(win_text, 1, WHITE)
-#             WIN.blit(text, (GAME_WIDTH//2 - text.get_width() //
-#                             2, GAME_HEIGHT//2 - text.get_height()//2))
-#             pygame.display.update()
-#             pygame.time.delay(5000)
-#             pong_match.reset()
-#             pong_match.left_score = 0
-#             pong_match.right_score = 0
-
-
-
-#     pygame.quit()
-
-
-# if __name__ == '__main__':
-#     main()
-
+    async def serialize(self):
+        coord = await self.match.get_coordinates()
+        return coord

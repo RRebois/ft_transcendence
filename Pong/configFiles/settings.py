@@ -40,8 +40,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'fontawesomefree',
 	'gamesManager',
-	'anotherGame',
-    'pongGame',
+	# 'anotherGame',
+    # 'pongGame',
     # 'channels'
     'django.contrib.admin',
     'django.contrib.auth',
