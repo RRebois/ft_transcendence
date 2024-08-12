@@ -88,6 +88,40 @@ def validate_image(image_path):
 
     return image_path
 
+
+def authenticate_user(request):
+    auth_header = request.headers.get('Authorization')
+    token = None
+    if auth_header and auth_header.startswith('Bearer '):
+        token = auth_header.split(' ')[1]
+    if not token:
+        token = request.COOKIES.get('jwt_access')
+    if not token:
+        raise AuthenticationFailed('No JWT were found, please login.')
+
+    secret = os.environ.get('SECRET_KEY')
+
+    try:
+        payload = jwt.decode(token, secret, algorithms=['HS256'])
+    except jwt.ExpiredSignatureError:
+        refresh_token = request.COOKIES.get('jwt_refresh')
+        if not refresh_token:
+            raise AuthenticationFailed("Access token expired and refresh token not found, please log in again.")
+        return refresh_token_user(refresh_token, request)
+    except jwt.InvalidTokenError:
+        raise AuthenticationFailed("Invalid token, please log in again.")
+
+    user_id = payload.get('id')
+
+    try:
+        user = User.objects.get(id=user_id)
+
+    except User.DoesNotExist:
+        raise AuthenticationFailed('User not found')
+
+    return user
+
+
 def generate_short_lived_JWT(user):
     payload = {
         'id': user.id,
@@ -95,15 +129,18 @@ def generate_short_lived_JWT(user):
         'exp': datetime.now(timezone.utc) + timedelta(minutes=2),  # time before expiration
         'iat': datetime.now(timezone.utc),  # Issued AT
     }
-    logger.warning(f"In get_ws_token: user is  {user.username}")
     secret = os.environ.get('SECRET_KEY')
     token = jwt.encode(payload, secret, algorithm='HS256')
     return token
 
 
 def get_ws_token(request):
-    logger.warning(f"In get_ws_token: user is {request.user.username}")
-    if request.user.is_authenticated:
-        token = generate_short_lived_JWT(request.user)
-        return JsonResponse({'token': token})
-    return JsonResponse({'error': 'Not authenticated'}, status=401)
+    try:
+        user = authenticate_user(request)
+    except AuthenticationFailed:
+        logger.warning("In get_ws_token: auth failed")
+        return JsonResponse({'error': 'Not authenticated'}, status=401)
+
+    logging.debug(user)
+    token = generate_short_lived_JWT(user)
+    return JsonResponse({'token': token}, status=200)

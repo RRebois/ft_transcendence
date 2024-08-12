@@ -2,13 +2,18 @@ import {isUserConnected} from "./user_auth.js";
 
 export async function initializeWebSocket() {
     console.log("In Init WS FRONT")
+    const response = await fetch('https://localhost:8443/get_ws_token/', {
+        credentials: 'include',
+    });
+    const jwt = await response.json();
     const isUserAuth = await isUserConnected();
     if (isUserAuth) {
+        const token = jwt.token
         console.log("In Init WS FRONT, USER AUTHENTICATED")
         const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
-        const url = wsSelect + "localhost:8443" + '/ws/user/'
+        const url = wsSelect + "localhost:8443" + '/ws/user/' + token + '/'
         console.log("url is:", url);
-        const socket = new WebSocket(wsSelect + "localhost:8443" + '/ws/user/' );
+        const socket = new WebSocket(wsSelect + "localhost:8443" + '/ws/user/' + token + '/');
 
         socket.onopen = function(e) {
             console.log("WebSocket connection established");
