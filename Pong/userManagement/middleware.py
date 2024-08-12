@@ -35,30 +35,28 @@ class JWTAuthenticationMiddleware(MiddlewareMixin):
 class JWTAuthWSMiddleware:
     def __init__(self, app):
         self.app = app
-
     async def __call__(self, scope, receive, send):
-        logger.warning("JWTAuthWSMiddleware called")
+        print("JWTAuthWSMiddleware called")
         path = scope['path']
         parts = path.split('/')
         token = parts[-2] if len(parts) >= 2 else None
-
         if token:
             try:
                 payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+                print("JWTAuthWSMiddleware in try bloc")
                 user_id = payload.get('id')
                 user = await self.get_user(user_id)
                 scope['user'] = user
-                logger.warning(f"Authenticated user: {user.username}")
+                print(f"Authenticated user: {user.username}")
             except jwt.ExpiredSignatureError:
-                logger.warning("Token expired")
+                print("Token expired")
                 scope['user'] = AnonymousUser()
             except jwt.InvalidTokenError:
-                logger.warning("Invalid token")
+                print("Invalid token")
                 scope['user'] = AnonymousUser()
         else:
-            logger.warning("No token provided")
+            print("No token provided")
             scope['user'] = AnonymousUser()
-
         return await self.app(scope, receive, send)
 
     @database_sync_to_async

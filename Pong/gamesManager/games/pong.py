@@ -3,13 +3,13 @@ from random import choice, randrange
 GAME_WIDTH = 800
 GAME_HEIGHT = 400
 
-WINNING_SCORE = 10
+WINNING_SCORE = 2
 
 PADDLE_START_VEL = 6
 BALL_START_VEL = 4
 MAX_VEL = 10
 
-BALL_ACC = 0.2
+BALL_ACC = 0.4
 
 PADDLE_HEIGHT = GAME_HEIGHT // 6
 PADDLE_WIDTH = PADDLE_HEIGHT // 10
@@ -118,7 +118,8 @@ class   PongMatch():
                           2 - PADDLE_HEIGHT//2, PADDLE_WIDTH, PADDLE_HEIGHT)
         self.left_score = 0
         self.right_score = 0
-        self.players_name = players_name
+        # self.players_name = players_name
+        self.players_name = {f"player{v['id']}_name": k for k,v in players_name.items()}
 
 
     async def get_coordinates(self):
@@ -168,6 +169,10 @@ class   PongMatch():
         await self.right_paddle.reset()
         await self.ball.reset()
 
+    async def   play_again(self):
+        self.reset()
+        self.left_score = 0
+        self.right_score = 0
 
 class   PongGame():
 
@@ -186,3 +191,6 @@ class   PongGame():
     async def serialize(self):
         coord = await self.match.get_coordinates()
         return coord
+    
+    async def   reset_game(self):
+        self.match.play_again()
