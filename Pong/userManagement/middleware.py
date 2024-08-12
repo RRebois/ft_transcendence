@@ -39,8 +39,10 @@ class JWTAuthWSMiddleware:
     async def __call__(self, scope, receive, send):
         logger.warning("JWTAuthWSMiddleware called")
         path = scope['path']
+        logger.warning(f"Path is: {path}")
         parts = path.split('/')
         token = parts[-2] if len(parts) >= 2 else None
+        logger.warning(f"Token is: {token}")
 
         if token:
             try:

@@ -49,6 +49,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
         user = self.scope["user"]
+        logging.debug(f"WS User is {str(self.scope['user'])}")
         if user.is_anonymous:
             await self.accept()
             await self.close()
