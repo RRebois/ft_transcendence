@@ -381,30 +381,39 @@ class UpNewAvatarView(APIView):
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
 
-        if 'newImageFile' in request.FILES:
-            image = request.FILES['newImageFile']
-            serializer = self.serializer_class(data={'image': image})
-            if serializer.is_valid():
-                md5_hash = hashlib.md5(image.read()).hexdigest()
+        if request.method == 'POST':
+            if request.FILES:
+                image = request.FILES['newImageFile']
+                serializer = self.serializer_class(data={'image': image})
+                if serializer.is_valid():
+                    md5_hash = hashlib.md5(image.read()).hexdigest()
 
-                if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
-                    if Avatars.objects.get(image_hash_value=md5_hash) == Avatars.objects.get(pk=user.avatar_id.pk):
-                        return Response({"success": False, "message": "You already have that same avatar. Don't mess with me"})  # A modifier
-                    profile_img = Avatars.objects.create(image=image, image_hash_value=md5_hash)
+                    if Avatars.objects.filter(image_hash_value=md5_hash).exists():
+                        if Avatars.objects.get(image_hash_value=md5_hash) == Avatars.objects.get(pk=user.avatar_id.pk):
+                            return Response({"success": False, "message": "You already have that same avatar. "
+                                                                          "Don't mess with me duh"})  # A modifier
+                        else:
+                            profile_img = Avatars.objects.get(image_hash_value=md5_hash)
+                            profile_img.uploaded_from.add(user)
+                            profile_img.save()
+                            user.avatar_id = profile_img
+                            user.save()
+                            return Response(
+                                {"success": True, "message": "You have successfully updated your avatar"})  # A modifier
+                    else:
+                        profile_img = Avatars.objects.create(image=image, image_hash_value=md5_hash)
+                        profile_img.uploaded_from.add(user)
+                        profile_img.save()
+                        user.avatar_id = profile_img
+                        user.save()
+                        return Response(
+                            {"success": True, "message": "You have successfully updated a new avatar"})  # A modifier
                 else:
-                    profile_img = Avatars.objects.get(image_hash_value=md5_hash)
-                profile_img.uploaded_from.add(user)
-                profile_img.save()
-                user.avatar_id = profile_img
-                user.save()
-                return Response(
-                    {"success": True, "message": "You have successfully updated your avatar"})  # A modifier
+                    return Response(
+                        {"success": False, "message": "An error occurred. Could not change avatar."})  # A modifier
             else:
                 return Response(
-                    {"success": False, "message": "An error occurred. Could not change avatar."})  # A modifier
-        else:
-            return Response(
-                {"success": False, "message": "An error occurred. No new profile pic provided"})  # A modifier
+                    {"success": False, "message": "An error occurred. No new profile pic provided"})  # A modifier
 
 
 @method_decorator(csrf_protect, name='dispatch')
