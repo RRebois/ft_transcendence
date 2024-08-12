@@ -28,7 +28,6 @@ import jwt
 import requests
 import os
 
-
 from .models import *
 from .forms import *
 from .serializer import *
@@ -43,6 +42,7 @@ logging.basicConfig(
         logging.StreamHandler()  # This handler writes logs to stdout
     ]
 )
+
 
 @method_decorator(csrf_protect, name='dispatch')
 class JWTAuthView(APIView):
@@ -106,12 +106,13 @@ class TestView(APIView):
         response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True, path='/')
         return response
 
+
 def user_as_json(user):
     user_dict = model_to_dict(user, fields=[field.name for field in user._meta.fields if
                                             field.name not in ['image', 'password', 'last_login', 'is_superuser',
                                                                'is_staff', 'is_active']])
-    server_url = os.environ.get('SERVER_URL')
-    user_dict['image_url'] = server_url + "/" + user.get_img_url()
+    image_url = get_profile_pic_url(user.get_img_url())
+    user_dict['image_url'] = image_url
     return user_dict
 
 
@@ -151,14 +152,17 @@ class LoginView(APIView):
             #     'redirect_url': ""
             # }, status=status.HTTP_200_OK)
 
+            logging.debug("logging user")
             user_dict = model_to_dict(user)
-            server_url = os.environ.get('SERVER_URL')
             image_url = user.get_img_url()
-            user_dict['image_url'] = server_url + '/' + image_url
+            user_dict['image_url'] = get_profile_pic_url(image_url)
+            logging.debug("image in logging : " + user_dict['image_url'])
 
             response = JsonResponse(data={'user': user_dict}, status=200)
-            response.set_cookie(key='jwt_access', value=access_token, httponly=True,  samesite='Lax', secure=True, path='/')
-            response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True, path='/')
+            response.set_cookie(key='jwt_access', value=access_token, httponly=True, samesite='Lax', secure=True,
+                                path='/')
+            response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True,
+                                path='/')
             response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True, path='/')
             return response
         except AuthenticationFailed as e:
@@ -254,6 +258,15 @@ class LogoutView(APIView):
         return response
 
 
+def get_profile_pic_url(pp_path):
+    url = os.environ.get('SERVER_URL')
+    if url and url[-1] == '/':
+        url = url[:-1]
+    if pp_path and pp_path[0] == '/':
+        pp_path = pp_path[1:]
+    return f"{url}/{pp_path}"
+
+
 # https://www.django-rest-framework.org/api-guide/renderers/#templatehtmlrenderer
 @method_decorator(csrf_protect, name='dispatch')
 class RegisterView(APIView):
@@ -267,9 +280,7 @@ class RegisterView(APIView):
         try:
             serializer_response = serializer.is_valid(raise_exception=True)
         except:
-            logging.debug("serializer is not valid")
             errors = serializer.errors
-            logging.debug("serializer validation errors: ", str(errors))
             for key, value in errors.items():
                 for error in value:
                     if key == 'email' and error.code == 'unique':
@@ -277,7 +288,6 @@ class RegisterView(APIView):
                     elif key == 'username' and error.code == 'unique':
                         return Response('username already taken', status=400)
             return Response('Something went wrong', status=400)
-
 
         if serializer_response:
             try:
@@ -308,7 +318,7 @@ class RegisterView(APIView):
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
-                    return Response(model_to_dict(user), status=201)
+                    # return Response(model_to_dict(user), status=201)
 
                 else:
                     # Check if image already uploaded
@@ -319,15 +329,14 @@ class RegisterView(APIView):
                     profile_img.uploaded_from.add(user)
                     profile_img.save()
                     user.avatar_id = profile_img
-
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
 
                     # TODO revoir front
-                    return Response({"user": model_to_dict(user),
-                                     "message": f"Image format and/or size not valid. Only jpg/jpeg/gif and png images are allowed. images cannot be larger than {convert_to_megabyte(FILE_UPLOAD_MAX_MEMORY_SIZE)}MB. Profile picture set to default."},
-                                    status=201)
+                    # return Response({"user": model_to_dict(user),
+                    #                  "message": f"Image format and/or size not valid. Only jpg/jpeg/gif and png images are allowed. images cannot be larger than {convert_to_megabyte(FILE_UPLOAD_MAX_MEMORY_SIZE)}MB. Profile picture set to default."},
+                    #                 status=201)
             else:
                 # Check if image already uploaded
                 if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
@@ -337,17 +346,32 @@ class RegisterView(APIView):
                 profile_img.uploaded_from.add(user)
                 profile_img.save()
                 user.avatar_id = profile_img
-
                 user.save()
                 user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                 user_data.save()
                 # TODO check envoyer URL
-                return Response({"user": model_to_dict(user),
-                                 "message": "No profile image selected. Profile picture set to default."},
-                                status=201)
-
+                # return Response({"user": model_to_dict(user),
+                #                  "message": "No profile image selected. Profile picture set to default."},
+                #                 status=201)
+            access_token = jwt.encode({'id': user.id}, os.environ.get('SECRET_KEY'), algorithm='HS256')
+            refresh_token = jwt.encode({'id': user.id, 'type': 'refresh'}, os.environ.get('SECRET_KEY'),
+                                       algorithm='HS256')
+            user_dict = model_to_dict(user)
+            image_url = get_profile_pic_url(user.get_img_url())
+            logging.debug(f"image_url: {image_url}")
+            user_dict['image_url'] = image_url
+            logging.debug(f"image_url in dict: {user_dict['image_url']}")
+            logging.debug(f"user_dict: {user_dict}")
+            response = JsonResponse(data={'user': user_dict}, status=201)
+            response.set_cookie(key='jwt_access', value=access_token, httponly=True, samesite='Lax', secure=True,
+                                path='/')
+            response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True,
+                                path='/')
+            response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True, path='/')
+            return response
         else:
             errors = serializer.errors
+            logging.debug("serializer validation errors: ", str(errors))
             return Response(str(errors), status=400)
 
 

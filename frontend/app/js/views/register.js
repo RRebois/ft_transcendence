@@ -75,8 +75,18 @@ export default class Register {
         const password = document.getElementById('password').value;
         const password2 = document.getElementById('password2').value;
         // TODO add profile picture
+        const profilePicture = document.getElementById('profile-picture').files[0];
 
-        console.log(firstname, lastname, username, email, password, password2);
+        const formData = new FormData();
+        formData.append('first_name', firstname);
+        formData.append('last_name', lastname);
+        formData.append('username', username);
+        formData.append('email', email);
+        formData.append('password', password);
+        formData.append('password2', password2);
+        formData.append('imageFile', profilePicture);
+
+        console.log(firstname, lastname, username, email, password, password2, profilePicture);
         if (!this.validateInputs(firstname, lastname, username, email, password, password2)) {
             return;
         }
@@ -86,21 +96,14 @@ export default class Register {
         fetch('https://localhost:8443/register', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken // Include CSRF token in request headers if needed
             },
             credentials: 'include',
-            body: JSON.stringify({
-                first_name: firstname,
-                last_name: lastname,
-                username: username,
-                email: email,
-                password: password,
-                password2: password2
-            })
+            body: formData
         })
             .then(response => response.json().then(data => ({ok: response.ok, data})))
             .then(({ok, data}) => {
+                console.log("Response: ", data);
                 if (!ok) {
                     const toastComponent = new ToastComponent();
                     toastComponent.throwToast('Error', data || 'Something went wrong', 5000, 'error');
@@ -108,8 +111,7 @@ export default class Register {
                     console.log('Success:', data);
                     const toastComponent = new ToastComponent();
                     toastComponent.throwToast('Success', data || 'Account created', 5000, 'error');
-                    window.location.href = '/';
-                    // Handle success, e.g., redirecting the user or displaying a success message
+                    window.location.href = '/dashboard';
                 }
             })
             .catch(error => {

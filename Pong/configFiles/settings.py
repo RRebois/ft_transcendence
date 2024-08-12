@@ -168,7 +168,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS_ORIGIN_ALLOW_ALL = True  # allow all frontend ports to access app
 CORS_ALLOW_CREDENTIALS = True  # for frontend to get the jwt cookies
 CORS_ALLOWED_ORIGINS = [
-    'https://localhost:3000', 'http://localhost:4242',
+    'https://localhost:3000', 'https://localhost:4242',
 ]
 
 REST_FRAMEWORK = {
@@ -183,34 +183,3 @@ EMAIL_PORT = '587'
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_SENDER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_SENDER_PASS')
-
-
-class WarningDebugFilter(logging.Filter):
-    def filter(self, record):
-        return record.levelno in [logging.WARNING, logging.DEBUG]
-
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'warning_debug_only': {
-            '()': WarningDebugFilter,
-        },
-    },
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'debug.log',
-            'filters': ['warning_debug_only'],
-        },
-    },
-    'loggers': {
-        '': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
-}

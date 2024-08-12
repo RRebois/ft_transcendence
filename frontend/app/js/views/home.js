@@ -34,9 +34,8 @@ export default class Home {
                     toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
                 } else {
                     console.log('Success:', data);
-                    // router.navigate('/dashboard');
-                    initializeWebSocket();
-                    // window.location.href = '/dashboard';
+                    // initializeWebSocket();
+                    window.location.href = '/dashboard';
                 }
             })
             .catch(error => {
