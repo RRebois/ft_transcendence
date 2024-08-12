@@ -109,6 +109,7 @@ async def handle_collision(ball, left_paddle, right_paddle):
 
 class   PongMatch():
 
+# TODO adapt for 4 players
     def __init__(self, players_name):
         self.ball = Ball(GAME_WIDTH // 2, GAME_HEIGHT // 2, BALL_RADIUS)
         self.left_paddle = Paddle(10, GAME_HEIGHT//2 - PADDLE_HEIGHT //
@@ -125,6 +126,7 @@ class   PongMatch():
             left_paddle = await self.left_paddle.serialize()
             ball = await self.ball.serialize()
             coord = {
+                **self.players_name,
                 'ball' : ball,
                 'player1' : left_paddle,
                 'player2' : right_paddle,
@@ -135,10 +137,11 @@ class   PongMatch():
                 'paddle_width': PADDLE_WIDTH,
                 'paddle_height': PADDLE_HEIGHT,
                 'ball_radius': BALL_RADIUS,
+                'winning_score': WINNING_SCORE,
             }
-            for i, name in enumerate(self.players_name):
-                key_name = f"player{i + 1}_name"
-                coord[key_name] = name
+            # for i, name in enumerate(self.players_name):
+            #     key_name = f"player{i + 1}_name"
+            #     coord[key_name] = name
             return coord
 
     async def check_score(self):
@@ -174,8 +177,8 @@ class   PongGame():
     async def move_player_paddle(self, player_move):
         player = player_move['player'] == 1
         move = player_move['direction'] < 0
-        if player_move['direction'] != 0:
-            await self.match.paddle_movement(left=player, key_up=move)
+        # if player_move['direction'] != 0:
+        await self.match.paddle_movement(left=player, key_up=move)
 
     async def update(self):
         await self.match.routine()
