@@ -35,8 +35,15 @@ export default class Home {
                 } else {
                     console.log('Success:', data);
                     // router.navigate('/dashboard');
-                    initializeWebSocket();
-                    window.location.href = '/dashboard';
+                    initializeWebSocket()
+                        .then(() => {
+                        console.log("WebSocket connected, now redirecting");
+                        window.location.href = '/dashboard';
+                    })
+                    .catch(error => {
+                        console.error("Failed to initialize WebSocket:", error);
+                        window.location.href = '/';
+                    });
                 }
             })
             .catch(error => {
