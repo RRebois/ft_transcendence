@@ -106,7 +106,6 @@ function    load_change_profile_pic(username) {
                             .then(response => response.json())
                             .then(newData => {
                                 document.getElementById("userImg").src = newData;
-                                img.src = newData;
                             })
                             .catch(error => console.error('Error fetching user avatar request: ', error));
                         }
@@ -172,7 +171,6 @@ function    load_change_profile_pic(username) {
                     .then(response => response.json())
                     .then(newData => {
                         document.getElementById("userImg").src = newData;
-                        img.src = newData;
                     })
                     .catch(error => console.error('Error fetching user avatar request: ', error));
                 }
