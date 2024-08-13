@@ -62,8 +62,12 @@ function    load_change_profile_pic(username) {
             imgPart2Sub.append(validateChoice);
             imgPart2.append(imgPart2Sub);
 
+            // if no previous avatar, hides this section
+            if (avatars.length < 1)
+                imgPart2.style.display = "none";
+
             user_avatars.forEach((el) => {
-                el.addEventListener("click", () => {
+                el.addEventListener("click", () => {console.log(el.src);
                     const   swapImg = document.getElementById("currentImg");
                     const   unselect = document.querySelector(".selectedImg");
                     if (unselect !== null) {
@@ -71,11 +75,47 @@ function    load_change_profile_pic(username) {
                         unselect.classList.remove("selectedImg");
                     }
                     const   changeBtn = document.getElementById("pickOldAvatar");
-                    if (changeBtn.disabled == true);
+                    if (changeBtn.disabled === true);
                         changeBtn.disabled = false;
                     el.style.border = "3px solid red";
                     el.classList.add("selectedImg");
                 })
+            })
+            validateChoice.addEventListener("click", () => {
+                const   avatarSelected = document.querySelector(".selectedImg");
+                if (avatarSelected !== null) {
+                    const   formData = {
+                        "data": avatarSelected.src
+                    }
+
+                    fetch("changeAvatar", {
+                        method: "PUT",
+                        headers: {
+                            "X-CSRFToken": document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            displayMessage(result.message, "success");
+                            document.getElementById('profilePic').remove();
+
+                            fetch(`getUserAvatar/${username}`)
+                            .then(response => response.json())
+                            .then(newData => {
+                                document.getElementById("userImg").src = newData;
+                                img.src = newData;
+                            })
+                            .catch(error => console.error('Error fetching user avatar request: ', error));
+                        }
+                        else {
+                            displayMessage(result.message, "danger");
+                        }
+                    })
+                    .catch(error => console.error('Error fetching change avatar request: ', error));
+                }
             })
         })
 
@@ -130,7 +170,7 @@ function    load_change_profile_pic(username) {
 
                     fetch(`getUserAvatar/${username}`)
                     .then(response => response.json())
-                    .then(newData => {console.log(newData);
+                    .then(newData => {
                         document.getElementById("userImg").src = newData;
                         img.src = newData;
                     })
