@@ -1,25 +1,25 @@
 import json
 
 import asyncio
+import pickle
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-# from channels.auth import channel_session_user_from_http
 from django.core.cache import cache
 from .games.pong import PongGame
 from matchs.views import create_match
 
 
 class	GameManagerConsumer(AsyncWebsocketConsumer):
+	matchs = {}
 
-	# @channel_session_user_from_http
 	async def	connect(self):
-		# http_user = True
 		self.game_name = self.scope['url_route']['kwargs']['game_name']
 		self.game_code = int(self.scope['url_route']['kwargs']['game_code'])
 		self.session_id = self.scope['url_route']['kwargs']['session_id']
-		self.session_data = await self.get_session_data(self.session_id)
+		self.session_data = await self.get_session_data()
 		self.players_max = self.session_data['awaited_players']
-		self.game_handler = PongHandler(self) #if self.game_name == 'pong' else self.purrinha_handler
+		# self.game_handler = PongHandler(self) #if self.game_name == 'pong' else self.purrinha_handler
+		self.game_handler = None
 		self.user = self.scope['user']
 		self.username = self.user.username
 
@@ -46,21 +46,23 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		)
 
 		# await self.update_session_data()
-		print(f'\n\n\nusername => |{self.username}|\nuser => |{self.user}|\ncode => |{self.game_code}|\n data => |{self.session_data}|\nscope => |{self.scope}| \n\n')
 		if self.session_data['status'] == 'started':
-			await self.update_session_status()
+			self.game_handler = PongHandler(self)
+			GameManagerConsumer.matchs[self.session_id] = self.game_handler
+			# self.session_data['game_handler'] = pickle.dumps(self.game_handler)
+			# self.session_data['game_handler'] = PongHandler(self)
+			print(f'\n\n{self.username} => {self.session_data['game_handler']}\n\n')
+			# await self.update_session_status()
+			database_sync_to_async(cache.set)(self.session_id, self.session_data)
 			await self.game_handler.launch_game(self.session_data['players'])
+		else:
+			self.loop_task = asyncio.create_task(self.fetch_session_data_loop())
+		print(f'\n\n\nusername => |{self.username}|\nuser => |{self.user}|\ncode => |{self.game_code}|\n data => |{self.session_data}|\nscope => |{self.scope}| \n\n')
 		await self.send_to_group(self.session_data)
 
 	async def	receive(self, text_data):
 		data = json.loads(text_data)
-		# print(f'\n\n data = {data}\ntext_data = {text_data} \n\n')
-		if data.get('status') == 'waiting':
-			self.session_data = await self.get_session_data(self.session_id)
-			return
-		if self.session_data['status'] != 'waiting':
-			if self.game_handler is None:
-				self.game_handler = await self.get_game_handler()
+		if self.game_handler is not None:
 			if self.game_code != 20:
 				player_move = data.get('player_move')
 				if player_move:
@@ -82,6 +84,26 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		)
 		await self.decrement_connection_count(self.session_id)
 
+	async def	fetch_session_data_loop(self):
+		print(f"\n\n entrei no loop {self.username} \n\n")
+		while True:
+			await self.fetch_session_data()
+			await asyncio.sleep(0.2)
+
+	async def	fetch_session_data(self):
+		if self.session_data['status'] == 'waiting':
+			self.session_data = await self.get_session_data()
+		else:
+			self.game_handler = GameManagerConsumer.matchs.get(self.session_id)
+			# self.game_handler = pickle.loads(self.session_data['game_handler'])
+			self.loop_task.cancel()
+
+	async def	cancel_loop(self):
+		print('\n\nhello\n\n')
+		if hasattr(self, 'loop_task'):
+			self.loop_task.cancel()
+
+
 	@database_sync_to_async
 	def	get_game_handler(self):
 		session_data = cache.get(self.session_id)
@@ -93,67 +115,21 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 				self.session_data['game_handler'] = self.game_handler
 				cache.set(self.session_id, self.session_data)
 
-	# @database_sync_to_async
-	# async def	update_session_data(self):
-	# 	players = {'players': {}}
-	# 	connected_players = 0
-	# 	awaited_players = self.session_data['still_available']
-	# 	for i, player in enumerate(self.session_data['players']):
-	# 		if player['connected']:
-	# 			self.session_data['connected_players']
-	# 		awaited_players -= 1
-	# 		key_name = f"player{i + 1}_name"
-	# 		if self.session_data['players'][player]:
-	# 			players['players'][key_name] = player
-	# 			connected_players += 1
-	# 	message = {
-	# 		**players,
-	# 		'game': self.game_name,
-	# 		'awaited_players': awaited_players,
-	# 		'connected_players': connected_players,
-	# 		'session_id': self.session_id,
-	# 		'status': 'started' if self.players_max == connected_players else 'waiting',
-	# 		'winner': None,
-	# 		'game_state': 'waiting',
-	# 	}
-
-	# 	{
-	# 	'players': players,
-	# 	'game': game_name,
-	# 	'awaited_players': awaited_connections,
-	# 	'connected_players': 0,
-	# 	'session_id': session_id,
-	# 	'status': 'waiting',
-	# 	'winner': None,
-	# 	'game_state': 'waiting',
-	# 	}
-
-	# 	return message
-
-	# async def	wait_others(self):
-	# 	while self.players_max != self.session_data['']
 
 # TODO
 	async def	end_game(self):
 		pass
 
-	@staticmethod
-	@database_sync_to_async
-	def get_session_data(session_id):
-		return cache.get(session_id)
-
 	# @staticmethod
-	# @database_sync_to_async
-	# def get_connections(session_id):
-	# 	session_data = cache.get(session_id)
-	# 	return session_data['still_available'] if session_data else -1
+	@database_sync_to_async
+	def get_session_data(self):
+		return cache.get(self.session_id)
 
 	@database_sync_to_async
 	def	update_session_status(self):
-		self.session_data['status'] = 'started'
+		# self.session_data['status'] = 'started'
 		cache.set(self.session_id, self.session_data)
 
-	# @staticmethod
 	@database_sync_to_async
 	def change_connection_status(self):
 		# session_data = cache.get(session_id)
@@ -207,6 +183,7 @@ class PongHandler():
 
 
 	async def	receive(self, text_data):
+		# print(f'\n\n{self}\n\n')
 		player_move = text_data.get('player_move')
 		if player_move:
 			await self.game.move_player_paddle(player_move)
