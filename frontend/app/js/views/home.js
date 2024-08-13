@@ -38,6 +38,8 @@ export default class Home {
                     initializeWebSocket()
                         .then(() => {
                         console.log("WebSocket connected, now redirecting");
+                        const toastComponent = new ToastComponent();
+                        toastComponent.throwToast('Success', data.message || 'You are now connected', 5000);
                         window.location.href = '/dashboard';
                     })
                     .catch(error => {

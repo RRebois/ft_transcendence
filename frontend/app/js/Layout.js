@@ -30,6 +30,8 @@ export default class Layout {
             navbar.setupEventListeners();
         }
         const view = new this.view({user: this.user});
-        view.setupEventListeners();
+        if (typeof view.setupEventListeners === 'function') {
+            view.setupEventListeners();
+        }
     }
 }

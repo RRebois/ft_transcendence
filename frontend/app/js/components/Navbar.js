@@ -1,4 +1,5 @@
 import { getCookie } from "@js/functions/cookie.js";
+import Friends from "../views/friends.js";
 
 export default class Navbar {
 	constructor(user = null) {
@@ -41,7 +42,7 @@ export default class Navbar {
 							<ul class="dropdown-menu">
 								<li><a class="dropdown-item" href="#">My profile</a></li>
 								<li><a class="dropdown-item" href="#">My stats</a></li>
-								<li><a class="dropdown-item" href="#">Friends</a></li>
+								<li><a role="button" id="friends-btn" class="dropdown-item" href="/friends">Friends</a></li>
 								<li><hr class="dropdown-divider"></li>
 								<li><a class="dropdown-item" href="/settings">Settings</a></li>
 								<li><a role="button" id="logout-btn" class="dropdown-item text-danger">Logout</a></li>
@@ -92,5 +93,15 @@ export default class Navbar {
 		if (logout) {
 			logout.addEventListener('click', this.logoutUser);
 		}
+
+		document.getElementById('friends-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.hash = '/friends';
+        });
+
+		// const friends = document.getElementById('friends-btn');
+		// if (friends) {
+		// 	friends.addEventListener('click', Friends.load_friends_page);
+		// }
 	}
 }
