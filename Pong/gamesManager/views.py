@@ -46,13 +46,10 @@ class	GameManagerView(APIView):
 
 	def	create_session(self, request, game_name, game_code, username):
 		awaited_connections = 2
-		# if game_code == 22:
-		# 	awaited_connections == 2
 		if game_code == 40:
 			awaited_connections == 4
 
 		players = {username: {'id': 1, 'connected': False}}
-		# players = {username: True}	#to test
 		if game_code == 10:
 			players['bot'] = {'id': 2, 'connected': True}
 		if game_code == 20:	# get the request to check if it's guest or friend
@@ -60,10 +57,6 @@ class	GameManagerView(APIView):
 
 		session_id = f"{game_name}_{str(uuid.uuid4().hex)}"
 		cache.set(session_id, {
-		# # 'winner': None,
-		# 'status': 'waiting',
-		# 'still_available': awaited_connections,
-		# 'players' : players})
 
 		'players': players,
 		'game': game_name,
@@ -72,7 +65,6 @@ class	GameManagerView(APIView):
 		'session_id': session_id,
 		'status': 'waiting',
 		'winner': None,
-		'game_handler': None,
 		'game_state': 'waiting',
 		})
 		return session_id
@@ -86,7 +78,6 @@ class	GameManagerView(APIView):
 
 		user = authenticate_user(request)
 		username = user.username
-		# username = 'AnonymousUser'
 		if session_id is None:
 			session_id = self.create_session(request, game_name, game_code, username)
 		else:
@@ -99,7 +90,6 @@ class	GameManagerView(APIView):
 				return JsonResponse({"success": False, "errors": 'You are already connected'})
 			if username not in players:
 				session_data['players'][username] = {'id': connections + 1, 'connected': False}
-				# session_data['still_available'] -= 1
 				cache.set(session_id, session_data)
 
 			# asyncio.create_task(session_creator(session_id))

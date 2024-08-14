@@ -85,7 +85,8 @@ def update_match_data(players_data, winner, is_pong=True):
 
 
 def create_match(match_result, winner, is_pong=True):
-    match = Match.objects.create(is_pong=is_pong, count=match_result.length())
+    print('\n\nPASSEI DENTRO do create_match\n\n')
+    match = Match.objects.create(is_pong=is_pong, count=len(match_result))
     players_data = []
 
     for player_username in match_result.keys():
