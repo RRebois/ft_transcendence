@@ -172,11 +172,13 @@ class LoginView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 class Login42View(APIView):
 
-    def post(self, request):
-        return redirect(os.environ.get('API_42_CALL'))
+    # def post(self, request):
+    #     redirect_url = os.environ.get('API_42_CALL')
+    #     return JsonResponse(data={'redirect_url': redirect_url}, status=200)
 
     def get(self, request):
-        return redirect(os.environ.get('API_42_CALL'))
+        redirect_url = os.environ.get('API_42_CALL')
+        return JsonResponse(data={'redirect_url': redirect_url}, status=200)
 
 
 def exchange_token(code):
@@ -211,18 +213,17 @@ class Login42RedirectView(APIView):
     def post(self, request):
         return HttpResponseRedirect(reverse("index"))
 
+    # TODO: check failure cases
     def get(self, request):
         code = request.GET.get('code')
         try:
             user42 = exchange_token(code)
         except:
-            messages.warning(request, "The connexion with 42 failed")
-            return HttpResponseRedirect(reverse("index"))
+            JsonResponse(data={'message': 'The connexion with 42 provider failed'}, status=400)
         try:
             user = User.objects.get(email=user42["email"])
             if not user.stud42:
-                messages.warning(request, "e-mail already taken.")
-                return HttpResponseRedirect(reverse("index"))
+                return JsonResponse(data={'message': 'email is already taken'}, status=400)
         except User.DoesNotExist:
             try:
                 serializer = self.serializer_class(user42)
@@ -230,17 +231,18 @@ class Login42RedirectView(APIView):
                 user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                 user_data.save()
             except:
-                messages.warning(request, "Username already taken.")
-                return HttpResponseRedirect(reverse("index"))
+                JsonResponse(data={'message': 'Username already taken'}, status=400)
 
         if user.status == "online":
-            return JsonResponse(status=401, data={'status': 'false', 'message': "User already have an active session"})
+            return JsonResponse(status=401, data={'message': "User already have an active session"})
         token = generate_JWT(user)
         refresh = generate_refresh_JWT(user)
-        response = redirect('index')
+        response = JsonResponse(data={'user': user_as_json(user)}, status=200)
         response.set_cookie(key='jwt_access', value=token, httponly=True)
         response.set_cookie(key='jwt_refresh', value=refresh, httponly=True)
         response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
+        response['Location'] = 'https://localhost:4242/dashboard'
+        response.status_code = 302
         return response
 
 
@@ -259,6 +261,8 @@ class LogoutView(APIView):
 
 
 def get_profile_pic_url(pp_path):
+    if (pp_path.startswith('http://') or pp_path.startswith('https://')):
+        return pp_path
     url = os.environ.get('SERVER_URL')
     if url and url[-1] == '/':
         url = url[:-1]

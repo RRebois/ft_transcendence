@@ -31,7 +31,7 @@ export default class Navbar {
 				<div class="container-fluid">
 					<a href="/dashboard" class="navbar-brand play-bold">ft_transcendence 🏓</a>
 					<div class="d-flex align-items-center">
-						<a role="button" data-bs-toggle="modal" data-bs-target="#update-user-picture">
+						<a role="button" data-bs-toggle="modal" data-bs-target="#update-user-picture" title="Update your profile picture !" data-bs-toggle="tooltip">
 							<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">
 						</a>
 						<div class="dropdown">
@@ -39,7 +39,7 @@ export default class Navbar {
 								<p class="d-none d-md-block mb-0 me-2">${this.user?.username}</p>
 							</button>
 							<ul class="dropdown-menu">
-								<li><a class="dropdown-item" href="#">My profile</a></li>
+								<li><a class="dropdown-item" href="/user/${this.user?.id}">My profile</a></li>
 								<li><a class="dropdown-item" href="#">My stats</a></li>
 								<li><a class="dropdown-item" href="#">Friends</a></li>
 								<li><hr class="dropdown-divider"></li>
@@ -92,5 +92,10 @@ export default class Navbar {
 		if (logout) {
 			logout.addEventListener('click', this.logoutUser);
 		}
+		// Initialize Bootstrap tooltips
+		const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+		const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+			return new bootstrap.Tooltip(tooltipTriggerEl);
+		});
 	}
 }
