@@ -44,6 +44,7 @@ logging.basicConfig(
     ]
 )
 
+
 @method_decorator(csrf_protect, name='dispatch')
 class JWTAuthView(APIView):
     def get(self, request):
@@ -105,6 +106,7 @@ class TestView(APIView):
         response = JsonResponse(data={'message': 'healthy'}, status=200)
         response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True, path='/')
         return response
+
 
 def user_as_json(user):
     user_dict = model_to_dict(user, fields=[field.name for field in user._meta.fields if
