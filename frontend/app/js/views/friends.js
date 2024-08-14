@@ -1,4 +1,5 @@
 import { getCookie } from "../functions/cookie";
+import ToastComponent from "@js/components/Toast.js";
 
 export default class Friends {
     // static load_friends_page;
@@ -10,18 +11,162 @@ export default class Friends {
 
     render() {
         return `
-         <div class="container">
+         <div class="w-100 h-100 d-flex flex-column justify-content-start align-items-center">
+            <h1 class="play-bold">Add a friend</h1>
             <form id="addfriend">
                 <input type="text" id="username"/>
-                <button type="submit" id="addfriend-submit">test</button>
+                <button type="submit" class="btn btn-primary" id="addfriend-submit">
+                    Add friend
+                    <i class="bi bi-person-add"></i>
+                </button>
             </form>
+            <div class="container">
+                <p class="play-bold">Friend requests</p>
+                <div id="friend-requests" class="d-flex flex-column w-100">
+                   
+                </div>
+            </div>
+            <div class="container">
+                <p class="play-bold">Your friends</p>
+                <div id="user-friends" class="d-flex flex-column w-100">
+                </div>
+            </div>
          </div>
         `
     }
 
+    load_friends_requests() {
+        fetch('https://localhost:8443/get_friend_requests', {
+            method: 'GET',
+            credentials: 'include',
+        })
+            .then(response => response.json().then(data => ({ok: response.ok, data})))
+            .then(({ok, data}) => {
+                console.log("Data: ", data);
+                if (!ok) {
+                    const toastComponent = new ToastComponent();
+                    toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+                } else {
+                    const friendRequestContainer = document.getElementById('friend-requests');
+                    if (friendRequestContainer) {
+                        data.map(request => {
+                            const friendRequestItem = document.createElement('div');
+                            friendRequestItem.classList.add('d-flex', 'w-100', 'justify-content-between', 'align-items-center', 'bg-white', 'login-card', 'py-2', 'px-5', 'rounded');
+                            friendRequestItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto';
+                            friendRequestItem.innerHTML = `
+                                <img src="${request.profile_image || "https://w0.peakpx.com/wallpaper/357/667/HD-wallpaper-ghost-profile-thumbnail.jpg"}" alt="user_pp" class="h-80 w-80 rounded-circle">
+                                <p>${request.from_user__username}</p>
+                                <p>Sent on ${new Date(request?.time).toLocaleString()}</p>
+                                <button class="btn btn-success confirm-request-btn" data-id="${request.from_user_id}">Accept</button>
+                                <button class="btn btn-danger decline-request-btn" data-id="${request.from_user_id}">Decline</button>
+                            `;
+                            friendRequestContainer.appendChild(friendRequestItem);
+                        });
+                        document.querySelectorAll('.confirm-request-btn').forEach(button => {
+                            button.addEventListener('click', this.accept_friend_request.bind(this));
+                        });
+                        document.querySelectorAll('.decline-request-btn').forEach(button => {
+                            button.addEventListener('click', this.decline_friend_request.bind(this));
+                        });
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching friend requests: ', error);
+                const toastComponent = new ToastComponent();
+                toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+            });
+    }
+
+    load_friends_list() {
+        fetch('https://localhost:8443/get_friends', {
+            method: 'GET',
+            credentials: 'include',
+        })
+            .then(response => response.json().then(data => ({ok: response.ok, data})))
+            .then(({ok, data}) => {
+                if (!ok) {
+                    const toastComponent = new ToastComponent();
+                    toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+                } else {
+                    const friendListContainer = document.getElementById('user-friends');
+                    if (friendListContainer) {
+                        data.map(friend => {
+                            const friendItem = document.createElement('div');
+                            friendItem.classList.add('d-flex', 'w-100', 'justify-content-between', 'align-items-center', 'bg-white', 'login-card', 'py-2', 'px-5', 'rounded');
+                            friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto';
+                            friendItem.innerHTML = `
+                                <img src="${friend.profile_image || "https://w0.peakpx.com/wallpaper/357/667/HD-wallpaper-ghost-profile-thumbnail.jpg"}" alt="user_pp" class="h-80 w-80 rounded-circle">
+                                <p>${friend.username}</p>
+                                <p>Status: ${friend.status}</p>
+                                <button class="btn btn-danger remove-friend-btn" data-id="${friend.id}">Remove</button>
+                            `;
+                            friendListContainer.appendChild(friendItem);
+                        });
+                        document.querySelectorAll('.remove-friend-btn').forEach(button => {
+                            button.addEventListener('click', this.remove_friend.bind(this));
+                        });
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching friends list: ', error);
+                const toastComponent = new ToastComponent();
+                toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+            });
+    }
+
+    accept_friend_request(event) {
+        const button = event.target;
+        const userId = button.getAttribute('data-id');
+        console.log('click on accept button ', userId);
+        fetch ('https://localhost:8443/accept_friend', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'include',
+            body: JSON.stringify({from_id: userId})
+        })
+            .then(response => response.json().then(data => ({ok: response.ok, data})))
+            .then(({ok, data}) => {
+                if (!ok) {
+                    const toastComponent = new ToastComponent();
+                    toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+                } else {
+                    const toastComponent = new ToastComponent();
+                    toastComponent.throwToast('Success', data.message || 'Friend request accepted', 5000);
+                    this.load_friends_requests();
+                }
+            })
+            .catch(error => {
+                console.error('Error accepting friend request: ', error);
+                const toastComponent = new ToastComponent();
+                toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+            });
+    }
+
+
+    decline_friend_request(event){
+        const button = event.target;
+        const userId = button.getAttribute('data-id');
+        console.log('click on decline button ', userId);
+    }
+
+    remove_friend(event) {
+        const button = event.target;
+        const userId = button.getAttribute('data-id');
+        console.log('click on remove button ', userId);
+    }
+
     setupEventListeners() {
-        // this.load_friends_page(this.props.user.username);
         document.getElementById('addfriend').addEventListener('submit', this.load_friends_page);
+        this.load_friends_requests();
+        this.load_friends_list();
+        document.querySelectorAll('.confirm-request-btn').forEach(button => {
+            button.addEventListener('click', this.accept_friend_request.bind(this));
+        });
     }
 
     load_friends_page(event) {

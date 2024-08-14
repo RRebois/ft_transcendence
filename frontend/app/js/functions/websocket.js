@@ -1,4 +1,5 @@
 import {isUserConnected} from "./user_auth.js";
+import ToastComponent from "@js/components/Toast.js";
 
 export async function initializeWebSocket() {
     return new Promise(async (resolve, reject) => {
@@ -30,12 +31,13 @@ export async function initializeWebSocket() {
                 if (data.type === 'test_message') {
                     console.log('Received test message:', data.message);
                 }
-                if (data.type === 'friend_request')
-                    load_friend_requests(data);
-                if (data.type === 'friend_req_accept')
+                if (data.type === 'friend_request')     // received friend request
+                    handle_received_friend_request(socket, data);
+                if (data.type === 'friend_req_accept')  // accept friend request
                     load_friends_list(data);
-                if (data.type === 'friend_remove')
+                if (data.type === 'friend_remove')      // remove friend
                     load_friends_list(data);
+                // TODO : handle friend request decline
                 if (data.type === 'friend_delete_acc')
                     load_friends_list(data);
                 if (data.type === 'friend_data_edit')
@@ -61,4 +63,26 @@ export async function initializeWebSocket() {
             reject(new Error("User not authenticated"));
         }
     });
+}
+
+async function handle_received_friend_request(socket, message) {
+    console.log("socket is:", socket);
+    console.log("message is:", message);
+
+    const toast = new ToastComponent();
+    toast.throwToast('received-friend-request', 'You have received a friend request', 5000);
+
+    const friend_request_container = document.getElementById('friend-requests');
+    if (friend_request_container) {
+        const friendItem = document.createElement('div');
+        friendItem.classList.add('d-flex', 'w-100', 'justify-content-between', 'align-items-center', 'bg-white', 'login-card', 'py-2', 'px-5', 'rounded');
+        friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto';
+        friendItem.innerHTML = `
+            <img src="${friend.profile_image || "https://w0.peakpx.com/wallpaper/357/667/HD-wallpaper-ghost-profile-thumbnail.jpg"}" alt="user_pp" class="h-80 w-80 rounded-circle">
+            <p>${friend.username}</p>
+            <p>Status: ${friend.status}</p>
+            <button class="btn btn-danger remove-friend-btn" data-id="${friend.id}">Remove</button>
+        `;
+        friend_request_container.appendChild(friendItem);
+    }
 }

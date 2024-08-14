@@ -15,6 +15,8 @@ export default class ToastComponent {
         switch (type) {
             case 'error':
                 return 'bg-danger text-white';
+            case 'success':
+                return 'bg-success text-white';
             default:
                 return 'bg-primary text-white';
         }

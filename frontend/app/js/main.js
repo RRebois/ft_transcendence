@@ -7,6 +7,7 @@ import matchView from "./views/match.js";
 import dashboardView from './views/dashboard.js';
 import settingsView from './views/settings.js';
 import friendsView from './views/friends.js';
+import { initializeWebSocket } from "@js/functions/websocket.js";
 
 const routes = [
     new Route('/home', '/', homeView),
@@ -18,6 +19,6 @@ const routes = [
 ];
 
 initializeRouter(routes);
-
+document.addEventListener('DOMContentLoaded', initializeWebSocket);
 
 // https://medium.com/swlh/lets-code-a-client-side-router-for-your-no-framework-spa-19da93105e10

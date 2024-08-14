@@ -33,6 +33,14 @@ body.bg-gradient {
   width: 40px;
 }
 
+.h-80 {
+    height: 80px;
+}
+
+.w-80 {
+    width: 80px;
+}
+
 .h-128 {
     height: 128px;
 }

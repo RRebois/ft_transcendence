@@ -643,7 +643,8 @@ class SendFriendRequestView(APIView):
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
 
-        to_username = request.data.get('username')
+        logging.debug(f"request data: ", request.data)
+        to_username = request.data.get('usernameValue')
         try:
             to_user = User.objects.get(username=to_username)
         except User.DoesNotExist:
@@ -684,6 +685,7 @@ class SendFriendRequestView(APIView):
                 'status': friend_request.status
             }
         )
+        logging.debug(f"Friend request sent to {to_user.username}")
 
         message = "Friend request sent."
         return JsonResponse({"message": message, "user": user.serialize(), "level": "success"},
@@ -703,7 +705,7 @@ class PendingFriendRequestsView(APIView):
         return JsonResponse(list(friendRequests), safe=False)
 
 
-class GetFriendRequestView(APIView):
+class GetFriendRequestView(APIView):        # en attente pour l'utilisateur connecté
     def get(self, request):
         try:
             user = authenticate_user(request)
