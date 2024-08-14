@@ -1,5 +1,4 @@
 import { getCookie } from "@js/functions/cookie.js";
-import Friends from "../views/friends.js";
 
 export default class Navbar {
 	constructor(user = null) {

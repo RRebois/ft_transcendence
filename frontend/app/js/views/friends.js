@@ -1,18 +1,19 @@
-import Navbar from "../components/Navbar.js";
-import {create_div_title} from "@js/functions/create.js"
+import { getCookie } from "../functions/cookie";
 
 export default class Friends {
     // static load_friends_page;
     constructor(props) {
         this.props = props;
+        this.load_friends_page = this.load_friends_page.bind(this);
+        // this.user = user;
     }
 
     render() {
         return `
-         <div class="container" id="friendsDiv">
+         <div class="container">
             <form id="addfriend">
                 <input type="text" id="username"/>
-                <button type="submit">test</button>
+                <button type="submit" id="addfriend-submit">test</button>
             </form>
          </div>
         `
@@ -20,14 +21,10 @@ export default class Friends {
 
     setupEventListeners() {
         // this.load_friends_page(this.props.user.username);
-        const friend = document.getElementById("addfriend")
-        if (friend) {
-            console.log("Submit event")
-            friend.addEventListener("submit", this.load_friends_page);
-        }
+        document.getElementById('addfriend').addEventListener('submit', this.load_friends_page);
     }
 
-    load_friends_page(username) {
+    load_friends_page(event) {
         // const friendsDivElement = document.getElementById('friendsDiv');
 
         // document.getElementById('greetings').style.display = 'none';
@@ -122,34 +119,35 @@ export default class Friends {
         // sendReqBtn.addEventListener('click', () => {
         // document.getElementById("addfriend").addEventListener('submit', () => {
             // event.preventDefault();
-            console.log("HERE");
-            const formData = {
-                'username': document.getElementById('username').value
-            }
-            fetch('https://localhost:8443/send_friend', {
-                method: 'POST',
-                headers: {
-                    // 'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
-                credentials: 'include',
-                body: JSON.stringify(formData)
+        event.preventDefault();
+        console.log("HERE");
+        const usernameValue = document.getElementById('username').value;
+        const csrfToken = getCookie('csrftoken');
+        fetch('https://localhost:8443/send_friend', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            credentials: 'include',
+            body: JSON.stringify({usernameValue})
+        })
+            .then(response => {
+                console.log("Reponse: ", response.json());
+                return response.json().then(data => ({status: response.status, data: data}));
             })
-                .then(response => {
-                    console.log("Reponse: ", response.json());
-                    return response.json().then(data => ({status: response.status, data: data}));
-                })
-                .then(({status, data}) => {
-                    if (data.redirect) {
-                        window.location.href = data.redirect_url;
-                    } else if (status !== 401) {
-                        // sendReqInput.value = "";
-                        if (data.level && data.message) {
-                            displayMessage(data.message, data.level);
-                        }
+            .then(({status, data}) => {
+                if (data.redirect) {
+                    window.location.href = data.redirect_url;
+                } else if (status !== 401) {
+                    // sendReqInput.value = "";
+                    if (data.level && data.message) {
+                        console.log("Data: ", data);
+                        // displayMessage(data.message, data.level);
                     }
-                })
-                .catch(error => console.error('Error fetching send request: ', error));
+                }
+            })
+            .catch(error => console.error('Error fetching send request: ', error));
         // }
         // this.load_friend_requests();
         // this.load_friends_list();

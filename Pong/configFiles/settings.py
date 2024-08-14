@@ -165,7 +165,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS_ORIGIN_ALLOW_ALL = True  # allow all frontend ports to access app
 CORS_ALLOW_CREDENTIALS = True  # for frontend to get the jwt cookies
 CORS_ALLOWED_ORIGINS = [
-    'https://localhost:3000', 'http://localhost:4242',
+    'https://localhost:3000', 'https://localhost:4242',
 ]
 
 REST_FRAMEWORK = {
