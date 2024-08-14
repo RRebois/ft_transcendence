@@ -278,7 +278,6 @@ class RegisterView(APIView):
                         return Response('username already taken', status=400)
             return Response('Something went wrong', status=400)
 
-
         if serializer_response:
             try:
                 user = serializer.save()
