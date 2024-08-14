@@ -15,6 +15,7 @@ class Avatars(models.Model):
     def serialize(self):
         return {
             "image": self.image.url,
+            "id": self.pk
         }
 
 

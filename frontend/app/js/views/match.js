@@ -9,86 +9,65 @@ export default class Match {
     }
 
     init() {
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
-        const renderer = new THREE.WebGLRenderer();
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        renderer.setAnimationLoop( animate );
-        document.body.appendChild( renderer.domElement );
-        
-        const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-        const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-        const cube = new THREE.Mesh( geometry, material );
-        scene.add( cube );
 
-        camera.position.z = 5;
+        this.player1_nickname = 'player1';
+        this.player2_nickname = 'player2';
+        this.score_p1 = 0;
+        this.score_p2 = 0;
+        this.y_pos_p1 = 0;  // left player
+        this.y_pos_p2 = 0;  // right player
+        this.stadium_length = 25;
+        this.stadium_width = 10;
+        this.stadium_height = 1;
+        this.stadium_thickness = 0.25;
+        this.paddle_length = 2;
+        this.ball_x = 0;
+        this.ball_y = 0;
+        this.ball_radius = 0.3;
+        this.ball_velocity_x = 2 * ((Math.random() - 0.5) / 10);  // Double the speed in x direction
+        this.ball_velocity_y = 2 * ((Math.random() - 0.5) / 25);  // Double the speed in y direction
 
-        function animate() {
-
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
-        renderer.render( scene, camera );
-
-        }
-
-//        this.player1_nickname = 'player1';
-//        this.player2_nickname = 'player2';
-//        this.score_p1 = 0;
-//        this.score_p2 = 0;
-//        this.y_pos_p1 = 0;  // left player
-//        this.y_pos_p2 = 0;  // right player
-//        this.stadium_length = 25;
-//        this.stadium_width = 10;
-//        this.stadium_height = 1;
-//        this.stadium_thickness = 0.25;
-//        this.paddle_length = 2;
-//        this.ball_x = 0;
-//        this.ball_y = 0;
-//        this.ball_radius = 0.3;
-//        this.ball_velocity_x = 2 * ((Math.random() - 0.5) / 10);  // Double the speed in x direction
-//        this.ball_velocity_y = 2 * ((Math.random() - 0.5) / 25);  // Double the speed in y direction
-//
-//        this.scene = new THREE.Scene();
-//        this.scene.background = new THREE.Color(0xbae6fd);
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0xbae6fd);
 //
 //        // Camera
-//        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-//        this.camera.position.set(0, -10, 10); // Elevated and on the long side
-//        this.camera.lookAt(0, 0, 0);
+        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.camera.position.set(0, -10, 20); // Elevated and on the long side
+        this.camera.lookAt(0, 0, 0);
 //
 //        // Renderer
-//        this.renderer = new THREE.WebGLRenderer();
-//        this.renderer.setSize(window.innerWidth, window.innerHeight);
-//        document.body.appendChild(this.renderer.domElement);
+        this.renderer = new THREE.WebGLRenderer();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(this.renderer.domElement);
 //
 //        // test
-//        const stadiumGroup = new THREE.Group();
-//        const stadium = new THREE.Object3D();
-//        stadium.name = "stadium";
-//        stadiumGroup.add(stadium);
-//        this.scene.add(stadiumGroup);
-//
-//        this.createStadium();
-//        this.createPaddle('p1');
-//        this.createPaddle('p2');
-//        this.createBall();
-//        this.printScores();
-//
-//        // Controls pad
-//        window.addEventListener('keydown', this.handleKeyEvent.bind(this));
-//        window.addEventListener('keyup', this.handleKeyEvent.bind(this));
-//
-//        // Resize scene
-//        window.addEventListener('resize', () => {
-//            this.camera.aspect = window.innerWidth / window.innerHeight;
-//            this.camera.updateProjectionMatrix();
-//            this.renderer.setSize(window.innerWidth, window.innerHeight);
-//        });
-//
-//        // Animate
-//        this.animate = this.animate.bind(this);
-//        this.animate();
+        const stadiumGroup = new THREE.Group();
+        const stadium = new THREE.Object3D();
+        stadium.name = "stadium";
+        stadiumGroup.add(stadium);
+        this.scene.add(stadiumGroup);
+
+        this.createStadium();
+        this.createPaddle('p1');
+        this.createPaddle('p2');
+        this.createBall();
+        this.printScores();
+
+        // Controls pad
+        window.addEventListener('keydown', this.handleKeyEvent.bind(this));
+        window.addEventListener('keyup', this.handleKeyEvent.bind(this));
+
+        // Resize scene
+        window.addEventListener('resize', () => {
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Animate
+        this.animate = this.animate.bind(this);
+        this.animate();
     }
 
     printScores() {
@@ -111,9 +90,10 @@ export default class Match {
     }
 
     handleKeyEvent(event) {
-        const key = event.key;
-        const isKeyDown = event.type === 'keydown';
-        const speed = 0.1;
+        const   key = event.key;
+        const   isKeyDown = event.type === 'keydown';
+        const   speed = 0.1;
+        const   stadium = this.scene.getObjectByName("stadium");
 
         switch (key) {
             case 'z':
@@ -125,11 +105,7 @@ export default class Match {
             case '-':
                 break;
             case 'a':
-                this.stadium.rotate.x += 0.01;
-                this.stadium.rotate.y += 0.01;
-//                this.camera.position.set(0, -10, 10);
-//                renderer.render( this.scene, this.camera );
-//                controls.update();
+                stadium.rotation.z += 0.03;
                 break;
             case 'ArrowUp':
                 this.y_pos_p2 = isKeyDown ? speed : 0;
@@ -175,8 +151,11 @@ export default class Match {
     }
 
     createWall(x, y, z, width, height, depth) {
+        const   textureLoader = new THREE.TextureLoader();
+        const   wallTexture = textureLoader.load('./textures/dune.jpg');
+
         const geometry = new THREE.BoxGeometry(width, height, depth);
-        const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
+        const material = new THREE.MeshBasicMaterial({map: wallTexture, reflectivity: 1});
         const wall = new THREE.Mesh(geometry, material);
         wall.position.set(x, y, z);
         const   stadium = this.scene.getObjectByName("stadium");
@@ -258,21 +237,9 @@ export default class Match {
     newRound() {
         this.ball_x = 0;
         this.ball_y = 0;
-//        var value = Math.random();
-//        if (winner.name === "p2") {
-//            if (value < 0.5)
-//                value = 0.6;
-//            this.ball_velocity_x = 2 * ((value - 0.5) / 10);
-//            this.ball_velocity_y = 2 * ((value - 0.5) / 25);
-//        }
-//        else {
-//            if (value > 0.5)
-//                value = 0.4;
-            this.ball_velocity_x = 2 * ((Math.random() - 0.5) / 10);  // Double the speed in x direction
-            this.ball_velocity_y = 2 * ((Math.random() - 0.5) / 25);  // Double the speed in y direction
-//        }
-        console.log("x: " + this.ball_velocity_x);
-console.log("y: " + this.ball_velocity_y);
+        this.ball_velocity_x = 2 * ((Math.random() - 0.5) / 10);  // Double the speed in x direction
+        this.ball_velocity_y = 2 * ((Math.random() - 0.5) / 25);  // Double the speed in y direction
+
         const ball = this.scene.getObjectByName('ball');
         ball.position.set(this.ball_x, this.ball_y, 0);
     }
