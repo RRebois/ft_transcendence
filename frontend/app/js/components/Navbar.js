@@ -62,9 +62,10 @@ export default class Navbar {
 								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 							</div>
 							<div class="modal-body">
+								<p class="play-bold">Your current avatar</p>
 								<img src="${this.user?.image_url}" class="rounded-circle h-128 w-128" alt="avatar">
 								<div>
-									<p>Select a new profile picture from your old ones</p>
+									<p class="play-bold">Select one of your previous avatars</p>
 									<!-- Previous profile pictures to load here -->
 									<div class="d-flex" id="previous-pp-list">
 										<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">
@@ -74,7 +75,7 @@ export default class Navbar {
 								</div>
 								<hr />
 								<div class="row g-2">
-									<label for="profile-picture" class="form-label">Or upload a new one</label>
+									<label for="profile-picture" class="form-label play-bold">Or upload a new one</label>
 									<input type="file" id="profile-picture" accept=".png, .jpg, .jpeg" class="form-control" />
 									<div class="form-text">Supported format: <code>png</code>, <code>jpg</code> and <code>jpeg</code></div>
 								<div class="invalid-feedback">test</div>

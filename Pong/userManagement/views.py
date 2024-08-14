@@ -322,8 +322,6 @@ class RegisterView(APIView):
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
-                    # return Response(model_to_dict(user), status=201)
-
                 else:
                     # Check if image already uploaded
                     if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
@@ -336,11 +334,6 @@ class RegisterView(APIView):
                     user.save()
                     user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                     user_data.save()
-
-                    # TODO revoir front
-                    # return Response({"user": model_to_dict(user),
-                    #                  "message": f"Image format and/or size not valid. Only jpg/jpeg/gif and png images are allowed. images cannot be larger than {convert_to_megabyte(FILE_UPLOAD_MAX_MEMORY_SIZE)}MB. Profile picture set to default."},
-                    #                 status=201)
             else:
                 # Check if image already uploaded
                 if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
@@ -353,10 +346,6 @@ class RegisterView(APIView):
                 user.save()
                 user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
                 user_data.save()
-                # TODO check envoyer URL
-                # return Response({"user": model_to_dict(user),
-                #                  "message": "No profile image selected. Profile picture set to default."},
-                #                 status=201)
             access_token = jwt.encode({'id': user.id}, os.environ.get('SECRET_KEY'), algorithm='HS256')
             refresh_token = jwt.encode({'id': user.id, 'type': 'refresh'}, os.environ.get('SECRET_KEY'),
                                        algorithm='HS256')
