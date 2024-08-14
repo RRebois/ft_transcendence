@@ -129,11 +129,11 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		session_data['players'][self.username]['connected'] = False
 		if session_data['status'] == 'started':
 			# esta no meio do jogo e alguem saiu entao tem que acabar o jogo e criar o match
-			other_player = None
+			other_player = []
 			for player in session_data['players']:
 				if session_data['players'][player]['connected']:
 					print(f'\n\ndecrement => {player} \n\n')
-					other_player = player	# make a list for 2 vs 2
+					other_player.append(player)	# make a list for 2 vs 2
 			# other_player = [player if  else pass for player in session_data['players']]
 			await self.game_handler.end_game(winner=other_player)
 			print('\n\nPASSEI AQUI\n\n')
@@ -217,13 +217,26 @@ class PongHandler():
 
 		if gs is None:
 			gs = self.message['game_state']
-		if winner is None and gs['player1_score'] != gs['winning_score'] and gs['player2_score'] != gs['winning_score']:
+		if winner is None and gs['left_score'] != gs['winning_score'] and gs['rigth_score'] != gs['winning_score']:
 			return
+		middle = 1 if self.game_code != 40 else 2
 		if winner is None:
-			winner = gs['player1_name'] if gs['player2_score'] < gs['player1_score'] else gs['player2_name']	# TODO refacto to 2vs2 and tournament
+			winner = []
+			left = gs['rigth_score'] < gs['left_score']
+			my_range = [1, middle] if left else [middle, middle * 2]
+			for i in range(my_range):
+				key = f"player{i}"
+				winner.append(gs[key]['name'])
+			# for i, name in enumerate(gs[]):
+			# winner = [gs['player1_name']] if gs['rigth_score'] < gs['left_score'] else gs['player2_name']	# TODO refacto to 2vs2 and tournament
 		if self.game_code != 20: # mode vs 'guest', does not save scores
-			match_result = {gs['player1_name']: gs['player1_score'],
-					gs['player2_name']: gs['player2_score']}
+			match_result = {} 
+			for i in range(1, middle * 2):
+				key = f"player{i}"
+				gs[key]['name'] = gs['left_score'] if i <= middle else gs['rigth_score']
+				# gs[f'player{i + 1}']['name'] : gs[]
+				# gs['player1_name']: gs['player1_score'],
+				# 	gs['player2_name']: gs['player2_score']}
 			print('\n\nPASSEI DENTRO do END_GAME\n\n')
 			await sync_to_async(create_match)(match_result, winner)	# TODO refacto to 2vs2 and tournament
 		self.message['winner'] = winner

@@ -3,7 +3,7 @@ from random import choice, randrange
 GAME_WIDTH = 800
 GAME_HEIGHT = 400
 
-WINNING_SCORE = 2
+WINNING_SCORE = 5
 
 PADDLE_START_VEL = 6
 BALL_START_VEL = 4
@@ -110,29 +110,60 @@ async def handle_collision(ball, left_paddle, right_paddle):
 class   PongMatch():
 
 # TODO adapt for 4 players
-    def __init__(self, players_name):
+    def __init__(self, players_name, multiplayer=False):
+        self.multiplayer = multiplayer
         self.ball = Ball(GAME_WIDTH // 2, GAME_HEIGHT // 2, BALL_RADIUS)
-        self.left_paddle = Paddle(10, GAME_HEIGHT//2 - PADDLE_HEIGHT //
-                         2, PADDLE_WIDTH, PADDLE_HEIGHT)
-        self.right_paddle = Paddle(GAME_WIDTH - 10 - PADDLE_WIDTH, GAME_HEIGHT //
-                          2 - PADDLE_HEIGHT//2, PADDLE_WIDTH, PADDLE_HEIGHT)
+        if not multiplayer:
+            self.paddles = [
+                Paddle(10, GAME_HEIGHT//2 - PADDLE_HEIGHT //
+                            2, PADDLE_WIDTH, PADDLE_HEIGHT),
+                Paddle(GAME_WIDTH - 10 - PADDLE_WIDTH, GAME_HEIGHT //
+                             2 - PADDLE_HEIGHT//2, PADDLE_WIDTH, PADDLE_HEIGHT),
+            ]
+        else:
+            self.paddles = [
+                Paddle(10, GAME_HEIGHT//2 - PADDLE_HEIGHT //
+                            2, PADDLE_WIDTH, PADDLE_HEIGHT),
+                Paddle(10, GAME_HEIGHT//2 - PADDLE_HEIGHT //
+                            2, PADDLE_WIDTH, PADDLE_HEIGHT),
+                Paddle(GAME_WIDTH - 10 - PADDLE_WIDTH, GAME_HEIGHT //
+                             2 - PADDLE_HEIGHT//2, PADDLE_WIDTH, PADDLE_HEIGHT),
+                Paddle(GAME_WIDTH - 10 - PADDLE_WIDTH, GAME_HEIGHT //
+                             2 - PADDLE_HEIGHT//2, PADDLE_WIDTH, PADDLE_HEIGHT),
+            ]
         self.left_score = 0
         self.right_score = 0
         # self.players_name = players_name
-        self.players_name = {f"player{v['id']}_name": k for k,v in players_name.items()}
+        self.players = {f"player{v['id']}": {'name': k, 'pos': 0} for k,v in players_name.items()}
 
+    # async def   create_players(self):
+    #     self.players_info = {}
+    #     for k, v in self.players_name.items():
+    #         self.players_info[f"player{v['id']}"] = {'name': k, 'pos': 0}
 
     async def get_coordinates(self):
-            right_paddle = await self.right_paddle.serialize()
-            left_paddle = await self.left_paddle.serialize()
+            for i, paddle in enumerate(self.paddles):
+                key = f"player{i + 1}"
+                self.players[key]['pos'] = await paddle.serialize()
+
+            # if self.multiplayer:
+            #     paddle_pos = {
+            #     'player1': await self.left_paddle1.serialize(),
+            #     'player2': await self.left_paddle2.serialize(),
+            #     'player3': await self.right_paddle1.serialize(),
+            #     'player4': await self.right_paddle2.serialize(),
+            #     }
+            # else:
+            #     paddle_pos = {
+            #     'player1' : await self.right_paddle.serialize(),
+            #     'player2' : await self.left_paddle.serialize(),
+            #     }
             ball = await self.ball.serialize()
             coord = {
-                **self.players_name,
+                **self.players,
                 'ball' : ball,
-                'player1' : left_paddle,
-                'player2' : right_paddle,
-                'player1_score' : self.left_score,
-                'player2_score' : self.right_score,
+                'left_score' : self.left_score,
+                'rigth_score' : self.right_score,
                 'game_width': GAME_WIDTH,
                 'game_height': GAME_HEIGHT,
                 'paddle_width': PADDLE_WIDTH,

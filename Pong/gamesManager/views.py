@@ -47,7 +47,7 @@ class	GameManagerView(APIView):
 	def	create_session(self, request, game_name, game_code, username):
 		awaited_connections = 2
 		if game_code == 40:
-			awaited_connections == 4
+			awaited_connections = 4
 
 		players = {username: {'id': 1, 'connected': False}}
 		if game_code == 10:
@@ -55,13 +55,20 @@ class	GameManagerView(APIView):
 		if game_code == 20:	# get the request to check if it's guest or friend
 			players['guest'] = {'id': 2, 'connected': True}
 
+		if game_code == 40:
+			players['guest1'] = {'id': 2, 'connected': True}
+			players['guest2'] = {'id': 3, 'connected': True}
+			players['guest3'] = {'id': 4, 'connected': True}
+
+
 		session_id = f"{game_name}_{str(uuid.uuid4().hex)}"
 		cache.set(session_id, {
 
 		'players': players,
 		'game': game_name,
 		'awaited_players': awaited_connections,
-		'connected_players': 0 if game_code not in [10, 20] else 1,
+		'connected_players': 3,
+		# 'connected_players': 0 if game_code not in [10, 20] else 1,
 		'session_id': session_id,
 		'status': 'waiting',
 		'winner': None,
