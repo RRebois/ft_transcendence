@@ -643,7 +643,7 @@ class SendFriendRequestView(APIView):
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
 
-        logging.debug(f"request data: ", request.data)
+        # logging.debug(f"request data: ", request.data)
         to_username = request.data.get('usernameValue')
         try:
             to_user = User.objects.get(username=to_username)

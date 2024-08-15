@@ -278,14 +278,14 @@ export default class Friends {
             body: JSON.stringify({usernameValue})
         })
             .then(response => {
-                console.log("Reponse: ", response.json());
                 return response.json().then(data => ({status: response.status, data: data}));
             })
             .then(({status, data}) => {
                 if (data.redirect) {
                     window.location.href = data.redirect_url;
                 } else if (status !== 401) {
-                    // sendReqInput.value = "";
+                    const toast = new ToastComponent();
+                    toast.throwToast('sent-friend-request', 'Friend request sent', 5000);
                     if (data.level && data.message) {
                         console.log("Data: ", data);
                         // displayMessage(data.message, data.level);

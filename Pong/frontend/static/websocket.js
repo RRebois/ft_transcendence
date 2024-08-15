@@ -66,4 +66,4 @@ function updateFriendStatus(userId, status) {
 // }
 
 // to try to reconnect on refresh
-document.addEventListener('DOMContentLoaded', initializeWebSocket);
+// document.addEventListener('DOMContentLoaded', initializeWebSocket);
