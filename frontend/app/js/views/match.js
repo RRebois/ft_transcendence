@@ -12,6 +12,9 @@ export default class Match {
 
         this.player1_nickname = 'player1';
         this.player2_nickname = 'player2';
+        this.textArray = [`${this.player1_nickname}`, "0", "-", "0",
+                        `${this.player2_nickname}`];
+        this.nameArray = ["p1Nick", "p1Score", "hyphen", "p2Score", "p2Nick"];
         this.score_p1 = 0;
         this.score_p2 = 0;
         this.y_pos_p1 = 0;  // left player
@@ -21,28 +24,33 @@ export default class Match {
         this.stadium_height = 1;
         this.stadium_thickness = 0.25;
         this.paddle_length = 2;
+
+        // Ball initial stats
         this.ball_x = 0;
         this.ball_y = 0;
         this.ball_radius = 1;
-        this.ball_velocity_x = 2 * ((Math.random() - 0.5) / 10);  // Double the speed in x direction
-        this.ball_velocity_y = 2 * ((Math.random() - 0.5) / 25);  // Double the speed in y direction
+        const   initialSpeed = 0.2;
+        this.baseSpeed = initialSpeed;
+        this.currentSpeed = this.baseSpeed;
+        this.ball_velocity_x = this.currentSpeed * ((Math.random() - 0.5));
+        this.ball_velocity_y = this.currentSpeed * ((Math.random() - 0.5));
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0xbae6fd);
-//
-//        // Camera
+
+       // Camera
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.camera.position.set(0, -10, 20); // Elevated and on the long side
         this.camera.lookAt(0, 0, 0);
-//
-//        // Renderer
+
+       // Renderer
         this.renderer = new THREE.WebGLRenderer();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(this.renderer.domElement);
-//
+
        // Create stade group with all objetcs so when rotate everything follows
-        const stadiumGroup = new THREE.Group();
-        const stadium = new THREE.Object3D();
+        const   stadiumGroup = new THREE.Group();
+        const   stadium = new THREE.Object3D();
         stadium.name = "stadium";
         stadiumGroup.add(stadium);
         this.scene.add(stadiumGroup);
@@ -51,6 +59,13 @@ export default class Match {
         this.createPaddle('p1');
         this.createPaddle('p2');
         this.createBall();
+
+        // Create textGroup
+        const   textGroup = new THREE.Group();
+        textGroup.position.set(0, 20, 0);
+        textGroup.rotation.set(20, 0, 0);
+        textGroup.name = "textGroup";
+        this.scene.add(textGroup);
         this.printInitScores();
 
         // Controls pad
@@ -70,108 +85,68 @@ export default class Match {
     }
 
     printInitScores() {
-        const loader = new FontLoader();
+        const   textGroup = this.scene.getObjectByName("textGroup");
+        const   loader = new FontLoader();
+        let     xPosition = -30;
         loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
-            // Players 1 nick name displayed
-            const   p1NickTextGeometry = new TextGeometry(`${this.player1_nickname}`, {
-                font: font,
-                size: 4,
-                height: 0.1,
-                curveSegments: 12,
-                bevelEnabled: false
+            this.textArray.forEach((text, index) => {
+                const textGeometry = new TextGeometry(text, {
+                    font: font,
+                    size: 4,
+                    depth: 0.1,
+                    curveSegments: 12,
+                    bevelEnabled: false
+                });
+
+                // Material for nicknames
+                const nickTextMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x284353,
+                    emissive: 0xc01616,
+                    roughness: 1,
+                    metalness: 0.555,
+                });
+
+                // Material for scores
+                const textMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xffffff,
+                    emissive: 0x33ff33, // Green light
+                    emissiveIntensity: 0.8,
+                    metalness: 0.8,
+                    roughness: 0.5,
+                });
+                let textAdd;
+                if (this.nameArray[index] === "p1Nick" || this.nameArray[index] === "p2Nick") {
+                    textAdd = new THREE.Mesh(textGeometry, nickTextMaterial);
+                    textAdd.name = this.nameArray[index];
+                }
+                else {
+                    textAdd = new THREE.Mesh(textGeometry, textMaterial);
+                    textAdd.name = this.nameArray[index];
+                }
+
+                textGeometry.computeBoundingBox();
+                const boundingBox = textGeometry.boundingBox;
+                const textWidth = boundingBox.max.x - boundingBox.min.x;
+
+                textAdd.position.x = xPosition;
+
+                xPosition += textWidth + 1.5;
+                textGroup.add(textAdd);
+
+                // Add a pulsing effect
+                const animate = () => {
+                    requestAnimationFrame(animate);
+                    if (textAdd.name === "p1Nick" || textAdd.name === "p2Nick")
+                        textAdd.material.emissiveIntensity = 0.6 + Math.sin(Date.now() * 0.005) * 0.4;
+                    else
+                        textAdd.material.emissiveIntensity = 0.6 + Math.sin(Date.now() * 0.005) * 0.4;
+                };
+                animate();
+
+                // this.scene.add(p1NickDisplay, p2NickDisplay, p1ScoreDisplay, hyphenDisplay, p2ScoreDisplay);
             });
-
-            // Players 2 nick name displayed
-            const   p2NickTextGeometry = new TextGeometry(`${this.player1_nickname}`, {
-                font: font,
-                size: 4,
-                height: 0.1,
-                curveSegments: 12,
-                bevelEnabled: false
-            });
-
-            const   p1ScoreTextGeometry = new TextGeometry(`${this.score_p1}`, {
-                font: font,
-                size: 4,
-                height: 0.1,
-                curveSegments: 12,
-                bevelEnabled: false
-            });
-
-            const   hyphenTextGeometry = new TextGeometry(`\u00A0-\u00A0`, {
-                font: font,
-                size: 4,
-                height: 0.1,
-                curveSegments: 12,
-                bevelEnabled: false
-            });
-
-            const p2ScoreTextGeometry = new TextGeometry(`${this.score_p2}`, {
-                font: font,
-                size: 4,
-                height: 0.1,
-                curveSegments: 12,
-                bevelEnabled: false
-            });
-
-            // Material for nicknames
-            const nickTextMaterial = new THREE.MeshStandardMaterial({
-                color: 0x284353,
-                emissive: 0xc01616,
-                roughness: 1,
-                metalness: 0.555,
-                // wireframe: true,
-            });
-
-            // Flashy Material for scores
-            const textMaterial = new THREE.MeshStandardMaterial({
-                color: 0xffffff,
-                emissive: 0x33ff33, // Green light
-                emissiveIntensity: 0.8,
-                metalness: 0.8,
-                roughness: 0.5,
-            });
-
-            const   p1NickDisplay = new THREE.Mesh(p1NickTextGeometry, nickTextMaterial);
-            const   p2NickDisplay = new THREE.Mesh(p2NickTextGeometry, nickTextMaterial);
-
-            const   p1ScoreDisplay = new THREE.Mesh(p1ScoreTextGeometry, textMaterial);
-            const   hyphenDisplay = new THREE.Mesh(hyphenTextGeometry, textMaterial);
-            const   p2ScoreDisplay = new THREE.Mesh(p2ScoreTextGeometry, textMaterial);
-
-            p1NickDisplay.position.set(-40, 20, 0);
-            p2NickDisplay.position.set(20, 20, 0);
-            p1ScoreDisplay.position.set(-4.5, 20, 0);
-            hyphenDisplay.position.set(-3.5, 20, 0);
-            p2ScoreDisplay.position.set(2, 20, 0);
-
-            p1NickDisplay.rotation.set(45,0,0);
-            p2NickDisplay.rotation.set(45,0,0);
-            p1ScoreDisplay.rotation.set(45,0,0);
-            hyphenDisplay.rotation.set(45,0,0);
-            p2ScoreDisplay.rotation.set(45,0,0);
-
-            // Add a pulsing effect
-            const animate = () => {
-                requestAnimationFrame(animate);
-                p1NickDisplay.material.emissiveIntensity = 0.6 + Math.sin(Date.now() * 0.005) * 0.4;
-                p2NickDisplay.material.emissiveIntensity = 0.6 + Math.sin(Date.now() * 0.005) * 0.4;
-                p1ScoreDisplay.material.emissiveIntensity = 0.6 + Math.sin(Date.now() * 0.005) * 0.4;
-                hyphenDisplay.material.emissiveIntensity = 0.6 + Math.sin(Date.now() * 0.005) * 0.4;
-                p2ScoreDisplay.material.emissiveIntensity = 0.6 + Math.sin(Date.now() * 0.005) * 0.4;
-            };
-            animate();
-
-            p1NickDisplay.name = 'p1Nick';
-            p2NickDisplay.name = 'p2Nick';
-            p1ScoreDisplay.name = 'p1Score';
-            hyphenDisplay.name = 'hyphen';
-            p2NickDisplay.name = 'p2Score';
-            // textGeometry.center();
-            this.scene.add(p1NickDisplay, p2NickDisplay, p1ScoreDisplay, hyphenDisplay, p2ScoreDisplay);
         });
     }
-
 
     handleKeyEvent(event) {
         const   key = event.key;
@@ -205,7 +180,7 @@ export default class Match {
         const   ballTexture = textureLoader.load('/ball_basecolor.png');
 
         const geometry = new THREE.SphereGeometry(this.ball_radius, 48, 48);
-        const material = new THREE.MeshBasicMaterial({map: ballTexture, roughness:0.2, metalness:0.6});
+        const material = new THREE.MeshBasicMaterial({map: ballTexture});
         const ball = new THREE.Mesh(geometry, material);
         ball.position.set(this.ball_x, this.ball_y, 0);
         ball.name = 'ball';
@@ -260,29 +235,37 @@ export default class Match {
     }
 
     rotateScore(i) {
-        this.score;
+        let score;
         if (i === 1)
-            this.score = this.score_p1;
+            score = this.scene.getObjectByName('p1Score');
         else
-            this.score = this.score_p2;
-        this.duration = 1000;
-        this.startRotation = this.score.rotation.x;
-        this.endRotation = startRotation + 2 * Math.PI;
-        this.startTime = Date.now();
+           score = this.scene.getObjectByName('p2Score');
 
-        animateScoreRotation();
+        // Rotation on the X axis
+        this.startRotation = score.rotation.x;
+        this.endRotation = this.startRotation + 2 * Math.PI;
+
+        this.animateScoreRotation(i);
     }
 
-    animateScoreRotation() {
-        const   deltaT = Date.now() - this.startTime;
-        const   progress = deltaT / this.duration;
+    animateScoreRotation(i) {
+        // Getting the correct score to change
+        let score;
+        if (i === 1)
+            score = this.scene.getObjectByName('p1Score');
+        else
+           score = this.scene.getObjectByName('p2Score');
+
+        const   startTime = Date.now();
+        const   deltaT = Date.now() - startTime;
+        const   progress = deltaT / 1000;
 
         if (progress < 1) {
-            this.score.rotation.x = this.startRotation + progress * (this.endRotation - this.startRotation);
+            score.rotation.x = this.startRotation + progress * (this.endRotation - this.startRotation);
             requestAnimationFrame(this.animateScoreRotation);
         }
         else
-        this.score.rotation.x = this.endRotation;
+            score.rotation.x = this.endRotation;
     }
 
     updateScores() {
@@ -306,11 +289,33 @@ export default class Match {
 
     updateBallPosition() {
         const ball = this.scene.getObjectByName('ball');
+
         if (ball) {
+            // Update position
             ball.position.x += this.ball_velocity_x;
             ball.position.y += this.ball_velocity_y;
-            ball.rotation.x += this.ball_velocity_x;
-            ball.rotation.y += this.ball_velocity_y;
+
+            // Calculate the direction of movement
+            const movementDirection = new THREE.Vector2(this.ball_velocity_x, this.ball_velocity_y);
+            const movementLength = movementDirection.length();
+
+            // Normalize the direction vector to get the direction of rotation
+            movementDirection.normalize();
+
+            // Ball rotation towards its movement
+            const rotationAxis = new THREE.Vector3(-movementDirection.y, movementDirection.x, 0);
+            const rotationAngle = movementLength / ball.geometry.parameters.radius;
+
+            // Apply the rotation to the ball
+            ball.rotateOnWorldAxis(rotationAxis, rotationAngle);
+
+            // Increase ball speed over time
+            this.currentSpeed *= 1.0001;
+            this.ball_velocity_x = movementDirection.x * this.currentSpeed;
+            this.ball_velocity_y = movementDirection.y * this.currentSpeed;
+
+            if (this.ball_velocity_x == 0)
+                this.newRound();
 
             // Check for collisions
             this.checkCollisions(ball);
@@ -334,19 +339,22 @@ export default class Match {
         if (ball.position.y + this.ball_radius > this.stadium_width / 2 || ball.position.y - this.ball_radius < -this.stadium_width / 2) {
             this.ball_velocity_y = -this.ball_velocity_y;
         }
-
         // Player 2 wins the round
         if (ball.position.x - this.ball_radius < -this.stadium_length / 2) {
-            // this.rotateScore(2);
+            this.rotateScore(2);
             this.score_p2++;
             this.updateScores();
+            if (this.score_p2 + 1 == 5)
+                return ;
             this.newRound();
         }
         // Player 1 wins the round
         else if (ball.position.x + this.ball_radius > this.stadium_length / 2) {
-            // this.rotateScore(1);
+            this.rotateScore(1);
             this.score_p1++;
             this.updateScores();
+            if (this.score_p1 + 1 == 5)
+                return ;
             this.newRound();
         }
     }
@@ -354,8 +362,9 @@ export default class Match {
     newRound() {
         this.ball_x = 0;
         this.ball_y = 0;
-        this.ball_velocity_x = 2 * ((Math.random() - 0.5) / 10);  // Double the speed in x direction
-        this.ball_velocity_y = 2 * ((Math.random() - 0.5) / 25);  // Double the speed in y direction
+        this.currentSpeed = this.baseSpeed;
+        this.ball_velocity_x = this.currentSpeed * ((Math.random() - 0.5));
+        this.ball_velocity_y = this.currentSpeed * ((Math.random() - 0.5));
 
         const ball = this.scene.getObjectByName('ball');
         ball.position.set(this.ball_x, this.ball_y, 0);
