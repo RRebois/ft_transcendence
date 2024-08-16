@@ -259,11 +259,11 @@ function load_friends_list(){
                 friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; justify-content: space-between; width: 50%; ' +
                     'display: block; margin-left: auto; margin-right: auto';
                 friendItem.innerHTML = `
-                    <a class="roundBorder nav-item friendImg" style="/*display: flex*/" onclick="load_stats_page('${ request.username }')" href="">
+                    <a class="roundBorder nav-item friendImg" style="/*display: flex*/" onclick="load_stats_page('${ request.from_user }')" href="">
                         <img src="${request.image}" alt="avatar">
                     </a>
-                    <a class="mb-1" style="display: flex" onclick="load_stats_page('${ request.username }')" href="">${request.username}</a>
-                    <p class="status mb-1" style="display: flex">Status: ${request.status}</p>
+                    <a class="mb-1" style="display: flex" onclick="load_stats_page('${ request.from_user }')" href="">${request.from_user}</a>
+                    <p class="status mb-1" style="display: flex">Status: ${request.from_status}</p>
                     <button type="button" class="removeBtn btn btn-primary" style="background: #e3031c; border-color: #040303" data-id="${request.id}">Remove</button>
                     `;
                 friendListElem.appendChild(friendItem);

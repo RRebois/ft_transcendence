@@ -93,7 +93,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             # 'to_image_url': event['to_image_url'],
             'to_user': event['to_user'],
             'time': event['time'],
-            'status': event['status']
+            'request_status': event['request_status']
         }))
 
     async def friend_req_accept(self, event):
@@ -101,11 +101,13 @@ class UserConsumer(AsyncWebsocketConsumer):
             'type': 'friend_req_accept',
             'from_user': event['from_user'],
             'from_user_id': event['from_user_id'],
+            'from_status': event['from_status'],
             # 'from_img_url': event['from_img_url'],
             # 'to_image_url': event['to_image_url'],
             'to_user': event['to_user'],
-            # 'time': event['time'],
-            'status': event['status']
+            'to_status': event['to_status'],
+            'time': event['time'],
+            'request_status': event['request_status'],
         }))
 
     async def friend_remove(self, event):

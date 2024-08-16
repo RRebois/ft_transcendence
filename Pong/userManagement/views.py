@@ -700,7 +700,7 @@ class SendFriendRequestView(APIView):
                 # 'to_image_url': get_profile_pic_url(to_user.get_img_url()),
                 'to_user': to_user.username,
                 'time': str(friend_request.time),
-                'status': friend_request.status
+                'request_status': friend_request.status
             }
         )
         logging.debug(f"Friend request sent to {to_user.username}")
@@ -771,14 +771,17 @@ class AcceptFriendRequestView(APIView):
                 'type': 'friend_req_accept',
                 'from_user': user.username,
                 'from_user_id': user.id,
-                'from_image_url': get_profile_pic_url(user.get_img_url()),
-                'to_image_url': get_profile_pic_url(friend_request.to_user.get_img_url()),
+                'from_status': user.status,
+                # 'from_image_url': get_profile_pic_url(user.get_img_url()),
+                # 'to_image_url': get_profile_pic_url(friend_request.to_user.get_img_url()),
                 'to_user': friend_request.to_user.username,
+                'to_status': friend_request.to_user.status,
                 'time': str(friend_request.time),
-                'status': friend_request.status,
+                'request_status': friend_request.status,
             }
         )
-        return JsonResponse({"message": "Friend request accepted.", "level": "success"}, status=status.HTTP_200_OK)
+        return JsonResponse({"message": "Friend request accepted.", "level": "success", "from_user": user.username, "from_status": user.status}
+                            , status=status.HTTP_200_OK)
 
 
 class DeclineFriendRequestView(APIView):
@@ -862,9 +865,9 @@ class GetFriendView(APIView):
         friend_list = user.friends.all()
         serialized_values = [
             {
-                'username': friend.username,
+                'from_user': friend.username,
                 'id': friend.id,
-                'status': friend.status,
+                'from_status': friend.status,
                 'image': friend.get_img_url()
             }
             for friend in friend_list

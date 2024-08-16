@@ -48,7 +48,7 @@ export function create_friend_div(friend, userId) {
 			</span>
 		</div>
 		<p>${friend?.from_user}</p>
-		<p>Status: ${friend?.status}</p>
+		<p>Status: ${friend?.from_status}</p>
 		<button class="btn btn-danger remove-friend-btn" data-id="${friend?.id || userId}">Remove</button>
 	`;
 	friendListContainer.appendChild(friendItem);
@@ -85,7 +85,7 @@ export function accept_friend_request(event) {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Success", data.message || "Friend request accepted", 5000);
 				remove_friend_request_div(userId);
-				create_friend_div(undefined, userId);
+				create_friend_div(data, userId);
 			}
 		})
 		.catch(error => {
