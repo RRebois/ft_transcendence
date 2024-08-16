@@ -67,7 +67,7 @@ class	GameManagerView(APIView):
 		'players': players,
 		'game': game_name,
 		'awaited_players': awaited_connections,
-		'connected_players': 3,
+		'connected_players': 3 if game_code == 40 else 1,
 		# 'connected_players': 0 if game_code not in [10, 20] else 1,
 		'session_id': session_id,
 		'status': 'waiting',

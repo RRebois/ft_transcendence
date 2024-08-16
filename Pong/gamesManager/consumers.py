@@ -45,6 +45,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		)
 
 		if self.session_data['status'] == 'started':
+			# multiplayer = True if self.game_code == 40 else False
 			self.game_handler = PongHandler(self)
 			GameManagerConsumer.matchs[self.session_id] = self.game_handler
 			database_sync_to_async(cache.set)(self.session_id, self.session_data)
@@ -57,7 +58,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 	async def	receive(self, text_data):
 		data = json.loads(text_data)
 		if self.game_handler is not None:
-			if self.game_code != 20:
+			if self.game_code != 20 and self.game_code != 40:
 				player_move = data.get('player_move')
 				if player_move:
 					player_move['player'] = self.session_data['players'][self.username]['id']
@@ -117,7 +118,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		if self.session_data['connected_players'] == self.session_data['awaited_players']:
 			self.session_data['status'] = 'started'
 		cache.set(self.session_id, self.session_data)
-		
+
 
 # TODO REFACTO
 	# @staticmethod
@@ -138,7 +139,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 			await self.game_handler.end_game(winner=other_player)
 			print('\n\nPASSEI AQUI\n\n')
 			self.game_handler.remove_consumer(self)
-			# await self.channel_layer.group_send(session_data['session_id'], {'type': 'close'}) 
+			# await self.channel_layer.group_send(session_data['session_id'], {'type': 'close'})
 			pass
 		if session_data['status'] == 'waiting':
 			# ainda nao comecou, so desconectar sem problemas
@@ -170,7 +171,7 @@ class PongHandler():
 
 	async def	launch_game(self, players_name):
 		self.message = self.consumer[0].session_data
-		self.game = PongGame(players_name)
+		self.game = PongGame(players_name, multiplayer=(self.game_code == 40))
 		await self.reset_game()
 		if 'bot' in self.message['players']:
 			# init_bot()
@@ -217,23 +218,23 @@ class PongHandler():
 
 		if gs is None:
 			gs = self.message['game_state']
-		if winner is None and gs['left_score'] != gs['winning_score'] and gs['rigth_score'] != gs['winning_score']:
+		if winner is None and gs['left_score'] != gs['winning_score'] and gs['right_score'] != gs['winning_score']:
 			return
 		middle = 1 if self.game_code != 40 else 2
 		if winner is None:
 			winner = []
-			left = gs['rigth_score'] < gs['left_score']
+			left = gs['right_score'] < gs['left_score']
 			my_range = [1, middle] if left else [middle, middle * 2]
 			for i in range(my_range):
 				key = f"player{i}"
 				winner.append(gs[key]['name'])
 			# for i, name in enumerate(gs[]):
-			# winner = [gs['player1_name']] if gs['rigth_score'] < gs['left_score'] else gs['player2_name']	# TODO refacto to 2vs2 and tournament
+			# winner = [gs['player1_name']] if gs['right_score'] < gs['left_score'] else gs['player2_name']	# TODO refacto to 2vs2 and tournament
 		if self.game_code != 20: # mode vs 'guest', does not save scores
-			match_result = {} 
+			match_result = {}
 			for i in range(1, middle * 2):
 				key = f"player{i}"
-				gs[key]['name'] = gs['left_score'] if i <= middle else gs['rigth_score']
+				gs[key]['name'] = gs['left_score'] if i <= middle else gs['right_score']
 				# gs[f'player{i + 1}']['name'] : gs[]
 				# gs['player1_name']: gs['player1_score'],
 				# 	gs['player2_name']: gs['player2_score']}

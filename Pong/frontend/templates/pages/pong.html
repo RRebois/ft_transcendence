@@ -14,7 +14,7 @@
         const response = await fetch('/get_ws_token/');
         const jwt = await response.json();
         return jwt.token
-        } 
+        }
 
         async function connectWebSocket() {
             const token = await get_token()
@@ -27,11 +27,7 @@
 
             ws.onmessage = function(event) {
                 const data = JSON.parse(event.data).message;
-                if (data.game_state === 'waiting') {
-                    ws.send(JSON.stringify({ 'status': 'waiting' }));
-                } else {
-                    updateGame(data); 
-                } 
+                updateGame(data);
             };
 
             ws.onclose = function(event) {
@@ -44,42 +40,54 @@
         }
 
         function updateGame(state) {
-            if (state.status === 'finished') {
+            if (state.status !== 'started') {
+                return;
+            }
+            if (state.game_state === 'waiting') {
                 return;
             }
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // const { ball, player1, player2, player1_score, player2_score } = state.game_state;
             gs = state.game_state;
+            players = gs.players;
+            // const { ball, left_score, right_score, players } = state.game_state;
 
             ctx.fillStyle = 'white';
 
             // Draw ball
             ctx.beginPath();
-            ctx.arc(gs.ball.x, gs.ball.y, gs.ball_radius, 0, Math.PI * 2);
+            ctx.arc(gs.ball.x, gs.ball.y, gs.ball.radius, 0, Math.PI * 2);
             ctx.fill();
 
+            // // Draw paddles
+            // ctx.fillRect(gs.player1.x, gs.player1.y, gs.paddle_width, gs.paddle_height);
+            // ctx.fillRect(gs.player2.x, gs.player2.y, gs.paddle_width, gs.paddle_height);
+
             // Draw paddles
-            ctx.fillRect(gs.player1.x, gs.player1.y, gs.paddle_width, gs.paddle_height);
-            ctx.fillRect(gs.player2.x, gs.player2.y, gs.paddle_width, gs.paddle_height);
+            for (const playerKey in players) {
+                const player = players[playerKey];
+                const paddle = player.pos;
+                ctx.fillRect(paddle.x, paddle.y, gs.paddle_width, gs.paddle_height);
+            }
 
             // Draw scores
             ctx.font = '24px Arial';
-            ctx.fillText(gs.player1_score, canvas.width / 4, 50);
-            ctx.fillText(gs.player2_score, (canvas.width * 3) / 4, 50);
+            ctx.fillText(gs.left_score, canvas.width / 4, 50);
+            ctx.fillText(gs.right_score, (canvas.width * 3) / 4, 50);
         }
 
         document.addEventListener('keydown', function(event) {
             const key = event.keyCode;
             let player_move = { player: 2, direction: 0 };  // Example structure
-            
+
             // Up and Down keys for Players
             if (key === 38) { // ArrowUp
                 player_move.direction = -1;
             }
             if (key === 40) { // ArrowDown
                 player_move.direction = 1;
-            } 
+            }
             if (key === 87) { // Key W
                 player_move.direction = -1;
                 player_move.player = 1;
