@@ -14,12 +14,12 @@ export function create_friend_request_div(request) {
 	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendRequestItem.innerHTML = `
 		<div class="position-relative d-inline-block">
-			<img src="${request?.profile_image || "https://w0.peakpx.com/wallpaper/357/667/HD-wallpaper-ghost-profile-thumbnail.jpg"}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+			<img src="${request?.from_img_url || "https://w0.peakpx.com/wallpaper/357/667/HD-wallpaper-ghost-profile-thumbnail.jpg"}" alt="user_pp" class="h-64 w-64 rounded-circle" />
 				<span style="left: 60px; top: 5px" id=\`friend-status-${request?.from_user_id}\` class="position-absolute translate-middle p-2 bg-danger border border-light rounded-circle">
 				<span id = \`friend-status-text-${request?.from_user_id}\` class="visually-hidden">Offline</span>
 			</span>
 		</div>
-		<p>${request?.from_user__username}</p>
+		<p>${request?.from_user}</p>
 		<p>Sent on ${new Date(request?.time).toLocaleString()}</p>
 		<button class="btn btn-success confirm-request-btn" data-id="${request?.from_user_id}">Accept</button>
 		<button class="btn btn-danger decline-request-btn" data-id="${request?.from_user_id}">Decline</button>
@@ -47,7 +47,7 @@ export function create_friend_div(friend, userId) {
 				<span id = \`friend-status-text-${friend?.from_user_id || userId}\` class="visually-hidden">Offline</span>
 			</span>
 		</div>
-		<p>${friend?.username}</p>
+		<p>${friend?.from_user}</p>
 		<p>Status: ${friend?.status}</p>
 		<button class="btn btn-danger remove-friend-btn" data-id="${friend?.id || userId}">Remove</button>
 	`;

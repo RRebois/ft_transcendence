@@ -89,6 +89,9 @@ class UserConsumer(AsyncWebsocketConsumer):
             'type': 'friend_request',
             'from_user': event['from_user'],
             'from_user_id': event['from_user_id'],
+            # 'from_img_url': event['from_img_url'],
+            # 'to_image_url': event['to_image_url'],
+            'to_user': event['to_user'],
             'time': event['time'],
             'status': event['status']
         }))
@@ -98,6 +101,10 @@ class UserConsumer(AsyncWebsocketConsumer):
             'type': 'friend_req_accept',
             'from_user': event['from_user'],
             'from_user_id': event['from_user_id'],
+            # 'from_img_url': event['from_img_url'],
+            # 'to_image_url': event['to_image_url'],
+            'to_user': event['to_user'],
+            # 'time': event['time'],
             'status': event['status']
         }))
 
@@ -106,6 +113,10 @@ class UserConsumer(AsyncWebsocketConsumer):
             'type': 'friend_remove',
             'from_user': event['from_user'],
             'from_user_id': event['from_user_id'],
+            # 'from_img_url': event['from_img_url'],
+            # 'to_image_url': event['to_image_url'],
+            # 'to_user': event['to_user'],
+            # # 'time': event['time'],
         }))
 
     async def friend_delete_acc(self, event):
@@ -113,6 +124,9 @@ class UserConsumer(AsyncWebsocketConsumer):
             'type': 'friend_delete_acc',
             'from_user': event['from_user'],
             'from_user_id': event['from_user_id'],
+            # 'from_image_url': event['from_image_url'],
+            # 'to_image_url': event['to_image_url'],
+            # 'to_user': event['to_user'],
         }))
 
     async def friend_data_edit(self, event):
@@ -120,4 +134,5 @@ class UserConsumer(AsyncWebsocketConsumer):
             'type': 'friend_data_edit',
             'from_user': event['from_user'],
             'from_user_id': event['from_user_id'],
+            'from_img_url': event['from_img_url'],
         }))

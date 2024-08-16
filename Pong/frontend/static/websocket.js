@@ -1,19 +1,19 @@
-function updateFriendStatus(userId, status) {
-    console.log('In updateFriendStatus with userId:', userId, 'and status:', status);
-    const friendItem = document.querySelector(`[data-id="${userId}"]`);
-    if (friendItem) {
-        console.log('Found friendItem for userId:', userId);
-        const statusElement = friendItem.querySelector('.status');
-        if (statusElement) {
-            console.log('Found statusElement for userId:', userId);
-            statusElement.textContent = `Status: ${status}`;
-        } else {
-            console.log('statusElement not found for userId:', userId);
-        }
-    } else {
-        console.log('friendItem not found for userId:', userId);
-    }
-}
+// function updateFriendStatus(userId, status) {
+//     console.log('In updateFriendStatus with userId:', userId, 'and status:', status);
+//     const friendItem = document.querySelector(`[data-id="${userId}"]`);
+//     if (friendItem) {
+//         console.log('Found friendItem for userId:', userId);
+//         const statusElement = friendItem.querySelector('.status');
+//         if (statusElement) {
+//             console.log('Found statusElement for userId:', userId);
+//             statusElement.textContent = `Status: ${status}`;
+//         } else {
+//             console.log('statusElement not found for userId:', userId);
+//         }
+//     } else {
+//         console.log('friendItem not found for userId:', userId);
+//     }
+// }
 
 // async function initializeWebSocket() {
 //     const response = await fetch('/get_ws_token/');

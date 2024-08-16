@@ -476,6 +476,7 @@ class EditDataView(APIView):
                         'type': 'friend_data_edit',
                         'from_user': user.username,
                         'from_user_id': user.id,
+                        'from_img_url': user.get_img_url(),
                     }
                 )
             return Response({"success": True})
@@ -693,8 +694,10 @@ class SendFriendRequestView(APIView):
                 'type': 'friend_request',
                 'from_user': user.username,
                 'from_user_id': user.id,
-                'from_image_url': get_profile_pic_url(user.get_img_url()),
-                'to_image_url': get_profile_pic_url(to_user.get_img_url()),
+                'from_image_url': user.get_img_url(),
+                # 'from_image_url': get_profile_pic_url(user.get_img_url()),
+                'to_image_url': to_user.get_img_url(),
+                # 'to_image_url': get_profile_pic_url(to_user.get_img_url()),
                 'to_user': to_user.username,
                 'time': str(friend_request.time),
                 'status': friend_request.status
@@ -768,7 +771,11 @@ class AcceptFriendRequestView(APIView):
                 'type': 'friend_req_accept',
                 'from_user': user.username,
                 'from_user_id': user.id,
-                'status': friend_request.status
+                'from_image_url': get_profile_pic_url(user.get_img_url()),
+                'to_image_url': get_profile_pic_url(friend_request.to_user.get_img_url()),
+                'to_user': friend_request.to_user.username,
+                'time': str(friend_request.time),
+                'status': friend_request.status,
             }
         )
         return JsonResponse({"message": "Friend request accepted.", "level": "success"}, status=status.HTTP_200_OK)
@@ -832,6 +839,10 @@ class RemoveFriendView(APIView):
                     'type': 'friend_remove',
                     'from_user': user.username,
                     'from_user_id': user.id,
+                    'from_image_url': get_profile_pic_url(user.get_img_url()),
+                    'to_image_url': get_profile_pic_url(friend.get_img_url()),
+                    'to_user': friend.username,
+                    # 'time': str(friend_request.time),
                 }
             )
             return JsonResponse({"message": "User removed from your friends.", "level": "success"},
@@ -897,6 +908,10 @@ class DeleteAccountView(APIView):
                         'type': 'friend_delete_acc',
                         'from_user': user.username,
                         'from_user_id': user.id,
+                        'from_image_url': get_profile_pic_url(user.get_img_url()),
+                        'to_image_url': get_profile_pic_url(friend.get_img_url()),
+                        'to_user': friend.username,
+                        # 'time': str(friend_request.time),
                     }
                 )
             message = "Account successfully deleted."
