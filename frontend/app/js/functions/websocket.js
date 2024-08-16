@@ -1,7 +1,7 @@
 import {isUserConnected} from "./user_auth.js";
 import ToastComponent from "@js/components/Toast.js";
-import Friends from "../views/friends.js";
 import {getCookie} from "./cookie.js";
+import { create_friend_div, create_friend_request_div, remove_friend_div } from "@js/functions/friends_management.js";
 
 export async function initializeWebSocket() {
     return new Promise(async (resolve, reject) => {
@@ -28,23 +28,37 @@ export async function initializeWebSocket() {
                 console.log("Message from server:", event.data);
                 const data = JSON.parse(event.data);
                 if (data.type === 'status_change') {
-                    updateFriendStatus(data.user_id, data.status);
+                    // updateFriendStatus(data.user_id, data.status);
+                    console.log("Status change detected");
+                    handle_friend_status(socket, data);
                 }
                 if (data.type === 'test_message') {
                     console.log('Received test message:', data.message);
                 }
-                if (data.type === 'friend_request')     // received friend request
+                if (data.type === 'friend_request') {     // received friend request
+                    console.log("Friend request received");
+                    console.log("data is:", data);
                     handle_received_friend_request(socket, data);
-                if (data.type === 'friend_req_accept')  // accept friend request
-                    // handle_friend_req_accept(socket, data);
-                    load_friends_list(data);
-                if (data.type === 'friend_remove')      // remove friend
-                    load_friends_list(data);
+                }
+                if (data.type === 'friend_req_accept') {  // accept friend request
+                    console.log("Friend request accepted");
+                    handle_friend_req_accept(socket, data);
+                    // load_friends_list(data);
+                }
+                if (data.type === 'friend_remove') {      // remove friend
+                    console.log("Friend removed");
+                    handle_friend_removed(socket, data);
+                    // load_friends_list(data);
+                }
                 // TODO : handle friend request decline
-                if (data.type === 'friend_delete_acc')
-                    load_friends_list(data);
-                if (data.type === 'friend_data_edit')
-                    load_friends_list(data);
+                if (data.type === 'friend_delete_acc') {
+                    console.log("Friend delete accepted");
+                    // load_friends_list(data);
+                }
+                if (data.type === 'friend_data_edit') {
+                    console.log("Friend data edit");
+                    // load_friends_list(data);
+                }
             };
 
             socket.onclose = function (event) {
@@ -68,110 +82,95 @@ export async function initializeWebSocket() {
     });
 }
 
-async function handle_received_friend_request(socket, message) {
+function handle_received_friend_request(socket, message) {
     console.log("socket is:", socket);
     console.log("message is:", message);
 
     const toast = new ToastComponent();
-    toast.throwToast('received-friend-request', 'You have received a friend request', 5000);
+    toast.throwToast('received-friend-request', `You have received a new friend request`, 5000);
+    create_friend_request_div(message);
+}
 
-    const friend_request_container = document.getElementById('friend-requests');
-    if (friend_request_container) {
-        await fetch('https://localhost:8443/get_friend_requests', {
-            method: 'GET',
-            credentials: 'include',
-        })
-            .then(response => response.json().then(data => ({ok: response.ok, data})))
-            .then(({ok, data}) => {
-                console.log("Data: ", data);
-                if (!ok) {
-                    const toastComponent = new ToastComponent();
-                    toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
-                } else {
-                    const friendRequestContainer = document.getElementById('friend-requests');
-                    if (friendRequestContainer) {
-                        data.map(request => {
-                            const friendRequestItem = document.createElement('div');
-                            friendRequestItem.classList.add('d-flex', 'w-100', 'justify-content-between', 'align-items-center', 'bg-white', 'login-card', 'py-2', 'px-5', 'rounded');
-                            friendRequestItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto';
-                            friendRequestItem.innerHTML = `
-                                <img src="${request.profile_image || "https://w0.peakpx.com/wallpaper/357/667/HD-wallpaper-ghost-profile-thumbnail.jpg"}" alt="user_pp" class="h-80 w-80 rounded-circle">
-                                <p>${request.from_user__username}</p>
-                                <p>Sent on ${new Date(request?.time).toLocaleString()}</p>
-                                <button class="btn btn-success confirm-request-btn" data-id="${request.from_user_id}">Accept</button>
-                                <button class="btn btn-danger decline-request-btn" data-id="${request.from_user_id}">Decline</button>
-                            `;
-                            friendRequestContainer.appendChild(friendRequestItem);
-                        });
-                        document.querySelectorAll('.confirm-request-btn').forEach(button => {
-                            button.addEventListener('click', accept_friend_request);
-                        });
-                        document.querySelectorAll('.decline-request-btn').forEach(button => {
-                            button.addEventListener('click', decline_friend_request);
-                        });
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching friend requests: ', error);
-                const toastComponent = new ToastComponent();
-                toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
-            });
+function handle_friend_req_accept(socket, message){
+    console.log("socket is:", socket);
+    console.log("message is:", message);
 
-        // const friendItem = document.createElement('div');
-        // friendItem.classList.add('d-flex', 'w-100', 'justify-content-between', 'align-items-center', 'bg-white', 'login-card', 'py-2', 'px-5', 'rounded');
-        // friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto';
-        // friendItem.innerHTML = `
-        //     <img src="${friend.profile_image || "https://w0.peakpx.com/wallpaper/357/667/HD-wallpaper-ghost-profile-thumbnail.jpg"}" alt="user_pp" class="h-80 w-80 rounded-circle">
-        //     <p>${friend.username}</p>
-        //     <p>Status: ${friend.status}</p>
-        //     <button class="btn btn-danger remove-friend-btn" data-id="${friend.id}">Remove</button>
-        // `;
-        // friend_request_container.appendChild(friendItem);
+    const toast = new ToastComponent();
+    toast.throwToast('received-friend-request', `${message.from_user} Is now your friend !`, 5000);
+    create_friend_div(message, message.from_user_id);
+}
+
+function handle_friend_removed(socket, message){
+    console.log("socket is:", socket);
+    console.log("message is:", message);
+
+    const toast = new ToastComponent();
+    toast.throwToast('received-friend-request', `${message.from_user} Is no longer your friend !`, 5000);
+    remove_friend_div(message.from_user_id);
+}
+
+function handle_friend_status(socket, message){
+    console.log("socket is:", socket);
+    console.log("message is:", message);
+    console.log("status change detected for user:", message.user_id, "new status is:", message.status);
+
+    const friendStatus = document.getElementById(`friend-status-${message.user_id}`);
+    const friendStatusText = document.getElementById(`friend-status-text-${message.user_id}`);
+    console.log("friendStatus is:", friendStatus);
+    console.log("friendStatusText is:", friendStatusText);
+    if (friendStatus && friendStatusText) {
+        friendStatus.classList.remove('bg-success', 'bg-danger');
+        friendStatusText.innerText = message.status;
+        if (message.status === 'online') {
+            friendStatus.classList.add('bg-success');
+        } else {
+            friendStatus.classList.add('bg-danger');
+        }
     }
 }
 
-async function accept_friend_request(event) {
-    const button = event.target;
-    const userId = button.getAttribute('data-id');
-    console.log('click on accept button ', userId);
-    fetch ('https://localhost:8443/accept_friend', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        credentials: 'include',
-        body: JSON.stringify({from_id: userId})
-    })
-        .then(response => response.json().then(data => ({ok: response.ok, data})))
-        .then(({ok, data}) => {
-            if (!ok) {
-                const toastComponent = new ToastComponent();
-                toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
-            } else {
-                const toastComponent = new ToastComponent();
-                toastComponent.throwToast('Success', data.message || 'Friend request accepted', 5000);
-                // handle_received_friend_request();
-            }
-        })
-        .catch(error => {
-            console.error('Error accepting friend request: ', error);
-            const toastComponent = new ToastComponent();
-            toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
-        });
-}
-
-async function decline_friend_request(event){
-    const button = event.target;
-    const userId = button.getAttribute('data-id');
-   console.log('click on decline button ', userId);
-}
-
-async function handle_friend_req_accept(socket, data){
-    console.log("socket is:", socket);
-    console.log("message is:", message);
-
-    const toast = new ToastComponent();
-    toast.throwToast('received-friend-request', 'You have received a friend request', 5000);
-}
+//
+// async function accept_friend_request(event) {
+//     const button = event.target;
+//     const userId = button.getAttribute('data-id');
+//     console.log('click on accept button ', userId);
+//     fetch ('https://localhost:8443/accept_friend', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//             'X-CSRFToken': getCookie('csrftoken')
+//         },
+//         credentials: 'include',
+//         body: JSON.stringify({from_id: userId})
+//     })
+//         .then(response => response.json().then(data => ({ok: response.ok, data})))
+//         .then(({ok, data}) => {
+//             if (!ok) {
+//                 const toastComponent = new ToastComponent();
+//                 toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+//             } else {
+//                 const toastComponent = new ToastComponent();
+//                 toastComponent.throwToast('Success', data.message || 'Friend request accepted', 5000);
+//                 // handle_received_friend_request();
+//             }
+//         })
+//         .catch(error => {
+//             console.error('Error accepting friend request: ', error);
+//             const toastComponent = new ToastComponent();
+//             toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+//         });
+// }
+//
+// async function decline_friend_request(event){
+//     const button = event.target;
+//     const userId = button.getAttribute('data-id');
+//    console.log('click on decline button ', userId);
+// }
+//
+// async function handle_friend_req_accept(socket, data){
+//     console.log("socket is:", socket);
+//     console.log("message is:", message);
+//
+//     const toast = new ToastComponent();
+//     toast.throwToast('received-friend-request', 'You have received a friend request', 5000);
+// }

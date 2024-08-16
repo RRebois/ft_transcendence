@@ -17,6 +17,8 @@ export default class ToastComponent {
                 return 'bg-danger text-white';
             case 'success':
                 return 'bg-success text-white';
+            case 'received-friend-request':
+                return "bg-primary text-white"
             default:
                 return 'bg-primary text-white';
         }
@@ -24,10 +26,14 @@ export default class ToastComponent {
 
     getIcon(type) {
         switch (type) {
-            case 'error':
-                return '<i class="bi bi-exclamation-octagon me-2"></i>';
+            case "error":
+                return "<i class=\"bi bi-exclamation-octagon me-2\"></i>";
+            case "success":
+                return "<i class=\"bi bi-check-circle-fill\"></i>";
+            case "received-friend-request":
+                return "<i class=\"bi bi-person-fill-add\"></i>";
             default:
-                return '<i class="bi bi-info-lg me-2"></i>';
+                return "<i class=\"bi bi-info-lg me-2\"></i>";
         }
     }
 

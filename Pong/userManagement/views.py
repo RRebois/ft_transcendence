@@ -117,6 +117,17 @@ def user_as_json(user):
     return user_dict
 
 
+def get_profile_pic_url(pp_path):
+    if (pp_path.startswith('http://') or pp_path.startswith('https://')):
+        return pp_path
+    url = os.environ.get('SERVER_URL')
+    if url and url[-1] == '/':
+        url = url[:-1]
+    if pp_path and pp_path[0] == '/':
+        pp_path = pp_path[1:]
+    return f"{url}/{pp_path}"
+
+
 @method_decorator(csrf_protect, name='dispatch')
 class LoginView(APIView):
     serializer_class = LoginSerializer
@@ -637,6 +648,7 @@ class VerifyOTPView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 class SendFriendRequestView(APIView):
     def post(self, request):
+        logging.debug("SendFriendRequestView")
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
@@ -681,6 +693,9 @@ class SendFriendRequestView(APIView):
                 'type': 'friend_request',
                 'from_user': user.username,
                 'from_user_id': user.id,
+                'from_image_url': get_profile_pic_url(user.get_img_url()),
+                'to_image_url': get_profile_pic_url(to_user.get_img_url()),
+                'to_user': to_user.username,
                 'time': str(friend_request.time),
                 'status': friend_request.status
             }
