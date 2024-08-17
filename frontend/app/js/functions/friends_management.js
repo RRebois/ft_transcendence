@@ -19,7 +19,7 @@ export function create_friend_request_div(request) {
 				<span id = \`friend-status-text-${request?.from_user_id}\` class="visually-hidden">Offline</span>
 			</span>
 		</div>
-		<p>${request?.from_user}</p>
+		<p>${request?.from_user || request.from_user__username}</p>
 		<p>Sent on ${new Date(request?.time).toLocaleString()}</p>
 		<button class="btn btn-success confirm-request-btn" data-id="${request?.from_user_id}">Accept</button>
 		<button class="btn btn-danger decline-request-btn" data-id="${request?.from_user_id}">Decline</button>

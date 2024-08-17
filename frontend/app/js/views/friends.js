@@ -115,7 +115,7 @@ export default class Friends {
 				}
 			})
 			.catch(error => {
-				console.error("Error accepting friend request: ", error);
+				console.error("Error sending friend request: ", error);
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
 			});
