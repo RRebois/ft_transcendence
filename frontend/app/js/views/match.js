@@ -12,11 +12,11 @@ export default class Match {
 
         this.player1_nickname = 'player1';
         this.player2_nickname = 'player2';
-        this.textArray = [`${this.player1_nickname}`, "0", "-", "0",
-                        `${this.player2_nickname}`];
-        this.nameArray = ["p1Nick", "p1Score", "hyphen", "p2Score", "p2Nick"];
         this.score_p1 = 0;
         this.score_p2 = 0;
+        this.textArray = [`${this.player1_nickname}`, `${this.y_pos_p1}`, "-", `${this.y_pos_p2}`,
+                        `${this.player2_nickname}`];
+        this.nameArray = ["p1Nick", "p1Score", "hyphen", "p2Score", "p2Nick"];
         this.y_pos_p1 = 0;  // left player
         this.y_pos_p2 = 0;  // right player
         this.stadium_length = 25;
@@ -62,7 +62,7 @@ export default class Match {
 
         // Create textGroup
         const   textGroup = new THREE.Group();
-        textGroup.position.set(0, 20, 0);
+        textGroup.position.set(2, 20, 0);
         textGroup.rotation.set(20, 0, 0);
         textGroup.name = "textGroup";
         this.scene.add(textGroup);
@@ -93,7 +93,7 @@ export default class Match {
                 const textGeometry = new TextGeometry(text, {
                     font: font,
                     size: 4,
-                    depth: 0.1,
+                    depth: 1,
                     curveSegments: 12,
                     bevelEnabled: false
                 });
@@ -114,6 +114,7 @@ export default class Match {
                     metalness: 0.8,
                     roughness: 0.5,
                 });
+
                 let textAdd;
                 if (this.nameArray[index] === "p1Nick" || this.nameArray[index] === "p2Nick") {
                     textAdd = new THREE.Mesh(textGeometry, nickTextMaterial);
@@ -142,8 +143,6 @@ export default class Match {
                         textAdd.material.emissiveIntensity = 0.6 + Math.sin(Date.now() * 0.005) * 0.4;
                 };
                 animate();
-
-                // this.scene.add(p1NickDisplay, p2NickDisplay, p1ScoreDisplay, hyphenDisplay, p2ScoreDisplay);
             });
         });
     }
@@ -235,45 +234,84 @@ export default class Match {
     }
 
     rotateScore(i) {
-        let score;
-        if (i === 1)
-            score = this.scene.getObjectByName('p1Score');
-        else
-           score = this.scene.getObjectByName('p2Score');
+        if (i === 1) {
+            this.score = this.scene.getObjectByName('p1Score');
+        }
+        else {
+           this.score = this.scene.getObjectByName('p2Score');
+        }
 
         // Rotation on the X axis
-        this.startRotation = score.rotation.x;
+        this.startRotation = this.score.rotation.x;
         this.endRotation = this.startRotation + 2 * Math.PI;
 
-        this.animateScoreRotation(i);
+        const   startTime = Date.now();
+        this.animateScoreRotation(i, startTime, this.score);
     }
 
-    animateScoreRotation(i) {
-        // Getting the correct score to change
-        let score;
-        if (i === 1)
-            score = this.scene.getObjectByName('p1Score');
-        else
-           score = this.scene.getObjectByName('p2Score');
-
-        const   startTime = Date.now();
+    animateScoreRotation(i, startTime, score) {
         const   deltaT = Date.now() - startTime;
         const   progress = deltaT / 1000;
 
         if (progress < 1) {
             score.rotation.x = this.startRotation + progress * (this.endRotation - this.startRotation);
-            requestAnimationFrame(this.animateScoreRotation);
+            requestAnimationFrame(() => this.animateScoreRotation(i, startTime, score));
         }
-        else
+        else {
             score.rotation.x = this.endRotation;
+        }
     }
 
-    updateScores() {
-        const scoreText = this.scene.getObjectByName('scores');
-        if (scoreText) {
-            this.scene.remove(scoreText);
+    updateScores(i) {
+        // Select textGroup to add updated score
+        const   text = this.scene.getObjectByName("textGroup");
+        const   loader = new FontLoader();
+        let     value;
+
+        // Select score to remove
+        if (i === 1) {
+            this.score = this.scene.getObjectByName('p1Score');
+            value = this.score_p1;
         }
-        // this.printScores();
+        else {
+           this.score = this.scene.getObjectByName('p2Score');
+           value = this.score_p2;
+        }
+
+        // Create new geometry && material
+        let     xPosition = -30;
+        loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
+            const   textGeometry = new TextGeometry(value, {
+                font: font,
+                size: 4,
+                depth: 1,
+                curveSegments: 12,
+                bevelEnabled: false
+            });
+
+            // Material for scores
+            const   textMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                emissive: 0x33ff33, // Green light
+                emissiveIntensity: 0.8,
+                metalness: 0.8,
+                roughness: 0.5,
+            });
+
+            const   newScore = new THREE.Mesh(textGeometry, textMaterial);
+            console.log(this.score.position.x);
+            newScore.position.x = this.score.position.x;
+            newScore.position.y = this.score.position.y;
+            newScore.position.z = this.score.position.z;
+            console.log(newScore.position.x);
+            text.remove(this.score);
+            text.add(newScore);
+
+            if (i === 1)
+                newScore.name = "p1Score";
+            else
+                newScore.name = "p2Score";
+        });
     }
 
     animate() {
@@ -342,8 +380,7 @@ export default class Match {
         // Player 2 wins the round
         if (ball.position.x - this.ball_radius < -this.stadium_length / 2) {
             this.rotateScore(2);
-            this.score_p2++;
-            this.updateScores();
+            // this.printInitScores();
             if (this.score_p2 + 1 == 5)
                 return ;
             this.newRound();
@@ -352,7 +389,7 @@ export default class Match {
         else if (ball.position.x + this.ball_radius > this.stadium_length / 2) {
             this.rotateScore(1);
             this.score_p1++;
-            this.updateScores();
+            this.updateScores(1);
             if (this.score_p1 + 1 == 5)
                 return ;
             this.newRound();
