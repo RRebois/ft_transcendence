@@ -769,18 +769,19 @@ class AcceptFriendRequestView(APIView):
             f"user_{friend_request.from_user_id}_group",
             {
                 'type': 'friend_req_accept',
-                'from_user': user.username,
-                'from_user_id': user.id,
-                'from_status': user.status,
+                'from_user': friend_request.from_user.username,
+                'from_user_id': friend_request.from_user.id,
+                'from_status': friend_request.from_user.status,
                 # 'from_image_url': get_profile_pic_url(user.get_img_url()),
                 # 'to_image_url': get_profile_pic_url(friend_request.to_user.get_img_url()),
-                'to_user': friend_request.to_user.username,
-                'to_status': friend_request.to_user.status,
+                'to_user': user.username,
+                'to_status': user.status,
                 'time': str(friend_request.time),
                 'request_status': friend_request.status,
             }
         )
-        return JsonResponse({"message": "Friend request accepted.", "level": "success", "from_user": user.username, "from_status": user.status}
+        return JsonResponse({"message": "Friend request accepted.", "level": "success",
+                             "from_user": friend_request.from_user.username, "from_status": friend_request.from_user.status}
                             , status=status.HTTP_200_OK)
 
 

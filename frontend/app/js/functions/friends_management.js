@@ -47,8 +47,8 @@ export function create_friend_div(friend, userId) {
 				<span id = \`friend-status-text-${friend?.from_user_id || userId}\` class="visually-hidden">Offline</span>
 			</span>
 		</div>
-		<p>${friend?.from_user}</p>
-		<p>Status: ${friend?.from_status}</p>
+		<p>${friend?.to_user || friend?.from_user}</p>
+		<p>Status: ${friend?.to_status || friend?.from_status}</p>
 		<button class="btn btn-danger remove-friend-btn" data-id="${friend?.id || userId}">Remove</button>
 	`;
 	friendListContainer.appendChild(friendItem);
