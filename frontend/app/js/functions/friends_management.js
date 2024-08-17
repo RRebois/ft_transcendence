@@ -14,7 +14,7 @@ export function create_friend_request_div(request) {
 	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendRequestItem.innerHTML = `
 		<div class="position-relative d-inline-block">
-			<img src="${request?.from_img_url || "https://w0.peakpx.com/wallpaper/357/667/HD-wallpaper-ghost-profile-thumbnail.jpg"}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+			<img src="${request?.from_image_url}" alt="user_pp" class="h-64 w-64 rounded-circle" />
 				<span style="left: 60px; top: 5px" id=\`friend-status-${request?.from_user_id}\` class="position-absolute translate-middle p-2 bg-danger border border-light rounded-circle">
 				<span id = \`friend-status-text-${request?.from_user_id}\` class="visually-hidden">Offline</span>
 			</span>
@@ -42,7 +42,7 @@ export function create_friend_div(friend, userId) {
 	friendItem.id = `friend-item-${friend?.id || userId}`;
 	friendItem.innerHTML = `
 		<div class="position-relative d-inline-block">
-			<img src="${friend?.profile_image || "https://w0.peakpx.com/wallpaper/357/667/HD-wallpaper-ghost-profile-thumbnail.jpg"}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+			<img src="${friend?.from_image_url}" alt="user_pp" class="h-64 w-64 rounded-circle" />
 				<span style="left: 60px; top: 5px" id = \`friend-status-${friend?.id || userId}\` class="position-absolute translate-middle p-2 bg-danger border border-light rounded-circle">
 				<span id = \`friend-status-text-${friend?.from_user_id || userId}\` class="visually-hidden">Offline</span>
 			</span>

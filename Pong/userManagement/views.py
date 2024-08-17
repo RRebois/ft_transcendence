@@ -8,6 +8,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.urls import reverse
 from django.db import IntegrityError
+from django.db.models import F
 from django.contrib import messages
 from django.core.files.storage import default_storage
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
@@ -113,7 +114,7 @@ def user_as_json(user):
                                             field.name not in ['image', 'password', 'last_login', 'is_superuser',
                                                                'is_staff', 'is_active']])
     server_url = os.environ.get('SERVER_URL')
-    user_dict['image_url'] = server_url + "/" + user.get_img_url()
+    user_dict['image_url'] = server_url + user.get_img_url()
     return user_dict
 
 
@@ -167,7 +168,7 @@ class LoginView(APIView):
             user_dict = model_to_dict(user)
             server_url = os.environ.get('SERVER_URL')
             image_url = user.get_img_url()
-            user_dict['image_url'] = server_url + '/' + image_url
+            user_dict['image_url'] = server_url + image_url
 
             response = JsonResponse(data={'user': user_dict}, status=200)
             response.set_cookie(key='jwt_access', value=access_token, httponly=True,  samesite='Lax', secure=True, path='/')
@@ -694,10 +695,8 @@ class SendFriendRequestView(APIView):
                 'type': 'friend_request',
                 'from_user': user.username,
                 'from_user_id': user.id,
-                'from_image_url': user.get_img_url(),
-                # 'from_image_url': get_profile_pic_url(user.get_img_url()),
-                'to_image_url': to_user.get_img_url(),
-                # 'to_image_url': get_profile_pic_url(to_user.get_img_url()),
+                'from_image_url': os.environ.get('SERVER_URL') + user.get_img_url(),
+                'to_image_url': os.environ.get('SERVER_URL') + to_user.get_img_url(),
                 'to_user': to_user.username,
                 'time': str(friend_request.time),
                 'request_status': friend_request.status
@@ -730,9 +729,21 @@ class GetFriendRequestView(APIView):        # en attente pour l'utilisateur conn
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
-        friendRequests = (FriendRequest.objects.filter(to_user=user, status='pending').
-                          values('from_user__username', 'time', 'status', 'from_user_id'))
-        return JsonResponse(list(friendRequests), safe=False)
+        friendRequests = (FriendRequest.objects
+                          .filter(to_user=user, status='pending')
+                          .annotate(from_user_image=F('from_user__avatar_id__image_url'))
+                          .values('from_user__username', 'time', 'status', 'from_user_image', 'from_user_id'))
+        processedRequest = []
+        for request in friendRequests:
+            from_image_url = request['from_user_image'] or os.environ.get('SERVER_URL') + '/media/profile_pics/default_pp.jpg'
+            processedRequest.append({
+                'from_user__username': request['from_user__username'],
+                'time': request['time'],
+                'status': request['status'],
+                'from_image_url': from_image_url,
+                'from_user_id': request['from_user_id']
+            })
+        return JsonResponse(processedRequest, safe=False)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -772,16 +783,16 @@ class AcceptFriendRequestView(APIView):
                 'from_user': friend_request.from_user.username,
                 'from_user_id': friend_request.from_user.id,
                 'from_status': friend_request.from_user.status,
-                # 'from_image_url': get_profile_pic_url(user.get_img_url()),
-                # 'to_image_url': get_profile_pic_url(friend_request.to_user.get_img_url()),
+                'from_image_url': os.environ.get('SERVER_URL') + friend_request.from_user.get_img_url(),
+                'to_image_url': os.environ.get('SERVER_URL') + user.get_img_url(),
                 'to_user': user.username,
                 'to_status': user.status,
                 'time': str(friend_request.time),
                 'request_status': friend_request.status,
             }
         )
-        return JsonResponse({"message": "Friend request accepted.", "level": "success",
-                             "from_user": friend_request.from_user.username, "from_status": friend_request.from_user.status}
+        return JsonResponse({"message": "Friend request accepted.", "level": "success", "from_user": friend_request.from_user.username,
+                             "from_status": friend_request.from_user.status, "from_image_url": os.environ.get('SERVER_URL') + friend_request.from_user.get_img_url()}
                             , status=status.HTTP_200_OK)
 
 
@@ -843,8 +854,8 @@ class RemoveFriendView(APIView):
                     'type': 'friend_remove',
                     'from_user': user.username,
                     'from_user_id': user.id,
-                    'from_image_url': get_profile_pic_url(user.get_img_url()),
-                    'to_image_url': get_profile_pic_url(friend.get_img_url()),
+                    'from_image_url': os.environ.get('SERVER_URL') + get_profile_pic_url(user.get_img_url()),
+                    'to_image_url': os.environ.get('SERVER_URL') + get_profile_pic_url(friend.get_img_url()),
                     'to_user': friend.username,
                     # 'time': str(friend_request.time),
                 }
@@ -869,7 +880,7 @@ class GetFriendView(APIView):
                 'from_user': friend.username,
                 'id': friend.id,
                 'from_status': friend.status,
-                'image': friend.get_img_url()
+                'from_image_url': os.environ.get('SERVER_URL') + friend.get_img_url(),
             }
             for friend in friend_list
         ]
@@ -912,8 +923,8 @@ class DeleteAccountView(APIView):
                         'type': 'friend_delete_acc',
                         'from_user': user.username,
                         'from_user_id': user.id,
-                        'from_image_url': get_profile_pic_url(user.get_img_url()),
-                        'to_image_url': get_profile_pic_url(friend.get_img_url()),
+                        'from_image_url': os.environ.get('SERVER_URL') + get_profile_pic_url(user.get_img_url()),
+                        'to_image_url': os.environ.get('SERVER_URL') + get_profile_pic_url(friend.get_img_url()),
                         'to_user': friend.username,
                         # 'time': str(friend_request.time),
                     }

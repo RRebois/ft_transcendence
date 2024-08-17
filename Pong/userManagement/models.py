@@ -64,7 +64,7 @@ class User(AbstractUser):
         if self.avatar_id:
             return self.avatar_id.image_url if self.avatar_id.image_url else self.avatar_id.image.url
         else:
-            return "media/profile_pics/default_pp.jpg"
+            return "/media/profile_pics/default_pp.jpg"
 
     def serialize(self):
         return {
@@ -75,6 +75,7 @@ class User(AbstractUser):
             "Language": self.language,
             "stud42": self.stud42,
             "2fa": self.tfa_activated,
+            "img": self.get_img_url(),
         }
 
 

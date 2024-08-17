@@ -93,15 +93,5 @@ export default class Navbar {
 		if (logout) {
 			logout.addEventListener('click', this.logoutUser);
 		}
-
-		// document.getElementById('friends-btn').addEventListener('click', (e) => {
-        //     e.preventDefault();
-        //     window.location.hash = '/friends';
-        // });
-
-		// const friends = document.getElementById('friends-btn');
-		// if (friends) {
-		// 	friends.addEventListener('click', Friends.load_friends_page);
-		// }
 	}
 }
