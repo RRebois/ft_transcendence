@@ -134,7 +134,6 @@ class LoginView(APIView):
                 }, status=status.HTTP_401_UNAUTHORIZED)
 
             if user.tfa_activated:
-                # return Response({"success": True, "opt_required": True})
                 return JsonResponse({
                     'otp_required': True,
                     'user_id': user.id,
@@ -142,16 +141,6 @@ class LoginView(APIView):
 
             access_token = serializer.validated_data['jwt_access']
             refresh_token = serializer.validated_data['jwt_refresh']
-
-            # response = JsonResponse({
-            #     'message': 'Login successful',
-            #     'user_id': user.id,
-            #     'username': user.username,
-            #     'is_authenticated': True,
-            #     'redirect': True,
-            #     'redirect_url': ""
-            # }, status=status.HTTP_200_OK)
-
             logging.debug("logging user")
             user_dict = model_to_dict(user)
             image_url = user.get_img_url()
@@ -171,11 +160,6 @@ class LoginView(APIView):
 
 @method_decorator(csrf_protect, name='dispatch')
 class Login42View(APIView):
-
-    # def post(self, request):
-    #     redirect_url = os.environ.get('API_42_CALL')
-    #     return JsonResponse(data={'redirect_url': redirect_url}, status=200)
-
     def get(self, request):
         redirect_url = os.environ.get('API_42_CALL')
         return JsonResponse(data={'redirect_url': redirect_url}, status=200)
@@ -455,20 +439,22 @@ class UserPersonalInformationView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-@method_decorator(login_required(login_url='login'), name='dispatch')
 class EditDataView(APIView):
     serializer_class = EditUserSerializer
 
     def put(self, request):
+        logging.debug("================== EditDataView ==================")
         user_data = request.data
         try:
             user = authenticate_user(request)
+            logging.debug(f"user: {user}")
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            logging.debug(f"AuthenticationFailed: {str(e)}")
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
 
         serializer = self.serializer_class(user, data=user_data, partial=True)
         try:
+            logging.debug("serializer.is_valid")
             serializer.is_valid(raise_exception=True)
             serializer.save()
             friend_list = user.friends.all()
@@ -482,8 +468,12 @@ class EditDataView(APIView):
                         'from_user_id': user.id,
                     }
                 )
-            return Response({"success": True})
+            user_dict = model_to_dict(user)
+            image_url = get_profile_pic_url(user.get_img_url())
+            user_dict['image_url'] = image_url
+            return JsonResponse(data={'user': user_dict}, status=200)
         except serializers.ValidationError as e:
+            logging.debug(f"ValidationError: {str(e)}")
             error_messages = []
             for field, errors in e.detail.items():
                 for error in errors:
@@ -492,26 +482,26 @@ class EditDataView(APIView):
                     else:
                         error_messages.append(f"{field}: {error}")
             error_message = " | ".join(error_messages)
-            return Response({"success": False, "errors": error_message})
+            return JsonResponse(data={'message': error_message}, status=400)
 
 
 @method_decorator(csrf_protect, name='dispatch')
-@method_decorator(login_required(login_url='login'), name='dispatch')
 class PasswordChangeView(APIView):
     serializer_class = PasswordChangeSerializer
 
     def put(self, request):
+        logging.debug("================== PasswordChangeView ==================")
+        logging.debug(f"request.data: {request.data}")
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = self.serializer_class(data=request.data, context={'user': user})
 
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response({"success": True})
+            return JsonResponse(data={'message': 'Password changed successfully'}, status=200)
         except serializers.ValidationError as e:
             error_messages = []
             for field, errors in e.detail.items():
@@ -521,7 +511,7 @@ class PasswordChangeView(APIView):
                     else:
                         error_messages.append(f"{field}: {error}")
             error_message = " | ".join(error_messages)
-            return Response({"success": False, "errors": error_message})
+            return JsonResponse(data={'message': error_message}, status=400)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -592,33 +582,27 @@ class Security2FAView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
-
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         data = request.data
         value = data.get('value')
-
         if value:
             try:
                 secret_key = pyotp.random_base32()
                 user.totp = secret_key
                 user.tfa_activated = True
                 user.save()
-
                 qr_url = pyotp.totp.TOTP(secret_key).provisioning_uri(user.username)
-                message = "2FA activated, please scan the QR-code in authenticator to save your account code."
-                return JsonResponse({"qr_url": qr_url, "message": message})
+                return JsonResponse({"qrcode_url": qr_url, "message": "2FA activated, please scan the QR-code in your authenticator app to save your account code."})
             except Exception as e:
-                return Response({"success": False, "error": str(e)}, status=500)
+                return JsonResponse({"message": str(e)}, status=500)
         else:
             try:
                 user.totp = None
                 user.tfa_activated = False
                 user.save()
-                message = "2FA successfully deactivated."
-                return Response({"success": True, "message": message})
+                return JsonResponse({"message": "2FA successfully deactivated."}, status=200)
             except Exception as e:
-                return Response({"success": False, "error": str(e)}, status=500)
+                return JsonResponse({"message": str(e)}, status=500)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -861,22 +845,24 @@ class GetFriendView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-@method_decorator(login_required(login_url='login'), name='dispatch')
 class DeleteAccountView(APIView):
     serializer_class = CheckPassword
 
     def post(self, request):
-
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         if user.stud42:
             Avatars.objects.get(pk=user.avatar_id.pk).delete()
             User.objects.get(id=user.id).delete()
-            message = "Account successfully deleted."
-            return JsonResponse({"success": True, "redirect": True, "redirect_url": "", "message": message})
+            response = JsonResponse(data={'message': "Account successfully deleted."}, status=status.HTTP_200_OK)
+            response.delete_cookie('jwt_access')
+            response.delete_cookie('jwt_refresh')
+            response.delete_cookie('csrftoken')
+            response['Location'] = 'https://localhost:4242/'
+            response.status_code = 302
+            return response
 
         serializer = self.serializer_class(data=request.data, context={'user': user})
         try:
@@ -897,8 +883,13 @@ class DeleteAccountView(APIView):
                         'from_user_id': user.id,
                     }
                 )
-            message = "Account successfully deleted."
-            return JsonResponse({"success": True, "redirect": True, "redirect_url": "", "message": message})
+            response = JsonResponse(data={'message': "Account successfully deleted."}, status=status.HTTP_200_OK)
+            response.delete_cookie('jwt_access')
+            response.delete_cookie('jwt_refresh')
+            response.delete_cookie('csrftoken')
+            response['Location'] = 'https://localhost:4242/dashboard'
+            response.status_code = 302
+            return response
         except serializers.ValidationError as e:
             error_messages = []
             for field, errors in e.detail.items():
@@ -908,4 +899,4 @@ class DeleteAccountView(APIView):
                     else:
                         error_messages.append(f"{field}: {error}")
             error_message = " | ".join(error_messages)
-            return Response({"success": False, "errors": error_message})
+            return JsonResponse(data={'message': error_message}, status=400)

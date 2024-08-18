@@ -43,7 +43,7 @@ export default class Navbar {
 								<p class="d-none d-md-block mb-0 me-2">${this.user?.username}</p>
 							</button>
 							<ul class="dropdown-menu">
-								<li><a class="dropdown-item" href="/user/${this.user?.id}">My profile</a></li>
+								<li><a class="dropdown-item" href="/my-profile">My profile</a></li>
 								<li><a class="dropdown-item" href="#">My stats</a></li>
 								<li><a class="dropdown-item" href="#">Friends</a></li>
 								<li><hr class="dropdown-divider"></li>
@@ -54,6 +54,7 @@ export default class Navbar {
 					</div>            
 				</div>
 				<!--	MODAL PART		-->
+				<!-- TODO: waiting for the backend to implement the previous profile pictures -->
 				<div class="modal fade" id="update-user-picture" tabindex="-1" aria-labelledby="create match modal" aria-hidden="true">
 					<div class="modal-dialog">
 						<div class="modal-content">

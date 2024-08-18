@@ -91,7 +91,6 @@ function    display_user_data(element) {
                     const   togInput = document.createElement('input');
                     setAttributes(togInput, {'type': 'checkbox', 'id': 'flexSwitchCheckDefault'});
                     togInput.className = "form-check-input";
-
                     const   key2fa = user_info["2fa"];
                     if (key2fa) {
                         togInput.checked = true;
