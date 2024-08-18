@@ -47,7 +47,6 @@ export default class Navbar {
 								<li><a class="dropdown-item" href="#">My stats</a></li>
 								<li><a class="dropdown-item" href="#">Friends</a></li>
 								<li><hr class="dropdown-divider"></li>
-								<li><a class="dropdown-item" href="/settings">Settings</a></li>
 								<li><a role="button" id="logout-btn" class="dropdown-item text-danger">Logout</a></li>
 							</ul>
 						</div>   
