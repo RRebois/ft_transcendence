@@ -248,10 +248,7 @@ export default class MyProfile {
 				<div class="bg-white d-flex g-4 flex-column align-items-center py-2 px-5 rounded login-card w-50" style="--bs-bg-opacity: .5;">
                 	<p class="text-justify play-bold fs-2">${this.user?.username} profile</p>
 					<form id="personal-data-form">
-						<div>
-							<p class="play-bold fs-5">Your personal information</p>
-							<button type="button" class="btn btn-primary" id="edit-profile">Edit your infos</button>
-						</div>
+						<p class="play-bold fs-5">Your personal information</p>
 						<div class="row g-3">
 							<div class="row g-2">
 								<div class="form-floating has-validation">
