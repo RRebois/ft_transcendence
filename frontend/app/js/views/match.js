@@ -244,9 +244,6 @@ export default class Match {
         const texture = textureLoader.load(
           "/ball.png",
         );
-
-        // create a "standard" material using
-        // the texture we just loaded as a color map
         const   material = new THREE.MeshStandardMaterial({map: texture,});
 
         return material;
@@ -255,13 +252,66 @@ export default class Match {
     createCube() {
         const   geometry = new THREE.BufferGeometry(5, 5, 5);
         const   material = this.createMaterial();
+
         const   cube = new THREE.Mesh(geometry, material);
         const   stadium = this.scene.getObjectByName("stadium");
-        cub3D.position.set(0,this.stadium_width / 2,0);
-        stadium.add(cub3D);
+        cube.position.set(3,3,0);
+        stadium.add(cube);
       }
 
+
+        // const pointA = new THREE.Vector3(-5, 0, 0); // Starting point
+        // const pointB = new THREE.Vector3(5, 0, 0);  // Ending point
+
+        // // Create an object to move
+        // const geometry = new THREE.BoxGeometry(1, 1, 1);
+        // const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
+        // const cube = new THREE.Mesh(geometry, material);
+        // cube.position.copy(pointA); // Start at point A
+        // scene.add(cube);
+
+        // // Animation variables
+        // let progress = 0; // Progress from 0 (start) to 1 (end)
+        // const speed = 0.01; // Adjust speed as needed
+
+        // function animate() {
+        //     requestAnimationFrame(animate);
+
+        //     // Update progress
+        //     progress += speed;
+        //     if (progress > 1) progress = 1; // Clamp progress at 1
+
+        //     // Linearly interpolate between point A and point B
+        //     cube.position.lerpVectors(pointA, pointB, progress);
+
+        //     // Render the scene
+        //     renderer.render(scene, camera);
+        // }
+
+        // // Start the animation
+        // animate();
+
+        // or
+//         let t = 0; // Time variable
+
+// function animate() {
+//     requestAnimationFrame(animate);
+
+//     // Increase t by the speed
+//     t += speed;
+
+//     // Clamp t between 0 and 1
+//     t = Math.min(t, 1);
+
+//     // Lerp position
+//     cube.position.lerpVectors(pointA, pointB, t);
+
+//     // Render the scene
+//     renderer.render(scene, camera);
+// }
+
     createStadium() {
+        this.createCube();
         this.createWall(0, this.stadium_width / 2, 0, this.stadium_length, this.stadium_thickness, this.stadium_height);  // up
         this.createWall(-this.stadium_length / 2, 0, 0, this.stadium_thickness, this.stadium_width, this.stadium_height);  // left
         this.createWall(this.stadium_length / 2, 0, 0, this.stadium_thickness, this.stadium_width, this.stadium_height);  // right
