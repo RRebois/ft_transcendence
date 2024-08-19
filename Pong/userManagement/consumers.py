@@ -105,6 +105,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'from_image_url': event['from_image_url'],
             'to_image_url': event['to_image_url'],
             'to_user': event['to_user'],
+            'to_user_id': event['to_user_id'],
             'to_status': event['to_status'],
             'time': event['time'],
             'request_status': event['request_status'],
@@ -115,10 +116,11 @@ class UserConsumer(AsyncWebsocketConsumer):
             'type': 'friend_remove',
             'from_user': event['from_user'],
             'from_user_id': event['from_user_id'],
-            # 'from_image_url': event['from_image_url'],
-            # 'to_image_url': event['to_image_url'],
-            # 'to_user': event['to_user'],
-            # # 'time': event['time'],
+            'from_image_url': event['from_image_url'],
+            'to_image_url': event['to_image_url'],
+            'to_user': event['to_user'],
+            'to_user_id': event['to_user_id'],
+            # 'time': event['time'],
         }))
 
     async def friend_delete_acc(self, event):

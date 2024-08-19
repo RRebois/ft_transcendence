@@ -786,6 +786,7 @@ class AcceptFriendRequestView(APIView):
                 'from_image_url': os.environ.get('SERVER_URL') + friend_request.from_user.get_img_url(),
                 'to_image_url': os.environ.get('SERVER_URL') + user.get_img_url(),
                 'to_user': user.username,
+                'to_user_id': user.id,
                 'to_status': user.status,
                 'time': str(friend_request.time),
                 'request_status': friend_request.status,
@@ -857,6 +858,7 @@ class RemoveFriendView(APIView):
                     'from_image_url': os.environ.get('SERVER_URL') + get_profile_pic_url(user.get_img_url()),
                     'to_image_url': os.environ.get('SERVER_URL') + get_profile_pic_url(friend.get_img_url()),
                     'to_user': friend.username,
+                    'to_user_id': friend.id,
                     # 'time': str(friend_request.time),
                 }
             )
