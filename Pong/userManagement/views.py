@@ -495,7 +495,8 @@ class PasswordChangeView(APIView):
         except AuthenticationFailed as e:
             return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = self.serializer_class(data=request.data, context={'user': user})
-
+        if (user.stud42):
+            return JsonResponse(data={'message': 'You cannot change your password if you are a 42 student'}, status=401)
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -581,6 +582,8 @@ class Security2FAView(APIView):
             user = authenticate_user(request)
         except AuthenticationFailed as e:
             return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        if user.stud42:
+            return JsonResponse(data={'message': 'You cannot enable 2FA if you are a 42 student'}, status=401)
         data = request.data
         value = data.get('value')
         if value:
