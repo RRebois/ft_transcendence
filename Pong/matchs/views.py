@@ -41,7 +41,7 @@ class MatchScoreView(APIView):
 
 
 def get_new_elo(player_elo, opponent_elo, win):
-    
+
     expected = 1 / (1 + 10 ** ((opponent_elo - player_elo) / 400))
 
     if player_elo < 1500:
@@ -62,8 +62,9 @@ def update_match_data(players_data, winner, is_pong=True):
     opponent_elo = 0
 
     for data in players_data:
-        if data.get_username() == winner:
-            winner_elo = getattr(data, elo)[-1]
+        if data.get_username() in winner:
+            tmp = getattr(data, elo)[-1]
+            winner_elo = tmp if tmp > winner_elo else winner_elo
             data.user_wins[game] += 1
         else:
             tmp = getattr(data, elo)[-1]
@@ -71,10 +72,10 @@ def update_match_data(players_data, winner, is_pong=True):
                 opponent_elo = tmp
             data.user_losses[game] += 1
         data.user_winrate[game] = data.user_wins[game] / (data.user_wins[game] + data.user_losses[game])
-        
+
     for data in players_data:
         elo_lst = getattr(data, elo)
-        if data.get_username() == winner:
+        if data.get_username() in winner:
             new_elo = get_new_elo(elo_lst[-1], opponent_elo, True)
             if new_elo > data.user_highest[game]:
                 data.user_highest[game] = new_elo
@@ -93,13 +94,13 @@ def create_match(match_result, winner, is_pong=True):
         player = User.objects.get(username=player_username)
         players_data.append(UserData.objects.get(user_id=player))
         score = Score.objects.create(
-            player=player, 
-            match=match, 
+            player=player,
+            match=match,
             score=match_result[player_username]
             )
         score.save()
-        if player_username == winner:
-            match.winner = player
+        if player_username in winner:
+            match.winner.add(player)
         match.players.add(player)
     update_match_data(players_data, winner, is_pong)
     match.save()

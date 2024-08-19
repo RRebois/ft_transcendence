@@ -6,8 +6,7 @@ from userManagement.models import User
 
 class Match(models.Model):
     players = models.ManyToManyField('userManagement.User', related_name="matchs", default=list)
-    winner = models.ForeignKey('userManagement.User', on_delete=models.SET_NULL,
-                               blank=True, null=True)
+    winner = models.ManyToManyField('userManagement.User', blank=True, null=True)
     is_pong = models.BooleanField(default=True)
     timeMatch = models.DateTimeField(auto_now_add=True)
     count = models.IntegerField(default=2)
@@ -16,12 +15,16 @@ class Match(models.Model):
         ordering = ['-timeMatch']
 
     def serialize(self):
+        winners_list = ['deleted_user'] * (self.count // 2)
+        for i, winner in enumerate(self.winner.all()):
+            winners_list[i] = winner.username
+
         return {
             'id': self.id,
             'game': 'Pong' if self.is_pong else 'Purrinha',
             "players": {score.player.username if score.player else "deleted_user": score.score for score in self.scores.all()},
             "count": self.count,
-            "winner": self.winner.username if self.winner else "deleted_user",
+            "winner": winners_list,
             "timestamp": self.timeMatch.strftime("%b %d %Y, %I:%M %p"),
         }
 
