@@ -181,6 +181,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_SENDER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_SENDER_PASS')
 
+FRONT_DEV = os.environ.get('FRONT_DEV', default=0)
 
 # class WarningDebugFilter(logging.Filter):
 #     def filter(self, record):

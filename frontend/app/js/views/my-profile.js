@@ -373,7 +373,7 @@ export default class MyProfile {
 										<p>You are about to delete your account. This step is irreversible. Are you really sure?</p>
 										
 										<div class="form-floating has-validation">
-											<input type="password" id="delete-account-password" class="form-control" required />
+											<input type="password" id="delete-account-password" class="form-control" />
 											<label for="delete-account-password">Account password<span class="text-danger">*</span></label>
 											<div class="invalid-feedback">Invalid password</div>
 										</div>
