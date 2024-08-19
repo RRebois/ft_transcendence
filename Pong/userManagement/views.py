@@ -238,7 +238,8 @@ class Login42RedirectView(APIView):
         response.set_cookie(key='jwt_access', value=token, httponly=True)
         response.set_cookie(key='jwt_refresh', value=refresh, httponly=True)
         response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
-        response['Location'] = 'https://localhost:4242/dashboard' if os.environ.get("FRONT_DEV") == '1' else 'https://localhost:3000/dashboard'
+        response['Location'] = 'https://localhost:4242/dashboard' if os.environ.get(
+            'FRONT_DEV') == '1' else 'https://localhost:3000/dashboard'
         response.status_code = 302
         return response
 
@@ -494,7 +495,8 @@ class PasswordChangeView(APIView):
         except AuthenticationFailed as e:
             return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = self.serializer_class(data=request.data, context={'user': user})
-
+        if (user.stud42):
+            return JsonResponse(data={'message': 'You cannot change your password if you are a 42 student'}, status=401)
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -580,6 +582,8 @@ class Security2FAView(APIView):
             user = authenticate_user(request)
         except AuthenticationFailed as e:
             return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        if user.stud42:
+            return JsonResponse(data={'message': 'You cannot enable 2FA if you are a 42 student'}, status=401)
         data = request.data
         value = data.get('value')
         if value:
@@ -589,7 +593,8 @@ class Security2FAView(APIView):
                 user.tfa_activated = True
                 user.save()
                 qr_url = pyotp.totp.TOTP(secret_key).provisioning_uri(user.username)
-                return JsonResponse({"qrcode_url": qr_url, "message": "2FA activated, please scan the QR-code in your authenticator app to save your account code."})
+                return JsonResponse({"qrcode_url": qr_url,
+                                     "message": "2FA activated, please scan the QR-code in your authenticator app to save your account code."})
             except Exception as e:
                 return JsonResponse({"message": str(e)}, status=500)
         else:

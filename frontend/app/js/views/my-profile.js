@@ -100,8 +100,6 @@ export default class MyProfile {
 					toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
 				} else {
 					console.log('Success:', data);
-					// const toastComponent = new ToastComponent();
-					// toastComponent.throwToast('Success', 'Your personal information has been updated', 5000, 'success');
 					sessionStorage.setItem('toastMessage', JSON.stringify({
 						title: 'Success',
 						message: 'Your personal information has been updated',
@@ -215,12 +213,12 @@ export default class MyProfile {
 	handleDeleteAccount = (event) => {
 		event.preventDefault();
 		const csrfToken = getCookie('csrftoken');
-		const password = document.getElementById('delete-account-password').value;
+		const password = document.getElementById('delete-account-password')?.value;
 
-		if (!password) {
-			document.getElementById('delete-account-password').classList.add('is-invalid');
-			return;
-		}
+		// if (!password) {
+		// 	document.getElementById('delete-account-password').classList.add('is-invalid');
+		// 	return;
+		// }
 		fetch("https://localhost:8443/delete_account", {
 			method: 'POST',
 			headers: {
@@ -251,7 +249,7 @@ export default class MyProfile {
 
 	render() {
 		return `
-			<div class="d-flex flex-column justify-content-center align-items-center">
+			<div class="d-flex min-h-screen flex-column justify-content-center align-items-center">
 				<div class="bg-white d-flex g-4 flex-column align-items-center py-2 px-5 rounded login-card w-50" style="--bs-bg-opacity: .5;">
                 	<p class="text-justify play-bold fs-2">${this.user?.username} profile</p>
 					<form id="personal-data-form">
@@ -302,68 +300,70 @@ export default class MyProfile {
 							</div>
 						</div>
 					</form>
-					<hr class="hr" />
-					<p class="play-bold fs-5">Account security</p>
-					<form id="2fa-form">
-						<div class="form-check form-switch">
-							<input class="form-check-input" type="checkbox" role="switch" id="2fa-enable" ${this.user?.tfa_activated === true ? "checked" : ""}>
-							<label class="form-check-label" for="2fa-enable" id="2fa-enable-label">${this.user?.tfa_activated === true ? "2FA is enable 🔒" : "2FA is disable 🔓"}</label>
-						</div>
-						<div id="qrcode_div" class="d-flex flex-column align-items-center"></div>
-					</form>
+					${!this.user.stud42 ? `
+						<hr class="hr" />
+						<p class="play-bold fs-5">Account security</p>
+						<form id="2fa-form">
+							<div class="form-check form-switch">
+								<input class="form-check-input" type="checkbox" role="switch" id="2fa-enable" ${this.user?.tfa_activated === true ? "checked" : ""}>
+								<label class="form-check-label" for="2fa-enable" id="2fa-enable-label">${this.user?.tfa_activated === true ? "2FA is enable 🔒" : "2FA is disable 🔓"}</label>
+							</div>
+							<div id="qrcode_div" class="d-flex flex-column align-items-center"></div>
+						</form>
 					
-					<form id="password-form">
-						<p class="play-bold fs-5">Change your password</p>
-                    	<div class="row g-3">
-							<div class="row g-2">
-								<div class="form-floating has-validation">
-									<input type="password" id="old-password" class="form-control" required />
-									<label for="old-password">Old password<span class="text-danger">*</span></label>
-									<div class="invalid-feedback">Invalid password</div>
+						<form id="password-form">
+							<p class="play-bold fs-5">Change your password</p>
+							<div class="row g-3">
+								<div class="row g-2">
+									<div class="form-floating has-validation">
+										<input type="password" id="old-password" class="form-control" required />
+										<label for="old-password">Old password<span class="text-danger">*</span></label>
+										<div class="invalid-feedback">Invalid password</div>
+									</div>
+								</div>
+								<div class="row g-2">
+									<div class="form-floating has-validation">
+										<input type="password" id="password" class="form-control" required />
+										<label for="password">New password<span class="text-danger">*</span></label>
+										<ul class="list-unstyled ms-2 form-text">
+											<li>
+												<i id="minLength" class="bi bi-x text-danger"></i>
+												Minimum 8 characters
+											</li>
+											<li>
+												<i id="uppercase" class="bi bi-x text-danger"></i>
+												At least one uppercase letter
+											</li>
+											<li>
+												<i id="lowercase" class="bi bi-x text-danger"></i>
+												At least one lowercase letter
+											</li>
+											<li>
+												<i id="number" class="bi bi-x text-danger"></i>
+												At least one number
+											</li>
+											<li>
+												<i id="symbol" class="bi bi-x text-danger"></i>
+												At least one special character (?!@$ %^&*)
+											</li>
+										</ul>
+									</div>
+								</div>
+								
+								<div class="row g-2">
+									<div class="form-floating has-validation">
+										<input type="password" id="confirm_password" class="form-control" required />
+										<label for="confirm_password">Confirm new password<span class="text-danger">*</span></label>
+										<div class="invalid-feedback">Passwords do not match</div>
+									</div>
+								</div>
+								<div class="d-flex">
+									<button type="submit" class="btn btn-primary">Change password</button>
 								</div>
 							</div>
-                    		<div class="row g-2">
-								<div class="form-floating has-validation">
-									<input type="password" id="password" class="form-control" required />
-									<label for="password">New password<span class="text-danger">*</span></label>
-									<ul class="list-unstyled ms-2 form-text">
-										<li>
-											<i id="minLength" class="bi bi-x text-danger"></i>
-											Minimum 8 characters
-										</li>
-										<li>
-											<i id="uppercase" class="bi bi-x text-danger"></i>
-											At least one uppercase letter
-										</li>
-										<li>
-											<i id="lowercase" class="bi bi-x text-danger"></i>
-											At least one lowercase letter
-										</li>
-										<li>
-											<i id="number" class="bi bi-x text-danger"></i>
-											At least one number
-										</li>
-										<li>
-											<i id="symbol" class="bi bi-x text-danger"></i>
-											At least one special character (?!@$ %^&*)
-										</li>
-									</ul>
-								</div>
-							</div>
-							
-							<div class="row g-2">
-								<div class="form-floating has-validation">
-									<input type="password" id="confirm_password" class="form-control" required />
-									<label for="confirm_password">Confirm new password<span class="text-danger">*</span></label>
-									<div class="invalid-feedback">Passwords do not match</div>
-								</div>
-							</div>
-							<div class="d-flex">
-								<button type="submit" class="btn btn-primary">Change password</button>
-							</div>
-                    	</div>
-					</form>
-					
+						</form>
+					` : ''}
+
 					<div class="border border-1 py-3 px-2 rounded-2 border-danger">
 						<p class="play-bold fs-5 text-danger">Danger zone</p>
 						<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
@@ -378,13 +378,13 @@ export default class MyProfile {
 									</div>
 									<div class="modal-body">
 										<p>You are about to delete your account. This step is irreversible. Are you really sure?</p>
-										
-										<div class="form-floating has-validation">
-											<input type="password" id="delete-account-password" class="form-control" />
-											<label for="delete-account-password">Account password<span class="text-danger">*</span></label>
-											<div class="invalid-feedback">Invalid password</div>
-										</div>
-									
+										${this.user.stud42 ? ``: `
+											<div class="form-floating has-validation">
+												<input type="password" id="delete-account-password" class="form-control" />
+												<label for="delete-account-password">Account password<span class="text-danger">*</span></label>
+												<div class="invalid-feedback">Invalid password</div>
+											</div>
+										`}										
 									</div>
 									<div class="modal-footer">
 										<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
