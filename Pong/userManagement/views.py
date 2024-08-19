@@ -890,9 +890,6 @@ class DeleteAccountView(APIView):
             response.delete_cookie('jwt_access')
             response.delete_cookie('jwt_refresh')
             response.delete_cookie('csrftoken')
-            response['Location'] = 'https://localhost:4242/' if os.environ.get(
-                'FRONT_DEV') == '1' else 'https://localhost:3000/'
-            response.status_code = 302
             return response
 
         serializer = self.serializer_class(data=request.data, context={'user': user})
@@ -922,9 +919,6 @@ class DeleteAccountView(APIView):
             response.delete_cookie('jwt_access')
             response.delete_cookie('jwt_refresh')
             response.delete_cookie('csrftoken')
-            response['Location'] = 'https://localhost:4242/' if os.environ.get(
-                'FRONT_DEV') == '1' else 'https://localhost:3000/'
-            response.status_code = 302
             return response
         except serializers.ValidationError as e:
             error_messages = []

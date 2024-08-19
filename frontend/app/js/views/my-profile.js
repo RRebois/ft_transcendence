@@ -208,12 +208,12 @@ export default class MyProfile {
 	handleDeleteAccount = (event) => {
 		event.preventDefault();
 		const csrfToken = getCookie('csrftoken');
-		const password = document.getElementById('delete-account-password').value;
+		const password = document.getElementById('delete-account-password')?.value;
 
-		if (!password) {
-			document.getElementById('delete-account-password').classList.add('is-invalid');
-			return;
-		}
+		// if (!password) {
+		// 	document.getElementById('delete-account-password').classList.add('is-invalid');
+		// 	return;
+		// }
 		fetch("https://localhost:8443/delete_account", {
 			method: 'POST',
 			headers: {
@@ -373,12 +373,13 @@ export default class MyProfile {
 									</div>
 									<div class="modal-body">
 										<p>You are about to delete your account. This step is irreversible. Are you really sure?</p>
-
-										<div class="form-floating has-validation">
-											<input type="password" id="delete-account-password" class="form-control" />
-											<label for="delete-account-password">Account password<span class="text-danger">*</span></label>
-											<div class="invalid-feedback">Invalid password</div>
-										</div>
+										${this.user.stud42 ? ``: `
+											<div class="form-floating has-validation">
+												<input type="password" id="delete-account-password" class="form-control" />
+												<label for="delete-account-password">Account password<span class="text-danger">*</span></label>
+												<div class="invalid-feedback">Invalid password</div>
+											</div>
+										`}										
 									</div>
 									<div class="modal-footer">
 										<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
