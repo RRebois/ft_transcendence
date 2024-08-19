@@ -610,8 +610,6 @@ class VerifyOTPView(APIView):
     serializer_class = VerifyOTPSerializer
 
     def post(self, request):
-        logging.debug("================== VerifyOTPView ==================")
-        logging.debug(f"request.data: {request.data}")
         try:
             serializer = VerifyOTPSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -627,7 +625,6 @@ class VerifyOTPView(APIView):
             response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
             return response
         except serializers.ValidationError as e:
-            logging.debug(f"ValidationError: {str(e)}")
             return JsonResponse(data={'message': str(e)}, status=400)
 
 
