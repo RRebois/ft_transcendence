@@ -3,8 +3,8 @@
 @import "bootstrap-icons/font/bootstrap-icons.scss";
 
 .fullscreen {
-  height: 100vh;
-  width: 100vw;
+  min-height: 100vh;
+  min-width: 100vw;
 }
 
 body.bg-gradient {
@@ -66,4 +66,8 @@ body.bg-gradient {
 
 .grid-item-tournament-create {
     grid-area: 2 / 4 / 3 / 7;
+}
+
+.min-h-screen {
+    min-height: 100vh;
 }
