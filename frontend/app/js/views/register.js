@@ -178,11 +178,6 @@ export default class Register {
 
     render() {
         document.title = 'ft_transcendence | Register';
-        // document.addEventListener('DOMContentLoaded', () => {
-        //     document.getElementById('register-form').addEventListener('submit', this.registerUser);
-        //     document.getElementById('password').addEventListener('input', this.validatePassword);
-        // });
-
         return `
         <div class="w-100 h-100 d-flex flex-column justify-content-center align-items-center">
             <div class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card w-50" style="--bs-bg-opacity: .5;">

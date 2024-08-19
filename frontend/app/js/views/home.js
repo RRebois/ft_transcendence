@@ -4,7 +4,6 @@ import {getCookie} from "../functions/cookie.js";
 export default class Home {
 	constructor(props) {
 		this.props = props;
-		// this.loginUser = this.loginUser.bind(this);
 	}
 
 	loginUser(event) {
@@ -85,10 +84,6 @@ export default class Home {
 	// TODO: check form action link
 	render() {
 		document.title = 'ft_transcendence | Login';
-		// document.addEventListener('DOMContentLoaded', () => {
-		//     document.getElementById('login-form').addEventListener('submit', this.loginUser);
-		// })
-
 		return `
          <div class="w-100 h-100 d-flex flex-column justify-content-center align-items-center">
             <div class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card" style="--bs-bg-opacity: .5;">
@@ -132,36 +127,5 @@ export default class Home {
             </div>
          </div>
         `;
-	}
-
-	style() {
-		return (`
-            <style>
-                @import url('https://fonts.googleapis.com/css2?family=Play:wght@400;700&family=Poppins&display=swap');
-                .gap-0-5 {
-                  gap: 0.125rem;
-                }
-                
-                .gap-1 {
-                  gap: 0.25rem;
-                }
-                
-                .gap-1-5 {
-                  gap: 0.375rem;
-                }
-                
-                .gap-2 {
-                  gap: 0.5rem;
-                }
-                
-                .gap-3 {
-                  gap: 0.75rem;
-                }
-                
-                .gap-4 {
-                  gap: 1rem;
-                }
-            </style>
-        `)
 	}
 }
