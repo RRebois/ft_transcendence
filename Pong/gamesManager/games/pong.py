@@ -113,27 +113,9 @@ async def handle_collision(ball, left_paddle, right_paddle, first_time=True):
                     await find_new_direction(ball, right_paddle)
                     await ball.accelerate()
 
-    # if paddle:
-    #     pass
-    # # else:
-    # #     if ball.y >= paddle.y and ball.y <= paddle.y + paddle.height:
-    # #         if ball.x_vel < 0:
-    # #             if ball.x - ball.radius <= paddle.x + paddle.width:
-    # #                 await find_new_direction(ball, paddle)
-    # #                 await ball.accelerate()
-    # #         elif ball.x_vel >= 0:
-    # #             if ball.x + ball.radius >= paddle.x:
-    # #                 await find_new_direction(ball, paddle)
-    # #                 await ball.accelerate()
-
-
-    #     # if ball.y >= paddle.y and ball.y <= paddle.y + paddle.height:
-
-    #     # if ball.y >= paddle.y and ball.y <= paddle.y + paddle.height:
 
 class   PongMatch():
 
-# TODO adapt for 4 players
     def __init__(self, players_name, multiplayer=False):
         self.multiplayer = multiplayer
         self.ball = Ball(GAME_WIDTH // 2, GAME_HEIGHT // 2, BALL_RADIUS)
@@ -153,31 +135,14 @@ class   PongMatch():
             ]
         self.left_score = 0
         self.right_score = 0
-        # self.players_name = players_name
         self.players = {f"player{v['id']}": {'name': k, 'pos': 0} for k,v in players_name.items()}
 
-    # async def   create_players(self):
-    #     self.players_info = {}
-    #     for k, v in self.players_name.items():
-    #         self.players_info[f"player{v['id']}"] = {'name': k, 'pos': 0}
 
     async def get_coordinates(self):
             for i, paddle in enumerate(self.paddles):
                 key = f"player{i + 1}"
                 self.players[key]['pos'] = await paddle.serialize()
 
-            # if self.multiplayer:
-            #     paddle_pos = {
-            #     'player1': await self.left_paddle1.serialize(),
-            #     'player2': await self.left_paddle2.serialize(),
-            #     'player3': await self.right_paddle1.serialize(),
-            #     'player4': await self.right_paddle2.serialize(),
-            #     }
-            # else:
-            #     paddle_pos = {
-            #     'player1' : await self.right_paddle.serialize(),
-            #     'player2' : await self.left_paddle.serialize(),
-            #     }
             ball = await self.ball.serialize()
             coord = {
                 'players': self.players,
@@ -188,12 +153,8 @@ class   PongMatch():
                 'game_height': GAME_HEIGHT,
                 'paddle_width': PADDLE_WIDTH,
                 'paddle_height': PADDLE_HEIGHT,
-                # 'ball_radius': BALL_RADIUS,
                 'winning_score': WINNING_SCORE,
             }
-            # for i, name in enumerate(self.players_name):
-            #     key_name = f"player{i + 1}_name"
-            #     coord[key_name] = name
             return coord
 
     async def check_score(self):
@@ -206,15 +167,9 @@ class   PongMatch():
 
     async def paddle_movement(self, player, key_up=True):
         await self.paddles[player - 1].handle_movement(key_up)
-        # if left:
-        #     await self.left_paddle.handle_movement(key_up=key_up)
-        # else:
-        #     await self.right_paddle.handle_movement(key_up=key_up)
 
     async def routine(self):
         await self.ball.move()
-        # for paddle in self.paddles:
-        #     await handle_collision(self.ball, paddle)
         await handle_collision(self.ball, self.paddles[0], self.paddles[len(self.paddles) - 1])
         if self.multiplayer:
             await handle_collision(self.ball, self.paddles[1], self.paddles[2], first_time=False)
@@ -223,8 +178,6 @@ class   PongMatch():
     async def reset(self):
         for paddle in self.paddles:
             await paddle.reset()
-        # await self.left_paddle.reset()
-        # await self.right_paddle.reset()
         await self.ball.reset()
 
     async def   play_again(self):
@@ -240,7 +193,6 @@ class   PongGame():
     async def move_player_paddle(self, player_move):
         player = player_move['player']
         move = player_move['direction'] < 0
-        # if player_move['direction'] != 0:
         await self.match.paddle_movement(player=player, key_up=move)
 
     async def update(self):

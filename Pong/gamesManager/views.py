@@ -7,23 +7,10 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from userManagement.views import authenticate_user
 
-import asyncio
-# from asgiref.sync import async_to_sync
-# from channels.db import database_sync_to_async
 import uuid
 
 
 
-# #TODO repensar isso
-# # @async_to_sync
-# async def	session_creator(session_id):
-# 	await database_sync_to_async(cache.set)(session_id, {'connections': 0, 'winner': None})
-# 	for i in range(180):
-# 		await asyncio.sleep(1)
-# 	session = await database_sync_to_async(cache.get)(session_id)
-# 	if session is not None:
-# 		if session['connections'] == 0:
-# 			await database_sync_to_async(cache.delete)(session_id)
 
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required(login_url='login'), name='dispatch')
@@ -52,13 +39,13 @@ class	GameManagerView(APIView):
 		players = {username: {'id': 1, 'connected': False}}
 		if game_code == 10:
 			players['bot'] = {'id': 2, 'connected': True}
-		if game_code == 20:	# get the request to check if it's guest or friend
+		if game_code == 20:
 			players['guest'] = {'id': 2, 'connected': True}
 
-		if game_code == 40:
-			players['guest1'] = {'id': 2, 'connected': True}
-			players['guest2'] = {'id': 3, 'connected': True}
-			players['guest3'] = {'id': 4, 'connected': True}
+		# if game_code == 40:
+		# 	players['guest1'] = {'id': 2, 'connected': True}
+		# 	players['guest2'] = {'id': 3, 'connected': True}
+		# 	players['guest3'] = {'id': 4, 'connected': True}
 
 
 		session_id = f"{game_name}_{str(uuid.uuid4().hex)}"
@@ -67,8 +54,8 @@ class	GameManagerView(APIView):
 		'players': players,
 		'game': game_name,
 		'awaited_players': awaited_connections,
-		'connected_players': 3 if game_code == 40 else 1,
-		# 'connected_players': 0 if game_code not in [10, 20] else 1,
+		# 'connected_players': 3 if game_code == 40 else 1,
+		'connected_players': 0 if game_code not in [10, 20] else 1,
 		'session_id': session_id,
 		'status': 'waiting',
 		'winner': None,
@@ -99,23 +86,17 @@ class	GameManagerView(APIView):
 				session_data['players'][username] = {'id': connections + 1, 'connected': False}
 				cache.set(session_id, session_data)
 
-			# asyncio.create_task(session_creator(session_id))
-			# asyncio.run_coroutine_threadsafe(session_creator(session_id))
-		# print("\n\n\n+++++++++++++++++PASSEI AQUI++++++++++++++++\n\n\n")
-
 
 
 		# return JsonResponse({
 		# 	'status': 'succes',
 		# 	'game': game_name,
-		# 	'awaited_players': game_code,
 		# 	'session_id': session_id,
 		# 	'ws_route': f'/ws/game/{game_name}/{game_code}/{session_id}/'
 		# })
 		return render(request, "pages/pong.html" ,{
 			'status': 'succes',
 			'game': game_name,
-			# 'awaited_players': game_code,
 			'session_id': session_id,
 			'ws_route': f'/ws/game/{game_name}/{game_code}/{session_id}/'
 		})
