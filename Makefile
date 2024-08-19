@@ -15,12 +15,12 @@ DOCKER_NETWORKS		:=
 all: up
 
 up:
-	sudo docker-compose up --build -d
+	docker-compose up --build -d
 #@echo "Opening https://localhost:8443 in browser..."
 #@nohup open https://localhost:8443 > /dev/null 2>&1 &
 
 down:
-	docker-compose down -v
+	docker compose down -v
 
 restart: down up
 

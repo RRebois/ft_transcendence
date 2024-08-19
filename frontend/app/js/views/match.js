@@ -12,6 +12,7 @@ export default class Match {
 
         this.player1_nickname = 'player1';
         this.player2_nickname = 'player2';
+        this.xPosition = 0;
         this.score_p1 = 0;
         this.score_p2 = 0;
         this.textArray = [`${this.player1_nickname}`, this.score_p1.toString(), "-", this.score_p2.toString(),
@@ -36,11 +37,12 @@ export default class Match {
         this.ball_velocity_y = this.currentSpeed * ((Math.random() - 0.5));
 
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0xbae6fd);
+        this.scene.background = new THREE.Color(0x000000);
 
        // Camera
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        this.camera.position.set(0, -10, 20); // Elevated and on the long side
+        this.camera.position.set(0, 0, 50);
+//        this.camera.rotation
         this.camera.lookAt(0, 0, 0);
 
        // Renderer
@@ -56,21 +58,21 @@ export default class Match {
         this.scene.add(stadiumGroup);
 
         // Create Euler for saving initial rotation values of stadium
-        this.initialStadiumRotation = new THREE.Euler();
-        this.initialStadiumRotation.z = stadium.rotation.z;
+//        this.initialStadiumRotation = new THREE.Euler();
+//        this.initialStadiumRotation.z = stadium.rotation.z;
 
         this.createStadium();
         this.createPaddle('p1');
         this.createPaddle('p2');
         this.createBall();
 
-        // Create textGroup
         const   textGroup = new THREE.Group();
-        textGroup.position.set(2, 20, 0);
         textGroup.rotation.set(20, 0, 0);
         textGroup.name = "textGroup";
         this.scene.add(textGroup);
         this.printInitScores();
+
+        textGroup.position.y = 30;
 
         // Controls pad
         window.addEventListener('keydown', this.handleKeyEvent.bind(this));
@@ -88,40 +90,63 @@ export default class Match {
         this.animate();
     }
 
-    printInitScores() {
+    printInitScores() { //https://github.com/mrdoob/three.js/blob/master/examples/webgl_loader_ttf.html try it
+    //https://discourse.threejs.org/t/different-textures-on-each-face-of-cube/23700 onWResize
+    //https://github.com/Fasani/three-js-resources?tab=readme-ov-file#images
+    // bloom https://threejs.org/examples/#webgl_postprocessing_unreal_bloom
         const   textGroup = this.scene.getObjectByName("textGroup");
         const   loader = new FontLoader();
-        let     xPosition = -30;
+        this.xPosition = 0;
+
+        // vecto to get coords of text and center it on scene
+        var center= new THREE.Vector3();
         loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
             this.textArray.forEach((text, index) => {
+                if (index === 0)
+                    text = "Team 1\n" + text
+                else if (index === 4)
+                    text = "Team 2\n" + text
                 const textGeometry = new TextGeometry(text, {
                     font: font,
-                    size: 4,
-                    depth: 1,
-                    curveSegments: 12,
-                    bevelEnabled: false
+                    size: 7,
+                    depth: .8,
+                    hover: 30,
+                    curveSegments: 4,
+                    bevelThickness: 2,
+                    bevelSize: 1.5,
                 });
 
                 // Material for nicknames
-                const nickTextMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x284353,
-                    emissive: 0xc01616,
-                    roughness: 1,
+                const nickTextMaterialP1 = new THREE.MeshStandardMaterial({
+                    color: 0xdc143c,
+                    emissive: 0xff0000,
+                    roughness: 0,
+                    metalness: 0.555,
+                });
+
+                const nickTextMaterialP2 = new THREE.MeshStandardMaterial({
+                    color: 0x1f51ff,
+                    emissive: 0x009afa,
+                    roughness: 0,
                     metalness: 0.555,
                 });
 
                 // Material for scores
                 const textMaterial = new THREE.MeshStandardMaterial({
-                    color: 0xffffff,
-                    emissive: 0x33ff33, // Green light
+                    color: 0x8cff00,
+                    emissive: 0x00ff00, // Green light
                     emissiveIntensity: 0.8,
                     metalness: 0.8,
-                    roughness: 0.5,
+                    roughness: 0,
                 });
 
                 let textAdd;
-                if (this.nameArray[index] === "p1Nick" || this.nameArray[index] === "p2Nick") {
-                    textAdd = new THREE.Mesh(textGeometry, nickTextMaterial);
+                if (this.nameArray[index] === "p1Nick") {
+                    textAdd = new THREE.Mesh(textGeometry, nickTextMaterialP1);
+                    textAdd.name = this.nameArray[index];
+                }
+                else if (this.nameArray[index] === "p2Nick") {
+                    textAdd = new THREE.Mesh(textGeometry, nickTextMaterialP2);
                     textAdd.name = this.nameArray[index];
                 }
                 else {
@@ -133,10 +158,15 @@ export default class Match {
                 const boundingBox = textGeometry.boundingBox;
                 const textWidth = boundingBox.max.x - boundingBox.min.x;
 
-                textAdd.position.x = xPosition;
-
-                xPosition += textWidth + 1.5;
+                textAdd.position.x = this.xPosition;
+                if (index === 0 || index === 3)
+                    this.xPosition += textWidth + 5;
+                else
+                    this.xPosition += textWidth + 1.5;
                 textGroup.add(textAdd);
+
+                if (index === 4)
+                    textGroup.position.x = -(this.xPosition / 2);
 
                 // Add a pulsing effect
                 const animate = () => {
@@ -151,25 +181,25 @@ export default class Match {
         });
     }
 
-    reset_stadium_view() {
-        // return new Promise((resolve) => {
-            const   stadium = this.scene.getObjectByName("stadium");
-            const   stadiumSpeed = 0.05;
-            // Check if the stadium is in initial pos
-            if (Math.abs(stadium.rotation.z - this.initialStadiumRotation.z) > 0.01) {
-                stadium.rotation.z += (this.initialStadiumRotation.z - stadium.rotation.z) * stadiumSpeed;
-
-                // Ensure the stadium stops exactly at the target rotation
-                if (Math.abs(this.initialStadiumRotation.z - stadium.rotation.z) < 0.01) {
-                    stadium.rotation.z = this.initialStadiumRotation.z;
-                    resolve();
-                }
-                requestAnimationFrame(animate);
-            }
-            // Start the animation
-            animate();
-        // });
-    }
+//    reset_stadium_view() {
+//        // return new Promise((resolve) => {
+//            const   stadium = this.scene.getObjectByName("stadium");
+//            const   stadiumSpeed = 0.05;
+//            // Check if the stadium is in initial pos
+//            if (Math.abs(stadium.rotation.z - this.initialStadiumRotation.z) > 0.01) {
+//                stadium.rotation.z += (this.initialStadiumRotation.z - stadium.rotation.z) * stadiumSpeed;
+//
+//                // Ensure the stadium stops exactly at the target rotation
+//                if (Math.abs(this.initialStadiumRotation.z - stadium.rotation.z) < 0.01) {
+//                    stadium.rotation.z = this.initialStadiumRotation.z;
+//                    resolve();
+//                }
+//                requestAnimationFrame(animate);
+//            }
+//            // Start the animation
+//            animate();
+//        // });
+//    }
 
      handleKeyEvent(event) {
         const   key = event.key;
@@ -181,9 +211,9 @@ export default class Match {
             case 'z':
                 this.y_pos_p1 = isKeyDown ? speed : 0;
                 break;
-            case 'r': // Stop reseting on keyup
-                this.reset_stadium_view();
-                break;
+//            case 'r': // Stop reseting on keyup
+//                this.reset_stadium_view();
+//                break;
             case 'q':
                 this.y_pos_p1 = isKeyDown ? speed : 0;
                 break;
@@ -209,7 +239,7 @@ export default class Match {
 
     createBall() {
         const   textureLoader = new THREE.TextureLoader();
-        const   ballTexture = textureLoader.load('/ball_basecolor.png');
+        const   ballTexture = textureLoader.load('/football.jpg');
 
         const geometry = new THREE.SphereGeometry(this.ball_radius, 48, 48);
         const material = new THREE.MeshBasicMaterial({map: ballTexture});
@@ -235,30 +265,6 @@ export default class Match {
         const   stadium = this.scene.getObjectByName("stadium");
         stadium.add(paddle);
     }
-
-    createMaterial() {
-        // create a texture loader.
-        const   textureLoader = new THREE.TextureLoader();
-
-        // load a texture
-        const texture = textureLoader.load(
-          "/ball.png",
-        );
-        const   material = new THREE.MeshStandardMaterial({map: texture,});
-
-        return material;
-      }
-
-    createCube() {
-        const   geometry = new THREE.BufferGeometry(5, 5, 5);
-        const   material = this.createMaterial();
-
-        const   cube = new THREE.Mesh(geometry, material);
-        const   stadium = this.scene.getObjectByName("stadium");
-        cube.position.set(3,3,0);
-        stadium.add(cube);
-      }
-
 
         // const pointA = new THREE.Vector3(-5, 0, 0); // Starting point
         // const pointB = new THREE.Vector3(5, 0, 0);  // Ending point
@@ -310,12 +316,83 @@ export default class Match {
 //     renderer.render(scene, camera);
 // }
 
+    // Create blocks all around + needs floor + animation
     createStadium() {
-        this.createCube();
-        this.createWall(0, this.stadium_width / 2, 0, this.stadium_length, this.stadium_thickness, this.stadium_height);  // up
-        this.createWall(-this.stadium_length / 2, 0, 0, this.stadium_thickness, this.stadium_width, this.stadium_height);  // left
-        this.createWall(this.stadium_length / 2, 0, 0, this.stadium_thickness, this.stadium_width, this.stadium_height);  // right
-        this.createWall(0, -this.stadium_width / 2, 0, this.stadium_length, this.stadium_thickness, this.stadium_height);  // down
+//        return new Promise((resolve) => {
+            const   stadium = this.scene.getObjectByName("stadium");
+            let i = -1;
+            let x = -16;
+            let y = -8;
+            while (++i < 48) {
+                const   cube = this.createCube(x);
+                if (i <= 16) {
+                    cube.position.set(x, y, 0);
+//                    cube.rotation.set(60,0,0);
+                    x += 2;
+                }
+                if (i > 16 && i <= 24) {
+                    cube.position.set(x, y, 0);
+//                    cube.rotation.set(60,0,0);
+                    y += 2;
+                }
+                if (i > 24 && i <= 40) {
+                    cube.position.set(x, y, 0);
+//                    cube.rotation.set(60,0,0);
+                    x -= 2;
+                }
+//                else {
+//                    cube.position.set(x, y, 0);
+////                    cube.rotation.set(60,0,0);
+//                    y -= 2;
+//                }
+                stadium.add(cube);
+            }
+//            resolve();
+//        }
+//        this.createWall(0, this.stadium_width / 2, 0, this.stadium_length, this.stadium_thickness, this.stadium_height);  // up
+//        this.createWall(-this.stadium_length / 2, 0, 0, this.stadium_thickness, this.stadium_width, this.stadium_height);  // left
+//        this.createWall(this.stadium_length / 2, 0, 0, this.stadium_thickness, this.stadium_width, this.stadium_height);  // right
+//        this.createWall(0, -this.stadium_width / 2, 0, this.stadium_length, this.stadium_thickness, this.stadium_height);  // down
+    }
+
+
+    createBlueMaterial() {
+        // create a texture loader.
+        const   textureLoader = new THREE.TextureLoader();
+
+        // load a texture
+        const   texture = textureLoader.load("/blue_wall.jpg");
+        const   material = new THREE.MeshBasicMaterial({map: texture});
+
+        return material;
+    }
+
+    createRedMaterial() {
+        // create a texture loader.
+        const   textureLoader = new THREE.TextureLoader();
+
+        // load a texture
+        const   texture = textureLoader.load("/red_wall.png");
+        const   material = new THREE.MeshBasicMaterial({map: texture});
+
+        return material;
+    }
+
+    createCube(i) {
+        const   geometry = new THREE.BoxGeometry(2, 2, 2);
+        let     material;
+        if (i > 0) {
+            material = this.createBlueMaterial();
+        }
+        else {
+            material = this.createRedMaterial();
+        }
+
+        const   cube = new THREE.Mesh(geometry, material);
+//        const   stadium = this.scene.getObjectByName("stadium");
+        return  cube;
+//        cube.position.set(15,15,5);
+//        stadium.add(cube);
     }
 
     createWall(x, y, z, width, height, depth) {
