@@ -760,8 +760,8 @@ class AcceptFriendRequestView(APIView):
                 'from_user': friend_request.from_user.username,
                 'from_user_id': friend_request.from_user.id,
                 'from_status': friend_request.from_user.status,
-                'from_image_url': get_profile_pic_url(friend_request.from_user.get_img_url()),
-                'to_image_url': get_profile_pic_url(user.get_img_url()),
+                'from_image_url': get_profile_pic_url(user.get_img_url()),
+                'to_image_url': get_profile_pic_url(friend_request.from_user.get_img_url()),
                 'to_user': user.username,
                 'to_user_id': user.id,
                 'to_status': user.status,
@@ -770,7 +770,7 @@ class AcceptFriendRequestView(APIView):
             }
         )
         return JsonResponse({"message": "Friend request accepted.", "level": "success", "from_user": friend_request.from_user.username,
-                             "from_status": friend_request.from_user.status, "from_image_url": os.environ.get('SERVER_URL') + friend_request.from_user.get_img_url()}
+                             "from_status": friend_request.from_user.status, "from_image_url": get_profile_pic_url(friend_request.from_user.get_img_url())}
                             , status=status.HTTP_200_OK)
 
 
