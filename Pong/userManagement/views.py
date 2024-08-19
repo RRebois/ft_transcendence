@@ -238,7 +238,7 @@ class Login42RedirectView(APIView):
         response.set_cookie(key='jwt_access', value=token, httponly=True)
         response.set_cookie(key='jwt_refresh', value=refresh, httponly=True)
         response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
-        response['Location'] = 'https://localhost:3000/dashboard'
+        response['Location'] = 'https://localhost:4242/dashboard' if os.environ.get("FRONT_DEV") == '1' else 'https://localhost:3000/dashboard'
         response.status_code = 302
         return response
 
@@ -883,7 +883,7 @@ class DeleteAccountView(APIView):
             response.delete_cookie('jwt_access')
             response.delete_cookie('jwt_refresh')
             response.delete_cookie('csrftoken')
-            response['Location'] = 'https://localhost:3000/'
+            response['Location'] = 'https://localhost:4242/' if os.environ.get("FRONT_DEV") == '1' else 'https://localhost:3000/'
             response.status_code = 302
             return response
 
@@ -914,7 +914,7 @@ class DeleteAccountView(APIView):
             response.delete_cookie('jwt_access')
             response.delete_cookie('jwt_refresh')
             response.delete_cookie('csrftoken')
-            response['Location'] = 'https://localhost:3000/dashboard'
+            response['Location'] = 'https://localhost:4242/' if os.environ.get("FRONT_DEV") == '1' else 'https://localhost:3000/'
             response.status_code = 302
             return response
         except serializers.ValidationError as e:
