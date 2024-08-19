@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
             event.preventDefault();
         }
         else if (element.id === "statsPage" || element.id === "profile" || element.id === "userImg" ||
-                element.id === "friendsPage") {
+                element.id === "userImgDefault" || element.id === "friendsPage") {
             fetch("/getUsernameConnected")
             .then(response => response.json())
             .then(username => {
@@ -84,12 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error('Error fetching username request: ', error));
             event.preventDefault();
         }
-        else {
-            if (!element.classList.contains('DivChangeImg') && // Not working when
-                document.getElementById('profilePic') !== null) {
-                document.getElementById('profilePic').remove();
-            }
-        }
+//        else {
+//            if (!element.classList.contains('DivChangeImg') && // Not working when
+//                document.getElementById('profilePic') !== null) {
+//                document.getElementById('profilePic').remove();
+//            }
+//        }
     })
     const mainPage = document.getElementById('mainPage');
     if (mainPage !== null)
@@ -97,63 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
             load_main_page();
         });
 })
-
-function    load_change_profile_pic(username) {
-    if (document.getElementById("profilePic") == null) {
-        const   picDiv = document.createElement("div");
-        picDiv.innerHTML = "";
-        picDiv.className = "profilePicShadowBox container DivChangeImg";
-        picDiv.setAttribute("id", "profilePic");
-
-        // Title div
-        const   title = document.createElement("div");
-        title.innerHTML = "Change your avatar";
-        title.className = "title_div gradient-background DivChangeImg";
-        title.setAttribute("name", "top");
-        picDiv.append(title);
-        document.getElementById("content").append(picDiv);
-
-        // Current profile image
-        fetch("getUserAvatar")
-        .then(response => response.json())
-        .then(data => {
-            const   divImages = document.createElement("div");
-            divImages.className = "mainDivImg DivChangeImg";
-
-            // Div for current img
-            const   imgPart1 = document.createElement("div");
-            imgPart1.className = "imgPartDiv DivChangeImg";
-
-            const   currentImgTitle = document.createElement("div");
-            currentImgTitle.className = "imgTitleDiv DivChangeImg";
-            currentImgTitle.innerHTML = "Current avatar:";
-
-            const   currentImg = document.createElement("img");
-            setAttributes(currentImg, {"src": data, "alt": "Current avatar", "id": "currentImg",
-                    "width": "200vw", "height": "200vh", "class": "DivChangeImg"});
-            imgPart1.append(currentImgTitle, currentImg);
-
-            // Div for available avatars
-            const   imgPart2 = document.createElement("div");
-            imgPart2.className = "imgPartDiv";
-            const   availableImgTitle = document.createElement("div");
-            availableImgTitle.className = "imgTitleDiv";
-            availableImgTitle.innerHTML = "Available avatars:";
-            imgPart2.append(availableImgTitle);
-
-            // fetch images from other users:
-            fetch("getAllAvatars")
-            .then(response => response.json)
-            .then(data => {
-                console.log(data);
-            })
-
-            divImages.append(imgPart1);
-            picDiv.append(divImages);
-        })
-        .catch(error => console.error('Error fetching username information request: ', error));
-    }
-}
 
 function setAttributes(el, attrs) {
   for(var key in attrs) {
@@ -194,7 +137,7 @@ function    create_add_friend_icon(username) {
             if (username === data[i].username) {
                 friendItem.innerHTML = `User in your friend list
                     <p class="roundBorder nav-item friendImg" style="/*display: flex*/">
-                        <img src="media/${data[i].image}" alt="avatar">
+                        <img src="${data[i].image}" alt="avatar">
                     </p>
                     <p class="mb-1" style="display: flex">Friend status: ${data[i].status}</p>
                     `;
@@ -413,7 +356,7 @@ function    load_stats_page(username) {
                         widthValue += 1;
                 if (widthValue != 0)
                     widthV = (Math.round(100 / widthValue) - 2);
-console.log(widthV);
+
                 if (element.checked === false) {
                     const   rmDivStats = document.getElementById(`div${element.value}`);
                     if (rmDivStats != null)

@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 import os
-
+import logging
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -33,19 +33,20 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'userManagement',
     'matchs',
     'rest_framework',
     'corsheaders',
     'fontawesomefree',
-	'anotherGame',
-    # 'channels'
+    'anotherGame',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_cleanup'
 ]
 
 
@@ -58,10 +59,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'userManagement.middleware.JWTAuthenticationMiddleware',
+    # 'userManagement.middleware.JWTAuthenticationMiddleware',
 ]
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:8080", "https://localhost:8443"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:8080", "https://localhost:8443", "https://localhost:3000", "https://localhost:4242"]
+CORS_ORIGIN_WHITELIST = ["https://localhost:8443", "https://localhost:3000", "https://localhost:4242"]
 
 ROOT_URLCONF = 'configFiles.urls'
 
@@ -82,6 +84,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'configFiles.wsgi.application'
+
+ASGI_APPLICATION = 'configFiles.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}
 
 
 # Database
@@ -117,9 +130,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# LOGIN_REDIRECT_URL = "index"
-# LOGOUT_REDIRECT_URL = "index"
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
@@ -144,14 +154,20 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ORIGIN_ALLOW_ALL = True  # allow all frontend ports to access app
+# CORS_ORIGIN_ALLOW_ALL = True  # allow all frontend ports to access app
 CORS_ALLOW_CREDENTIALS = True  # for frontend to get the jwt cookies
+CORS_ALLOWED_ORIGINS = [
+    'https://localhost:3000', 'https://localhost:4242',
+]
+CORS_ALLOW_ALL_ORIGINS = False
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -165,3 +181,35 @@ EMAIL_PORT = '587'
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_SENDER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_SENDER_PASS')
+
+FRONT_DEV = os.environ.get('FRONT_DEV', default=0)
+
+# class WarningDebugFilter(logging.Filter):
+#     def filter(self, record):
+#         return record.levelno in [logging.WARNING, logging.DEBUG]
+#
+#
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'filters': {
+#         'warning_debug_only': {
+#             '()': WarningDebugFilter,
+#         },
+#     },
+#     'handlers': {
+#         'file': {
+#             'level': 'DEBUG',
+#             'class': 'logging.FileHandler',
+#             'filename': BASE_DIR / 'debug.log',
+#             'filters': ['warning_debug_only'],
+#         },
+#     },
+#     'loggers': {
+#         '': {
+#             'handlers': ['file'],
+#             'level': 'DEBUG',
+#             'propagate': True,
+#         },
+#     },
+# }

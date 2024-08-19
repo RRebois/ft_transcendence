@@ -36,10 +36,14 @@
     <div class="container-fluid">
         <ul class="nav">
             <li class="nav-item roundBorder">
-                {% if user.image_url %}
-                    <img src="{{ user.image_url}}" alt="avatar" id="userImg42">
+                {% if user.avatar_id %}
+                    {% if user.avatar_id.image_url %}
+                        <img src="{{ user.avatar_id.image_url}}" alt="avatar" id="userImg42">
+                    {% else %}
+                        <img src="{{ user.avatar_id.image.url }}" alt="avatar" id="userImg">
+                    {% endif %}
                 {% else %}
-                    <img src="{{ user.image.url }}" alt="avatar" id="userImg">
+                    <img src="/media/profile_pics/default_pp.jpg" alt="avatar" id="userImgDefault">
                 {% endif %}
             </li>
         </ul>

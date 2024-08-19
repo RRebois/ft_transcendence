@@ -25,7 +25,7 @@ function load_friends_page(username) {
     globalContainer.className = "friendPage w-100 h-100 d-flex flex-column justify-content-center align-items-center";
     globalContainer.appendChild(sendRequestForm);
 
-    sendRequestForm.className = "friendPage bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card";
+    sendRequestForm.className = "friendPage bg-white flex-column align-items-center py-2 px-5 rounded login-card";
     sendRequestForm.style.cssText = "--bs-bg-opacity: .5; width: 50%";
     sendRequestForm.id = "addFriend"
     sendRequestForm.appendChild(sendReqTitle);
@@ -72,6 +72,7 @@ function load_friends_page(username) {
 
     const headerReq = document.createElement('div');
     headerReq.classList.add("txtSectionDiv");
+    headerReq.id = 'headerRequests';
     headerReq.innerHTML = "Friend requests";
 
     const friendListContainer = document.createElement('div')
@@ -81,6 +82,7 @@ function load_friends_page(username) {
 
     const headerFriends = document.createElement('div');
     headerFriends.classList.add("txtSectionDiv");
+    headerFriends.id = 'headerFriends';
     headerFriends.innerHTML = "Friends";
 
     friendRequestContainer.appendChild(headerReq);
@@ -118,7 +120,13 @@ function load_friends_page(username) {
         .catch(error => console.error('Error fetching send request: ', error));
     });
 
+    load_friend_requests();
+    load_friends_list();
+}
 
+function load_friend_requests(){
+    const friendRequestListElem = document.getElementById('friendRequest');
+    const friendRequestHeaderElem = document.getElementById('headerRequests')
     fetch('get_friend_requests')
     .then(response => {
         if (response.ok) { console.log("HTTP request successful")}
@@ -127,10 +135,12 @@ function load_friends_page(username) {
     })
     .then(data => {
         console.log(data);
+        friendRequestListElem.innerHTML = '';
+        friendRequestListElem.appendChild(friendRequestHeaderElem);
         if (Array.isArray(data) && data.length > 0) {
             data.forEach(request => {
                 const friendRequestItem = document.createElement('div');
-                friendRequestItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white', 'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
+                friendRequestItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white', 'login-card', 'py-2', 'px-5', 'rounded');
                 friendRequestItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto';
                 friendRequestItem.innerHTML = `
                     <div class="d-flex w-100 justify-content-between">
@@ -143,7 +153,7 @@ function load_friends_page(username) {
                         <button type="button" class="declineBtn btn btn-primary" style="background: #e3031c; border-color: #040303" data-id="${request.from_user_id}">Decline</button>
                     </div>
                 `;
-                friendRequestContainer.appendChild(friendRequestItem);
+                friendRequestListElem.appendChild(friendRequestItem);
             });
         }
         else {
@@ -151,7 +161,7 @@ function load_friends_page(username) {
                 friendRequestItem.innerHTML = `
                 <div>No friend request yet</div>
                 `;
-                friendRequestContainer.appendChild(friendRequestItem);
+                friendRequestListElem.appendChild(friendRequestItem);
         }
 
         document.querySelectorAll('.acceptBtn').forEach(button => {
@@ -186,6 +196,8 @@ function load_friends_page(username) {
                         if (data.level && data.message) {
                             displayMessage(data.message, data.level);
                         }
+                        load_friends_list();
+                        load_friend_requests();
                     }
                 })
             });
@@ -219,41 +231,49 @@ function load_friends_page(username) {
                         acceptBtn.classList.remove('btn-primary');
                         acceptBtn.style.background= '';
                         acceptBtn.classList.add('btn-success', 'acceptedBtn');
+                        load_friends_list();
+                        load_friend_requests();
                     }
                 })
             });
         });
     })
     .catch(error => console.error('Error fetching friend requests: ', error));
+}
 
-
+function load_friends_list(){
+    const friendListElem = document.getElementById('friendList');
+    const friendHeaderElem = document.getElementById('headerFriends');
     fetch ('get_friends')
     .then(response => response.json())
     .then(data => {
         console.log(data);
+        friendListElem.innerHTML = '';
+        friendListElem.appendChild(friendHeaderElem);
         if (Array.isArray(data) && data.length > 0) {
             data.forEach(request => {
                 const friendItem = document.createElement('div');
                 friendItem.classList.add('friendPage', 'list-group-item', 'list-group-item-action', 'bg-white',
                     'login-card', 'd-flex', 'py-2', 'px-5', 'rounded');
+                friendItem.setAttribute('data-id', request.id);
                 friendItem.style.cssText = '--bs-bg-opacity: .5; margin-bottom: 15px; justify-content: space-between; width: 50%; ' +
                     'display: block; margin-left: auto; margin-right: auto';
                 friendItem.innerHTML = `
-                    <a class="roundBorder nav-item friendImg" style="/*display: flex*/" onclick="load_stats_page('${ request.username }')" href="">
-                        <img src="media/${request.image}" alt="avatar">
+                    <a class="roundBorder nav-item friendImg" style="/*display: flex*/" onclick="load_stats_page('${ request.from_user }')" href="">
+                        <img src="${request.image}" alt="avatar">
                     </a>
-                    <a class="mb-1" style="display: flex" onclick="load_stats_page('${ request.username }')" href="">${request.username}</a>
-                    <p class="mb-1" style="display: flex">Status: ${request.status}</p>
+                    <a class="mb-1" style="display: flex" onclick="load_stats_page('${ request.from_user }')" href="">${request.from_user}</a>
+                    <p class="status mb-1" style="display: flex">Status: ${request.from_status}</p>
                     <button type="button" class="removeBtn btn btn-primary" style="background: #e3031c; border-color: #040303" data-id="${request.id}">Remove</button>
                     `;
-                friendListContainer.appendChild(friendItem);
+                friendListElem.appendChild(friendItem);
             });
         } else {
             const friendItem = document.createElement('div');
             friendItem.innerHTML = `
                 <div>No friends yet</div>
             `;
-            friendListContainer.appendChild(friendItem);
+            friendListElem.appendChild(friendItem);
         }
 
 
@@ -283,14 +303,14 @@ function load_friends_page(username) {
                             if (data.level && data.message) {
                                 displayMessage(data.message, data.level);
                             }
+                            load_friends_list();
                         }
                     })
             });
         });
     })
-    .catch(error => console.error('Error fetching friend requests: ', error));
+    .catch(error => console.error('Error fetching friend list: ', error));
 }
-
 
 function displayMessage(message, level) {
     const messagesContainer = document.getElementById('messagesContainer');

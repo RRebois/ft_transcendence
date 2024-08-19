@@ -10,19 +10,28 @@ ft_transcendence
     <script src="{% static 'userProfile.js' %}"></script>
     <script src="{% static 'userDataPage.js' %}"></script>
     <script src="{% static 'scriptRegistration.js' %}"></script>
+    <script src="{% static 'websocket.js' %}"></script>
+    <script src="{% static 'changeAvatar.js' %}"></script>
+   {% if not user.is_authenticated %}
+        <script src="{% static 'login.js' %}"></script>
+    {% endif %}
 {% endblock %}
 
 {% block body %}
 
 {% if user.is_authenticated %}
 
-<div id="greetings">Hello {{user.username}} 😳👉👈</div>
+<div id="authenticatedContent">
+    <div id="greetings">Hello {{user.username}} 😳👉👈</div>
 
-<div class="container" id="statsDiv"></div>
+    <div class="container" id="createAccount"></div>
 
-<div class="container" id="userDataDiv"></div>
+    <div class="container" id="statsDiv"></div>
 
-<div class="container" id="friendsDiv"></div>
+    <div class="container" id="userDataDiv"></div>
+
+    <div class="container" id="friendsDiv"></div>
+</div>
 
 {% else %}
 <div class="w-100 h-100 d-flex justify-content-center align-items-center" id="divLoginForm">
@@ -74,8 +83,7 @@ ft_transcendence
         </a>
         <a href="{% url 'register' %}" class="text-decoration-none">Don't have an account? Register here.</a>
     </form>
-
-
 </div>
+
 {% endif %}
 {% endblock %}

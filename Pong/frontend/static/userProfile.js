@@ -91,7 +91,6 @@ function    display_user_data(element) {
                     const   togInput = document.createElement('input');
                     setAttributes(togInput, {'type': 'checkbox', 'id': 'flexSwitchCheckDefault'});
                     togInput.className = "form-check-input";
-
                     const   key2fa = user_info["2fa"];
                     if (key2fa) {
                         togInput.checked = true;
@@ -373,6 +372,9 @@ function    create_delete_account(mainDiv) {
                         .then(data => {
                             if (data.success) {
                                 displayMessage(data.message, "success");
+                                if (data.redirect) {
+                                    window.location.href = data.redirect_url;
+                                }
                             }
                             else {
                                 displayMessage(data.errors, "danger");
@@ -681,9 +683,10 @@ function    load_profile_page(username) {
     const   arrowSpan1 = document.createElement('span');
     const   arrowSpan2 = document.createElement('span');
 
-    arrowSpan1.className = "fa-regular fa-square-caret-down";
+    arrowSpan1.className = "fa-regular fa-square-caret-up";
     setAttributes(arrowSpan1, {"id": "info"});
     arrowSpan1.style.margin = "0 10px";
+
     arrowSpan2.className = "fa-regular fa-square-caret-down";
     setAttributes(arrowSpan2, {"id": "security"});
     arrowSpan2.style.margin = "0 10px";
@@ -696,6 +699,48 @@ function    load_profile_page(username) {
     part1.innerHTML = "Personal information";
     part1.append(arrowSpan1);
     title1.append(part1);
+
+    fetch(`user/${username}/information`)
+    .then(response => response.json())
+    .then(user_info => { console.log(user_info);
+        // Create expand div
+        const   exDiv = document.createElement('div');
+        setAttributes(exDiv, {"id": "section1Child", "class": "divProfile"});
+
+        // Add img to edit info
+        const   img = document.createElement('span');
+        img.className = "fa-solid fa-user-pen displayAnimImg";
+        setAttributes(img, {"id": "section1img"})
+        part1.append(img);
+
+        // Create span with all data fetched
+        const   divData = document.createElement('div');
+        setAttributes(divData, {'id': 'userDataDisplayed'});
+        divData.className = "subDivProfile form-check form-switch w-100 h-100 justify-content-center align-items-center flex-column py-2 px-5 rounded login-card";
+        divData.setAttribute("style", "--bs-bg-opacity: 0.5;");
+        exDiv.append(divData);
+
+        for (const key in user_info)
+            if (key != "stud42" && key != "2fa")
+                append_info(divData, key, user_info[key]);
+            else if (key === "stud42")
+                isStud = user_info[key];
+        title1.append(exDiv);
+
+        // run animation
+        exDiv.style.animationPlayState = "running";
+        img.style.animationPlayState = "running";
+
+        exDiv.style.opacity = "1px";
+
+        // Add form when editing image is clicked
+        img.addEventListener("click", () => {
+            load_form_edit_info();
+        })
+    })
+    .catch(err => {
+        console.log(err);
+    });
 
     part2.classList.add("txtSectionDiv");
     part2.innerHTML = "Account security";
