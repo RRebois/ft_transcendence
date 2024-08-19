@@ -28,7 +28,6 @@ export async function initializeWebSocket() {
                 console.log("Message from server:", event.data);
                 const data = JSON.parse(event.data);
                 if (data.type === 'status_change') {
-                    // updateFriendStatus(data.user_id, data.status);
                     console.log("Status change detected");
                     handle_friend_status(socket, data);
                 }
@@ -43,21 +42,17 @@ export async function initializeWebSocket() {
                 if (data.type === 'friend_req_accept') {  // accept friend request
                     console.log("Friend request accepted");
                     handle_friend_req_accept(socket, data);
-                    // load_friends_list(data);
                 }
                 if (data.type === 'friend_remove') {      // remove friend
                     console.log("Friend removed");
                     handle_friend_removed(socket, data);
-                    // load_friends_list(data);
                 }
                 // TODO : handle friend request decline
                 if (data.type === 'friend_delete_acc') {
                     console.log("Friend delete accepted");
-                    // load_friends_list(data);
                 }
                 if (data.type === 'friend_data_edit') {
                     console.log("Friend data edit");
-                    // load_friends_list(data);
                 }
             };
 
@@ -128,49 +123,3 @@ function handle_friend_status(socket, message){
         }
     }
 }
-
-//
-// async function accept_friend_request(event) {
-//     const button = event.target;
-//     const userId = button.getAttribute('data-id');
-//     console.log('click on accept button ', userId);
-//     fetch ('https://localhost:8443/accept_friend', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json',
-//             'X-CSRFToken': getCookie('csrftoken')
-//         },
-//         credentials: 'include',
-//         body: JSON.stringify({from_id: userId})
-//     })
-//         .then(response => response.json().then(data => ({ok: response.ok, data})))
-//         .then(({ok, data}) => {
-//             if (!ok) {
-//                 const toastComponent = new ToastComponent();
-//                 toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
-//             } else {
-//                 const toastComponent = new ToastComponent();
-//                 toastComponent.throwToast('Success', data.message || 'Friend request accepted', 5000);
-//                 // handle_received_friend_request();
-//             }
-//         })
-//         .catch(error => {
-//             console.error('Error accepting friend request: ', error);
-//             const toastComponent = new ToastComponent();
-//             toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
-//         });
-// }
-//
-// async function decline_friend_request(event){
-//     const button = event.target;
-//     const userId = button.getAttribute('data-id');
-//    console.log('click on decline button ', userId);
-// }
-//
-// async function handle_friend_req_accept(socket, data){
-//     console.log("socket is:", socket);
-//     console.log("message is:", message);
-//
-//     const toast = new ToastComponent();
-//     toast.throwToast('received-friend-request', 'You have received a friend request', 5000);
-// }

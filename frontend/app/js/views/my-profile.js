@@ -100,8 +100,15 @@ export default class MyProfile {
 					toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
 				} else {
 					console.log('Success:', data);
-					const toastComponent = new ToastComponent();
-					toastComponent.throwToast('Success', 'Your personal information has been updated', 5000, 'success');
+					// const toastComponent = new ToastComponent();
+					// toastComponent.throwToast('Success', 'Your personal information has been updated', 5000, 'success');
+					sessionStorage.setItem('toastMessage', JSON.stringify({
+						title: 'Success',
+						message: 'Your personal information has been updated',
+						duration: 5000,
+						type: 'success'
+            		}));
+					window.location.href = '/my-profile';
 				}
 			})
 			.catch(error => {

@@ -440,10 +440,10 @@ class UserPersonalInformationView(APIView):
         return JsonResponse(user.serialize())
 
 
+# TODO: if friend with someone, 500 on modifying
 @method_decorator(csrf_protect, name='dispatch')
 class EditDataView(APIView):
     serializer_class = EditUserSerializer
-
     def put(self, request):
         user_data = request.data
         try:

@@ -1,5 +1,6 @@
 import initializeRouter from "./router/index.js";
 import Route from "./router/Route.js";
+import ToastComponent from "./components/Toast.js"
 
 import homeView from "./views/home.js";
 import registerView from "./views/register.js";
@@ -22,5 +23,9 @@ const routes = [
 
 initializeRouter(routes);
 document.addEventListener('DOMContentLoaded', initializeWebSocket);
+
+document.addEventListener('DOMContentLoaded', () => {
+    new ToastComponent();
+});
 
 // https://medium.com/swlh/lets-code-a-client-side-router-for-your-no-framework-spa-19da93105e10

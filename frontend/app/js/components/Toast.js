@@ -9,6 +9,7 @@ export default class ToastComponent {
             this.toastContainer.classList.add('toast-container', 'position-fixed', 'bottom-0', 'end-0', 'z-3');
             document.body.appendChild(this.toastContainer);
         }
+        this.checkStoredToast();
     }
 
     getHeaderStyle(type) {
@@ -57,5 +58,14 @@ export default class ToastComponent {
         const toastElement = document.getElementById(toastId);
         const bsToast = new Toast(toastElement);
         bsToast.show();
+    }
+
+    checkStoredToast() {
+        const storedToast = sessionStorage.getItem('toastMessage');
+        if (storedToast) {
+            const { title, message, duration, type } = JSON.parse(storedToast);
+            this.throwToast(title, message, duration, type);
+            sessionStorage.removeItem('toastMessage');
+        }
     }
 }
