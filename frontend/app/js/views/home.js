@@ -1,9 +1,13 @@
 import ToastComponent from "../components/Toast.js";
 import {getCookie} from "../functions/cookie.js";
+import * as bootstrap from 'bootstrap'
 
 export default class Home {
 	constructor(props) {
 		this.props = props;
+		this.user_id = null;
+		this.loginUser = this.loginUser.bind(this);
+		this.checkOtp = this.checkOtp.bind(this);
 	}
 
 	loginUser(event) {
@@ -31,8 +35,13 @@ export default class Home {
 					toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
 				} else {
 					console.log('Success:', data);
-					// initializeWebSocket();
-					window.location.href = '/dashboard';
+					if (data?.otp_required) {
+						this.user_id = data.user_id;
+						const otpModal = new bootstrap.Modal(document.getElementById('otpModal'));
+						otpModal.show();
+					} else {
+						window.location.href = '/dashboard';
+					}
 				}
 			})
 			.catch(error => {
@@ -79,9 +88,59 @@ export default class Home {
 				this.fortyTwoLogin();
 			});
 		}
+		const otpSubmit = document.getElementById('otp-submit');
+		if (otpSubmit) {
+			otpSubmit.addEventListener('click', this.checkOtp);
+		}
 	}
 
-	// TODO: check form action link
+	checkOtp() {
+		console.log("CALLING CHECK OTP");
+		const otp = document.getElementById('otp').value;
+		const user_id = this.user_id;
+		const csrfToken = getCookie('csrftoken');
+		const otpRegex = new RegExp("^[0-9]{6}$");
+		console.log("sending otp: ", otp);
+		console.log("user_id: ", user_id);
+
+
+		if (!otp.match(otpRegex)) {
+			console.log("Invalid OTP");
+			document.getElementById('otp').classList.add('is-invalid');
+			return;
+		} else {
+			console.log("Valid OTP");
+			document.getElementById('otp').classList.remove('is-invalid');
+		}
+		console.log("fetching otp");
+		fetch('https://localhost:8443/verifyotp', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': csrfToken
+			},
+			credentials: 'include',
+			body: JSON.stringify({'otp': otp, 'user_id': user_id})
+		})
+			.then(response => response.json().then(data => ({ok: response.ok, data})))
+			.then(({ok, data}) => {
+				if (!ok) {
+					document.getElementById('otp').classList.add('is-invalid');
+				} else {
+					console.log('Success:', data);
+					document.getElementById('otp').classList.remove('is-invalid');
+					window.location.href = '/dashboard';
+				}
+			})
+			.catch(error => {
+				console.error('Error:', error);
+				const toastComponent = new ToastComponent();
+				toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+			});
+	}
+
+
+// TODO: check form action link
 	render() {
 		document.title = 'ft_transcendence | Login';
 		return `
@@ -125,6 +184,29 @@ export default class Home {
             <div class="padForm mt-2">
                 Don't have an account? <a href="/register">Register here.</a>
             </div>
+            <!-- OTP Modal -->
+            <div class="modal fade" id="otpModal" tabindex="-1" aria-labelledby="otpModal" aria-hidden="true">
+				<div class="modal-dialog modal-dialog-centered">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h1 class="modal-title fs-5" id="otpModalLabel">2FA check 🔒</h1>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+						</div>
+						<div class="modal-body">
+							<p>Enter the OTP provided by your authentication application.</p>
+							<div class="form-floating has-validation">
+                                <input type="text" id="otp" class="form-control" required />
+                                <label for="otp">One Time Password<span class="text-danger">*</span></label>
+                                <div class="invalid-feedback">OTP is invalid.</div>
+                            </div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+							<button type="button" id="otp-submit" class="btn btn-primary">Log in</button>
+						</div>
+					</div>
+				</div>
+			</div>
          </div>
         `;
 	}

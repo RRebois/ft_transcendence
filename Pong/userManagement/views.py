@@ -610,27 +610,25 @@ class VerifyOTPView(APIView):
     serializer_class = VerifyOTPSerializer
 
     def post(self, request):
-        serializer = VerifyOTPSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-
-        access_token = serializer.validated_data['jwt_access']
-        refresh_token = serializer.validated_data['jwt_refresh']
-
-        response = JsonResponse({'redirect': reverse('index')}, status=200)
-        response.set_cookie(key='jwt_access', value=access_token, httponly=True)
-        response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True)
-        response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
-
-        return response
-
-    # def get(self, request):
-    #     user_id = request.GET.get('user_id')
-    #     serializer = self.serializer_class()
-    #     return render(request, "pages/otp.html", {
-    #         "user_id": user_id,
-    #         "form": serializer
-    #     })
+        logging.debug("================== VerifyOTPView ==================")
+        logging.debug(f"request.data: {request.data}")
+        try:
+            serializer = VerifyOTPSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = serializer.validated_data['user']
+            access_token = serializer.validated_data['jwt_access']
+            refresh_token = serializer.validated_data['jwt_refresh']
+            user_dict = model_to_dict(user)
+            image_url = user.get_img_url()
+            user_dict['image_url'] = get_profile_pic_url(image_url)
+            response = JsonResponse(data={'user': user_dict}, status=200)
+            response.set_cookie(key='jwt_access', value=access_token, httponly=True)
+            response.set_cookie(key='jwt_refresh', value=refresh_token, httponly=True, samesite='Lax', secure=True)
+            response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
+            return response
+        except serializers.ValidationError as e:
+            logging.debug(f"ValidationError: {str(e)}")
+            return JsonResponse(data={'message': str(e)}, status=400)
 
 
 @method_decorator(csrf_protect, name='dispatch')

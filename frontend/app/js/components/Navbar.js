@@ -1,4 +1,5 @@
 import { getCookie } from "@js/functions/cookie.js";
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 export default class Navbar {
 	constructor(user = null) {
