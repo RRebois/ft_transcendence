@@ -1,0 +1,57 @@
+{% extends "pages/layout.html" %}
+{% load static %}
+
+{% block script %}
+    <script src="{% static 'scriptRegistration.js' %} https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+{% endblock %}
+
+{% block body %}
+
+{% if user.is_authenticated %}
+
+<div class="alertSize alert alert-{{ message.tags }}" id="message" style="margin-top: 0px;"></div>
+<div class="w-100 h-100 d-flex justify-content-center align-items-center">
+    <form id="enable-form" class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card"
+          style="--bs-bg-opacity: .5;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Enable</button>
+    </form>
+    <div id="QRcode" style="display: none; max-width: 200px; max-height: 200px; margin-top: 20px;" ></div>
+    <form action="{% url 'disable_2FA' %}" method="post"
+          class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card"
+          style="--bs-bg-opacity: .5;" id="disable">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Disable</button>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#enable-form').submit(function(event) {
+            event.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'enable_2FA' %}",
+                data: $(this).serialize(),
+                success: function(response) {
+                    if (response.qr_url) {
+                        var qrCodeDiv = $('#QRcode');
+                        qrCodeDiv.html('<img src="https://api.qrserver.com/v1/create-qr-code/?data=' + encodeURIComponent(response.qr_url) + '&size=200x200" alt="QR Code" />');
+                        qrCodeDiv.show();
+                    }
+                    if (response.message) {
+                        var messageDiv = $('#message');
+                        messageDiv.html('<div class="alert alert-success alert-{{ message.tags }}">' + response.message + '</div>');
+                    }
+                },
+                error: function(response) {
+                    alert('Error enabling 2FA: ' + response.responseJSON.error);
+                }
+            });
+        });
+    });
+</script>
+
+{% endif %}
+{% endblock %}

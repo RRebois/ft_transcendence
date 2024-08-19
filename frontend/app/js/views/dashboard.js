@@ -26,7 +26,7 @@ export default class Dashboard {
 	render() {
 		document.title = "ft_transcendence";
 		return `
-            <div class="w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+            <div class="w-100 min-h-screen d-flex flex-column justify-content-center align-items-center">
             	<div class="d-flex flex-column">
             		<a role="button" class="text-decoration-none text-black d-flex flex-column justify-content-center align-items-center" data-bs-toggle="modal" data-bs-target="#create-match-modal">
                         <i class="bi bi-robot"></i>

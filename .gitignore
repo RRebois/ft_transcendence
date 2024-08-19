@@ -11,6 +11,9 @@ Pong/userManagement/migrations/*
 Pong/warning.log
 Pong/debug.log
 
+Pong/media/profile_pics/*
+
 Pong/userManagement/migrations/*_initial.py
+Pong/matchs/migrations/*_initial.py
 frontend/app/node_modules/
 frontend/app/dist/

@@ -145,10 +145,12 @@ class EditUserSerializer(serializers.ModelSerializer):
         name_pattern = re.compile("^[a-zA-ZàâäéèêëïîôöùûüçÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ\\-]+$")
         email_pattern = re.compile("^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$")
 
-        email = attrs.get('email', '')
+        username = attrs.get('username', '')
         first_name = attrs.get('first_name', '')
         last_name = attrs.get('last_name', '')
-        username = attrs.get('username', '')
+        email = attrs.get('email', '')
+        language = attrs.get('language', '')
+        logging.debug(f"Username: {username}, First name: {first_name}, Last name: {last_name}, Email: {email}, Language: {language}")
 
         if not email_pattern.match(email):
             raise serializers.ValidationError("Invalid email format")
@@ -158,6 +160,8 @@ class EditUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Lastname must contain only alphabetic characters and hyphens (-)")
         if not username_pattern.match(username):
             raise serializers.ValidationError("Username must contain only alphanumeric characters and hyphens (- or _)")
+        # if language not in ['en', 'fr']:
+        # TODO check language
         return attrs
 
     def update(self, instance, validated_data):
