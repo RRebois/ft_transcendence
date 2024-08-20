@@ -109,17 +109,24 @@ function handle_friend_status(socket, message){
     console.log("message is:", message);
     console.log("status change detected for user:", message.user_id, "new status is:", message.status);
 
-    const friendStatus = document.getElementById(`friend-status-${message.user_id}`);
-    const friendStatusText = document.getElementById(`friend-status-text-${message.user_id}`);
-    console.log("friendStatus is:", friendStatus);
-    console.log("friendStatusText is:", friendStatusText);
-    if (friendStatus && friendStatusText) {
-        friendStatus.classList.remove('bg-success', 'bg-danger');
-        friendStatusText.innerText = message.status;
-        if (message.status === 'online') {
-            friendStatus.classList.add('bg-success');
-        } else {
-            friendStatus.classList.add('bg-danger');
+    const friendItem = document.querySelector(`[data-id="${message.user_id}"]`)
+    if (friendItem) {
+        const statusElement = friendItem.querySelector('.status');
+        if (statusElement) {
+            statusElement.innerText = `Status: ${message.status}`;
         }
     }
+    // const friendStatus = document.getElementById(`friend-status-${message.user_id}`);
+    // const friendStatusText = document.getElementById(`friend-status-text-${message.user_id}`);
+    // console.log("friendStatus is:", friendStatus);
+    // console.log("friendStatusText is:", friendStatusText);
+    // if (friendStatus && friendStatusText) {
+    //     friendStatus.classList.remove('bg-success', 'bg-danger');
+    //     friendStatusText.innerText = message.status;
+    //     if (message.status === 'online') {
+    //         friendStatus.classList.add('bg-success');
+    //     } else {
+    //         friendStatus.classList.add('bg-danger');
+    //     }
+    // }
 }
