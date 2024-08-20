@@ -1,0 +1,103 @@
+{% extends "pages/layout.html" %}
+{% load static %}
+
+
+{% block body %}
+<body>
+
+<div id="game-container">
+    <h1>Purrinha Game</h1>
+
+    <div id="status">Waiting for players...</div>
+
+    <form id="move-form">
+        <label for="quantity">Choose Quantity:</label>
+        <input type="number" id="quantity" min="0" max="3" step="1" required>
+
+        <label for="guess">Make a Guess:</label>
+        <input type="number" id="guess" min="0" step="1" required>
+
+        <button id="submit-move">Submit Move</button>
+    </form>
+
+    <div id="error-message"></div>
+
+    <div id="player-info"></div>
+</div>
+
+<script>
+    const gameContainer = document.getElementById('game-container');
+    const statusDiv = document.getElementById('status');
+    const errorMessage = document.getElementById('error-message');
+    const playerInfoDiv = document.getElementById('player-info');
+    const moveForm = document.getElementById('move-form');
+    const quantityInput = document.getElementById('quantity');
+    const guessInput = document.getElementById('guess');
+    const submitButton = document.getElementById('submit-move');
+
+    async function get_token() {
+        const response = await fetch('/get_ws_token/');
+        const jwt = await response.json();
+        return jwt.token
+        }
+
+    async function connectWebSocket() {
+        const token = await get_token()
+        const wsUrl = 'wss://' + window.location.host + '{{ ws_route }}' + token + '/';
+        ws = new WebSocket(wsUrl);
+        return ws;
+    }
+    const gameSocket = connectWebSocket();
+
+    gameSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        updateGameState(data);
+    };
+
+    gameSocket.onclose = function(e) {
+        console.error('Game socket closed unexpectedly');
+    };
+
+    moveForm.onsubmit = function(e) {
+        e.preventDefault();
+        const quantity = quantityInput.value;
+        const guess = guessInput.value;
+
+        const moveData = {
+            'player_move': {
+                'quantity': quantity ? parseInt(quantity) : null,
+                'guess': guess ? parseInt(guess) : null
+            }
+        };
+
+        gameSocket.send(JSON.stringify(moveData));
+    };
+
+    function updateGameState(data) {
+        if (data.error_message) {
+            errorMessage.textContent = data.error_message;
+            return;
+        }
+
+        errorMessage.textContent = '';
+        statusDiv.textContent = 'Round: ' + data.round;
+
+        playerInfoDiv.innerHTML = '';
+        for (const [key, player] of Object.entries(data.players)) {
+            playerInfoDiv.innerHTML += `<p>${player.name}: Quantity - ${player.quantity}, Guess - ${player.guess}</p>`;
+        }
+
+        if (data.round === 'finished') {
+            statusDiv.textContent = 'Game Over! Winner: ' + data.winner;
+            submitButton.disabled = true;
+        } else if (data.round === 'guessing') {
+            submitButton.disabled = false;
+        } else {
+            submitButton.disabled = true;
+        }
+    }
+</script>
+
+</body>
+
+{% endblock %}

@@ -20,16 +20,14 @@ class MatchAdmin(admin.ModelAdmin):
 
     scores_display.short_description = "Scores"
 
-    list_display = ("pk", "winner", "players_display", "scores_display", "timeMatch")
-    filter_horizontal = ("players",)
+    def winners_display(self, obj):
+        return ", ".join([f"{winner.username if winner else 'deleted_user'}" for winner in
+                          obj.winners.all()])
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "winner":
-            if request._obj_ is not None:
-                kwargs["queryset"] = request._obj_.players.all()
-            else:
-                kwargs["queryset"] = User.objects.none()
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    winners_display.short_description = "Winners"
+
+    list_display = ("pk", "winners_display", "players_display", "scores_display", "timeMatch")
+    filter_horizontal = ("players",)
 
     def get_form(self, request, obj=None, **kwargs):
         request._obj_ = obj

@@ -3,7 +3,7 @@ from random import choice, randrange
 GAME_WIDTH = 800
 GAME_HEIGHT = 400
 
-WINNING_SCORE = 5
+WINNING_SCORE = 2
 
 PADDLE_START_VEL = 6
 BALL_START_VEL = 4
@@ -56,8 +56,8 @@ class Ball:
         self.x = self.original_x = x
         self.y = self.original_y = y
         self.radius = radius
-        self.x_vel = BALL_START_VEL * choice([1, -1])
         self.y_vel = randrange(6) * choice([1, -1])
+        self.x_vel = BALL_START_VEL * choice([1, -1])
 
     async def move(self):
         self.x += self.x_vel
@@ -170,7 +170,7 @@ class   PongMatch():
 
     async def routine(self):
         await self.ball.move()
-        await handle_collision(self.ball, self.paddles[0], self.paddles[len(self.paddles) - 1])
+        await handle_collision(self.ball, self.paddles[0], self.paddles[-1])
         if self.multiplayer:
             await handle_collision(self.ball, self.paddles[1], self.paddles[2], first_time=False)
         await self.check_score()

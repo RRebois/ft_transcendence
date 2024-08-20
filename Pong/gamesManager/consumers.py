@@ -18,20 +18,21 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		self.game_name = self.scope['url_route']['kwargs']['game_name']
 		self.game_code = int(self.scope['url_route']['kwargs']['game_code'])
 		self.session_id = self.scope['url_route']['kwargs']['session_id']
-		self.session_data = await self.get_session_data()
-		self.players_max = self.session_data['awaited_players']
 		self.game_handler = None
 		self.user = self.scope['user']
 		self.username = self.user.username
 
 		await self.accept()
+		self.session_data = await self.get_session_data()
+		self.players_max = self.session_data['awaited_players']
+
 		error_msg = ''
 		if self.game_name not in ['pong', 'purrinha']:
 			error_msg = 'this game does not exist'
 		elif self.game_code not in [10, 20, 22, 23, 40]:
 			error_msg = 'this game code does not exist'
-		elif self.session_data is None:
-			error_msg = 'this session does not exist'
+		# elif self.session_data is None:
+		# 	error_msg = 'this session does not exist'
 		elif self.username == '':
 			error_msg = 'error getting the user data, maybe you are not connected anymore'
 		elif self.username not in self.session_data['players']:
@@ -54,6 +55,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 			await self.game_handler.launch_game(self.session_data['players'])
 		else:
 			self.loop_task = asyncio.create_task(self.fetch_session_data_loop())
+		print(f'\n\n\nusername => |{self.username}|\nuser => |{self.user}|\ncode => |{self.game_code}|\n data => |{self.session_data}|\nscope => |{self.scope}| \n\n')
 		await self.send_to_group(self.session_data)
 
 	async def	receive(self, text_data):
@@ -96,7 +98,12 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 
 	@database_sync_to_async
 	def get_session_data(self):
-		return cache.get(self.session_id)
+		session_data = cache.get(self.session_id)
+		if session_data:
+			return session_data
+		error_msg = 'this session does not exist'
+		self.send(text_data=json.dumps({"error_message": error_msg}))
+		self.close()
 
 	@database_sync_to_async
 	def change_connection_status(self):
@@ -158,7 +165,6 @@ class PongHandler():
 			client.close()
 
 	async def	reset_game(self):
-		self.turns_id = range(1, self.player_nb)
 		self.game.reset_game()
 		self.loop_task = asyncio.create_task(self.game_loop())
 
@@ -178,24 +184,25 @@ class PongHandler():
 		game_state = await self.game.serialize()
 		self.message['game_state'] = game_state
 		await self.consumer[0].send_to_group(self.message)
-		await self.end_game(game_state)
+		await self.end_game()
 
 	async def	cancel_loop(self):
 		if hasattr(self, 'loop_task'):
 			self.loop_task.cancel()
 
-	async def	end_game(self, gs=None, winner=None):
+	async def	end_game(self, winner=None):
 
-		if gs is None:
-			gs = self.message['game_state']
+		gs = self.message['game_state']
 		if winner is None and gs['left_score'] != gs['winning_score'] and gs['right_score'] != gs['winning_score']:
 			return
+		print(f'\n\nDentro do end_game\ngame code = {self.game_code} \n\n')
 		middle = 1 if self.game_code != 40 else 2
-		if winner is None:
+		if not winner:
 			winner = []
 			left = gs['right_score'] < gs['left_score']
 			my_range = [1, middle] if left else [middle, middle * 2]
-			for i in range(my_range):
+			print('\n\nPAREI AQUI\n\n')
+			for i in range(my_range[0], my_range[1]):
 				key = f"player{i}"
 				winner.append(gs[key]['name'])
 		if self.game_code != 20: # mode vs 'guest', does not save scores
@@ -203,6 +210,7 @@ class PongHandler():
 			for i in range(1, middle * 2):
 				key = f"player{i}"
 				match_result[gs[key]['name']] = gs['left_score'] if i <= middle else gs['right_score']
+			print(f'\n\n\n result = {match_result} \nwinner = {winner} \n\n\n')
 			await sync_to_async(create_match)(match_result, winner)
 		self.message['winner'] = winner
 		self.message['status'] = 'finished'
@@ -263,7 +271,7 @@ class PurrinhaHandler():
 					await consumer.send(text_data=json.dumps({"error_message": message}))
 			return False
 		return True
-	
+
 	async def	parse_guess(self, guess, id):
 		if not guess:
 			return False

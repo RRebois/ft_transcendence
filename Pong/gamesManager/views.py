@@ -94,6 +94,13 @@ class	GameManagerView(APIView):
 		# 	'session_id': session_id,
 		# 	'ws_route': f'/ws/game/{game_name}/{game_code}/{session_id}/'
 		# })
+		if game_name == 'purrinha':
+			return render(request, "pages/purrinha.html" ,{
+				'status': 'succes',
+				'game': game_name,
+				'session_id': session_id,
+				'ws_route': f'/ws/game/{game_name}/{game_code}/{session_id}/'
+			})
 		return render(request, "pages/pong.html" ,{
 			'status': 'succes',
 			'game': game_name,
