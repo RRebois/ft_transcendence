@@ -23,6 +23,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include("userManagement.urls")),
     path('', include("matchs.urls")),
+    # path('pong/', include("pongGame.urls")),
+    path('game/', include("gamesManager.urls")),
 ]
 
 from django.conf import settings
