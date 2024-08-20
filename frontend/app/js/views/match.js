@@ -41,7 +41,7 @@ export default class Match {
 
        // Camera
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        this.camera.position.set(0, 0, 50);
+        this.camera.position.set(0, -10, 50);
 //        this.camera.rotation
         this.camera.lookAt(0, 0, 0);
 
@@ -61,18 +61,16 @@ export default class Match {
 //        this.initialStadiumRotation = new THREE.Euler();
 //        this.initialStadiumRotation.z = stadium.rotation.z;
 
-        this.createStadium();
-        this.createPaddle('p1');
-        this.createPaddle('p2');
-        this.createBall();
-
+        // Display text from the beginning
         const   textGroup = new THREE.Group();
         textGroup.rotation.set(20, 0, 0);
         textGroup.name = "textGroup";
         this.scene.add(textGroup);
         this.printInitScores();
-
         textGroup.position.y = 30;
+
+        // Wait for stadium walls to be created
+        this.createGameElements();
 
         // Controls pad
         window.addEventListener('keydown', this.handleKeyEvent.bind(this));
@@ -88,6 +86,13 @@ export default class Match {
         // Animate
         this.animate = this.animate.bind(this);
         this.animate();
+    }
+
+    async createGameElements() {
+        await this.createStadium();
+        this.createPaddle('p1');
+        this.createPaddle('p2');
+        this.createBall();
     }
 
     printInitScores() { //https://github.com/mrdoob/three.js/blob/master/examples/webgl_loader_ttf.html try it
@@ -266,93 +271,81 @@ export default class Match {
         stadium.add(paddle);
     }
 
-        // const pointA = new THREE.Vector3(-5, 0, 0); // Starting point
-        // const pointB = new THREE.Vector3(5, 0, 0);  // Ending point
-
-        // // Create an object to move
-        // const geometry = new THREE.BoxGeometry(1, 1, 1);
-        // const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
-        // const cube = new THREE.Mesh(geometry, material);
-        // cube.position.copy(pointA); // Start at point A
-        // scene.add(cube);
-
-        // // Animation variables
-        // let progress = 0; // Progress from 0 (start) to 1 (end)
-        // const speed = 0.01; // Adjust speed as needed
-
-        // function animate() {
-        //     requestAnimationFrame(animate);
-
-        //     // Update progress
-        //     progress += speed;
-        //     if (progress > 1) progress = 1; // Clamp progress at 1
-
-        //     // Linearly interpolate between point A and point B
-        //     cube.position.lerpVectors(pointA, pointB, progress);
-
-        //     // Render the scene
-        //     renderer.render(scene, camera);
-        // }
-
-        // // Start the animation
-        // animate();
-
-        // or
-//         let t = 0; // Time variable
-
-// function animate() {
-//     requestAnimationFrame(animate);
-
-//     // Increase t by the speed
-//     t += speed;
-
-//     // Clamp t between 0 and 1
-//     t = Math.min(t, 1);
-
-//     // Lerp position
-//     cube.position.lerpVectors(pointA, pointB, t);
-
-//     // Render the scene
-//     renderer.render(scene, camera);
-// }
-
     // Create blocks all around + needs floor + animation
     createStadium() {
-//        return new Promise((resolve) => {
+        return new Promise(async (resolve) => {
             const   stadium = this.scene.getObjectByName("stadium");
+            // const   cubes = [];
             let i = -1;
-            let x = -16;
+            let x = -14;
             let y = -8;
-            while (++i < 48) {
+            while (++i < 16) {
                 const   cube = this.createCube(x);
-                if (i <= 16) {
+                if (i < 16) {
                     cube.position.set(x, y, 0);
 //                    cube.rotation.set(60,0,0);
                     x += 2;
                 }
-                if (i > 16 && i <= 24) {
-                    cube.position.set(x, y, 0);
-//                    cube.rotation.set(60,0,0);
-                    y += 2;
-                }
-                if (i > 24 && i <= 40) {
-                    cube.position.set(x, y, 0);
-//                    cube.rotation.set(60,0,0);
-                    x -= 2;
-                }
+//                 if (i >= 16 && i < 24) {
+//                     cube.position.set(x, y, 0);
+// //                    cube.rotation.set(60,0,0);
+//                     y += 2;
+//                 }
+//                 if (i > 24 && i <= 40) {
+//                     cube.position.set(x, y, 0);
+// //                    cube.rotation.set(60,0,0);
+//                     x -= 2;
+//                 }
 //                else {
 //                    cube.position.set(x, y, 0);
-////                    cube.rotation.set(60,0,0);
+// //                    cube.rotation.set(60,0,0);
 //                    y -= 2;
 //                }
                 stadium.add(cube);
+                // cubes.push(cube);
+                await this.stadiumCreation(cube);
             }
-//            resolve();
+            resolve();
+        });
 //        }
 //        this.createWall(0, this.stadium_width / 2, 0, this.stadium_length, this.stadium_thickness, this.stadium_height);  // up
 //        this.createWall(-this.stadium_length / 2, 0, 0, this.stadium_thickness, this.stadium_width, this.stadium_height);  // left
 //        this.createWall(this.stadium_length / 2, 0, 0, this.stadium_thickness, this.stadium_width, this.stadium_height);  // right
 //        this.createWall(0, -this.stadium_width / 2, 0, this.stadium_length, this.stadium_thickness, this.stadium_height);  // down
+    }
+
+    stadiumCreation(cube) {
+        return new Promise((resolve) => {
+            const   duration = 500;
+            const   startPositions = [];
+
+            const   s1 = new THREE.Vector3(cube.position.x, cube.position.y, 50);
+            const   s2 = new THREE.Vector3(cube.position.x + 50, cube.position.y, 0);
+            const   s3 = new THREE.Vector3(cube.position.x, cube.position.y + 50, 0);
+            startPositions.push(s1, s2, s3);
+            const   start = Math.floor(Math.random() * 3);
+
+            const   endPosition = new THREE.Vector3(cube.position.x, cube.position.y, 0);
+console.log(endPosition);
+            const   startTime = Date.now();
+
+            const   animate = () => {
+                const   elapsedTime = Date.now() - startTime;
+                const   time = elapsedTime / duration;
+
+                const   linear = 1 * time + 0;
+
+                cube.position.lerpVectors(startPositions[start], endPosition, linear);
+
+                if (time < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    console.log(`Cube position: ${cube.position.x}, Y: ${cube.position.y}`);
+                    resolve();
+                }
+            };
+            animate();
+        });
     }
 
 
