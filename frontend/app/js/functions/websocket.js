@@ -115,18 +115,26 @@ function handle_friend_status(socket, message){
         if (statusElement) {
             statusElement.innerText = `Status: ${message.status}`;
         }
-    }
-    const friendStatus = document.getElementById(`friend-status-${message.user_id}`);
-    const friendStatusText = document.getElementById(`friend-status-text-${message.user_id}`);
-    console.log("friendStatus is:", friendStatus);
-    console.log("friendStatusText is:", friendStatusText);
-    if (friendStatus && friendStatusText) {
-        friendStatus.classList.remove('bg-success', 'bg-danger');
-        friendStatusText.innerText = message.status;
-        if (message.status === 'online') {
-            friendStatus.classList.add('bg-success');
-        } else {
-            friendStatus.classList.add('bg-danger');
+        console.log("User id is: ", message.user_id);
+        let friendID = message.user_id
+        // let friendStatus = document.getElementById("`friend-status-${message.user_id}`");
+        // let friendStatusText = document.getElementById(`friend-status-text-${message.user_id}`);
+        let friendStatusId = `friend-status-${message.user_id}`;
+        let friendStatusTextId = `friend-status-text-${message.user_id}`;
+
+        console.log("Constructed IDs:", friendStatusId, friendStatusTextId);
+        let friendStatus = document.getElementById(friendStatusId);
+        let friendStatusText = document.getElementById(friendStatusTextId);
+        console.log("friendStatus is:", friendStatus);
+        console.log("friendStatusText is:", friendStatusText);
+        if (friendStatus && friendStatusText) {
+            friendStatus.classList.remove('bg-success', 'bg-danger');
+            friendStatusText.innerText = message.status;
+            if (message.status === 'online') {
+                friendStatus.classList.add('bg-success');
+            } else {
+                friendStatus.classList.add('bg-danger');
+            }
         }
     }
 }
