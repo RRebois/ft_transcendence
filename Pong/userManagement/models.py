@@ -77,6 +77,7 @@ class User(AbstractUser):
             "stud42": self.stud42,
             "2fa": self.tfa_activated,
             "img": self.get_img_url(),
+            "status": self.status,
         }
 
 
