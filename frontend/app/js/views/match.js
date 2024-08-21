@@ -92,9 +92,9 @@ export default class Match {
         this.animate();
     }
 
-    createLights {
-
-    }
+    // createLights {
+    //
+    // }
 
     async createGameElements() {
         await this.createStadium();
