@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from userManagement.views import authenticate_user
+from rest_framework import status
 
 import uuid
 
@@ -13,8 +14,8 @@ import uuid
 
 
 @method_decorator(csrf_protect, name='dispatch')
-@method_decorator(login_required(login_url='login'), name='dispatch')
-class	GameManagerView(APIView):
+# @method_decorator(login_required(login_url='login'), name='dispatch')
+class GameManagerView(APIView):
 
 	def	verify_data(self, game_name, game_code, session_id):
 		if game_name not in ['pong', 'purrinha']:
@@ -94,19 +95,18 @@ class	GameManagerView(APIView):
 		# 	'session_id': session_id,
 		# 	'ws_route': f'/ws/game/{game_name}/{game_code}/{session_id}/'
 		# })
-		if game_name == 'purrinha':
-			return render(request, "pages/purrinha.html" ,{
-				'status': 'succes',
-				'game': game_name,
-				'session_id': session_id,
-				'ws_route': f'/ws/game/{game_name}/{game_code}/{session_id}/'
-			})
-		return render(request, "pages/pong.html" ,{
-			'status': 'succes',
+		# if game_name == 'purrinha':
+		# 	return render(request, "pages/purrinha.html" ,{
+		# 		'status': 'succes',
+		# 		'game': game_name,
+		# 		'session_id': session_id,
+		# 		'ws_route': f'/ws/game/{game_name}/{game_code}/{session_id}/'
+		# 	})
+		return JsonResponse({
 			'game': game_name,
 			'session_id': session_id,
 			'ws_route': f'/ws/game/{game_name}/{game_code}/{session_id}/'
-		})
+		}, status=status.HTTP_200_OK)
 
 
 

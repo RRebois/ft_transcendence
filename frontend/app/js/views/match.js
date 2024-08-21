@@ -1,12 +1,15 @@
 import * as THREE from 'three';
 import {FontLoader} from 'three/addons/loaders/FontLoader.js';
 import {TextGeometry} from 'three/addons/geometries/TextGeometry.js';
+import {initializePongWebSocket} from "../functions/websocket.js";
 
-export default class Match {
+export default class MatchPong {
     constructor(props) {
         this.props = props;
-        this.init();
+        initializePongWebSocket(this);
+//        this.init();
     }
+    // func to create all
 
     init() { // For responside device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
 
@@ -51,8 +54,8 @@ export default class Match {
         document.body.appendChild(this.renderer.domElement);
 
         // Create light
-        const   light = createLights();
-        this.scene.add(light);
+//        const   light = createLights();
+//        this.scene.add(light);
 
         // Create stade group with all objetcs so when rotate everything follows
         const   stadiumGroup = new THREE.Group();
@@ -92,9 +95,9 @@ export default class Match {
         this.animate();
     }
 
-    createLights {
-
-    }
+//    createLights {
+//
+//    }
 
     async createGameElements() {
         await this.createStadium();

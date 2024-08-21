@@ -146,9 +146,9 @@ class   PongMatch():
             ball = await self.ball.serialize()
             coord = {
                 'players': self.players,
-                'ball' : ball,
-                'left_score' : self.left_score,
-                'right_score' : self.right_score,
+                'ball': ball,
+                'left_score': self.left_score,
+                'right_score': self.right_score,
                 'game_width': GAME_WIDTH,
                 'game_height': GAME_HEIGHT,
                 'paddle_width': PADDLE_WIDTH,

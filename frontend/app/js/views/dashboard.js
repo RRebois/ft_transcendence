@@ -1,3 +1,5 @@
+import {initializePongWebSocket} from "../functions/websocket.js";
+
 export default class Dashboard {
 	constructor(props) {
 		this.props = props;
@@ -17,10 +19,16 @@ export default class Dashboard {
 	}
 
 	setupEventListeners() {
-		const matchState = document.getElementById("online-game-switch");
+		const   matchState = document.getElementById("online-game-switch");
 		if (matchState) {
 			matchState.addEventListener("change", this.matchState);
 		}
+//		const   startPongGame = document.getElementById("saveChanges");
+//		if (startPongGame) {
+//		    startPongGame.addEventListener("click", () => { // Add verification of the data selected on the modal by the player
+//		        initializePongWebSocket();
+//		    })
+//		}
 	}
 
 	render() {
@@ -70,7 +78,7 @@ export default class Dashboard {
 							</div>
 							<div class="modal-footer">
 								<button type="button" class="btn text-danger" data-bs-dismiss="modal">Close</button>
-								<button type="button" class="btn btn-primary">Save changes</button>
+								<a href="/match"> <button type="button" class="btn btn-primary" id="saveChanges">Save changes</button></a>
 							</div>
 						</div>
 					</div>
