@@ -15,7 +15,7 @@ DOCKER_NETWORKS		:=
 all: up
 
 up:
-	docker compose up --build -d
+	docker-compose up --build -d
 #@echo "Opening https://localhost:8443 in browser..."
 #@nohup open https://localhost:8443 > /dev/null 2>&1 &
 
@@ -37,6 +37,8 @@ fclean: confirm_clean clean clear_migrations
 
 clear_migrations:
 	@rm -rf ./Pong/userManagement/migrations/0*.py
+	@rm -rf ./Pong/matchs/migrations/0*.py
+	@rm -rf ./Pong/anotherGame/migrations/0*.py
 
 re: down up
 
