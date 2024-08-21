@@ -2,42 +2,41 @@ import * as THREE from 'three';
 import {FontLoader} from 'three/addons/loaders/FontLoader.js';
 import {TextGeometry} from 'three/addons/geometries/TextGeometry.js';
 import {initializePongWebSocket} from "../functions/websocket.js";
+import { DirectionalLight } from 'three';
 
 export default class MatchPong {
     constructor(props) {
         this.props = props;
         initializePongWebSocket(this);
-//        this.init();
     }
-    // func to create all
 
     init() { // For responside device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
 
-        this.player1_nickname = 'player1';
-        this.player2_nickname = 'player2';
-        this.xPosition = 0;
-        this.score_p1 = 0;
-        this.score_p2 = 0;
-        this.textArray = [`${this.player1_nickname}`, this.score_p1.toString(), "-", this.score_p2.toString(),
-                        `${this.player2_nickname}`];
-        this.nameArray = ["p1Nick", "p1Score", "hyphen", "p2Score", "p2Nick"];
-        this.y_pos_p1 = 0;  // left player
-        this.y_pos_p2 = 0;  // right player
-        this.stadium_length = 25;
-        this.stadium_width = 10;
-        this.stadium_height = 1;
-        this.stadium_thickness = 0.25;
-        this.paddle_length = 2;
+//        this.player1_nickname = 'player1';
+//        this.player2_nickname = 'player2';
+//        this.xPosition = 0;
+//        this.score_p1 = 0;
+//        this.score_p2 = 0;
+//        this.textArray = [`${this.player1_nickname}`, this.score_p1.toString(), "-", this.score_p2.toString(),
+//                        `${this.player2_nickname}`];
+//        this.nameArray = ["p1Nick", "p1Score", "hyphen", "p2Score", "p2Nick"];
+//        this.y_pos_p1 = 0;  // left player
+//        this.y_pos_p2 = 0;  // right player
+//        this.stadium_length = 25;
+//        this.stadium_width = 10;
+//        this.stadium_height = 1;
+//        this.stadium_thickness = 0.25;
+//        this.paddle_length = 2;
 
         // Ball initial stats
-        this.ball_x = 0;
-        this.ball_y = 0;
-        this.ball_radius = 1;
-        const   initialSpeed = 0.2;
-        this.baseSpeed = initialSpeed;
-        this.currentSpeed = this.baseSpeed;
-        this.ball_velocity_x = this.currentSpeed * ((Math.random() - 0.5));
-        this.ball_velocity_y = this.currentSpeed * ((Math.random() - 0.5));
+//        this.ball_x = 0;
+//        this.ball_y = 0;
+//        this.ball_radius = 1;
+//        const   initialSpeed = 0.2;
+//        this.baseSpeed = initialSpeed;
+//        this.currentSpeed = this.baseSpeed;
+//        this.ball_velocity_x = this.currentSpeed * ((Math.random() - 0.5));
+//        this.ball_velocity_y = this.currentSpeed * ((Math.random() - 0.5));
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x000000);
@@ -54,8 +53,8 @@ export default class MatchPong {
         document.body.appendChild(this.renderer.domElement);
 
         // Create light
-//        const   light = createLights();
-//        this.scene.add(light);
+        const   light = this.createLights();
+        this.scene.add(light);
 
         // Create stade group with all objetcs so when rotate everything follows
         const   stadiumGroup = new THREE.Group();
@@ -72,16 +71,16 @@ export default class MatchPong {
         const   textGroup = new THREE.Group();
         textGroup.rotation.set(20, 0, 0);
         textGroup.name = "textGroup";
-        this.scene.add(textGroup);
-        this.printInitScores();
+//        this.scene.add(textGroup);
+//        this.printInitScores();
         textGroup.position.y = 30;
 
         // Wait for stadium walls to be created
-        this.createGameElements();
+//        this.createGameElements();
 
         // Controls pad
-        window.addEventListener('keydown', this.handleKeyEvent.bind(this));
-        window.addEventListener('keyup', this.handleKeyEvent.bind(this));
+//        window.addEventListener('keydown', this.handleKeyEvent.bind(this));
+//        window.addEventListener('keyup', this.handleKeyEvent.bind(this));
 
         // Resize scene
         window.addEventListener('resize', () => {
@@ -95,9 +94,53 @@ export default class MatchPong {
         this.animate();
     }
 
-//    createLights {
-//
-//    }
+    createLights() {
+        const   light = new DirectionalLight("white", 8);
+
+        light.position.set(0, -10, 50);
+        return light;
+    }
+
+    waiting(data) {
+        for (const [key, value] of Object.entries(data)) {
+            console.log(`${key}: ${value}`);
+        }
+        console.log("PLEASE DISPLAY ME THE DATA: " + data);
+
+        // Create plane for text to bounce
+        const   planeGeometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
+        const   planeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+        const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.name = "waitPlane";
+        this.scene.add(plane);
+
+        // Create Text to display
+        const   loader = new FontLoader();
+        loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
+            const   geometry = new TextGeometry("Waiting for an opponent!\nMatch will start soon...", {
+                font: font,
+                size: 5,
+                depth: 1,
+                bevelEnabled: false,
+            });
+            const   material = new THREE.MeshStandardMaterial({
+                    color: 0xdc143c,
+                    shadowSide: THREE.FrontSide,
+            });
+
+            // Create bounding box
+            geometry.computeBoundingBox();
+            const   boundingBox = geometry.boundingBox;
+            const   textWidth = boundingBox.max.x - boundingBox.min.x;
+
+            const textAdd = new THREE.Mesh(geometry, material);
+            textAdd.name = "waitMSG";
+            textAdd.position.set(-(textWidth / 2), 0, 10);
+            textAdd.rotation.set(0, 0, 0);
+//            waitingText.add(textAdd);
+            plane.add(textAdd);
+        });
+    }
 
     async createGameElements() {
         await this.createStadium();
@@ -473,10 +516,54 @@ console.log(endPosition);
         this.updatePaddlePosition('p1', this.y_pos_p1);
         this.updatePaddlePosition('p2', this.y_pos_p2);
 
+        this.waitMSGMove();
+
         this.updateBallPosition();
 
         // Render scene
         this.renderer.render(this.scene, this.camera);
+    }
+
+    waitMSGMove() {
+        const   plane = this.scene.getObjectByName("waitPlane");
+        const   msg = this.scene.getObjectByName("waitMSG");
+        if (msg && plane) {
+            var planeBox = new THREE.Box3().setFromObject(plane);
+            var msgBox = new THREE.Box3().setFromObject(msg);
+
+
+
+            console.log("plane maxX: " + planeBox.min.x);
+            console.log("msg minX: " + msgBox.min.x);
+            if (msgBox.min.x > planeBox.min.x)
+                msg.position -= 0.1;
+            else
+                msg.position += 0.1;
+//            while (msgBox.minX < planeBox.maxX) {
+//                msg.position.x -= 0.1;
+//            }
+//            if () {console.log("hello");
+//                msg.position.x += 0.1;
+//            }
+//            while (true) {
+//                if (msgBox.minX < planeBox.maxX)
+//                    msg.position.x += 0.001;
+//                else
+//                    msg.position.x -= 0.001;
+//            }
+//            wait.rotation.x += -0.005;
+//            wait.rotation.y += -0.003;
+//            wait.rotation.z += 0.001;
+//
+//            wait.updateMatrix();
+//            wait.updateMatrixWorld();
+//            const   initialSpeed = 0.2;
+//            const   baseSpeed = initialSpeed;
+//            const   currentSpeed = baseSpeed;
+//            wait.x += currentSpeed * ((Math.random() - 0.5));
+//            wait.y = currentSpeed * ((Math.random() - 0.5));
+
+        }
     }
 
     updateBallPosition() {

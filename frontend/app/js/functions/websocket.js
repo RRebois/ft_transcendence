@@ -13,7 +13,7 @@ export async function initializePongWebSocket(pong) {
         const jwt = await response.json();
         const isUserAuth = await isUserConnected();
         if (isUserAuth) { // A changer suivant type de game
-            const   gameResponse = await fetch("https://localhost:8443/game/pong/20/", {
+            const   gameResponse = await fetch("https://localhost:8443/game/pong/22/", {
                 method: "GET",
                 credentials: 'include',
             })
@@ -36,12 +36,17 @@ export async function initializePongWebSocket(pong) {
                 };
 
                 socket.onmessage = function (event) {
+                    console.log("WebSocket connection established: " + event.data);
                     const data = JSON.parse(event.data);
                     console.log("data: " + data);
-                    if (data.status === "waiting")
-                        pong.waiting();
-//                    else
-//                    if (data.status === "started") {console.log("pong init")
+
+                    if (data.status === "waiting") // Waiting for opponent(s)
+                        pong.waiting(data);
+                    if (data.status === "ready") // Waiting for display in front
+                        ;
+                    if (data.status === "started")
+                        ;
+//                        pong.display();
                 };
 
                 socket.onclose = function (event) {
@@ -89,7 +94,7 @@ export async function initializeWebSocket() {
             };
 
             socket.onmessage = function (event) {
-//                console.log("Message from server:", event.data);
+                console.log("data from server:", event.data);
                 const data = JSON.parse(event.data);
                 if (data.type === 'status_change') {
 //                    console.log("Status change detected");
