@@ -89,6 +89,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'type': 'friend_request',
             'from_user': event['from_user'],
             'from_user_id': event['from_user_id'],
+            'from_user_status': event['from_user_status'],
             'from_image_url': event['from_image_url'],
             'to_image_url': event['to_image_url'],
             'to_user': event['to_user'],
