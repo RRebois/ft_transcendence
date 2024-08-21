@@ -8,7 +8,7 @@ export default class Match {
         this.init();
     }
 
-    init() {
+    init() { // For responside device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
 
         this.player1_nickname = 'player1';
         this.player2_nickname = 'player2';
@@ -50,7 +50,11 @@ export default class Match {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(this.renderer.domElement);
 
-       // Create stade group with all objetcs so when rotate everything follows
+        // Create light
+        const   light = createLights();
+        this.scene.add(light);
+
+        // Create stade group with all objetcs so when rotate everything follows
         const   stadiumGroup = new THREE.Group();
         const   stadium = new THREE.Object3D();
         stadium.name = "stadium";
@@ -86,6 +90,10 @@ export default class Match {
         // Animate
         this.animate = this.animate.bind(this);
         this.animate();
+    }
+
+    createLights {
+
     }
 
     async createGameElements() {
@@ -247,7 +255,7 @@ export default class Match {
         const   ballTexture = textureLoader.load('/football.jpg');
 
         const geometry = new THREE.SphereGeometry(this.ball_radius, 48, 48);
-        const material = new THREE.MeshBasicMaterial({map: ballTexture});
+        const material = new THREE.MeshStandardMaterial({map: ballTexture});
         const ball = new THREE.Mesh(geometry, material);
         ball.position.set(this.ball_x, this.ball_y, 0);
         ball.name = 'ball';
@@ -263,7 +271,7 @@ export default class Match {
             x = Math.round(this.stadium_length / 2 - 1);
             color = 0x0000ff;
         }
-        const material = new THREE.MeshBasicMaterial({color: color});
+        const material = new THREE.MeshStandardMaterial({color: color});
         const paddle = new THREE.Mesh(geometry, material);
         paddle.position.set(x, 0, 0);
         paddle.name = player;
@@ -333,9 +341,12 @@ console.log(endPosition);
                 const   elapsedTime = Date.now() - startTime;
                 const   time = elapsedTime / duration;
 
-                const   linear = 1 * time + 0;
+//                const   linear = 1 * time + 0;
 
-                cube.position.lerpVectors(startPositions[start], endPosition, linear);
+//                cube.position.lerpVectors(startPositions[start], endPosition, linear);
+//                cube.translate(endPosition);
+
+
 
                 if (time < 1) {
                     requestAnimationFrame(animate);
@@ -355,7 +366,7 @@ console.log(endPosition);
 
         // load a texture
         const   texture = textureLoader.load("/blue_wall.jpg");
-        const   material = new THREE.MeshBasicMaterial({map: texture});
+        const   material = new THREE.MeshStandardMaterial({map: texture});
 
         return material;
     }
@@ -366,7 +377,7 @@ console.log(endPosition);
 
         // load a texture
         const   texture = textureLoader.load("/red_wall.png");
-        const   material = new THREE.MeshBasicMaterial({map: texture});
+        const   material = new THREE.MeshStandardMaterial({map: texture});
 
         return material;
     }
@@ -393,7 +404,7 @@ console.log(endPosition);
         const   wallTexture = textureLoader.load('/ball_basecolor.png');
 
         const geometry = new THREE.BoxGeometry(width, height, depth);
-        const material = new THREE.MeshBasicMaterial({map: wallTexture, reflectivity: 1});
+        const material = new THREE.MeshStandardMaterial({map: wallTexture, reflectivity: 1});
         const wall = new THREE.Mesh(geometry, material);
         wall.position.set(x, y, z);
         const   stadium = this.scene.getObjectByName("stadium");
