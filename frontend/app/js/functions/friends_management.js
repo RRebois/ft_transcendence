@@ -54,20 +54,20 @@ export function create_friend_div(friend, userId) {
 	console.log("Dot is: ", statusDot);
 	friendItem.classList.add("d-flex", "w-100", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-5", "rounded");
 	friendItem.style.cssText = "--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto";
-	friendItem.id = `friend-item-${friend?.id || userId}`;
+	friendItem.id = `friend-item-${friend?.from_user_id || userId}`;
 	friendItem.innerHTML = `
         <div class="position-relative d-inline-block">
             <img src="${friend?.from_image_url}" alt="user_pp" class="h-64 w-64 rounded-circle" />
-                <span style="left: 60px; top: 5px" id="friend-status-${friend?.id || userId}"
+                <span style="left: 60px; top: 5px" id="friend-status-${friend?.from_user_id || userId}"
                 class="position-absolute translate-middle p-2 ${statusDot} border border-light rounded-circle">
                 <span id="friend-status-text-${friend?.from_user_id || userId}" class="visually-hidden">Offline</span>
             </span>
         </div>
         <p>${friend?.to_user || friend?.from_user}</p>
-        <div class="status-container" data-id="${friend?.id || userId}">
+        <div class="status-container" data-id="${friend?.from_user_id || userId}">
             <p class="status">Status: ${friend?.to_status || friend?.from_status}</p>
         </div>
-        <button class="btn btn-danger remove-friend-btn" data-id="${friend?.id || userId}">Remove</button>
+        <button class="btn btn-danger remove-friend-btn" data-id="${friend?.from_user_id || userId}">Remove</button>
     `;
 	friendListContainer.appendChild(friendItem);
 	document.querySelectorAll(".remove-friend-btn").forEach(button => {

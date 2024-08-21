@@ -111,7 +111,7 @@ class TestView(APIView):
 def user_as_json(user):
     user_dict = model_to_dict(user, fields=[field.name for field in user._meta.fields if
                                             field.name not in ['image', 'password', 'last_login', 'is_superuser',
-                                                               'is_staff', 'is_active']])
+                                                               'is_staff', 'is_active']], exclude=['friends'])
     image_url = get_profile_pic_url(user.get_img_url())
     user_dict['image_url'] = image_url
     return user_dict
@@ -155,7 +155,7 @@ class LoginView(APIView):
 
             access_token = serializer.validated_data['jwt_access']
             refresh_token = serializer.validated_data['jwt_refresh']
-            user_dict = model_to_dict(user)
+            user_dict = model_to_dict(user, exclude=['friends'])
             image_url = user.get_img_url()
             user_dict['image_url'] = get_profile_pic_url(image_url)
             logging.debug("image in logging : " + user_dict['image_url'])
@@ -337,7 +337,7 @@ class RegisterView(APIView):
             access_token = jwt.encode({'id': user.id}, os.environ.get('SECRET_KEY'), algorithm='HS256')
             refresh_token = jwt.encode({'id': user.id, 'type': 'refresh'}, os.environ.get('SECRET_KEY'),
                                        algorithm='HS256')
-            user_dict = model_to_dict(user)
+            user_dict = model_to_dict(user, exclude=['friends'])
             image_url = get_profile_pic_url(user.get_img_url())
             logging.debug(f"image_url: {image_url}")
             user_dict['image_url'] = image_url
@@ -470,7 +470,7 @@ class EditDataView(APIView):
                         'from_image_url': get_profile_pic_url(user.get_img_url()),
                     }
                 )
-            user_dict = model_to_dict(user)
+            user_dict = model_to_dict(user, exclude=['friends'])
             image_url = get_profile_pic_url(user.get_img_url())
             user_dict['image_url'] = image_url
             return JsonResponse(data={'user': user_dict}, status=200)
@@ -619,7 +619,7 @@ class VerifyOTPView(APIView):
             user = serializer.validated_data['user']
             access_token = serializer.validated_data['jwt_access']
             refresh_token = serializer.validated_data['jwt_refresh']
-            user_dict = model_to_dict(user)
+            user_dict = model_to_dict(user, exclude=['friends'])
             image_url = user.get_img_url()
             user_dict['image_url'] = get_profile_pic_url(image_url)
             response = JsonResponse(data={'user': user_dict}, status=200)
@@ -865,7 +865,7 @@ class GetFriendView(APIView):
         serialized_values = [
             {
                 'from_user': friend.username,
-                'id': friend.id,
+                'from_user_id': friend.id,
                 'from_status': friend.status,
                 'from_image_url': get_profile_pic_url(friend.get_img_url()),
             }
