@@ -681,7 +681,8 @@ class SendFriendRequestView(APIView):
                 'to_image_url': get_profile_pic_url(to_user.get_img_url()),
                 'to_user': to_user.username,
                 'time': str(friend_request.time),
-                'request_status': friend_request.status
+                'request_status': friend_request.status,
+                'from_user_status': user.status,
             }
         )
         logging.debug(f"Friend request sent to {to_user.username}")
@@ -714,7 +715,7 @@ class GetFriendRequestView(APIView):
         friendRequests = (FriendRequest.objects
                           .filter(to_user=user, status='pending')
                           .annotate(from_user_image=F('from_user__avatar_id__image_url'))
-                          .values('from_user__username', 'time', 'status', 'from_user_image', 'from_user_id'))
+                          .values('from_user__username', 'time', 'status', 'from_user_image', 'from_user_id', 'from_user__status'))
         processedRequest = []
         for request in friendRequests:
             logging.debug(f" img url :  {request['from_user_image']}")
@@ -724,7 +725,8 @@ class GetFriendRequestView(APIView):
                 'time': request['time'],
                 'status': request['status'],
                 'from_image_url': get_profile_pic_url(request['from_user_image']),
-                'from_user_id': request['from_user_id']
+                'from_user_id': request['from_user_id'],
+                'from_user_status': request['from_user__status'],
             })
         return JsonResponse(processedRequest, safe=False)
 
