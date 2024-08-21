@@ -97,6 +97,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 	async def	fetch_session_data(self):
 		if self.session_data['status'] != 'started':
 			self.session_data = await self.get_session_data()
+			await self.send_to_group(self.session_data)
 		else:
 			self.game_handler = GameManagerConsumer.matchs.get(self.session_id)
 			await self.game_handler.add_consumer(self)
