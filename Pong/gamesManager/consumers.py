@@ -9,6 +9,7 @@ from random import choice
 from .games.pong import PongGame
 from .games.purrinha import PurrinhaGame
 from matchs.views import create_match
+from .views import MatchMaking
 
 
 class	GameManagerConsumer(AsyncWebsocketConsumer):
@@ -142,10 +143,11 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 			self.game_handler.remove_consumer(self)
 
 		if session_data['connected_players'] <= 0:
-			database_sync_to_async(cache.delete)(self.session_id)
+			await database_sync_to_async(cache.delete)(self.session_id)
+			await sync_to_async(MatchMaking.delete_session)(self.session_id)
 			GameManagerConsumer.matchs.pop(self.session_id)
 		else:
-			database_sync_to_async(cache.set)(self.session_id, session_data)
+			await database_sync_to_async(cache.set)(self.session_id, session_data)
 
 class PongHandler():
 
