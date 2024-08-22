@@ -211,6 +211,8 @@ class PasswordChangeSerializer(serializers.Serializer):
     confirm_password = serializers.CharField(max_length=100, min_length=8, write_only=True)
 
     def validate(self, attrs):
+        password_pattern = re.compile("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[?!@$ %^&*]).{8,}$")
+
         user = self.context['user']
         old_password = attrs.get('old_password')
         new_password = attrs.get('new_password')
@@ -218,8 +220,12 @@ class PasswordChangeSerializer(serializers.Serializer):
 
         if not user.check_password(old_password):
             raise serializers.ValidationError("Old password is incorrect")
+        if not password_pattern.match(new_password):
+            raise serializers.ValidationError("Password must contain at least 8 characters, including uppercase, lowercase, number and special character (?!@$ %^&*)")
         if new_password != confirm_password:
             raise serializers.ValidationError("New passwords do not match")
+        if new_password == old_password:
+            raise serializers.ValidationError("Your new password is the same as the old password")
 
         validate_password(new_password, user)
         return attrs
@@ -231,6 +237,11 @@ class PasswordChangeSerializer(serializers.Serializer):
         instance.save()
         return instance
 
+    def save(self):
+        user = self.context['user']
+        new_password = self.validated_data['new_password']
+        user.set_password(new_password)
+        user.save()
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=100)

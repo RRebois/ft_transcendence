@@ -204,6 +204,7 @@ export default class Home {
             <div class="padForm mt-2">
                 Don't have an account? <a href="/register">Register here.</a>
             </div>
+            
             <!-- OTP Modal -->
             <div class="modal fade" id="otpModal" tabindex="-1" aria-labelledby="otpModal" aria-hidden="true">
 				<div class="modal-dialog modal-dialog-centered">

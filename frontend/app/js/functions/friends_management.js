@@ -144,7 +144,7 @@ export function decline_friend_request(event) {
 			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
 		});
 }
-
+// TODO: when user become friend, can't remove without reloading page
 export function remove_friend(event) {
 	const button = event.target;
 	const userId = button.getAttribute("data-id");

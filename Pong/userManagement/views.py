@@ -511,13 +511,11 @@ class PasswordResetRequestView(APIView):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         try:
             serializer.is_valid(raise_exception=True)
-            response = redirect('index')
-            messages.success(request, "A mail to reset your password has been sent.")
-            return response
+            return JsonResponse(data={'message': 'A mail to reset your password has been sent.'}, status=200)
         except serializers.ValidationError as e:
             error_message = e.detail.get('non_field_errors', [str(e)])[0]
             messages.warning(request, error_message)
-            return HttpResponseRedirect(reverse("index"))
+            return JsonResponse(data={'message': error_message}, status=400)
 
 
 @method_decorator(csrf_protect, name='dispatch')
