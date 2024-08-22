@@ -81,35 +81,6 @@ export default class Home {
 			);
 	}
 
-	setupEventListeners() {
-		const form = document.getElementById('login-form');
-		if (form) {
-			form.addEventListener('submit', this.loginUser); // Attach the event listener
-		}
-		const fortyTwoLogin = document.getElementById('42login');
-		if (fortyTwoLogin) {
-			fortyTwoLogin.addEventListener('click', () => {
-				this.fortyTwoLogin();
-			});
-		}
-		const otpSubmit = document.getElementById('otp-submit');
-		if (otpSubmit) {
-			otpSubmit.addEventListener('click', this.checkOtp);
-		}
-		const forgotPasswordLink = document.getElementById('forgot-pwd');
-		if (forgotPasswordLink) {
-			forgotPasswordLink.addEventListener('click', (event) => {
-				event.preventDefault(); // Prevent the default link behavior
-				const forgotPWModal = new bootstrap.Modal(document.getElementById('forgotPWModal'));
-				forgotPWModal.show();
-			});
-		}
-		const forgotPWSubmit = document.getElementById('forgotPW-submit');
-		if (forgotPWSubmit) {
-			forgotPWSubmit.addEventListener('click', this.sendResetLink);
-		}
-	}
-
 	checkOtp() {
 		console.log("CALLING CHECK OTP");
 		const otp = document.getElementById('otp').value;
@@ -156,8 +127,85 @@ export default class Home {
 			});
 	}
 
+	checkEmailFormat(data) {
+		const emailRegex = new RegExp("^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$");
+		let isValid = true;
+		if (!emailRegex.test(data.email)) {
+			document.getElementById('email').classList.add('is-invalid');
+			isValid = false;
+		} else {
+			document.getElementById('email').classList.remove('is-invalid');
+		}
+		return isValid;
+	}
+
 	sendResetLink(){
+		event.preventDefault();
 		console.log("CALLING forgot password submit");
+		// const mail = document.getElementById('mail').value;
+		// if (!this.checkEmailFormat(mail)) {
+		// 	console.log("Email regex failed");
+		// 	return ;
+		// }
+		// TODO: mail regex
+		console.log("fetching reset pw");
+		fetch('https://localhost:8443/reset_password', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': csrfToken
+			},
+			credentials: 'include',
+			body: JSON.stringify({'mail': mail, 'user_id': user_id})
+		})
+			.then(response => response.json().then(data => ({ok: response.ok, data})))
+			.then(({ok, data}) => {
+				if (!ok) {
+					console.log('Not success:', data);
+					document.getElementById('mail').classList.add('is-invalid');
+				} else {
+					console.log('Success:', data);
+					document.getElementById('mail').classList.remove('is-invalid');
+					// window.location.href = '/dashboard';
+					const toastComponent = new ToastComponent();
+					toastComponent.throwToast('Success', data.message, 5000, 'success');
+
+				}
+			})
+			.catch(error => {
+				console.error('Error:', error);
+				const toastComponent = new ToastComponent();
+				toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+			});
+	}
+
+	setupEventListeners() {
+		const form = document.getElementById('login-form');
+		if (form) {
+			form.addEventListener('submit', this.loginUser); // Attach the event listener
+		}
+		const fortyTwoLogin = document.getElementById('42login');
+		if (fortyTwoLogin) {
+			fortyTwoLogin.addEventListener('click', () => {
+				this.fortyTwoLogin();
+			});
+		}
+		const otpSubmit = document.getElementById('otp-submit');
+		if (otpSubmit) {
+			otpSubmit.addEventListener('click', this.checkOtp);
+		}
+		const forgotPasswordLink = document.getElementById('forgot-pwd');
+		if (forgotPasswordLink) {
+			forgotPasswordLink.addEventListener('click', (event) => {
+				event.preventDefault(); // Prevent the default link behavior
+				const forgotPWModal = new bootstrap.Modal(document.getElementById('forgotPWModal'));
+				forgotPWModal.show();
+			});
+		}
+		const forgotPWSubmit = document.getElementById('forgotPW-submit');
+		if (forgotPWSubmit) {
+			forgotPWSubmit.addEventListener('click', this.sendResetLink);
+		}
 	}
 
 // TODO: check form action link
@@ -234,14 +282,14 @@ export default class Home {
 				<div class="modal-dialog modal-dialog-centered">
 					<div class="modal-content">
 						<div class="modal-header">
-							<h1 class="modal-title fs-5" id="otpModalLabel">Forgotten password</h1>
+							<h1 class="modal-title fs-5" id="forgotPWModalLabel">Forgotten password</h1>
 							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 						</div>
 						<div class="modal-body">
 							<p>Enter your email address, you will receive a link to reset your password.</p>
 							<div class="form-floating has-validation">
-                                <input type="text" id="otp" class="form-control" required />
-                                <label for="otp">Email address<span class="text-danger">*</span></label>
+                                <input type="text" id="mail" class="form-control" required />
+                                <label for="mail">Email address<span class="text-danger">*</span></label>
                                 <div class="invalid-feedback">This email is not linked to an account.</div>
                             </div>
 						</div>
