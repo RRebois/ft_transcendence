@@ -96,6 +96,18 @@ export default class Home {
 		if (otpSubmit) {
 			otpSubmit.addEventListener('click', this.checkOtp);
 		}
+		const forgotPasswordLink = document.getElementById('forgot-pwd');
+		if (forgotPasswordLink) {
+			forgotPasswordLink.addEventListener('click', (event) => {
+				event.preventDefault(); // Prevent the default link behavior
+				const forgotPWModal = new bootstrap.Modal(document.getElementById('forgotPWModal'));
+				forgotPWModal.show();
+			});
+		}
+		const forgotPWSubmit = document.getElementById('forgotPW-submit');
+		if (forgotPWSubmit) {
+			forgotPWSubmit.addEventListener('click', this.sendResetLink);
+		}
 	}
 
 	checkOtp() {
@@ -144,6 +156,9 @@ export default class Home {
 			});
 	}
 
+	sendResetLink(){
+		console.log("CALLING forgot password submit");
+	}
 
 // TODO: check form action link
 	render() {
@@ -208,6 +223,30 @@ export default class Home {
 						<div class="modal-footer">
 							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 							<button type="button" id="otp-submit" class="btn btn-primary">Log in</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<!--Forgot PW modal-->
+			<div class="modal fade" id="forgotPWModal" tabindex="-1" aria-labelledby="forgotPWModal" aria-hidden="true">
+				<div class="modal-dialog modal-dialog-centered">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h1 class="modal-title fs-5" id="otpModalLabel">Forgotten password</h1>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+						</div>
+						<div class="modal-body">
+							<p>Enter your email address, you will receive a link to reset your password.</p>
+							<div class="form-floating has-validation">
+                                <input type="text" id="otp" class="form-control" required />
+                                <label for="otp">Email address<span class="text-danger">*</span></label>
+                                <div class="invalid-feedback">This email is not linked to an account.</div>
+                            </div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+							<button type="button" id="forgotPW-submit" class="btn btn-primary">Send reset link</button>
 						</div>
 					</div>
 				</div>
