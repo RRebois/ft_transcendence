@@ -95,7 +95,7 @@ export default class MatchPong {
     }
 
     createLights() {
-        const   light = new DirectionalLight("white", 8);
+        const   light = new DirectionalLight("white", 15);
 
         light.position.set(0, -10, 50);
         return light;
@@ -131,7 +131,8 @@ export default class MatchPong {
             // Create bounding box
             geometry.computeBoundingBox();
             const   boundingBox = geometry.boundingBox;
-            const   textWidth = boundingBox.max.x - boundingBox.min.x;
+            const textWidth = boundingBox.max.x - boundingBox.min.x;
+            const textHeight = boundingBox.max.y - boundingBox.min.y;
 
             const textAdd = new THREE.Mesh(geometry, material);
             textAdd.name = "waitMSG";
@@ -525,44 +526,16 @@ console.log(endPosition);
     }
 
     waitMSGMove() {
-        const   plane = this.scene.getObjectByName("waitPlane");
+        // const   plane = this.scene.getObjectByName("waitPlane");
         const   msg = this.scene.getObjectByName("waitMSG");
-        if (msg && plane) {
-            var planeBox = new THREE.Box3().setFromObject(plane);
-            var msgBox = new THREE.Box3().setFromObject(msg);
+        if (msg) {
+            // var planeBox = new THREE.Box3().setFromObject(plane);
 
+            // Set initial rotation and seed mvt
+            const   rotationSpeed = 0.01;
 
-
-            console.log("plane maxX: " + planeBox.min.x);
-            console.log("msg minX: " + msgBox.min.x);
-            if (msgBox.min.x > planeBox.min.x)
-                msg.position -= 0.1;
-            else
-                msg.position += 0.1;
-//            while (msgBox.minX < planeBox.maxX) {
-//                msg.position.x -= 0.1;
-//            }
-//            if () {console.log("hello");
-//                msg.position.x += 0.1;
-//            }
-//            while (true) {
-//                if (msgBox.minX < planeBox.maxX)
-//                    msg.position.x += 0.001;
-//                else
-//                    msg.position.x -= 0.001;
-//            }
-//            wait.rotation.x += -0.005;
-//            wait.rotation.y += -0.003;
-//            wait.rotation.z += 0.001;
-//
-//            wait.updateMatrix();
-//            wait.updateMatrixWorld();
-//            const   initialSpeed = 0.2;
-//            const   baseSpeed = initialSpeed;
-//            const   currentSpeed = baseSpeed;
-//            wait.x += currentSpeed * ((Math.random() - 0.5));
-//            wait.y = currentSpeed * ((Math.random() - 0.5));
-
+            // Update position and rotation
+            msg.rotation.x += rotationSpeed;
         }
     }
 
