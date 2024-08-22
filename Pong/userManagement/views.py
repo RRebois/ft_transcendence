@@ -1,6 +1,5 @@
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_protect
-from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
@@ -140,12 +139,8 @@ class LoginView(APIView):
             serializer.is_valid(raise_exception=True)
             user = serializer.validated_data['user']
             if user.status == "online":
-                messages.warning(request, "User already have an active session")
-                return JsonResponse({
-                    'is_authenticated': False,
-                    'redirect': True,
-                    'redirect_url': ""
-                }, status=status.HTTP_401_UNAUTHORIZED)
+                message = "User already make an active session"
+                return JsonResponse(status=401, data={'message': message})
 
             if user.tfa_activated:
                 return JsonResponse({
@@ -357,7 +352,6 @@ class RegisterView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-# @method_decorator(login_required(login_url='login'), name='dispatch')
 class UserStatsDataView(APIView):
     def get(self, request, username):
         try:
@@ -371,7 +365,6 @@ class UserStatsDataView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-# @method_decorator(login_required(login_url='login'), name='dispatch')
 class UserGetUsernameView(APIView):
     def get(self, request):
         try:
@@ -383,7 +376,6 @@ class UserGetUsernameView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-# @method_decorator(login_required(login_url='login'), name='dispatch')
 class UserGetIsStudView(APIView):
     def get(self, request):
         try:
@@ -395,7 +387,6 @@ class UserGetIsStudView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-# @method_decorator(login_required(login_url='login'), name='dispatch')
 class UserAvatarView(APIView):
     def get(self, request, username):
         try:
@@ -413,7 +404,6 @@ class UserAvatarView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-# @method_decorator(login_required(login_url='login'), name='dispatch')
 class GetAllUserAvatarsView(APIView):
     def get(self, request):
         try:
@@ -432,7 +422,6 @@ class GetAllUserAvatarsView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-# @method_decorator(login_required(login_url='login'), name='dispatch')
 class UserPersonalInformationView(APIView):
     def get(self, request, username):
         try:

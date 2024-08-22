@@ -66,6 +66,7 @@ export default class Home {
 				if (!ok) {
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+					window.location.href = data.redirect_url;
 				} else {
                     initializeWebSocket();
 					console.log('Success:', data);
