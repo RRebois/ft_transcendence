@@ -38,8 +38,10 @@ export default class MatchPong {
 //        this.ball_velocity_x = this.currentSpeed * ((Math.random() - 0.5));
 //        this.ball_velocity_y = this.currentSpeed * ((Math.random() - 0.5));
 
+
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x000000);
+        this.scene.fog = new THREE.Fog( 0x000000, 250, 1400 );
 
        // Camera
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -83,6 +85,7 @@ export default class MatchPong {
 //        window.addEventListener('keydown', this.handleKeyEvent.bind(this));
 //        window.addEventListener('keyup', this.handleKeyEvent.bind(this));
 
+
         // Resize scene
         window.addEventListener('resize', () => {
             this.camera.aspect = window.innerWidth / window.innerHeight;
@@ -90,6 +93,7 @@ export default class MatchPong {
             this.renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
+        // this.renderer.addEventListener( 'pointerdown', onPointerDown );
         // Animate
         this.animate = this.animate.bind(this);
         this.animate();
@@ -99,33 +103,32 @@ export default class MatchPong {
         const   light = new DirectionalLight("white", 15);
 
         light.position.set(0, -10, 50);
+        light.lookAt(-30, 0, 0);
         return light;
     }
 
-    waiting(data) {
-        for (const [key, value] of Object.entries(data)) {
-            console.log(`${key}: ${value}`);
-        }
-        console.log("PLEASE DISPLAY ME THE DATA: " + data);
-
-        // Enable shadows in the renderer
-        this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    waiting() {
+        const   txt = "Waiting for an opponent!\nMatch will start soon...";
+        // for (const [key, value] of Object.entries(data)) {
+        //     console.log(`${key}: ${value}`);
+        // }
+        // console.log("PLEASE DISPLAY ME THE DATA: " + data);
 
         // Create plane for text to bounce
         const   planeGeometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
-        const   planeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+        const   planeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true });
         const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.rotation.x = - Math.PI / 2;
         plane.name = "waitPlane";
         this.scene.add(plane);
 
         // Create Text to display
         const   loader = new FontLoader();
         loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
-            const   geometry = new TextGeometry("Waiting for an opponent!\nMatch will start soon...", {
+            const   geometry = new TextGeometry(txt, {
                 font: font,
                 size: 5,
-                depth: 1,
+                depth: 1.5,
                 bevelEnabled: false,
             });
             const   material = new THREE.MeshStandardMaterial({
@@ -136,15 +139,14 @@ export default class MatchPong {
             // Create bounding box
             geometry.computeBoundingBox();
             const   boundingBox = geometry.boundingBox;
-            const textWidth = boundingBox.max.x - boundingBox.min.x;
-            const textHeight = boundingBox.max.y - boundingBox.min.y;
+            const   textWidth = boundingBox.max.x - boundingBox.min.x;
 
             const textAdd = new THREE.Mesh(geometry, material);
             textAdd.name = "waitMSG";
-            textAdd.position.set(-(textWidth / 2), 0, 10);
+            textAdd.position.set(-textWidth, 0, 0);
             textAdd.rotation.set(0, 0, 0);
 //            waitingText.add(textAdd);
-            plane.add(textAdd);
+            this.scene.add(textAdd);
         });
     }
 
@@ -522,7 +524,9 @@ console.log(endPosition);
         this.updatePaddlePosition('p1', this.y_pos_p1);
         this.updatePaddlePosition('p2', this.y_pos_p2);
 
-        this.waitMSGMove();
+        const   msg = this.scene.getObjectByName("waitMSG");
+        if (msg)
+            this.waitMSGMove();
 
         this.updateBallPosition();
 
@@ -537,16 +541,7 @@ console.log(endPosition);
             light.intensity = 1 + (Math.random() - 0.5) * 0.5;
         }
 
-        const   msg = this.scene.getObjectByName("waitMSG");
-        if (msg) {
-            // var planeBox = new THREE.Box3().setFromObject(plane);
 
-            // Set initial rotation and seed mvt
-            const   rotationSpeed = 0.005;
-
-            // Update position and rotation
-            msg.rotation.x += rotationSpeed;
-        }
     }
 
     updateBallPosition() {
