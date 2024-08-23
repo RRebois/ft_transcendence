@@ -54,6 +54,7 @@ export default class MatchPong {
 
         // Create light
         const   light = this.createLights();
+        light.name = "startlight";
         this.scene.add(light);
 
         // Create stade group with all objetcs so when rotate everything follows
@@ -106,6 +107,10 @@ export default class MatchPong {
             console.log(`${key}: ${value}`);
         }
         console.log("PLEASE DISPLAY ME THE DATA: " + data);
+
+        // Enable shadows in the renderer
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
         // Create plane for text to bounce
         const   planeGeometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
@@ -526,13 +531,18 @@ console.log(endPosition);
     }
 
     waitMSGMove() {
-        // const   plane = this.scene.getObjectByName("waitPlane");
+        const   light = this.scene.getObjectByName("startlight");
+        if (light) {
+            // Randomly adjust the intensity of the light between 0.5 and 1.5
+            light.intensity = 1 + (Math.random() - 0.5) * 0.5;
+        }
+
         const   msg = this.scene.getObjectByName("waitMSG");
         if (msg) {
             // var planeBox = new THREE.Box3().setFromObject(plane);
 
             // Set initial rotation and seed mvt
-            const   rotationSpeed = 0.01;
+            const   rotationSpeed = 0.005;
 
             // Update position and rotation
             msg.rotation.x += rotationSpeed;
