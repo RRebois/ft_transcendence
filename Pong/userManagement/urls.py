@@ -19,7 +19,6 @@ urlpatterns = [
     path("getUserAvatar/<str:username>", UserAvatarView.as_view(), name="getAvatar"),
     path("getAllTimeUserAvatars", GetAllUserAvatarsView.as_view(), name="getAllAvatars"),
 
-
     path('change_password', PasswordChangeView.as_view(), name='change_password'),
     path('reset_password', PasswordResetRequestView.as_view(), name='reset_password'),
     path('change_reset_password/<uidb64>/<token>/', SetNewPasswordView.as_view(), name='change_reset_password'),

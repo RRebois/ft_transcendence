@@ -139,7 +139,7 @@ class LoginView(APIView):
             serializer.is_valid(raise_exception=True)
             user = serializer.validated_data['user']
             if user.status == "online":
-                message = "User already make an active session"
+                message = "User already have an active session"
                 return JsonResponse(status=401, data={'message': message})
 
             if user.tfa_activated:
@@ -515,8 +515,13 @@ class PasswordResetRequestView(APIView):
             return JsonResponse(data={'message': 'A mail to reset your password has been sent.'}, status=200)
         except serializers.ValidationError as e:
             error_message = e.detail.get('non_field_errors', [str(e)])[0]
-            messages.warning(request, error_message)
-            return JsonResponse(data={'except message': error_message}, status=400)
+            # logging.debug(f"error: {error}")
+            # if str(error).find('ErrorDetail'):
+            #     logging.debug(f"In reset request view")
+            #     error_message = "Enter a valid email address."
+            # else:
+            #     error_message = error
+            return JsonResponse(data={'message': error_message}, status=400)
 
 
 @method_decorator(csrf_protect, name='dispatch')

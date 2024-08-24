@@ -144,6 +144,7 @@ export default class Home {
 		event.preventDefault();
 		const csrfToken = getCookie('csrftoken');
 		const email = document.getElementById('email').value;
+		const emailFeedback = document.getElementById('email-feedback')
 		console.log("Mail entered: '", email, "'");
 		// if (!this.checkEmailFormat(email)) {
 		// 	console.log("Email regex failed");
@@ -165,17 +166,16 @@ export default class Home {
 				if (!ok) {
 					console.log('Not success:', data);
 					document.getElementById('email').classList.add('is-invalid');
+					emailFeedback.textContent = data.message;
 				} else {
 					console.log('Success:', data);
 					document.getElementById('email').classList.remove('is-invalid');
-					// window.location.href = '/dashboard';
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast('Success', data.message, 5000, 'success');
 
 				}
 			})
 			.catch(error => {
-				console.log('Error:', error);
 				console.error('Error:', error);
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
@@ -295,7 +295,8 @@ export default class Home {
 							<div class="form-floating has-validation">
                                 <input type="text" id="email" class="form-control" required />
                                 <label for="email">Email address<span class="text-danger">*</span></label>
-                                <div class="invalid-feedback">This email is not linked to an account.</div>
+                                <div id="email-feedback" class="invalid-feedback">.</div>
+<!--                                <div class="invalid-feedback">This email is not linked to an account.</div>-->
                             </div>
 						</div>
 						<div class="modal-footer">
