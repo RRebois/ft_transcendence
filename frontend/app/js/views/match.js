@@ -12,14 +12,6 @@ export default class MatchPong {
 
     init() { // For responside device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
 
-//        this.player1_nickname = 'player1';
-//        this.player2_nickname = 'player2';
-//        this.xPosition = 0;
-//        this.score_p1 = 0;
-//        this.score_p2 = 0;
-//        this.textArray = [`${this.player1_nickname}`, this.score_p1.toString(), "-", this.score_p2.toString(),
-//                        `${this.player2_nickname}`];
-//        this.nameArray = ["p1Nick", "p1Score", "hyphen", "p2Score", "p2Nick"];
 //        this.y_pos_p1 = 0;  // left player
 //        this.y_pos_p2 = 0;  // right player
 //        this.stadium_length = 25;
@@ -41,12 +33,9 @@ export default class MatchPong {
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x000000);
-        // this.scene.fog = new THREE.Fog( 0x000000, 250, 1400 );
 
        // Camera
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        // this.camera.position.set(0, -10, 50);
-//        this.camera.rotation
         this.camera.lookAt(0, 0, 0);
 
        // Renderer
@@ -70,14 +59,6 @@ export default class MatchPong {
 //        this.initialStadiumRotation = new THREE.Euler();
 //        this.initialStadiumRotation.z = stadium.rotation.z;
 
-        // Display text from the beginning
-        const   textGroup = new THREE.Group();
-        textGroup.rotation.set(20, 0, 0);
-        textGroup.name = "textGroup";
-//        this.scene.add(textGroup);
-//        this.printInitScores();
-        textGroup.position.y = 30;
-
         // Wait for stadium walls to be created
 //        this.createGameElements();
 
@@ -99,17 +80,71 @@ export default class MatchPong {
         this.animate();
     }
 
-    createLights() {
-        const   light = new DirectionalLight("white", 15);
+    // createLights() {
+    //     const   light = new DirectionalLight("white", 15);
 
-        light.position.set(0, -10, 50);
-        light.lookAt(0, 0, 0);
-        return light;
+    //     light.position.set(0, -10, 50);
+    //     light.lookAt(0, 0, 0);
+    //     return light;
+    // }
+
+    builGameSet(data) {
+        // Remove wait page display if any
+        const   waitTxt = this.scene.getObjectByName("waitTxt");
+        if (waitTxt)
+            waitTxt.remove();
+        const   waitP = this.scene.getObjectByName("waitPlane");
+        if (waitP)
+            waitP.remove();
+        const   l1 = this.scene.getObjectByName("light_1");
+        const   l2 = this.scene.getObjectByName("light_2");
+
+       // Display text from the beginning
+       this.textGroup = new THREE.Group();
+       this.textGroup.rotation.set(20, 0, 0);
+       this.textGroup.name = "textGroup";
+       this.textGroup.position.y = 30;
+       this.scene.add("textGroup");
+
+        // for (const [key, value] of Object.entries(data)) {
+        //     if (key === "players") {
+        //         this.player1_nickname = Object.keys(data.players)[0];
+        //         console.log(this.player1_nickname);
+        //     }
+        //     console.log(`Testing: ${key}: ${value}`);
+        // }
+
+        // Set players info
+        this.xPosition = 0;
+        this.score_p1 = 0;
+        this.score_p2 = 0;
+        this.nameArray = ["p1Nick", "p1Score", "hyphen", "p2Score", "p2Nick"];
+        this.player1_nickname = Object.keys(data.players)[0];
+        this.player2_nickname = Object.keys(data.players)[1];
+        if (Object.keys(data.players).length > 2) {
+            this.player3_nickname = Object.keys(data.players)[2];
+            this.player4_nickname = Object.keys(data.players)[3];
+            this.textArray = [`${this.player1_nickname} + " " + ${this.player2_nickname}`,
+                            this.score_p1.toString(), "-", this.score_p2.toString(),
+                            `${this.player3_nickname} + " " + ${this.player4_nickname}`];
+
+        }
+        else {
+            this.textArray = [`${this.player1_nickname}`,
+                this.score_p1.toString(), "-", this.score_p2.toString(),
+                `${this.player2_nickname}`];
+        }
+
+        // Display scores to the scene
+        this.printInitScores();
+
     }
 
     waiting() {
         //set the camera position and lights
         this.camera.position.set(0, 0, 50);
+        this.scene.fog = new THREE.Fog( 0x000000, 250, 1400 );
+
         const   dirLight = new THREE.DirectionalLight( 0xffffff, 0.4 );
         dirLight.position.set( 0, 0, 1 ).normalize();
         dirLight.name = "light_1";
@@ -125,12 +160,8 @@ export default class MatchPong {
         const   textGroup = new THREE.Group();
         textGroup.name = "waitTxt";
         this.scene.add(textGroup);
-        // for (const [key, value] of Object.entries(data)) {
-        //     console.log(`${key}: ${value}`);
-        // }
-        // console.log("PLEASE DISPLAY ME THE DATA: " + data);
 
-        // Create plane for text to bounce
+        // Create plane for mirror text to appear ghosty
         const   planeGeometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
         const   planeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true });
         const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
@@ -148,8 +179,8 @@ export default class MatchPong {
                 bevelEnabled: false,
             });
             const   materials = [
-                new THREE.MeshPhongMaterial( { color: 0xffffff, flatShading: true } ), // front
-                new THREE.MeshPhongMaterial( { color: 0xffffff } ) // side
+                new THREE.MeshPhongMaterial( { color: 0xffffff, flatShading: true } ),
+                new THREE.MeshPhongMaterial( { color: 0xffffff } )
             ];
 
             // Create bounding box
@@ -167,7 +198,6 @@ export default class MatchPong {
             mirror.rotation.set(Math.PI, 2 * Math.PI, 0);
 
             plane.position.set(0, - window.innerHeight * 0.5, 40);
-//            waitingText.add(textAdd);
            textGroup.add(textAdd, mirror);
         });
     }
@@ -183,7 +213,11 @@ export default class MatchPong {
     //https://discourse.threejs.org/t/different-textures-on-each-face-of-cube/23700 onWResize
     //https://github.com/Fasani/three-js-resources?tab=readme-ov-file#images
     // bloom https://threejs.org/examples/#webgl_postprocessing_unreal_bloom
-        const   textGroup = this.scene.getObjectByName("textGroup");
+        const   textGroup = this.textGroup;
+        if (textGroup)
+            console.log("/n/n/n/n/nFOUND THE TEXT GROUP/n/n/n/n/n")
+        else
+            console.log("/n/n/n/n/nNO FOUND/n/n/n/n/n")
         const   loader = new FontLoader();
         this.xPosition = 0;
 

@@ -12,7 +12,7 @@ export async function initializePongWebSocket(pong) {
         const jwt = await response.json();
         const isUserAuth = await isUserConnected();
         if (isUserAuth) { // A changer suivant type de game
-            const   gameResponse = await fetch("https://localhost:8443/game/pong/22/", {
+            const   gameResponse = await fetch("https://localhost:8443/game/pong/20/", {
                 method: "GET",
                 credentials: 'include',
             })
@@ -35,14 +35,14 @@ export async function initializePongWebSocket(pong) {
                 };
 
                 socket.onmessage = function (event) {
-                    // console.log("WebSocket connection established: " + event.data);
+                    console.log("WebSocket connection established: " + event.data);
                     const data = JSON.parse(event.data);
                     // console.log("data: " + data);
 
                     if (data.status === "waiting") // Waiting for opponent(s)
                         pong.waiting();
                     if (data.status === "ready") // Waiting for display in front
-                        pong.init(data);
+                        pong.builGameSet(data);
                     if (data.status === "started")
                         ;
 //                        pong.display();
