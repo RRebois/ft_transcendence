@@ -41,11 +41,11 @@ export default class MatchPong {
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x000000);
-        this.scene.fog = new THREE.Fog( 0x000000, 250, 1400 );
+        // this.scene.fog = new THREE.Fog( 0x000000, 250, 1400 );
 
        // Camera
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        this.camera.position.set(0, -10, 50);
+        // this.camera.position.set(0, -10, 50);
 //        this.camera.rotation
         this.camera.lookAt(0, 0, 0);
 
@@ -55,9 +55,9 @@ export default class MatchPong {
         document.body.appendChild(this.renderer.domElement);
 
         // Create light
-        const   light = this.createLights();
-        light.name = "startlight";
-        this.scene.add(light);
+        // const   light = this.createLights();
+        // light.name = "startlight";
+        // this.scene.add(light);
 
         // Create stade group with all objetcs so when rotate everything follows
         const   stadiumGroup = new THREE.Group();
@@ -103,12 +103,28 @@ export default class MatchPong {
         const   light = new DirectionalLight("white", 15);
 
         light.position.set(0, -10, 50);
-        light.lookAt(-30, 0, 0);
+        light.lookAt(0, 0, 0);
         return light;
     }
 
     waiting() {
+        //set the camera position and lights
+        this.camera.position.set(0, 0, 50);
+        const   dirLight = new THREE.DirectionalLight( 0xffffff, 0.4 );
+        dirLight.position.set( 0, 0, 1 ).normalize();
+        dirLight.name = "light_1";
+        this.scene.add( dirLight );
+
+        const   pointLight = new THREE.PointLight( 0xffffff, 4.5, 0, 0 );
+        pointLight.color.setHSL( Math.random(), 1, 0.5 );
+        pointLight.position.set( 0, 100, 90 );
+        pointLight.name = "light_2";
+        this.scene.add( pointLight );
+
         const   txt = "Waiting for an opponent!\nMatch will start soon...";
+        const   textGroup = new THREE.Group();
+        textGroup.name = "waitTxt";
+        this.scene.add(textGroup);
         // for (const [key, value] of Object.entries(data)) {
         //     console.log(`${key}: ${value}`);
         // }
@@ -118,8 +134,8 @@ export default class MatchPong {
         const   planeGeometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
         const   planeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true });
         const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
-        plane.rotation.x = - Math.PI / 2;
         plane.name = "waitPlane";
+        // plane.rotation.z = - Math.PI / 2;
         this.scene.add(plane);
 
         // Create Text to display
@@ -131,22 +147,28 @@ export default class MatchPong {
                 depth: 1.5,
                 bevelEnabled: false,
             });
-            const   material = new THREE.MeshStandardMaterial({
-                    color: 0xdc143c,
-                    shadowSide: THREE.FrontSide,
-            });
+            const   materials = [
+                new THREE.MeshPhongMaterial( { color: 0xffffff, flatShading: true } ), // front
+                new THREE.MeshPhongMaterial( { color: 0xffffff } ) // side
+            ];
 
             // Create bounding box
             geometry.computeBoundingBox();
             const   boundingBox = geometry.boundingBox;
             const   textWidth = boundingBox.max.x - boundingBox.min.x;
+            const   textheight = boundingBox.max.y - boundingBox.min.y;
 
-            const textAdd = new THREE.Mesh(geometry, material);
-            textAdd.name = "waitMSG";
-            textAdd.position.set(-textWidth, 0, 0);
-            textAdd.rotation.set(0, 0, 0);
+            const   textAdd = new THREE.Mesh(geometry, materials);
+            textAdd.position.set(-0.5 * textWidth, 15, 0);
+            textAdd.rotation.set(0, 2 * Math.PI, 0);
+
+            const   mirror = new THREE.Mesh(geometry, materials);
+            mirror.position.set(-0.5 * textWidth, 18 - (2 * textheight), 1.5);
+            mirror.rotation.set(Math.PI, 2 * Math.PI, 0);
+
+            plane.position.set(0, - window.innerHeight * 0.5, 40);
 //            waitingText.add(textAdd);
-            this.scene.add(textAdd);
+           textGroup.add(textAdd, mirror);
         });
     }
 
@@ -524,9 +546,9 @@ console.log(endPosition);
         this.updatePaddlePosition('p1', this.y_pos_p1);
         this.updatePaddlePosition('p2', this.y_pos_p2);
 
-        const   msg = this.scene.getObjectByName("waitMSG");
+        const   msg = this.scene.getObjectByName("waitTxt");
         if (msg)
-            this.waitMSGMove();
+            this.waitMSGMove(msg);
 
         this.updateBallPosition();
 
@@ -534,12 +556,14 @@ console.log(endPosition);
         this.renderer.render(this.scene, this.camera);
     }
 
-    waitMSGMove() {
-        const   light = this.scene.getObjectByName("startlight");
-        if (light) {
-            // Randomly adjust the intensity of the light between 0.5 and 1.5
-            light.intensity = 1 + (Math.random() - 0.5) * 0.5;
-        }
+    waitMSGMove(msg) {
+
+        msg.rotation.y += 0.001;
+        // const   light = this.scene.getObjectByName("startlight");
+        // if (light) {
+        //     // Randomly adjust the intensity of the light between 0.5 and 1.5
+        //     light.intensity = 1 + (Math.random() - 0.5) * 0.5;
+        // }
 
 
     }
