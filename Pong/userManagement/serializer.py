@@ -252,6 +252,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         email = attrs.get('email')
+        logging.debug(f"email in serializer is: {email}")
         if User.objects.filter(email=email).exists():
             user = User.objects.get(email=attrs.get('email'))
             if user.stud42:

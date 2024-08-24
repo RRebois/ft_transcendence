@@ -194,32 +194,32 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_SENDER_PASS')
 
 FRONT_DEV = os.environ.get('FRONT_DEV', default=0)
 
-# class WarningDebugFilter(logging.Filter):
-#     def filter(self, record):
-#         return record.levelno in [logging.WARNING, logging.DEBUG]
-#
-#
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'filters': {
-#         'warning_debug_only': {
-#             '()': WarningDebugFilter,
-#         },
-#     },
-#     'handlers': {
-#         'file': {
-#             'level': 'DEBUG',
-#             'class': 'logging.FileHandler',
-#             'filename': BASE_DIR / 'debug.log',
-#             'filters': ['warning_debug_only'],
-#         },
-#     },
-#     'loggers': {
-#         '': {
-#             'handlers': ['file'],
-#             'level': 'DEBUG',
-#             'propagate': True,
-#         },
-#     },
-# }
+class WarningDebugFilter(logging.Filter):
+    def filter(self, record):
+        return record.levelno in [logging.WARNING, logging.DEBUG]
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'warning_debug_only': {
+            '()': WarningDebugFilter,
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'debug.log',
+            'filters': ['warning_debug_only'],
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

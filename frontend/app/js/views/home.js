@@ -9,6 +9,7 @@ export default class Home {
 		this.user_id = null;
 		this.loginUser = this.loginUser.bind(this);
 		this.checkOtp = this.checkOtp.bind(this);
+		this.sendResetLink = this.sendResetLink.bind(this);
 	}
 
     loginUser(event) {
@@ -141,9 +142,10 @@ export default class Home {
 
 	sendResetLink(){
 		event.preventDefault();
-		console.log("CALLING forgot password submit");
-		// const mail = document.getElementById('mail').value;
-		// if (!this.checkEmailFormat(mail)) {
+		const csrfToken = getCookie('csrftoken');
+		const email = document.getElementById('email').value;
+		console.log("Mail entered: '", email, "'");
+		// if (!this.checkEmailFormat(email)) {
 		// 	console.log("Email regex failed");
 		// 	return ;
 		// }
@@ -156,16 +158,16 @@ export default class Home {
 				'X-CSRFToken': csrfToken
 			},
 			credentials: 'include',
-			body: JSON.stringify({'mail': mail, 'user_id': user_id})
+			body: JSON.stringify({'email': email})
 		})
 			.then(response => response.json().then(data => ({ok: response.ok, data})))
 			.then(({ok, data}) => {
 				if (!ok) {
 					console.log('Not success:', data);
-					document.getElementById('mail').classList.add('is-invalid');
+					document.getElementById('email').classList.add('is-invalid');
 				} else {
 					console.log('Success:', data);
-					document.getElementById('mail').classList.remove('is-invalid');
+					document.getElementById('email').classList.remove('is-invalid');
 					// window.location.href = '/dashboard';
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast('Success', data.message, 5000, 'success');
@@ -173,10 +175,12 @@ export default class Home {
 				}
 			})
 			.catch(error => {
+				console.log('Error:', error);
 				console.error('Error:', error);
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
 			});
+		console.log("End of reset pw");
 	}
 
 	setupEventListeners() {
@@ -206,6 +210,7 @@ export default class Home {
 		if (forgotPWSubmit) {
 			forgotPWSubmit.addEventListener('click', this.sendResetLink);
 		}
+		// const forgotPWForm = document.getElementById('f')
 	}
 
 // TODO: check form action link
@@ -288,8 +293,8 @@ export default class Home {
 						<div class="modal-body">
 							<p>Enter your email address, you will receive a link to reset your password.</p>
 							<div class="form-floating has-validation">
-                                <input type="text" id="mail" class="form-control" required />
-                                <label for="mail">Email address<span class="text-danger">*</span></label>
+                                <input type="text" id="email" class="form-control" required />
+                                <label for="email">Email address<span class="text-danger">*</span></label>
                                 <div class="invalid-feedback">This email is not linked to an account.</div>
                             </div>
 						</div>
