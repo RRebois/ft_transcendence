@@ -55,6 +55,13 @@ export default class MatchPong {
         stadiumGroup.add(stadium);
         this.scene.add(stadiumGroup);
 
+        // Display text from the beginning
+        const    textGroup = new THREE.Group();
+        textGroup.rotation.set(20, 0, 0);
+        textGroup.name = "textGroup";
+        textGroup.position.y = 30;
+        this.scene.add(textGroup);
+
         // Create Euler for saving initial rotation values of stadium
 //        this.initialStadiumRotation = new THREE.Euler();
 //        this.initialStadiumRotation.z = stadium.rotation.z;
@@ -80,65 +87,14 @@ export default class MatchPong {
         this.animate();
     }
 
-    // createLights() {
-    //     const   light = new DirectionalLight("white", 15);
+    createLights() {
+        const   light = new DirectionalLight("white", 15);
 
-    //     light.position.set(0, -10, 50);
-    //     light.lookAt(0, 0, 0);
-    //     return light;
-    // }
-
-    builGameSet(data) {
-        // Remove wait page display if any
-        const   waitTxt = this.scene.getObjectByName("waitTxt");
-        if (waitTxt)
-            waitTxt.remove();
-        const   waitP = this.scene.getObjectByName("waitPlane");
-        if (waitP)
-            waitP.remove();
-        const   l1 = this.scene.getObjectByName("light_1");
-        const   l2 = this.scene.getObjectByName("light_2");
-
-       // Display text from the beginning
-       this.textGroup = new THREE.Group();
-       this.textGroup.rotation.set(20, 0, 0);
-       this.textGroup.name = "textGroup";
-       this.textGroup.position.y = 30;
-       this.scene.add("textGroup");
-
-        // for (const [key, value] of Object.entries(data)) {
-        //     if (key === "players") {
-        //         this.player1_nickname = Object.keys(data.players)[0];
-        //         console.log(this.player1_nickname);
-        //     }
-        //     console.log(`Testing: ${key}: ${value}`);
-        // }
-
-        // Set players info
-        this.xPosition = 0;
-        this.score_p1 = 0;
-        this.score_p2 = 0;
-        this.nameArray = ["p1Nick", "p1Score", "hyphen", "p2Score", "p2Nick"];
-        this.player1_nickname = Object.keys(data.players)[0];
-        this.player2_nickname = Object.keys(data.players)[1];
-        if (Object.keys(data.players).length > 2) {
-            this.player3_nickname = Object.keys(data.players)[2];
-            this.player4_nickname = Object.keys(data.players)[3];
-            this.textArray = [`${this.player1_nickname} + " " + ${this.player2_nickname}`,
-                            this.score_p1.toString(), "-", this.score_p2.toString(),
-                            `${this.player3_nickname} + " " + ${this.player4_nickname}`];
-
-        }
-        else {
-            this.textArray = [`${this.player1_nickname}`,
-                this.score_p1.toString(), "-", this.score_p2.toString(),
-                `${this.player2_nickname}`];
-        }
-
-        // Display scores to the scene
-        this.printInitScores();
-
+        light.position.set(0, -10, 50);
+        light.lookAt(0, 0, 0);
+        return light;
     }
+
 
     waiting() {
         //set the camera position and lights
@@ -198,8 +154,56 @@ export default class MatchPong {
             mirror.rotation.set(Math.PI, 2 * Math.PI, 0);
 
             plane.position.set(0, - window.innerHeight * 0.5, 40);
-           textGroup.add(textAdd, mirror);
+            textGroup.add(textAdd, mirror);
         });
+    }
+
+    builGameSet(data) {
+        this.camera.position.set(0, -10, 50);
+        // Remove wait page display if any
+        // const   waitTxt = this.scene.getObjectByName("waitTxt");
+        // if (waitTxt)
+        //     waitTxt.remove();
+        // const   waitP = this.scene.getObjectByName("waitPlane");
+        // if (waitP)
+        //     waitP.remove();
+        // const   l1 = this.scene.getObjectByName("light_1");
+        // const   l2 = this.scene.getObjectByName("light_2");
+
+        // for (const [key, value] of Object.entries(data)) {
+        //     if (key === "players") {
+        //         this.player1_nickname = Object.keys(data.players)[0];
+        //         console.log(this.player1_nickname);
+        //     }
+        //     console.log(`Testing: ${key}: ${value}`);
+        // }
+
+        // Set players info
+        this.xPosition = 0;
+        this.score_p1 = 0;
+        this.score_p2 = 0;
+        this.nameArray = ["p1Nick", "p1Score", "hyphen", "p2Score", "p2Nick"];
+        this.player1_nickname = Object.keys(data.players)[0];
+        this.player2_nickname = Object.keys(data.players)[1];
+        if (Object.keys(data.players).length > 2) {
+            this.player3_nickname = Object.keys(data.players)[2];
+            this.player4_nickname = Object.keys(data.players)[3];
+            this.textArray = [`${this.player1_nickname} + " " + ${this.player2_nickname}`,
+                            this.score_p1.toString(), "-", this.score_p2.toString(),
+                            `${this.player3_nickname} + " " + ${this.player4_nickname}`];
+
+        }
+        else {
+            this.textArray = [`${this.player1_nickname}`,
+                this.score_p1.toString(), "-", this.score_p2.toString(),
+                `${this.player2_nickname}`];
+        }
+
+        // Display scores to the scene
+        const   light = this.createLights();
+        this.scene.add(light);
+        this.printInitScores();
+        this.createGameElements();
     }
 
     async createGameElements() {
@@ -213,16 +217,12 @@ export default class MatchPong {
     //https://discourse.threejs.org/t/different-textures-on-each-face-of-cube/23700 onWResize
     //https://github.com/Fasani/three-js-resources?tab=readme-ov-file#images
     // bloom https://threejs.org/examples/#webgl_postprocessing_unreal_bloom
-        const   textGroup = this.textGroup;
-        if (textGroup)
-            console.log("/n/n/n/n/nFOUND THE TEXT GROUP/n/n/n/n/n")
-        else
-            console.log("/n/n/n/n/nNO FOUND/n/n/n/n/n")
+
+        const   textGroup = this.scene.getObjectByName("textGroup");
         const   loader = new FontLoader();
         this.xPosition = 0;
 
         // vecto to get coords of text and center it on scene
-        var center= new THREE.Vector3();
         loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
             this.textArray.forEach((text, index) => {
                 if (index === 0)
@@ -278,8 +278,8 @@ export default class MatchPong {
                 }
 
                 textGeometry.computeBoundingBox();
-                const boundingBox = textGeometry.boundingBox;
-                const textWidth = boundingBox.max.x - boundingBox.min.x;
+                const   boundingBox = textGeometry.boundingBox;
+                const   textWidth = boundingBox.max.x - boundingBox.min.x;
 
                 textAdd.position.x = this.xPosition;
                 if (index === 0 || index === 3)
