@@ -74,6 +74,22 @@ body.bg-gradient {
     width: 75%;
 }
 
+.w-min {
+    width: min-content;
+}
+
+.w-fit {
+    width: fit-content;
+}
+
+.h-min {
+    height: min-content;
+}
+
+.h-fit {
+    height: fit-content;
+}
+
 .h-full {
     height: 100%;
 }
@@ -169,4 +185,44 @@ body.bg-gradient {
 .elo-label {
     z-index: 10;
     font-size: 20px;
+}
+
+.play-btn {
+    position: relative;
+    z-index: 1;
+    background: #1e3a8a;
+    border-radius: 0.75rem;
+    color: #93c5fd;
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    transition: 250ms ease-in-out;
+    transition-property: all;
+}
+
+.play-btn:hover,
+.play-btn:focus {
+    color: #bfdbfe;
+    background-color: #1e40af;
+    transform: scale(1.1);
+}
+
+.play-btn-text {
+    filter: drop-shadow(0 0 1px currentcolor);
+}
+
+.play-btn:after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    opacity: 0.6;
+    border-radius: inherit;
+    box-shadow: 0 0 1em 0.75em #93c5fd;
+    transition: 250ms ease-in-out;
+    transition-property: opacity;
+}
+
+.play-btn:hover::after,
+.play-btn:focus::after {
+    opacity: 0.6;
 }

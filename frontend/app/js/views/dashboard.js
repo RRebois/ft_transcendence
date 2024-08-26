@@ -26,12 +26,40 @@ export default class Dashboard {
 	render() {
 		document.title = "ft_transcendence";
 		return `
-            <div class="w-100 min-h-screen d-flex flex-column justify-content-center align-items-center">
-            	<div class="d-flex flex-column">
-            		<a role="button" class="text-decoration-none text-black d-flex flex-column justify-content-center align-items-center" data-bs-toggle="modal" data-bs-target="#create-match-modal">
-                        <i class="bi bi-robot"></i>
-                        <p>Lancer une partie</p>
-                    </a>
+            <div class="w-100 min-h-screen d-flex flex-column justify-content-center align-items-center px-5" style="gap: 16px">
+            	<div class="d-flex flex-row justify-content-center w-full" style="gap: 16px">
+            		<!-- Pong game -->
+            		<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded gap-3" style="--bs-bg-opacity: .5;">
+            			<p class="play-bold fs-3">Pong 🏓</p>
+            			<div class="d-flex flex-column justify-content-center align-items-center gap-3 w-full">
+            				<button type="button" class="btn d-flex justify-content-center align-items-center w-fit px-4 py-1 play-btn" style="background-color: #3b82f6">
+            					<p class="play-regular fs-4 m-0 play-btn-text text-white">Play</p>
+							</button>
+							
+							<button type="button" class="btn d-flex justify-content-center align-items-center w-fit px-4 py-1" style="background-color: #dbeafe">
+            					<p class="play-regular fs-4 m-0">Create a game</p>
+							</button>
+            			</div>
+					</div>
+					
+            		<!-- Purrinha game -->
+            		<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded gap-3" style="--bs-bg-opacity: .5;">
+            			<p class="play-bold fs-3">Purrinha ✋</p>
+            			<div class="d-flex flex-column justify-content-center align-items-center gap-3 w-full">
+            				<button type="button" class="btn d-flex justify-content-center align-items-center w-fit px-4 py-1 play-btn" style="background-color: #3b82f6">
+            					<p class="play-regular fs-4 m-0 play-btn-text text-white">Play</p>
+							</button>
+							
+							<button type="button" class="btn d-flex justify-content-center align-items-center w-fit px-4 py-1" style="background-color: #dbeafe">
+            					<p class="play-regular fs-4 m-0">Create a game</p>
+							</button>
+            			</div>
+					</div>
+            	</div>
+            	
+            	<!-- Tournament -->
+            	<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded" style="--bs-bg-opacity: .5;">
+            		<p class="play-bold fs-3">Tournament</p>
             		<div class="d-flex">
             			<div class="d-flex flex-column justify-content-center">
             				<label for="tournament-id">Join a tournament</label>
@@ -43,11 +71,20 @@ export default class Dashboard {
 							</div>
 						</div>
 						<div class="d-flex flex-column justify-content-center align-items-center">
-							<i class="bi bi-robot"></i>
-							<p>Créer un tournoi</p>
+							<i class="bi bi-plus-circle"></i>
+							<p>Create a tournament</p>
 						</div>
 					</div>
+            	</div>
+            	
+            	
+            	<div class="d-flex flex-column">
+            		<a role="button" class="text-decoration-none text-black d-flex flex-column justify-content-center align-items-center" data-bs-toggle="modal" data-bs-target="#create-match-modal">
+                        <i class="bi bi-robot"></i>
+                        <p>Lancer une partie</p>
+                    </a>
 				</div>
+				
 				<!--	MODAL PART		-->
 				<div class="modal fade" id="create-match-modal" tabindex="-1" aria-labelledby="create match modal" aria-hidden="true">
 					<div class="modal-dialog">
