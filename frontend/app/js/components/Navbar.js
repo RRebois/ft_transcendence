@@ -45,9 +45,8 @@ export default class Navbar {
 							</button>
 							<ul class="dropdown-menu">
 								<li><a class="dropdown-item" href="/my-profile">My profile</a></li>
-								<li><a class="dropdown-item" href="#">My stats</a></li>
+								<li><a class="dropdown-item" href="/stats">My stats</a></li>
 								<li><a class="dropdown-item" href="/friends">Friends</a></li>
-<!--								<li><a role="button" id="friends-btn" class="dropdown-item" href="/friends">Friends</a></li>-->
 								<li><hr class="dropdown-divider"></li>
 								<li><a role="button" id="logout-btn" class="dropdown-item text-danger">Logout</a></li>
 							</ul>

@@ -356,16 +356,21 @@ class RegisterView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-@method_decorator(login_required(login_url='login'), name='dispatch')
 class UserStatsDataView(APIView):
     def get(self, request, username):
         try:
             user_stats = UserData.objects.get(user_id=User.objects.get(username=username))
         except User.DoesNotExist:
-            raise Http404("error: User does not exist.")
+            return JsonResponse({"message": "User does not exist."}, status=404)
         except UserData.DoesNotExist:
-            raise Http404("error: User data does not exist.")
-
+            return JsonResponse({
+                "wins": [0, 0],
+                "losses": [0, 0],
+                "winrate": [0, 0],
+                "elo_pong": 900,
+                "elo_purrinha": 900,
+                "elo_highest": [900, 900]
+            }, status=200)
         return JsonResponse(user_stats.serialize())
 
 
