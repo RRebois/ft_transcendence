@@ -11,6 +11,8 @@ services:
     depends_on:
       web:
         condition: service_healthy
+    volumes:
+      - ./certs:/etc/nginx/ssl
 
   web:
     build: Pong
@@ -55,6 +57,7 @@ services:
     volumes:
       - static_volume:/home/Pong/web/staticfiles
       - media_volume:/home/Pong/web/mediafiles
+      - ./certs:/etc/nginx/ssl
     ports:
       - 8080:80     # <-- Change the http port here
       - 8443:443    # <-- Change the https port here
