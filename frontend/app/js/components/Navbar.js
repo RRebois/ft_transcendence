@@ -43,7 +43,7 @@ export default class Navbar {
 							<button class="btn dropdown-toggle d-flex align-items-center" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
 								<p class="d-none d-md-block mb-0 me-2">${this.user?.username}</p>
 							</button>
-							<ul class="dropdown-menu">
+							<ul class="dropdown-menu dropdown-menu-end">
 								<li><a class="dropdown-item" href="/my-profile">My profile</a></li>
 								<li><a class="dropdown-item" href="/stats">My stats</a></li>
 								<li><a class="dropdown-item" href="/friends">Friends</a></li>
