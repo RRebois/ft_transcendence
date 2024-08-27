@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {FontLoader} from 'three/addons/loaders/FontLoader.js';
 import {TextGeometry} from 'three/addons/geometries/TextGeometry.js';
 import {initializePongWebSocket} from "../functions/websocket.js";
-import { DirectionalLight } from 'three';
+import {DirectionalLight, SpotLight, VSMShadowMap} from 'three';
 
 export default class MatchPong {
     constructor(props) {
@@ -42,6 +42,8 @@ export default class MatchPong {
         // Renderer
         this.renderer = new THREE.WebGLRenderer();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(this.renderer.domElement);
 
         // Create stade group with all objetcs so when rotate everything follows
@@ -53,9 +55,8 @@ export default class MatchPong {
 
         // Display text from the beginning
         const    textGroup = new THREE.Group();
-        textGroup.rotation.set(20, 0, 0);
+        textGroup.rotation.set(0, 0, 0);
         textGroup.name = "textGroup";
-        textGroup.position.y = 20;
         this.scene.add(textGroup);
 
         // Create Euler for saving initial rotation values of stadium
@@ -80,11 +81,37 @@ export default class MatchPong {
         this.animate();
     }
 
-    createLights() {
-        const   light = new DirectionalLight("white", 20);
-        light.position.set(0, 400, 1000);
-        light.lookAt(0, 250, 0);
-        return light;
+    createLightFloor() {
+        // Create plane
+        const   planeGeometry = new THREE.PlaneGeometry(2000, 2000);
+        const   planeMaterial = new THREE.MeshPhongMaterial({
+            color: 0xffffff
+        });
+        const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.rotation.x = - Math.PI * 0.5;
+        plane.position.y = 300;
+        plane.receiveShadow = true;
+        this.scene.add(plane);
+        // const   light = new DirectionalLight("white", 20);
+        // light.position.set(0, 400, 1000);
+        // light.lookAt(0, 250, 0);
+        // this.scene.add(light);
+
+        const   spotLight = new SpotLight(0xffffff, 50000)
+        spotLight.position.set(0, 600, 950)
+        spotLight.lookAt(0, 250, 0);
+        spotLight.angle = .4;
+        spotLight.penumbra = 0.75;
+        spotLight.castShadow = true;
+        // spotLight.shadow.mapSize.width = 1024;
+        // spotLight.shadow.mapSize.height = 1024;
+        spotLight.shadow.radius = 10;
+        spotLight.shadow.blurSamples = 10;
+        spotLight.shadow.camera.far = 1500;
+        spotLight.shadow.camera.near = 10;
+        spotLight.shadow.camera.fov = 30;
+
+        this.scene.add(spotLight);
     }
 
 
@@ -161,7 +188,7 @@ export default class MatchPong {
         });
     }
 
-    builGameSet(data) {this.camera.position.set(0, 0, 1000);
+    builGameSet(data) {//this.camera.position.set(0, 0, 1000);
 //        this.camera.position.set(0, -10, 50);
         this.scene.children;
         for (let i = 0; i < this.scene.children.length; i++) {
@@ -220,9 +247,11 @@ export default class MatchPong {
         }
 
         // Display scores to the scene
-        const   light = this.createLights();
-        this.scene.add(light);
         this.printInitScores();
+
+        // Create floor for game and spotlight purpose
+        this.createLightFloor();
+        // this.scene.add(light);
         this.createGameElements();
     }
 
@@ -240,8 +269,8 @@ export default class MatchPong {
     // bloom https://threejs.org/examples/#webgl_postprocessing_unreal_bloom
 
         const   textGroup = this.scene.getObjectByName("textGroup");
-//        textGroup.rotation.x = 60;
         const   loader = new FontLoader();
+
         this.xPosition = 0;
 
         // vecto to get coords of text and center it on scene
@@ -303,10 +332,12 @@ export default class MatchPong {
                 textGeometry.computeBoundingBox();
                 const   boundingBox = textGeometry.boundingBox;
                 const   textWidth = boundingBox.max.x - boundingBox.min.x;
+                const   textHeight = boundingBox.max.y - boundingBox.min.y;
+                textGroup.position.y = 130 + (0.5 * window.innerHeight) - textHeight;
 
                 textAdd.position.x = this.xPosition;
                 if (index === 0 || index === 3)
-                    this.xPosition += textWidth + 20;
+                    this.xPosition += textWidth + 250;
                 else
                     this.xPosition += textWidth + 10;
                 textGroup.add(textAdd);
