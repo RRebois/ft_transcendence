@@ -91,7 +91,6 @@ export default class Home {
 		console.log("sending otp: ", otp);
 		console.log("user_id: ", user_id);
 
-
 		if (!otp.match(otpRegex)) {
 			console.log("Invalid OTP");
 			document.getElementById('otp').classList.add('is-invalid');

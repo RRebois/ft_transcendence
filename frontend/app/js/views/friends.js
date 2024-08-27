@@ -12,6 +12,7 @@ export default class Friends {
 	}
 
 	render() {
+		document.title = 'ft_transcendence | Friends'
 		return `
          <div class="w-100 h-100 d-flex flex-column justify-content-start align-items-center">
             <h1 class="play-bold">Add a friend</h1>
@@ -104,20 +105,20 @@ export default class Friends {
 			credentials: "include",
 			body: JSON.stringify({ usernameValue })
 		})
-			.then(response => response.json().then(data => ({ ok: response.ok, data })))
-			.then(({ ok, data }) => {
-				if (!ok) {
-					const toastComponent = new ToastComponent();
-					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
-				} else {
-					const toastComponent = new ToastComponent();
-					toastComponent.throwToast("Success", data.message || "Friend request sent", 5000);
-				}
-			})
-			.catch(error => {
-				console.error("Error sending friend request: ", error);
+		.then(response => response.json().then(data => ({ ok: response.ok, data })))
+		.then(({ ok, data }) => {
+			if (!ok) {
 				const toastComponent = new ToastComponent();
-				toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
-			});
+				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+			} else {
+				const toastComponent = new ToastComponent();
+				toastComponent.throwToast("Success", data.message || "Friend request sent", 5000);
+			}
+		})
+		.catch(error => {
+			console.error("Error sending friend request: ", error);
+			const toastComponent = new ToastComponent();
+			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+		});
 	}
 }

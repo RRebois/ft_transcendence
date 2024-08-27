@@ -101,24 +101,24 @@ export default class Register {
             credentials: 'include',
             body: formData
         })
-            .then(response => response.json().then(data => ({ok: response.ok, data})))
-            .then(({ok, data}) => {
-                console.log("Response: ", data);
-                if (!ok) {
-                    const toastComponent = new ToastComponent();
-                    toastComponent.throwToast('Error', data || 'Something went wrong', 5000, 'error');
-                } else {
-                    console.log('Success:', data);
-                    const toastComponent = new ToastComponent();
-                    toastComponent.throwToast('Success', data || 'Account created', 5000, 'error');
-                    window.location.href = '/dashboard';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
+        .then(response => response.json().then(data => ({ok: response.ok, data})))
+        .then(({ok, data}) => {
+            console.log("Response: ", data);
+            if (!ok) {
                 const toastComponent = new ToastComponent();
-                toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
-            });
+                toastComponent.throwToast('Error', data || 'Something went wrong', 5000, 'error');
+            } else {
+                console.log('Success:', data);
+                const toastComponent = new ToastComponent();
+                toastComponent.throwToast('Success', data || 'Account created', 5000, 'error');
+                window.location.href = '/dashboard';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const toastComponent = new ToastComponent();
+            toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+        });
     }
 
     validatePassword() {

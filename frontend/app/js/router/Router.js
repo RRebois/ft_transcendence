@@ -56,7 +56,7 @@ export default class Router {
 
     navigate = async (path) => {
         console.log("navigating to ", path);
-        const publicRoutes = ['/', '/register'];
+        const publicRoutes = ['/', '/register', '/reset_password_confirmed/', '/set-reset-password'];
         const isUserAuth = await isUserConnected();
         console.log("isUserAuth: ", isUserAuth);
 
@@ -66,11 +66,12 @@ export default class Router {
             console.log("404 Not Found");
             this.renderNode.innerHTML = '<h1>404 Not Found</h1>';
         } else {
-            if (!publicRoutes.includes(path) && !isUserAuth) {
+            const isPublicRoute = publicRoutes.includes(path) || path.startsWith('/reset_password_confirmed/') || path.startsWith('/set-reset-password/');
+            if (!isPublicRoute && !isUserAuth) {
                 console.log("401 Unauthorized");
                 this.renderNode.innerHTML = '<h1>401 Unauthorized</h1>';
                 window.location.href = '/';
-            } else if (publicRoutes.includes(path) && isUserAuth) {
+            } else if (isPublicRoute && isUserAuth) {
                 console.log("Route found but unauthorized: ", route);
                 window.location.href = '/dashboard';
             } else {
