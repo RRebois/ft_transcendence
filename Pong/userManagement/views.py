@@ -226,8 +226,6 @@ class Login42RedirectView(APIView):
             try:
                 serializer = self.serializer_class(user42)
                 user = serializer.create(data=user42)
-                user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
-                user_data.save()
             except:
                 JsonResponse(data={'message': 'Username already taken'}, status=400)
 
@@ -308,8 +306,6 @@ class RegisterView(APIView):
                     profile_img.save()
                     user.avatar_id = profile_img
                     user.save()
-                    user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
-                    user_data.save()
                 else:
                     # Check if image already uploaded
                     if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
@@ -320,8 +316,6 @@ class RegisterView(APIView):
                     profile_img.save()
                     user.avatar_id = profile_img
                     user.save()
-                    user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
-                    user_data.save()
             else:
                 # Check if image already uploaded
                 if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
@@ -332,8 +326,6 @@ class RegisterView(APIView):
                 profile_img.save()
                 user.avatar_id = profile_img
                 user.save()
-                user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
-                user_data.save()
             access_token = jwt.encode({'id': user.id}, os.environ.get('SECRET_KEY'), algorithm='HS256')
             refresh_token = jwt.encode({'id': user.id, 'type': 'refresh'}, os.environ.get('SECRET_KEY'),
                                        algorithm='HS256')
