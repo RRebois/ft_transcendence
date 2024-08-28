@@ -278,23 +278,23 @@ export default class MyProfile {
 			credentials: 'include',
 			body: JSON.stringify({'password': password})
 		})
-			.then(response => response.json().then(data => ({ok: response.ok, data})))
-			.then(({ok, data}) => {
-				if (!ok) {
-					const toastComponent = new ToastComponent();
-					toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
-					if (data.message === "Password is incorrect") {
-						document.getElementById('delete-account-password').classList.add('is-invalid');
-					}
-				} else {
-					location.href = '/';
-				}
-			})
-			.catch(error => {
-				console.error('Error:', error);
+		.then(response => response.json().then(data => ({ok: response.ok, data})))
+		.then(({ok, data}) => {
+			if (!ok) {
 				const toastComponent = new ToastComponent();
-				toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
-			})
+				toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+				if (data.message === "Password is incorrect") {
+					document.getElementById('delete-account-password').classList.add('is-invalid');
+				}
+			} else {
+				location.href = '/';
+			}
+		})
+		.catch(error => {
+			console.error('Error:', error);
+			const toastComponent = new ToastComponent();
+			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+		})
 	}
 
 	render() {
