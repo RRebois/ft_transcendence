@@ -210,9 +210,12 @@ class Login42RedirectView(APIView):
     def get(self, request):
         code = request.GET.get('code')
         try:
-            user42 = exchange_token(code, next=True)
+            user42 = exchange_token(code)
         except:
-            JsonResponse(data={'message': 'The connexion with 42 provider failed'}, status=400)
+            try:
+                user42 = exchange_token(code, next=True)
+            except:
+                return JsonResponse(data={'message': 'The connexion with 42 provider failed'}, status=400)
         try:
             user = User.objects.get(email=user42["email"])
             if not user.stud42:
@@ -221,10 +224,8 @@ class Login42RedirectView(APIView):
             try:
                 serializer = self.serializer_class(user42)
                 user = serializer.create(data=user42)
-                user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
-                user_data.save()
             except:
-                JsonResponse(data={'message': 'Username already taken'}, status=400)
+                return JsonResponse(data={'message': 'Username already taken'}, status=400)
 
         if user.status == "online":
             return JsonResponse(status=401, data={'message': "User already have an active session"})
@@ -302,8 +303,6 @@ class RegisterView(APIView):
                     profile_img.save()
                     user.avatar_id = profile_img
                     user.save()
-                    user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
-                    user_data.save()
                 else:
                     # Check if image already uploaded
                     if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
@@ -314,8 +313,6 @@ class RegisterView(APIView):
                     profile_img.save()
                     user.avatar_id = profile_img
                     user.save()
-                    user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
-                    user_data.save()
             else:
                 # Check if image already uploaded
                 if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
@@ -326,8 +323,6 @@ class RegisterView(APIView):
                 profile_img.save()
                 user.avatar_id = profile_img
                 user.save()
-                user_data = UserData.objects.create(user_id=User.objects.get(pk=user.id))
-                user_data.save()
             access_token = jwt.encode({'id': user.id}, os.environ.get('SECRET_KEY'), algorithm='HS256')
             refresh_token = jwt.encode({'id': user.id, 'type': 'refresh'}, os.environ.get('SECRET_KEY'),
                                        algorithm='HS256')
