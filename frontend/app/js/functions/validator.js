@@ -46,4 +46,21 @@ export function  validatePassword() {
         symbol.classList.replace('bi-check', 'bi-x');
         symbol.classList.replace('text-success', 'text-danger');
     }
+
+}
+
+export function passwordMatching(){
+    console.log("In password Matching")
+    const password = document.getElementById('password').value;
+    const confirm_password = document.getElementById('confirm_password').value;
+    let isValid = true;
+
+    if (password !== confirm_password) {
+        document.getElementById('confirm_password').classList.add('is-invalid');
+        isValid = false;
+    } else {
+        document.getElementById('confirm_password').classList.remove('is-invalid');
+    }
+    console.log("isValid is: ", isValid);
+    return isValid;
 }

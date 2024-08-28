@@ -1,6 +1,7 @@
 import ToastComponent from './../components/Toast.js';
 import {getCookie} from "../functions/cookie.js";
 import {validatePassword} from "../functions/validator.js";
+import {passwordMatching} from "../functions/validator.js";
 
 export default class ResetPw {
     constructor(props) {
@@ -89,6 +90,7 @@ export default class ResetPw {
 
                         const form = document.getElementById("passwordResetForm");
                         if (form) {
+                            form.addEventListener('submit', passwordMatching);
                             form.addEventListener("submit", (event) => {
                                 event.preventDefault();
                                 const uidb64 = document.getElementById('uidb64').value;
@@ -112,6 +114,9 @@ export default class ResetPw {
         const confirmPassword = document.getElementById("confirm_password").value;
         const csrfToken = getCookie("csrftoken");
 
+        if (!passwordMatching) {
+            return;
+        }
         fetch(`https://localhost:8443/change_reset_password/${uidb64}/${token}/`, {
             method: "POST",
 			headers: {
