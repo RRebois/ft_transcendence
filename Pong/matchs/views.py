@@ -10,22 +10,21 @@ from .models import *
 
 
 @method_decorator(csrf_protect, name='dispatch')
-@method_decorator(login_required(login_url='login'), name='dispatch')
 class MatchHistoryView(APIView):
     def get(self, request, username, word):
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
-            raise Http404("error: User does not exists.")
+            return JsonResponse({"error": "User does not exists."}, status=404)
         if word == 'all':
-            matches = Match.objects.filter(players=user)
+            matches = Match.objects.filter(players=user).order_by('-timeMatch')
         elif word == 'pong':
-            matches = Match.objects.filter(players=user, is_pong=True)
+            matches = Match.objects.filter(players=user, is_pong=True).order_by('-timeMatch')
         elif word == 'purrinha':
-            matches = Match.objects.filter(players=user, is_pong=False)
+            matches = Match.objects.filter(players=user, is_pong=False).order_by('-timeMatch')
         else:
-            raise Http404("error: Data does not exists.")
-        return JsonResponse([match.serialize() for match in matches], safe=False)
+            return JsonResponse({"error": "Invalid word."}, status=400)
+        return JsonResponse([match.serialize() for match in matches] if matches else [], safe=False, status=200)
 
 
 @method_decorator(csrf_protect, name='dispatch')

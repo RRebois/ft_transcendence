@@ -19,6 +19,9 @@ up:
 #@echo "Opening https://localhost:8443 in browser..."
 #@nohup open https://localhost:8443 > /dev/null 2>&1 &
 
+generate_cert:
+	openssl req -x509 -nodes -newkey rsa:4096 -out certs/transcendence.crt -keyout certs/transcendence.key -subj "/C=FR/ST=Rhone-Alpes/L=Lyon/O=42/OU=42Lyon/CN=localhost/UID=cbernot"
+
 down:
 	docker compose down -v
 

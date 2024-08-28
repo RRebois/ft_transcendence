@@ -1,6 +1,7 @@
 from django.db import models
 from userManagement.models import User
 
+
 # Create your models here.
 
 
@@ -21,8 +22,9 @@ class Match(models.Model):
 
         return {
             'id': self.id,
-            'game': 'Pong' if self.is_pong else 'Purrinha',
-            "players": {score.player.username if score.player else "deleted_user": score.score for score in self.scores.all()},
+            'game': 'pong' if self.is_pong else 'purrinha',
+            "players": [{"username": score.player.username if score.player else "deleted_user", "score": score.score}
+                        for score in self.scores.all()],
             "count": self.count,
             "winner": winners_list,
             "timestamp": self.timeMatch.strftime("%b %d %Y, %I:%M %p"),

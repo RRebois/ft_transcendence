@@ -357,21 +357,25 @@ class RegisterView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-# @method_decorator(login_required(login_url='login'), name='dispatch')
 class UserStatsDataView(APIView):
     def get(self, request, username):
         try:
             user_stats = UserData.objects.get(user_id=User.objects.get(username=username))
         except User.DoesNotExist:
-            raise Http404("error: User does not exist.")
+            return JsonResponse({"message": "User does not exist."}, status=404)
         except UserData.DoesNotExist:
-            raise Http404("error: User data does not exist.")
-
+            return JsonResponse({
+                "wins": [0, 0],
+                "losses": [0, 0],
+                "winrate": [0, 0],
+                "elo_pong": 900,
+                "elo_purrinha": 900,
+                "elo_highest": [900, 900]
+            }, status=200)
         return JsonResponse(user_stats.serialize())
 
 
 @method_decorator(csrf_protect, name='dispatch')
-# @method_decorator(login_required(login_url='login'), name='dispatch')
 class UserGetUsernameView(APIView):
     def get(self, request):
         try:
@@ -383,7 +387,6 @@ class UserGetUsernameView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-# @method_decorator(login_required(login_url='login'), name='dispatch')
 class UserGetIsStudView(APIView):
     def get(self, request):
         try:
@@ -395,7 +398,6 @@ class UserGetIsStudView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-# @method_decorator(login_required(login_url='login'), name='dispatch')
 class UserAvatarView(APIView):
     def get(self, request, username):
         try:
@@ -413,7 +415,6 @@ class UserAvatarView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-# @method_decorator(login_required(login_url='login'), name='dispatch')
 class GetAllUserAvatarsView(APIView):
     def get(self, request):
         try:
@@ -432,7 +433,6 @@ class GetAllUserAvatarsView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-# @method_decorator(login_required(login_url='login'), name='dispatch')
 class UserPersonalInformationView(APIView):
     def get(self, request, username):
         try:
@@ -891,8 +891,8 @@ class DeleteAccountView(APIView):
             response.delete_cookie('jwt_access')
             response.delete_cookie('jwt_refresh')
             response.delete_cookie('csrftoken')
-            response['Location'] = 'https://localhost:4242/' if os.environ.get("FRONT_DEV") == '1' else 'https://localhost:3000/'
-            response.status_code = 302
+            # response['Location'] = 'https://localhost:4242/' if os.environ.get("FRONT_DEV") == '1' else 'https://localhost:3000/'
+            # response.status_code = 302
             return response
 
         serializer = self.serializer_class(data=request.data, context={'user': user})
@@ -922,8 +922,8 @@ class DeleteAccountView(APIView):
             response.delete_cookie('jwt_access')
             response.delete_cookie('jwt_refresh')
             response.delete_cookie('csrftoken')
-            response['Location'] = 'https://localhost:4242/' if os.environ.get("FRONT_DEV") == '1' else 'https://localhost:3000/'
-            response.status_code = 302
+            # response['Location'] = 'https://localhost:4242/' if os.environ.get("FRONT_DEV") == '1' else 'https://localhost:3000/'
+            # response.status_code = 302
             return response
         except serializers.ValidationError as e:
             error_messages = []
