@@ -94,6 +94,10 @@ body.bg-gradient {
     height: 100%;
 }
 
+.min-h-full {
+    min-height: 100%;
+}
+
 .grid-container {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
