@@ -11,7 +11,7 @@ export default class Friends {
 	render() {
 		return `
 			<div class="d-flex w-full min-h-full flex-grow-1">
-				<div class="min-h-full w-full d-flex flex-column bg-primary justify-content-start align-items-center px-5" style="gap: 16px;">
+				<div class="min-h-full w-full d-flex flex-column justify-content-start align-items-center px-5" style="gap: 16px;">
 					<h1 class="play-bold">Add a friend</h1>
 					<form id="addfriend">
 						<input type="text" id="username"/>

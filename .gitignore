@@ -5,6 +5,7 @@ Pong/env/*
 .idea
 .code
 .vite/
+.DS_Store
 stopAll
 
 Pong/configFiles/__pycache__/*

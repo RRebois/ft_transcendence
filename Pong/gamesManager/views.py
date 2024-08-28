@@ -13,7 +13,6 @@ import uuid
 
 
 @method_decorator(csrf_protect, name='dispatch')
-@method_decorator(login_required(login_url='login'), name='dispatch')
 class	GameManagerView(APIView):
 
 	def	verify_data(self, game_name, game_code, session_id):
