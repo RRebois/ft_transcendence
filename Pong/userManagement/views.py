@@ -215,9 +215,12 @@ class Login42RedirectView(APIView):
     def get(self, request):
         code = request.GET.get('code')
         try:
-            user42 = exchange_token(code, next=True)
+            user42 = exchange_token(code)
         except:
-            JsonResponse(data={'message': 'The connexion with 42 provider failed'}, status=400)
+            try:
+                user42 = exchange_token(code, next=True)
+            except:
+                return JsonResponse(data={'message': 'The connexion with 42 provider failed'}, status=400)
         try:
             user = User.objects.get(email=user42["email"])
             if not user.stud42:
@@ -227,7 +230,7 @@ class Login42RedirectView(APIView):
                 serializer = self.serializer_class(user42)
                 user = serializer.create(data=user42)
             except:
-                JsonResponse(data={'message': 'Username already taken'}, status=400)
+                return JsonResponse(data={'message': 'Username already taken'}, status=400)
 
         if user.status == "online":
             return JsonResponse(status=401, data={'message': "User already have an active session"})
