@@ -28,9 +28,14 @@ export default class ResetPw {
             .then(response => response.json().then(data => ({ok: response.ok, data})))
 			.then(({ok, data}) => {
 				if (!ok) {
-					const toastComponent = new ToastComponent();
-					toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
-				} else {
+				    sessionStorage.setItem('toastMessage', JSON.stringify({
+                        title: 'Error',
+                        message: data.message,
+                        duration: 5000,
+                        type: 'error'
+                    }));
+                    window.location.href = '/';
+                } else {
 					console.log("RESET PW FETCH OK")
                     const container = document.getElementById('password-reset-container');
                     if (container) {
