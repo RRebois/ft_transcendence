@@ -169,9 +169,11 @@ export default class Home {
 				} else {
 					console.log('Success:', data);
 					document.getElementById('email').classList.remove('is-invalid');
+					const passwordModal = bootstrap.Modal.getInstance(document.getElementById('forgotPWModal'));
+					if (passwordModal){
+						passwordModal.hide();}
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast('Success', data.message, 5000, 'success');
-
 				}
 			})
 			.catch(error => {
