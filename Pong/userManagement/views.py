@@ -352,15 +352,6 @@ class UserStatsDataView(APIView):
             user_stats = UserData.objects.get(user_id=User.objects.get(username=username))
         except User.DoesNotExist:
             return JsonResponse({"message": "User does not exist."}, status=404)
-        except UserData.DoesNotExist:
-            return JsonResponse({
-                "wins": [0, 0],
-                "losses": [0, 0],
-                "winrate": [0, 0],
-                "elo_pong": 900,
-                "elo_purrinha": 900,
-                "elo_highest": [900, 900]
-            }, status=200)
         return JsonResponse(user_stats.serialize())
 
 

@@ -1,3 +1,5 @@
+import logging
+
 from django.db import models
 from userManagement.models import User
 
@@ -7,7 +9,7 @@ from userManagement.models import User
 
 class Match(models.Model):
     players = models.ManyToManyField('userManagement.User', related_name="matchs", default=list)
-    winner = models.ManyToManyField('userManagement.User', related_name="winners", default=list)
+    winner = models.ManyToManyField('userManagement.User', related_name="winners", default=list, blank=True)
     is_pong = models.BooleanField(default=True)
     timeMatch = models.DateTimeField(auto_now_add=True)
     count = models.IntegerField(default=2)
@@ -16,9 +18,10 @@ class Match(models.Model):
         ordering = ['-timeMatch']
 
     def serialize(self):
-        winners_list = ['deleted_user' for i in range(1, self.count // 2)]
-        for i, winner in enumerate(self.winner.all()):
-            winners_list[i] = winner.username
+        winners_list = ['deleted_user' for i in range(0, self.count // 2)]
+        if len(winners_list) > 0:
+            for i, winner in enumerate(self.winner.all()):
+                winners_list[i] = winner.username
 
         return {
             'id': self.id,

@@ -114,7 +114,7 @@ export default class Stats {
 						data.forEach(match => {
 							const date = moment(match.timestamp);
 							const matchElement = document.createElement('div');
-							const background = match?.winner === username ? 'bg-victory' : 'bg-defeat';
+							const background = match?.winner[0] === username ? 'bg-victory' : 'bg-defeat';
 							matchElement.classList.add('d-flex', 'flex-row', 'justify-content-between', 'play-regular', 'align-items-center', background, 'rounded', 'p-2');
 							matchElement.innerHTML = `
 								<div class="d-flex flex-column align-items-center">
@@ -137,7 +137,7 @@ export default class Stats {
 											</div>
 										</div>
 									</div>
-									${match?.winner === username ?
+									${match?.winner[0] === username ?
 										`<div class="d-flex flex-row">
 											<i class="bi bi-trophy-fill" style="color: #e4ca6a;"></i>
 											<p>Victory</p>

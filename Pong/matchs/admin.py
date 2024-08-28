@@ -22,7 +22,7 @@ class MatchAdmin(admin.ModelAdmin):
 
     def winners_display(self, obj):
         return ", ".join([f"{winner.username if winner else 'deleted_user'}" for winner in
-                          obj.winners.all()])
+                          obj.winner.all()])
 
     winners_display.short_description = "Winners"
 
