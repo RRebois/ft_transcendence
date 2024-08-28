@@ -248,7 +248,6 @@ class LogoutView(APIView):
             response = JsonResponse({"redirect": True, "redirect_url": "/"}, status=status.HTTP_200_OK)
             response.delete_cookie('jwt_access')
             response.delete_cookie('jwt_refresh')
-            response.delete_cookie('csrftoken')
         else:
             response = JsonResponse({"redirect": True, "redirect_url": "/"}, status=status.HTTP_401_UNAUTHORIZED)
         return response
@@ -887,7 +886,6 @@ class DeleteAccountView(APIView):
             response = JsonResponse(data={'message': "Account successfully deleted."}, status=status.HTTP_200_OK)
             response.delete_cookie('jwt_access')
             response.delete_cookie('jwt_refresh')
-            response.delete_cookie('csrftoken')
             # response['Location'] = 'https://localhost:4242/' if os.environ.get("FRONT_DEV") == '1' else 'https://localhost:3000/'
             # response.status_code = 302
             return response
@@ -918,7 +916,6 @@ class DeleteAccountView(APIView):
             response = JsonResponse(data={'message': "Account successfully deleted."}, status=status.HTTP_200_OK)
             response.delete_cookie('jwt_access')
             response.delete_cookie('jwt_refresh')
-            response.delete_cookie('csrftoken')
             # response['Location'] = 'https://localhost:4242/' if os.environ.get("FRONT_DEV") == '1' else 'https://localhost:3000/'
             # response.status_code = 302
             return response
