@@ -26,7 +26,8 @@ export default class Dashboard {
 	render() {
 		document.title = "ft_transcendence";
 		return `
-            <div class="h-full bg-danger d-flex flex-column justify-content-center align-items-center px-5" style="gap: 16px;">
+		<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
+            <div class="h-100 w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 16px;">
             	<div class="d-flex flex-row justify-content-center w-full" style="gap: 16px">
             		<!-- Pong game -->
             		<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded gap-3" style="--bs-bg-opacity: .5;">
