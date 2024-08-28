@@ -7,6 +7,7 @@ import registerView from "./views/register.js";
 import matchView from "./views/match.js";
 import dashboardView from './views/dashboard.js';
 import friendsView from './views/friends.js';
+import resetPWView from './views/reset-pw.js';
 import { initializeWebSocket } from "@js/functions/websocket.js";
 import profileView from '@views/my-profile.js';
 import userView from './views/user.js';
@@ -21,6 +22,7 @@ const routes = [
     new Route('/user', '/user', userView),
     new Route('/friends', '/friends', friendsView),
     new Route('/stats', '/stats', statsView),
+    new Route('/set-reset-password', '/set-reset-password', resetPWView),
 ];
 
 initializeRouter(routes);

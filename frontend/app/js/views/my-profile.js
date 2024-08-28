@@ -1,5 +1,6 @@
 import {getCookie} from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
+import {validatePassword} from "../functions/validator.js";
 
 export default class MyProfile {
 	constructor(props) {
@@ -170,7 +171,6 @@ export default class MyProfile {
 			});
 	}
 
-	// TODO : Fix Error 500 when changing password
 	handlePasswordChange = (event) => {
 		event.preventDefault();
 		const old_password = document.getElementById('old-password').value;
@@ -228,23 +228,23 @@ export default class MyProfile {
 			credentials: 'include',
 			body: JSON.stringify({'password': password})
 		})
-			.then(response => response.json().then(data => ({ok: response.ok, data})))
-			.then(({ok, data}) => {
-				if (!ok) {
-					const toastComponent = new ToastComponent();
-					toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
-					if (data.message === "Password is incorrect") {
-						document.getElementById('delete-account-password').classList.add('is-invalid');
-					}
-				} else {
-					location.href = '/';
-				}
-			})
-			.catch(error => {
-				console.error('Error:', error);
+		.then(response => response.json().then(data => ({ok: response.ok, data})))
+		.then(({ok, data}) => {
+			if (!ok) {
 				const toastComponent = new ToastComponent();
-				toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
-			})
+				toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+				if (data.message === "Password is incorrect") {
+					document.getElementById('delete-account-password').classList.add('is-invalid');
+				}
+			} else {
+				location.href = '/';
+			}
+		})
+		.catch(error => {
+			console.error('Error:', error);
+			const toastComponent = new ToastComponent();
+			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+		})
 	}
 
 	render() {
@@ -415,6 +415,10 @@ export default class MyProfile {
 		const deleteAccountBtn = document.getElementById('delete-account-btn');
 		if (deleteAccountBtn) {
 			deleteAccountBtn.addEventListener('click', this.handleDeleteAccount);
+		}
+		const newPassword = document.getElementById('password');
+		if (newPassword) {
+			newPassword.addEventListener('input', validatePassword);
 		}
 	}
 }

@@ -1,11 +1,11 @@
 import ToastComponent from './../components/Toast.js';
 import {getCookie} from "../functions/cookie.js";
+import {validatePassword} from "../functions/validator.js";
 
 export default class Register {
     constructor(props) {
         this.props = props;
         this.registerUser = this.registerUser.bind(this);
-        this.validatePassword = this.validatePassword.bind(this);
     }
 
     validateInputs(firstname, lastname, username, email, password, confirm_password) {
@@ -101,79 +101,29 @@ export default class Register {
             credentials: 'include',
             body: formData
         })
-            .then(response => response.json().then(data => ({ok: response.ok, data})))
-            .then(({ok, data}) => {
-                console.log("Response: ", data);
-                if (!ok) {
-                    const toastComponent = new ToastComponent();
-                    toastComponent.throwToast('Error', data || 'Something went wrong', 5000, 'error');
-                } else {
-                    console.log('Success:', data);
-                    const toastComponent = new ToastComponent();
-                    toastComponent.throwToast('Success', data || 'Account created', 5000, 'error');
-                    window.location.href = '/dashboard';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
+        .then(response => response.json().then(data => ({ok: response.ok, data})))
+        .then(({ok, data}) => {
+            console.log("Response: ", data);
+            if (!ok) {
                 const toastComponent = new ToastComponent();
-                toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
-            });
-    }
-
-    validatePassword() {
-        console.log("Validating password");
-        const password = document.getElementById('password').value;
-        const minLength = document.getElementById('minLength');
-        const uppercase = document.getElementById('uppercase');
-        const lowercase = document.getElementById('lowercase');
-        const number = document.getElementById('number');
-        const symbol = document.getElementById('symbol');
-
-        if (password.length >= 8) {
-            minLength.classList.replace('bi-x', 'bi-check');
-            minLength.classList.replace('text-danger', 'text-success');
-        } else {
-            minLength.classList.replace('bi-check', 'bi-x');
-            minLength.classList.replace('text-success', 'text-danger');
-        }
-
-        if (/[A-Z]/.test(password)) {
-            uppercase.classList.replace('bi-x', 'bi-check');
-            uppercase.classList.replace('text-danger', 'text-success');
-        } else {
-            uppercase.classList.replace('bi-check', 'bi-x');
-            uppercase.classList.replace('text-success', 'text-danger');
-        }
-
-        if (/[a-z]/.test(password)) {
-            lowercase.classList.replace('bi-x', 'bi-check');
-            lowercase.classList.replace('text-danger', 'text-success');
-        } else {
-            lowercase.classList.replace('bi-check', 'bi-x');
-            lowercase.classList.replace('text-success', 'text-danger');
-        }
-
-        if (/[0-9]/.test(password)) {
-            number.classList.replace('bi-x', 'bi-check');
-            number.classList.replace('text-danger', 'text-success');
-        } else {
-            number.classList.replace('bi-check', 'bi-x');
-            number.classList.replace('text-success', 'text-danger');
-        }
-
-        if (/[?!@$ %^&*]/.test(password)) {
-            symbol.classList.replace('bi-x', 'bi-check');
-            symbol.classList.replace('text-danger', 'text-success');
-        } else {
-            symbol.classList.replace('bi-check', 'bi-x');
-            symbol.classList.replace('text-success', 'text-danger');
-        }
+                toastComponent.throwToast('Error', data || 'Something went wrong', 5000, 'error');
+            } else {
+                console.log('Success:', data);
+                const toastComponent = new ToastComponent();
+                toastComponent.throwToast('Success', data || 'Account created', 5000, 'error');
+                window.location.href = '/dashboard';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const toastComponent = new ToastComponent();
+            toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+        });
     }
 
     setupEventListeners() {
         document.getElementById('register-form').addEventListener('submit', this.registerUser);
-        document.getElementById('password').addEventListener('input', this.validatePassword);
+        document.getElementById('password').addEventListener('input', validatePassword);
     }
 
     render() {

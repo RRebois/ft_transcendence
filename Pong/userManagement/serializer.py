@@ -211,6 +211,8 @@ class PasswordChangeSerializer(serializers.Serializer):
     confirm_password = serializers.CharField(max_length=100, min_length=8, write_only=True)
 
     def validate(self, attrs):
+        password_pattern = re.compile("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[?!@$ %^&*]).{8,}$")
+
         user = self.context['user']
         old_password = attrs.get('old_password')
         new_password = attrs.get('new_password')
@@ -218,8 +220,12 @@ class PasswordChangeSerializer(serializers.Serializer):
 
         if not user.check_password(old_password):
             raise serializers.ValidationError("Old password is incorrect")
+        if not password_pattern.match(new_password):
+            raise serializers.ValidationError("Password must contain at least 8 characters, including uppercase, lowercase, number and special character (?!@$ %^&*)")
         if new_password != confirm_password:
             raise serializers.ValidationError("New passwords do not match")
+        if new_password == old_password:
+            raise serializers.ValidationError("Your new password is the same as the old password")
 
         validate_password(new_password, user)
         return attrs
@@ -231,6 +237,11 @@ class PasswordChangeSerializer(serializers.Serializer):
         instance.save()
         return instance
 
+    def save(self):
+        user = self.context['user']
+        new_password = self.validated_data['new_password']
+        user.set_password(new_password)
+        user.save()
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=100)
@@ -241,6 +252,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         email = attrs.get('email')
+        logging.debug(f"email in serializer is: {email}")
         if User.objects.filter(email=email).exists():
             user = User.objects.get(email=attrs.get('email'))
             if user.stud42:
@@ -249,9 +261,9 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
             request = self.context.get('request')
-            relative_link = reverse('reset_confirmed', kwargs={'uidb64': uidb64, 'token': token})
+            relative_link = "/set-reset-password/" + uidb64 + "/" + token
             current_site = get_current_site(request).domain
-            abslink = f"http://{current_site}:8080{relative_link}"
+            abslink = f"https://{current_site}:3000{relative_link}"
             content = f"Hello {user.username}, use this link to reset your password: {abslink}"
             data = {
                 'email_body': content,

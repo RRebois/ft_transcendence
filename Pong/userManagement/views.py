@@ -1,6 +1,5 @@
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_protect
-from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
@@ -140,12 +139,8 @@ class LoginView(APIView):
             serializer.is_valid(raise_exception=True)
             user = serializer.validated_data['user']
             if user.status == "online":
-                messages.warning(request, "User already have an active session")
-                return JsonResponse({
-                    'is_authenticated': False,
-                    'redirect': True,
-                    'redirect_url': ""
-                }, status=status.HTTP_401_UNAUTHORIZED)
+                message = "User already have an active session"
+                return JsonResponse(status=401, data={'message': message})
 
             if user.tfa_activated:
                 return JsonResponse({
@@ -442,7 +437,6 @@ class UserPersonalInformationView(APIView):
         return JsonResponse(user.serialize())
 
 
-# TODO: if friend with someone, 500 on modifying
 @method_decorator(csrf_protect, name='dispatch')
 class EditDataView(APIView):
     serializer_class = EditUserSerializer
@@ -520,15 +514,19 @@ class PasswordResetRequestView(APIView):
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data, context={'request': request})
+        logging.debug(f"In reset request view")
         try:
             serializer.is_valid(raise_exception=True)
-            response = redirect('index')
-            messages.success(request, "A mail to reset your password has been sent.")
-            return response
+            return JsonResponse(data={'message': 'A mail to reset your password has been sent.'}, status=200)
         except serializers.ValidationError as e:
             error_message = e.detail.get('non_field_errors', [str(e)])[0]
-            messages.warning(request, error_message)
-            return HttpResponseRedirect(reverse("index"))
+            # logging.debug(f"error: {error}")
+            # if str(error).find('ErrorDetail'):
+            #     logging.debug(f"In reset request view")
+            #     error_message = "Enter a valid email address."
+            # else:
+            #     error_message = error
+            return JsonResponse(data={'message': error_message}, status=400)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -542,8 +540,7 @@ class SetNewPasswordView(APIView):
         serializer = self.serializer_class(data=data, context={'request': request})
         try:
             serializer.is_valid(raise_exception=True)
-            messages.success(request, "Password reset successfully.")
-            return HttpResponseRedirect(reverse('index'))
+            return JsonResponse({'message': 'Password reset successfully'}, status=200)
         except serializers.ValidationError as e:
             error_messages = []
             for field, errors in e.detail.items():
@@ -553,8 +550,7 @@ class SetNewPasswordView(APIView):
                     else:
                         error_messages.append(f"{field}: {error}")
             error_message = " | ".join(error_messages)
-            messages.warning(request, error_message)
-            return HttpResponseRedirect(reverse('index'))
+            return JsonResponse({'message': error_message}, status=400)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -562,18 +558,19 @@ class PasswordResetConfirmedView(APIView):
     def get(self, request, uidb64, token):
         try:
             user_id = smart_str(urlsafe_base64_decode(uidb64))
+            # logging.debug(f"Decoded user_id: {user_id}")
             user = User.objects.get(id=user_id)
+            # logging.debug(f"User found: {user.username}")
 
             if not PasswordResetTokenGenerator().check_token(user, token):
-                error_message = "Invalid or expired reset password token."
-                messages.warning(request, error_message)
-                return HttpResponseRedirect(reverse('index'))
-            return render(request, 'pages/passwordReset.html', {'uidb64': uidb64, 'token': token})
+                # logging.debug(f"Invalid or expired reset password token for user {user.username}")
+                return JsonResponse({'message': 'Invalid or expired reset password token.'}, status=400)
+            # logging.debug(f"Token is valid for user {user.username}")
+            return JsonResponse({'token': token, 'uidb64': uidb64}, status=200)
 
         except DjangoUnicodeDecodeError as identifier:
-            error_message = "Invalid or expired reset password token."
-            messages.warning(request, error_message)
-            return HttpResponseRedirect(reverse('index'))
+            return JsonResponse({'message': 'Invalid or expired reset password token.'}, status=400)
+
 
 
 @method_decorator(csrf_protect, name='dispatch')

@@ -145,6 +145,7 @@ export function decline_friend_request(event) {
 		});
 }
 
+// TODO: when user become friend, can't remove without reloading page
 export function remove_friend(event) {
 	const button = event.target;
 	const userId = button.getAttribute("data-id");
