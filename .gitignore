@@ -4,6 +4,7 @@ Pong/env/*
 *.pyc
 .idea
 .code
+.vite/
 stopAll
 
 Pong/configFiles/__pycache__/*

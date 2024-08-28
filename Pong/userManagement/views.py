@@ -178,13 +178,14 @@ class Login42View(APIView):
         return JsonResponse(data={'redirect_url': redirect_url}, status=200)
 
 
-def exchange_token(code):
+def exchange_token(code, next=False):
+    secret = 'CLIENT42_SECRET_NEXT' if next else 'CLIENT42_SECRET'
     data = {
-        "grant_type": "authorization_code",
-        "client_id": os.environ.get('CLIENT42_ID'),
-        "client_secret": os.environ.get('CLIENT42_SECRET'),
-        "code": code,
-        "redirect_uri": os.environ.get('REDIRECT_42URI'),
+        "grant_type" : "authorization_code",
+        "client_id" : os.environ.get('CLIENT42_ID'),
+        "client_secret" : os.environ.get(secret),
+        "code" : code,
+        "redirect_uri" : os.environ.get('REDIRECT_42URI'),
     }
     response = requests.post("https://api.intra.42.fr/oauth/token", data=data)
     credentials = response.json()
@@ -216,6 +217,10 @@ class Login42RedirectView(APIView):
         try:
             user42 = exchange_token(code)
         except:
+            try:
+                user42 = exchange_token(code, next=True)
+            except:
+                JsonResponse(data={'message': 'The connexion with 42 provider failed'}, status=400)
             JsonResponse(data={'message': 'The connexion with 42 provider failed'}, status=400)
         try:
             user = User.objects.get(email=user42["email"])
