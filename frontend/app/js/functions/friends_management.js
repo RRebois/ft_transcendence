@@ -41,7 +41,7 @@ export function create_friend_request_div(request) {
 	});
 }
 
-export function create_friend_div(friend, userId) {
+export function create_friend_div_load(friend) {
 	console.log("Creating friend div: ", friend);
 	const friendListContainer = document.getElementById("user-friends");
 	const friendItem = document.createElement("div");
@@ -54,20 +54,54 @@ export function create_friend_div(friend, userId) {
 	console.log("Dot is: ", statusDot);
 	friendItem.classList.add("d-flex", "w-100", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-5", "rounded");
 	friendItem.style.cssText = "--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto";
-	friendItem.id = `friend-item-${friend?.from_user_id || userId}`;
+	friendItem.id = `friend-item-${friend?.from_user_id}`;
 	friendItem.innerHTML = `
         <div class="position-relative d-inline-block">
             <img src="${friend?.from_image_url}" alt="user_pp" class="h-64 w-64 rounded-circle" />
-                <span style="left: 60px; top: 5px" id="friend-status-${friend?.from_user_id || userId}"
+                <span style="left: 60px; top: 5px" id="friend-status-${friend?.from_user_id}"
                 class="position-absolute translate-middle p-2 ${statusDot} border border-light rounded-circle">
-                <span id="friend-status-text-${friend?.from_user_id || userId}" class="visually-hidden">Offline</span>
+                <span id="friend-status-text-${friend?.from_user_id}" class="visually-hidden">Offline</span>
             </span>
         </div>
-        <p>${friend?.to_user || friend?.from_user}</p>
-        <div class="status-container" data-id="${friend?.from_user_id || userId}">
-            <p class="status">Status: ${friend?.to_status || friend?.from_status}</p>
+        <p>${friend?.from_user}</p>
+        <div class="status-container" data-id="${friend?.from_user_id}">
+            <p class="status">Status: ${friend?.from_status}</p>
         </div>
-        <button class="btn btn-danger remove-friend-btn" data-id="${friend?.from_user_id || userId}">Remove</button>
+        <button class="btn btn-danger remove-friend-btn" data-id="${friend?.from_user_id}">Remove</button>
+    `;
+	friendListContainer.appendChild(friendItem);
+	document.querySelectorAll(".remove-friend-btn").forEach(button => {
+		button.addEventListener("click", remove_friend);
+	});
+}
+
+export function create_friend_div_ws(friend) {
+	console.log("Creating friend div: ", friend);
+	const friendListContainer = document.getElementById("user-friends");
+	const friendItem = document.createElement("div");
+	let statusDot;
+	if (friend.to_status === 'online')
+		statusDot = "bg-success";
+	else
+		statusDot = "bg-danger";
+	console.log("status is: ", friend.to_status);
+	console.log("Dot is: ", statusDot);
+	friendItem.classList.add("d-flex", "w-100", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-5", "rounded");
+	friendItem.style.cssText = "--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto";
+	friendItem.id = `friend-item-${friend?.to_user_id}`;
+	friendItem.innerHTML = `
+        <div class="position-relative d-inline-block">
+            <img src="${friend?.from_image_url}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+                <span style="left: 60px; top: 5px" id="friend-status-${friend?.to_user_id}"
+                class="position-absolute translate-middle p-2 ${statusDot} border border-light rounded-circle">
+                <span id="friend-status-text-${friend?.to_user_id}" class="visually-hidden">Offline</span>
+            </span>
+        </div>
+        <p>${friend?.to_user}</p>
+        <div class="status-container" data-id="${friend?.to_user_id}">
+            <p class="status">Status: ${friend?.to_status}</p>
+        </div>
+        <button class="btn btn-danger remove-friend-btn" data-id="${friend?.to_user_id}">Remove</button>
     `;
 	friendListContainer.appendChild(friendItem);
 	document.querySelectorAll(".remove-friend-btn").forEach(button => {
@@ -103,7 +137,7 @@ export function accept_friend_request(event) {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Success", data.message || "Friend request accepted", 5000);
 				remove_friend_request_div(userId);
-				create_friend_div(data, userId);
+				create_friend_div_load(data);
 			}
 		})
 		.catch(error => {

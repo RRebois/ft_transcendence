@@ -1,6 +1,6 @@
 import {getCookie} from "../functions/cookie";
 import ToastComponent from "@js/components/Toast.js";
-import {create_friend_div, create_friend_request_div,} from "@js/functions/friends_management.js";
+import {create_friend_div_load, create_friend_request_div,} from "@js/functions/friends_management.js";
 
 export default class Friends {
 	constructor(props) {
@@ -70,7 +70,7 @@ export default class Friends {
 					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 				} else {
 					data.map(friend => {
-						create_friend_div(friend);
+						create_friend_div_load(friend);
 					});
 				}
 			})

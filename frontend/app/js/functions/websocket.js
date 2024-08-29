@@ -1,7 +1,7 @@
 import {isUserConnected} from "./user_auth.js";
 import ToastComponent from "@js/components/Toast.js";
 import {getCookie} from "./cookie.js";
-import { create_friend_div, create_friend_request_div, remove_friend_div } from "@js/functions/friends_management.js";
+import { create_friend_div_ws, create_friend_request_div, remove_friend_div } from "@js/functions/friends_management.js";
 
 export async function initializeWebSocket() {
     return new Promise(async (resolve, reject) => {
@@ -93,7 +93,7 @@ function handle_friend_req_accept(socket, message){
 
     const toast = new ToastComponent();
     toast.throwToast('received-friend-request', `${message.to_user} Is now your friend !`, 5000);
-    create_friend_div(message, message.to_user_id);
+    create_friend_div_ws(message);
 }
 
 function handle_friend_removed(socket, message){

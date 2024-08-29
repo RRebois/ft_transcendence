@@ -915,3 +915,13 @@ class DeleteAccountView(APIView):
                         error_messages.append(f"{field}: {error}")
             error_message = " | ".join(error_messages)
             return JsonResponse(data={'message': error_message}, status=400)
+
+
+# friend item id {friend?.from_user_id} OK
+#img src {friend?.from_image_url} OK
+# dott id friend-status-${friend?.from_user_id} OK
+# span id="friend-status-text-${friend?.from_user_id} OK
+# <p>${friend?.to_user}</p> NOOO
+# div status ${friend?.from_user_id} OK
+# p status ${friend?.to_status} NOOOO
+# remove btn ${friend?.from_user_id} OK
