@@ -9,6 +9,7 @@ from random import choice
 from .games.pong import PongGame
 from .games.purrinha import PurrinhaGame
 from matchs.views import create_match
+from .views import MatchMaking
 
 
 class	GameManagerConsumer(AsyncWebsocketConsumer):
@@ -48,7 +49,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 			self.channel_name
 		)
 
-		if self.session_data['status'] == 'started':
+		if self.session_data['status'] == 'ready':
 			self.game_handler = PongHandler(self) if self.game_name == 'pong' else PurrinhaHandler(self)
 			GameManagerConsumer.matchs[self.session_id] = self.game_handler
 			database_sync_to_async(cache.set)(self.session_id, self.session_data)
@@ -60,6 +61,12 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 
 	async def	receive(self, text_data):
 		data = json.loads(text_data)
+		msg = data.get('game_status')
+		if msg:
+			self.session_data['status'] = 'started'
+			database_sync_to_async(cache.set)(self.session_id, self.session_data)
+			if self.game_handler is not None:
+				await self.game_handler.reset_game()
 		if self.game_handler is not None:
 			if self.game_code != 20 and self.game_code != 40:
 				player_move = data.get('player_move')
@@ -73,7 +80,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 
 	async def	session_msg(self, event):
 		message = event["message"]
-		await self.send(text_data=json.dumps({"message": message}))
+		await self.send(text_data=json.dumps(message))
 
 	async def	disconnect(self, close_code):
 		await self.decrement_connection_count()
@@ -88,12 +95,13 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 			await asyncio.sleep(0.2)
 
 	async def	fetch_session_data(self):
-		if self.session_data['status'] == 'waiting':
+		if self.session_data['status'] != 'started':
 			self.session_data = await self.get_session_data()
+			await self.send_to_group(self.session_data)
 		else:
 			self.game_handler = GameManagerConsumer.matchs.get(self.session_id)
 			await self.game_handler.add_consumer(self)
-			self.loop_task.cancel()
+			await self.loop_task.cancel()
 
 
 	@database_sync_to_async
@@ -114,7 +122,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		else:
 			self.session_data['players'] = {self.username: {'connected': True, 'id': self.session_data['connected_players']}}
 		if self.session_data['connected_players'] == self.session_data['awaited_players']:
-			self.session_data['status'] = 'started'
+			self.session_data['status'] = 'ready'
 		cache.set(self.session_id, self.session_data)
 
 
@@ -133,13 +141,14 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 					if session_data['players'][player]['connected']:
 						other_player.append(player)
 			await self.game_handler.end_game(winner=other_player)
-			self.game_handler.remove_consumer(self)
+			await self.game_handler.remove_consumer(self)
 
 		if session_data['connected_players'] <= 0:
-			database_sync_to_async(cache.delete)(self.session_id)
+			await database_sync_to_async(cache.delete)(self.session_id)
+			await sync_to_async(MatchMaking.delete_session)(self.session_id)
 			GameManagerConsumer.matchs.pop(self.session_id)
 		else:
-			database_sync_to_async(cache.set)(self.session_id, session_data)
+			await database_sync_to_async(cache.set)(self.session_id, session_data)
 
 class PongHandler():
 
@@ -150,7 +159,7 @@ class PongHandler():
 	async def	launch_game(self, players_name):
 		self.message = self.consumer[0].session_data
 		self.game = PongGame(players_name, multiplayer=(self.game_code == 40))
-		await self.reset_game()
+		# await self.reset_game()
 		if 'bot' in self.message['players']:
 			# init_bot()
 			pass
@@ -165,8 +174,9 @@ class PongHandler():
 			client.close()
 
 	async def	reset_game(self):
-		self.game.reset_game()
-		self.loop_task = asyncio.create_task(self.game_loop())
+		if not hasattr(self, 'loop_task'):
+			self.game.reset_game()
+			self.loop_task = asyncio.create_task(self.game_loop())
 
 
 	async def	receive(self, text_data):
@@ -211,12 +221,15 @@ class PongHandler():
 				key = f"player{i}"
 				match_result[gs[key]['name']] = gs['left_score'] if i <= middle else gs['right_score']
 			print(f'\n\n\n result = {match_result} \nwinner = {winner} \n\n\n')
-			await sync_to_async(create_match)(match_result, winner)
+			match = await sync_to_async(create_match)(match_result, winner)
 		self.message['winner'] = winner
 		self.message['status'] = 'finished'
 		await database_sync_to_async(cache.set)(self.consumer[0].session_id, self.message)
 		await self.cancel_loop()
 		await self.consumer[0].send_to_group(self.message)
+		if self.message['tournament_id']:
+			# add the match to the tournament model
+			pass
 		# await self.remove_consumer()
 
 		# send notification + restart the game

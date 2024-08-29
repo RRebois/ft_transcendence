@@ -102,3 +102,4 @@ def create_match(match_result, winner, is_pong=True):
         match.players.add(player)
     update_match_data(players_data, winner, is_pong)
     match.save()
+    # return match
