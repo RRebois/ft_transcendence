@@ -127,10 +127,10 @@ export default class Home {
 			});
 	}
 
-	checkEmailFormat(data) {
+	checkEmailFormat(email) {
 		const emailRegex = new RegExp("^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$");
 		let isValid = true;
-		if (!emailRegex.test(data.email)) {
+		if (!emailRegex.test(email)) {
 			document.getElementById('email').classList.add('is-invalid');
 			isValid = false;
 		} else {
@@ -145,10 +145,11 @@ export default class Home {
 		const email = document.getElementById('email').value;
 		const emailFeedback = document.getElementById('email-feedback')
 		console.log("Mail entered: '", email, "'");
-		// if (!this.checkEmailFormat(email)) {
-		// 	console.log("Email regex failed");
-		// 	return ;
-		// }
+		if (!this.checkEmailFormat(email)) {
+			console.log("Email regex failed");
+			emailFeedback.textContent = "Wrong email format";
+			return ;
+		}
 		// TODO: mail regex
 		console.log("fetching reset pw");
 		fetch('https://localhost:8443/reset_password', {
@@ -171,7 +172,8 @@ export default class Home {
 					document.getElementById('email').classList.remove('is-invalid');
 					const passwordModal = bootstrap.Modal.getInstance(document.getElementById('forgotPWModal'));
 					if (passwordModal){
-						passwordModal.hide();}
+						passwordModal.hide();
+					}
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast('Success', data.message, 5000, 'success');
 				}
