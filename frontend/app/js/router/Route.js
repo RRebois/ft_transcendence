@@ -20,7 +20,6 @@ export default class Route {
     renderView() {
         const layout = new Layout(this.view, this.user);
         return layout.render();
-        // return new this.view({ ...this.props, user: this.user }).render();
     }
 
     setupEventListeners() {

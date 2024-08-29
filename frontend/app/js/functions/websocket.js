@@ -3,6 +3,63 @@ import ToastComponent from "@js/components/Toast.js";
 import {getCookie} from "./cookie.js";
 import { create_friend_div, create_friend_request_div, remove_friend_div } from "@js/functions/friends_management.js";
 
+export async function initializePurrinhaWebSocket(gameCode) {
+    return new Promise(async (resolve, reject) => {
+        const response = await fetch('https://localhost:8443/get_ws_token/', {
+            credentials: 'include',
+        });
+        const jwt = await response.json();
+        const isUserAuth = await isUserConnected();
+        if (isUserAuth) {
+            fetch(`https://localhost:8443/game/purrinha/${gameCode}/`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                credentials: 'include',
+            })
+            .then(gameResponse => gameResponse.json())
+            .then(data => {
+                console.log("Data is:", data);
+                const token = jwt.token
+                const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
+                const url = wsSelect + "localhost:8443" + data.ws_route + token + '/'
+                const socket = new WebSocket(url);
+
+                socket.onopen = function (e) {
+                    console.log("WebSocket connection established");
+                    resolve(socket);
+                }
+
+                socket.onmessage = function (event) {
+                    console.log("WebSocket connection established: " + event.data);
+                    const data = JSON.parse(event.data);
+                };
+
+
+                socket.onclose = function (event) {
+                    if (event.wasClean) {
+                        // console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+                    } else {
+                        // console.log('Connection died');
+                    }
+                    setTimeout(initializeWebSocket, 2000);
+                };
+
+                socket.onerror = function (error) {
+                    // console.log(`WebSocket Error: ${error.message}`);
+                    reject(error);
+                };
+                window.mySocket = socket; // to access as a global var
+            })
+        }
+
+
+
+    });
+}
+
 export async function initializeWebSocket() {
     return new Promise(async (resolve, reject) => {
         console.log("In Init WS FRONT")

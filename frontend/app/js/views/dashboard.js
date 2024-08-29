@@ -48,12 +48,14 @@ export default class Dashboard {
 		})
 			.then(response => response.json().then(data => ({ok: response.ok, data})))
 			.then(({ok, data}) => {
-				console.log("Data: ", data);
 				if (!ok) {
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 				} else {
 					console.log("Game request success: ", data);
+					data.code = code;
+					const params = new URLSearchParams(data).toString();
+					window.location.href = `/${game_type}?${params}`;
 				}
 			})
 			.catch(error => {
