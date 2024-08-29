@@ -215,20 +215,37 @@ class Login42RedirectView(APIView):
             try:
                 user42 = exchange_token(code, next=True)
             except:
-                return JsonResponse(data={'message': 'The connexion with 42 provider failed'}, status=400)
+                response = JsonResponse(data={'message': 'Connexion with 42 provider failed'}, status=400)
+                response['Location'] = 'https://localhost:4242' if os.environ.get(
+                    'FRONT_DEV') == '1' else 'https://localhost:3000'
+                response.status_code = 302
+                return response
         try:
             user = User.objects.get(email=user42["email"])
             if not user.stud42:
-                return JsonResponse(data={'message': 'email is already taken'}, status=400)
+                response = JsonResponse(data={'message': 'Email is already taken'}, status=400)
+                response['Location'] = 'https://localhost:4242' if os.environ.get(
+                    'FRONT_DEV') == '1' else 'https://localhost:3000'
+                response.status_code = 302
+                return response
         except User.DoesNotExist:
             try:
                 serializer = self.serializer_class(user42)
                 user = serializer.create(data=user42)
             except:
-                return JsonResponse(data={'message': 'Username already taken'}, status=400)
+                # TODO : maybe pass the error message to the front with something like https://localhost:3000?error=Usernamealreadytaken
+                response = JsonResponse(data={'message': 'Username already taken'}, status=400)
+                response['Location'] = 'https://localhost:4242' if os.environ.get(
+                    'FRONT_DEV') == '1' else 'https://localhost:3000'
+                response.status_code = 302
+                return response
 
         if user.status == "online":
-            return JsonResponse(status=401, data={'message': "User already have an active session"})
+            response = JsonResponse(data={'message': 'User already have an active session'}, status=401)
+            response['Location'] = 'https://localhost:4242' if os.environ.get(
+                'FRONT_DEV') == '1' else 'https://localhost:3000'
+            response.status_code = 302
+            return response
         token = generate_JWT(user)
         refresh = generate_refresh_JWT(user)
         response = JsonResponse(data={'user': user_as_json(user)}, status=200)
