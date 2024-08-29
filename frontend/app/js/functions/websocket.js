@@ -23,7 +23,8 @@ export async function initializeWebSocket() {
                 console.log("WebSocket connection established");
                 resolve(socket);
             };
-
+//TODO: if a friend request receiver accepts the invite, the sender user generates the friend div, but status of receiver not updating,
+// and if receiver remove friend, sender doesn't remove. All this if there is no page refresh
             socket.onmessage = function (event) {
                 console.log("Message from server:", event.data);
                 const data = JSON.parse(event.data);
