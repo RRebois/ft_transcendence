@@ -1,6 +1,5 @@
 import {getCookie} from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
-import {create_friend_request_div} from "@js/functions/friends_management.js";
 
 export default class Dashboard {
 	constructor(props) {

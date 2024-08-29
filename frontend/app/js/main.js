@@ -11,6 +11,7 @@ import { initializeWebSocket } from "@js/functions/websocket.js";
 import profileView from '@views/my-profile.js';
 import userView from './views/user.js';
 import statsView from './views/stats.js';
+import purrinhaView from './views/purrinha.js';
 
 const routes = [
     new Route('/home', '/', homeView),
@@ -21,6 +22,7 @@ const routes = [
     new Route('/user', '/user', userView),
     new Route('/friends', '/friends', friendsView),
     new Route('/stats', '/stats', statsView),
+    new Route('/purrinha', '/purrinha', purrinhaView),
 ];
 
 initializeRouter(routes);
