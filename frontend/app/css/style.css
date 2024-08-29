@@ -95,7 +95,9 @@ body.bg-gradient {
 }
 
 .min-h-full {
-    min-height: 100%;
+    /*min-height: 100%;*/
+    min-height: max-content;
+
 }
 
 .grid-container {

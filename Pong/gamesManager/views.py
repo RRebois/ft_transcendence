@@ -13,7 +13,6 @@ import uuid
 
 
 @method_decorator(csrf_protect, name='dispatch')
-@method_decorator(login_required(login_url='login'), name='dispatch')
 class	GameManagerView(APIView):
 
 	def	verify_data(self, game_name, game_code, session_id):
@@ -68,7 +67,7 @@ class	GameManagerView(APIView):
 
 		error_message = self.verify_data(game_name, game_code, session_id)
 		if error_message is not None:
-			return JsonResponse({"success": False, "errors": error_message})
+			return JsonResponse({"message": error_message}, status=400)
 
 		user = authenticate_user(request)
 		username = user.username
@@ -79,21 +78,16 @@ class	GameManagerView(APIView):
 			players = session_data['players']
 			connections = session_data['connected_players']
 			if connections == session_data['awaited_players']:
-				return JsonResponse({"success": False, "errors": 'No more connexions are allowed'})
+				return JsonResponse({"message": "This game is full."}, status=400)
 			if username in players and players[username]['connected']:
-				return JsonResponse({"success": False, "errors": 'You are already connected'})
+				return JsonResponse({"message": "You are already in this game."}, status=400)
 			if username not in players:
 				session_data['players'][username] = {'id': connections + 1, 'connected': False}
 				cache.set(session_id, session_data)
 
 
 
-		# return JsonResponse({
-		# 	'status': 'succes',
-		# 	'game': game_name,
-		# 	'session_id': session_id,
-		# 	'ws_route': f'/ws/game/{game_name}/{game_code}/{session_id}/'
-		# })
+
 		if game_name == 'purrinha':
 			return render(request, "pages/purrinha.html" ,{
 				'status': 'succes',

@@ -217,7 +217,7 @@ export default class Home {
 	render() {
 		document.title = 'ft_transcendence | Login';
 		return `
-         <div class="w-100 min-h-screen d-flex flex-column justify-content-center align-items-center">
+         <div class="w-100 min-h-full d-flex flex-column justify-content-center align-items-center">
             <div class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card" style="--bs-bg-opacity: .5;">
             <h1 class="text-justify play-bold fs-1" >ft_transcendence 🏓</h1>
             <form id="login-form">
