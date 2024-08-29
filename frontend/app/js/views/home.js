@@ -127,10 +127,10 @@ export default class Home {
 			});
 	}
 
-	checkEmailFormat(data) {
+	checkEmailFormat(email) {
 		const emailRegex = new RegExp("^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$");
 		let isValid = true;
-		if (!emailRegex.test(data.email)) {
+		if (!emailRegex.test(email)) {
 			document.getElementById('email').classList.add('is-invalid');
 			isValid = false;
 		} else {
@@ -139,17 +139,20 @@ export default class Home {
 		return isValid;
 	}
 
-	sendResetLink(){
+	sendResetLink(event){
 		event.preventDefault();
 		const csrfToken = getCookie('csrftoken');
 		const email = document.getElementById('email').value;
 		const emailFeedback = document.getElementById('email-feedback')
 		console.log("Mail entered: '", email, "'");
-		// if (!this.checkEmailFormat(email)) {
-		// 	console.log("Email regex failed");
-		// 	return ;
-		// }
-		// TODO: mail regex
+		if (!this.checkEmailFormat(email)) {
+			console.log("Email regex failed");
+			emailFeedback.textContent = "Wrong email format";
+			return ;
+		}
+		const submitBtn = document.getElementById('forgotPW-submit');
+		if (submitBtn)
+			submitBtn.disabled = true;
 		console.log("fetching reset pw");
 		fetch('https://localhost:8443/reset_password', {
 			method: 'POST',
@@ -160,27 +163,30 @@ export default class Home {
 			credentials: 'include',
 			body: JSON.stringify({'email': email})
 		})
-			.then(response => response.json().then(data => ({ok: response.ok, data})))
-			.then(({ok, data}) => {
-				if (!ok) {
-					console.log('Not success:', data);
-					document.getElementById('email').classList.add('is-invalid');
-					emailFeedback.textContent = data.message;
-				} else {
-					console.log('Success:', data);
-					document.getElementById('email').classList.remove('is-invalid');
-					const passwordModal = bootstrap.Modal.getInstance(document.getElementById('forgotPWModal'));
-					if (passwordModal){
-						passwordModal.hide();}
-					const toastComponent = new ToastComponent();
-					toastComponent.throwToast('Success', data.message, 5000, 'success');
-				}
-			})
-			.catch(error => {
-				console.error('Error:', error);
+		.then(response => response.json().then(data => ({ok: response.ok, data})))
+		.then(({ok, data}) => {
+			if (!ok) {
+				console.log('Not success:', data);
+				document.getElementById('email').classList.add('is-invalid');
+				submitBtn.disabled = false;
+				emailFeedback.textContent = data.message;
+			} else {
+				console.log('Success:', data);
+				document.getElementById('email').classList.remove('is-invalid');
+				const passwordModal = bootstrap.Modal.getInstance(document.getElementById('forgotPWModal'));
+				if (passwordModal)
+					passwordModal.hide();
+				submitBtn.disabled = false;
 				const toastComponent = new ToastComponent();
-				toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
-			});
+				toastComponent.throwToast('Success', data.message, 5000, 'success');
+			}
+		})
+		.catch(error => {
+			console.error('Error:', error);
+			submitBtn.disabled = false;
+			const toastComponent = new ToastComponent();
+			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+		});
 		console.log("End of reset pw");
 	}
 
@@ -205,6 +211,9 @@ export default class Home {
 				event.preventDefault(); // Prevent the default link behavior
 				const forgotPWModal = new bootstrap.Modal(document.getElementById('forgotPWModal'));
 				forgotPWModal.show();
+				const emailInput = document.getElementById('email');
+				if (emailInput)
+					emailInput.value = '';
 			});
 		}
 		const forgotPWSubmit = document.getElementById('forgotPW-submit');
