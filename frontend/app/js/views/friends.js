@@ -36,6 +36,7 @@ export default class Friends {
 	}
 
 	load_friends_requests_sent() {
+		console.log("LOAD FRIEND REQUEST SENT CALLED")
 		fetch("https://localhost:8443/pending_friend_requests", {
 			method: "GET",
 			credentials: "include"
@@ -50,14 +51,17 @@ export default class Friends {
 					data.map(request => {
 						create_friend_request_sent_div(request);
 					});
+					console.log("SUCCESS");
 				}
 			})
 			.catch(error => {
 				console.error("Error fetching friend requests: ", error);
+				console.log("ERROR FRIEND REQUEST SENT");
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
 			});
 	}
+
 	load_friends_requests() {
 		fetch("https://localhost:8443/get_friend_requests", {
 			method: "GET",
@@ -138,6 +142,7 @@ export default class Friends {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Success", data.message || "Friend request sent", 5000);
 				requestBtn.disabled = false;
+				this.load_friends_requests_sent(data);
 			}
 		})
 		.catch(error => {
