@@ -20,7 +20,9 @@ export default class Home {
         console.log("CALLING LOGIN USER");
         console.log("CSRF Token: ", csrfToken);
         console.log(username, password);
-
+		const loginBtn = document.getElementById('login-btn');
+		if (loginBtn)
+			loginBtn.disabled = true;
 		fetch('https://localhost:8443/login', {
 			method: 'POST',
 			headers: {
@@ -35,6 +37,7 @@ export default class Home {
 				if (!ok) {
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+					loginBtn.disabled = false;
 				} else {
 					console.log('Success:', data);
 					if (data?.otp_required) {
@@ -51,10 +54,14 @@ export default class Home {
 				console.error('Error:', error);
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+				loginBtn.disabled = false;
 			});
 	}
 
 	fortyTwoLogin() {
+		const OauthBtn = document.getElementById("42login")
+		if (OauthBtn)
+			OauthBtn.disabled = true;
 		fetch('https://localhost:8443/login42', {
 			method: 'GET',
 			headers: {
@@ -67,10 +74,12 @@ export default class Home {
 				if (!ok) {
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+					OauthBtn.disabled = false;
 					window.location.href = data.redirect_url;
 				} else {
                     initializeWebSocket();
 					console.log('Success:', data);
+					OauthBtn.disabled = false;
 					window.location.href = data.redirect_url;
 				}
 			})
@@ -78,6 +87,7 @@ export default class Home {
 					console.error('Error:', error);
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+					OauthBtn.disabled = false;
 				}
 			);
 	}
@@ -90,10 +100,13 @@ export default class Home {
 		const otpRegex = new RegExp("^[0-9]{6}$");
 		console.log("sending otp: ", otp);
 		console.log("user_id: ", user_id);
-
+		const otpBtn = document.getElementById("otp-submit")
+		if (otpBtn)
+			otpBtn.disabled = true;
 		if (!otp.match(otpRegex)) {
 			console.log("Invalid OTP");
 			document.getElementById('otp').classList.add('is-invalid');
+			otpBtn.disabled = false;
 			return;
 		} else {
 			console.log("Valid OTP");
@@ -113,6 +126,7 @@ export default class Home {
 			.then(({ok, data}) => {
 				if (!ok) {
 					document.getElementById('otp').classList.add('is-invalid');
+					otpBtn.disabled = false;
 				} else {
                     initializeWebSocket();
 					console.log('Success:', data);
@@ -124,6 +138,7 @@ export default class Home {
 				console.error('Error:', error);
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+				otpBtn.disabled = false;
 			});
 	}
 
@@ -250,7 +265,7 @@ export default class Home {
                     <a href="" class="text-decoration-none indexLink" id="forgot-pwd">Forgot password?</a>
                 </div>
                 <div class="w-100 d-flex justify-content-center my-2">
-                    <button type="submit" class="btn btn-primary">Log in</button>
+                    <button type="submit" id="login-btn" class="btn btn-primary">Log in</button>
                 </div>
             </form>
             <div class="d-flex flex-row align-items-center w-100 my-2">

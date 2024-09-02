@@ -90,7 +90,9 @@ export default class Register {
         if (!this.validateInputs(firstname, lastname, username, email, password, password2)) {
             return;
         }
-
+        const registerBtn = document.getElementById("register-btn");
+        if (registerBtn)
+            registerBtn.disabled = true;
         const csrfToken = getCookie('csrftoken');
         console.log("CSRF Token: ", csrfToken);
         fetch('https://localhost:8443/register', {
@@ -107,17 +109,16 @@ export default class Register {
             if (!ok) {
                 const toastComponent = new ToastComponent();
                 toastComponent.throwToast('Error', data || 'Something went wrong', 5000, 'error');
+                registerBtn.disabled = false;
             } else {
-                console.log('Success:', data);
-                const toastComponent = new ToastComponent();
-                toastComponent.throwToast('Success', data || 'Account created', 5000, 'error');
+                registerBtn.disabled = false;
                 window.location.href = '/dashboard';
             }
         })
         .catch(error => {
-            console.error('Error:', error);
             const toastComponent = new ToastComponent();
             toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+            registerBtn.disabled = false;
         });
     }
 
@@ -221,7 +222,7 @@ export default class Register {
                         </div>
                         
                         <!-- Submit button -->
-                        <button type="submit" class="btn btn-primary">Create an account</button>
+                        <button type="submit" id="register-btn" class="btn btn-primary">Create an account</button>
                     </div>
                 </form>
             </div>
