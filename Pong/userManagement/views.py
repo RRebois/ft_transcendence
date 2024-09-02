@@ -682,9 +682,24 @@ class PendingFriendRequestsView(APIView):
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
-        friendRequests = (FriendRequest.objects.filter(from_user=user, status='pending').
-                          values('to_user__username', 'time', 'status', 'to_user_id'))
-        return JsonResponse(list(friendRequests), safe=False)
+        friendRequests = (FriendRequest.objects.filter(from_user=user, status='pending')
+                          .annotate(to_user_image=F('to_user__avatar_id__image_url'))
+                          .values('to_user__username', 'time', 'status', 'to_user_image', 'to_user_id', 'to_user__status')
+                          )
+        processedRequest = []
+        for request in friendRequests:
+            # logging.debug(f" img url :  {request['from_user_image']}")
+            # from_image_url = request['from_user_image'] or os.environ.get('SERVER_URL') + '/media/profile_pics/default_pp.jpg'
+            processedRequest.append({
+                'to_user__username': request['to_user__username'],
+                'time': request['time'],
+                'status': request['status'],
+                'to_image_url': get_profile_pic_url(request['to_user_image']),
+                'to_user_id': request['to_user_id'],
+                'to_user_status': request['to_user__status'],
+            })
+        return JsonResponse(processedRequest, safe=False)
+        # return JsonResponse(list(friendRequests), safe=False)
 
 
 class GetFriendRequestView(APIView):

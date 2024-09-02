@@ -1,6 +1,6 @@
 import {getCookie} from "../functions/cookie";
 import ToastComponent from "@js/components/Toast.js";
-import {create_friend_div_load, create_friend_request_div,} from "@js/functions/friends_management.js";
+import {create_friend_div_load, create_friend_request_div, create_friend_request_sent_div} from "@js/functions/friends_management.js";
 
 export default class Friends {
 	constructor(props) {
@@ -21,12 +21,13 @@ export default class Friends {
 							<i class="bi bi-person-add"></i>
 						</button>
 					</form>
-					<div class="container">
-						<p class="play-bold">Friend requests</p>
+					<div class="container align-items-center">
+						<p class="play-bold d-flex flex-column">Friend requests</p>
+						<div id="friend-requests-sent" class="d-flex flex-column w-100"></div>
 						<div id="friend-requests" class="d-flex flex-column w-100"></div>
 					</div>
-					<div class="container">
-						<p class="play-bold">Your friends</p>
+					<div class="container align-items-center">
+						<p class="play-bold d-flex flex-column">Your friends</p>
 						<div id="user-friends" class="d-flex flex-column w-100"></div>
 					</div>
 				</div>
@@ -34,6 +35,29 @@ export default class Friends {
         `;
 	}
 
+	load_friends_requests_sent() {
+		fetch("https://localhost:8443/pending_friend_requests", {
+			method: "GET",
+			credentials: "include"
+		})
+			.then(response => response.json().then(data => ({ok: response.ok, data})))
+			.then(({ok, data}) => {
+				console.log("Data: ", data);
+				if (!ok) {
+					const toastComponent = new ToastComponent();
+					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+				} else {
+					data.map(request => {
+						create_friend_request_sent_div(request);
+					});
+				}
+			})
+			.catch(error => {
+				console.error("Error fetching friend requests: ", error);
+				const toastComponent = new ToastComponent();
+				toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+			});
+	}
 	load_friends_requests() {
 		fetch("https://localhost:8443/get_friend_requests", {
 			method: "GET",
@@ -84,6 +108,7 @@ export default class Friends {
 	setupEventListeners() {
 		document.getElementById("addfriend").addEventListener("submit", this.send_friend_request);
 		this.load_friends_requests();
+		this.load_friends_requests_sent();
 		this.load_friends_list();
 	}
 

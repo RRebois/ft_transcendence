@@ -6,6 +6,32 @@ export function remove_friend_request_div(userId) {
 	friendRequestItem.remove();
 }
 
+export function create_friend_request_sent_div(request) {
+	const friendRequestContainer = document.getElementById("friend-requests-sent");
+	const friendRequestItem = document.createElement("div");
+	let statusDot;
+	if (request.to_user_status === 'online')
+		statusDot = "bg-success";
+	else
+		statusDot = "bg-danger";
+	friendRequestItem.classList.add("d-flex", "w-100", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-5", "rounded");
+	friendRequestItem.id = `friend-request-item-${request?.to_user_id}`;
+	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto";
+	friendRequestItem.innerHTML = `
+		<div class="position-relative d-inline-block">
+			<img src="${request?.to_image_url}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+				<span style="left: 60px; top: 5px" id="friend-status-${request?.to_user_id}"
+				 class="position-absolute translate-middle p-2 ${statusDot} border border-light rounded-circle">
+				<span id = "friend-status-text-${request?.to_user_id}" class="visually-hidden">Offline</span>
+			</span>
+		</div>
+		<p>${request?.to_user || request.to_user__username}</p>
+		<p>Sent : ${new Date(request?.time).toLocaleString()}</p>
+		<p>${request?.status}</p>
+	`;
+	friendRequestContainer.appendChild(friendRequestItem);
+}
+
 export function create_friend_request_div(request) {
 	const friendRequestContainer = document.getElementById("friend-requests");
 	const friendRequestItem = document.createElement("div");
@@ -26,7 +52,7 @@ export function create_friend_request_div(request) {
 			</span>
 		</div>
 		<p>${request?.from_user || request.from_user__username}</p>
-		<p>Sent on ${new Date(request?.time).toLocaleString()}</p>
+		<p>Received : ${new Date(request?.time).toLocaleString()}</p>
 		<button class="btn btn-success confirm-request-btn" data-id="${request?.from_user_id}">Accept</button>
 		<button class="btn btn-danger decline-request-btn" data-id="${request?.from_user_id}">Decline</button>
 	`;
