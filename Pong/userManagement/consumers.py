@@ -104,6 +104,16 @@ class UserConsumer(AsyncWebsocketConsumer):
             'request_status': event['request_status'],
         }))
 
+    async def friend_req_decline(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'friend_req_decline',
+            'from_user': event['from_user'],
+            'from_user_id': event['from_user_id'],
+            'to_user': event['to_user'],
+            'to_user_id': event['to_user_id'],
+            'request_status': event['request_status'],
+        }))
+
     async def friend_remove(self, event):
         await self.send(text_data=json.dumps({
             'type': 'friend_remove',

@@ -24,8 +24,6 @@ export async function initializeWebSocket() {
                 console.log("WebSocket connection established");
                 resolve(socket);
             };
-//TODO: if a friend request receiver accepts the invite, the sender user generates the friend div, but status of receiver not updating,
-// and if receiver remove friend, sender doesn't remove. All this if there is no page refresh
             socket.onmessage = function (event) {
                 console.log("Message from server:", event.data);
                 const data = JSON.parse(event.data);
@@ -44,6 +42,10 @@ export async function initializeWebSocket() {
                 if (data.type === 'friend_req_accept') {  // accept friend request
                     console.log("Friend request accepted");
                     handle_friend_req_accept(socket, data);
+                }
+                if (data.type === 'friend_req_decline') {  // accept friend request
+                    console.log("Friend request declined");
+                    handle_friend_req_decline(socket, data);
                 }
                 if (data.type === 'friend_remove') {      // remove friend
                     console.log("Friend removed");
@@ -93,9 +95,18 @@ function handle_friend_req_accept(socket, message){
     console.log("message is:", message);
 
     const toast = new ToastComponent();
-    toast.throwToast('received-friend-request', `${message.to_user} Is now your friend !`, 5000);
+    toast.throwToast('friend-request', `${message.to_user} Is now your friend !`, 5000);
     create_friend_div_ws(message.to_status, message.to_user_id, message.to_image_url, message.to_user);
-    remove_friend_request_div(message);
+    remove_friend_request_div(message.to_user_id);
+}
+
+function handle_friend_req_decline(socket, message){
+    console.log("socket is:", socket);
+    console.log("message is:", message);
+
+    const toast = new ToastComponent();
+    toast.throwToast('friend-request', `${message.to_user} declined your friend request...`, 5000);
+    remove_friend_request_div(message.to_user_id);
 }
 
 function handle_friend_removed(socket, message){

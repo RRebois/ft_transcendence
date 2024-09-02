@@ -796,7 +796,18 @@ class DeclineFriendRequestView(APIView):
         if friend_request.to_user != user:
             return JsonResponse({"message": "You cannot decline this friend request.", "level": "warning"},
                                 status=status.HTTP_403_FORBIDDEN)
-
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"user_{friend_request.from_user_id}_group",
+            {
+                'type': 'friend_req_decline',
+                'from_user': friend_request.from_user.username,
+                'from_user_id': friend_request.from_user.id,
+                'to_user': user.username,
+                'to_user_id': user.id,
+                'request_status': friend_request.status,
+            }
+        )
         friend_request.delete()
         return JsonResponse({"message": "Friend request declined.", "level": "success"}, status=status.HTTP_200_OK)
 
