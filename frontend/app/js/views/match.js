@@ -224,9 +224,9 @@ export default class MatchPong {
         stadium.rotation.set(0.5, 0 ,0);
     }
 
-    async createGameElements() { //3000
+    createGameElements() { //3000
 
-        await this.createStadium();
+        this.createStadium();
 
 //        this.createPaddle('p1');
 //        this.createPaddle('p2');
@@ -381,48 +381,44 @@ export default class MatchPong {
 
     // Create blocks all around + needs floor + animation
     createStadium() {
-        return new Promise(async (resolve) => {
-            const   stadium = this.scene.getObjectByName("stadium");
-            const   cubes = [];
-            const   targetPositions = [];
-            let     cube;
-            let     end;
-            let     x = -160;
-            let     y = 450;
-            let     z = 150;
-            let     step = 10;
+        const   stadium = this.scene.getObjectByName("stadium");
+        const   cubes = [];
+        const   targetPositions = [];
+        let     cube;
+        let     end;
+        let     x = -160;
+        let     y = 400;
+        let     z = 250;
+        let     step = 10;
+        let     i = -1;
 
-            for (let i = 0; i < 96; i++) {
-                if (i < 36) {
-                    cube = this.createCube(x);
-                    end = new THREE.Vector3(x, y, z);
-                    x += step;
-                }
-                else if (i >= 36 && i < 48) { // 12
-                    cube = this.createCube(x);
-                    end = new THREE.Vector3(x, y, z);
-                    z -= step;
-                }
-                else if (i >= 48 && i < 84) {
-                    cube = this.createCube(x);
-                    end = new THREE.Vector3(x, y, z);
-                    x -= step;
-                }
-                else {
-                    cube = this.createCube(x);
-                    end = new THREE.Vector3(x, y, z);
-                    z += step;
-                }
-                cubes.push(cube);
-                targetPositions.push(end);
-                stadium.add(cube);
+        while (++i < 96) {
+            if (i < 36) {
+                cube = this.createCube(x);
+                end = new THREE.Vector3(x, y, z);
+                x += step;
             }
+            else if (i >= 36 && i < 48) { // 12
+                cube = this.createCube(x);
+                end = new THREE.Vector3(x, y, z);
+                z -= step;
+            }
+            else if (i >= 48 && i < 84) {
+                cube = this.createCube(x);
+                end = new THREE.Vector3(x, y, z);
+                x -= step;
+            }
+            else {
+                cube = this.createCube(x);
+                end = new THREE.Vector3(x, y, z);
+                z += step;
+            }
+            cubes.push(cube);
+            targetPositions.push(end);
+            stadium.add(cube);
+        }
 
-            await this.stadiumCreation(cubes, targetPositions);
-            // stadium.rotation.x = Math.PI * 0.25;
-            // if needed for the backend regroup cubes in a mesh for boxBounding and detect colisions in here
-            resolve();
-        });
+        this.stadiumCreation(cubes, targetPositions);
     }
 
     //            const   animate = () => { //https://dustinpfister.github.io/2022/05/17/threejs-vector3-lerp/
@@ -431,40 +427,30 @@ export default class MatchPong {
 
 
     stadiumCreation(cubes, targetPositions) {
-        return new Promise((resolve) => {
-            // Array of ending positions
-            // const targetPositions = [
-            //     new THREE.Vector3(-100, 350, 400), // z variation => profondeur
-            //     new THREE.Vector3(-100, 350, 390),
-            //     new THREE.Vector3(-80, 330, 380), // y variation => hauteur
-            //     new THREE.Vector3(-80, 320, 380),
-            //     new THREE.Vector3(-60, 310, 360),
-            // ];
-
-            for (let i = 0; i < cubes.length; i++) { // cubes.legnth
-                const cube = cubes[i];
-                const targetPosition = targetPositions[i];
-                const delay = i * 500; // 0.5s delay between each cube's movement
-
-                setTimeout(() => {
-                    this.moveCube(cube, targetPosition, 2000);
-                }, delay);
-            }
-            resolve();
-        });
+        for (let i = 0; i < cubes.length; i++) { // cubes.legnth
+            const cube = cubes[i];
+            const targetPosition = targetPositions[i];
+            this.moveCube(cube, targetPosition);
+        }
     }
 
-    moveCube(cube, targetPosition, duration) {
-        const startPosition = cube.position.clone();
-        const startTime = performance.now();
+    moveCube(cube, targetPosition) {
+        let lt = new Date(),
+        f = 0,
+        fm = 300;
 
         const animate = () => {
-            const elapsedTime = performance.now() - startTime;
-            const t = Math.min(elapsedTime / duration, 1);
-            cube.position.lerpVectors(startPosition, targetPosition, t);
-            if (t < 1) {
-                requestAnimationFrame(animate);
-            }
+            const   now = new Date();
+            const   secs = (now - lt) / 1000;
+            const   p = f / fm;
+//            const   b = 1 - Math.abs(0.5 - p) / 0.5;
+
+            requestAnimationFrame(animate);
+            cube.position.lerp(targetPosition, 0.01);
+
+            f += 30 * secs;
+            f %= fm;
+            lt = now;
         }
         animate();
     }
@@ -475,7 +461,7 @@ export default class MatchPong {
 
         // load a texture
         const   texture = textureLoader.load("/blue_wall.jpg");
-        const   material = new THREE.MeshStandardMaterial({map: texture});
+        const   material = new THREE.MeshBasicMaterial({map: texture});
 
         return material;
     }
@@ -486,7 +472,7 @@ export default class MatchPong {
 
         // load a texture
         const   texture = textureLoader.load("/red_wall.png");
-        const   material = new THREE.MeshStandardMaterial({map: texture});
+        const   material = new THREE.MeshBasicMaterial({map: texture});
 
         return material;
     }
@@ -507,9 +493,9 @@ export default class MatchPong {
 
         // Create cubes starting points
         const   startPositions = [];
-        const   s1 = new THREE.Vector3(1500,0, 0);
-        const   s2 = new THREE.Vector3(0, 1500, 0);
-        const   s3 = new THREE.Vector3(0, 0, 1500);
+        const   s1 = new THREE.Vector3(2000,0, 0);
+        const   s2 = new THREE.Vector3(0, 2000, 0);
+        const   s3 = new THREE.Vector3(0, 0, 2000);
         startPositions.push(s1, s2, s3);
 
         const   start = Math.floor(Math.random() * 3);
