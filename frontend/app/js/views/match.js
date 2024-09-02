@@ -444,27 +444,33 @@ export default class MatchPong {
             for (let i = 0; i < cubes.length; i++) { // cubes.legnth
                 const cube = cubes[i];
                 const targetPosition = targetPositions[i];
-                const delay = i * 500; // 0.5s delay between each cube's movement
+                const delay = i * 1000; // 0.5s delay between each cube's movement
 
                 setTimeout(() => {
-                    this.moveCube(cube, targetPosition, 2000);
+                    this.moveCube(cube, targetPosition, 100);
                 }, delay);
             }
             resolve();
         });
     }
 
-    moveCube(cube, targetPosition, duration) {
-        const startPosition = cube.position.clone();
-        const startTime = performance.now();
+    moveCube(cube, targetPosition) {
+        let lt = new Date(),
+        f = 0,
+        fm = 300;
 
         const animate = () => {
-            const elapsedTime = performance.now() - startTime;
-            const t = Math.min(elapsedTime / duration, 1);
-            cube.position.lerpVectors(startPosition, targetPosition, t);
-            if (t < 1) {
-                requestAnimationFrame(animate);
-            }
+            const   now = new Date();
+            const   secs = (now - lt) / 1000;
+            const   p = f / fm;
+//            const   b = 1 - Math.abs(0.5 - p) / 0.5;
+
+            requestAnimationFrame(animate);
+            cube.position.lerp(targetPosition, 0.01);
+
+            f += 30 * secs;
+            f %= fm;
+            lt = now;
         }
         animate();
     }
