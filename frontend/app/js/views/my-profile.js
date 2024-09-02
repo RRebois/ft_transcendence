@@ -83,8 +83,10 @@ export default class MyProfile {
 			console.log("error in personal data");
 			return;
 		}
+		const updateBtn = document.getElementById("update-btn")
+		if (updateBtn)
+			updateBtn.disabled = true;
 		const csrfToken = getCookie('csrftoken');
-		console.log("fetching");
 		fetch('https://localhost:8443/edit_data', {
 			method: 'PUT',
 			headers: {
@@ -99,6 +101,7 @@ export default class MyProfile {
 				if (!ok) {
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+					updateBtn.disabled = false;
 				} else {
 					console.log('Success:', data);
 					sessionStorage.setItem('toastMessage', JSON.stringify({
@@ -107,6 +110,7 @@ export default class MyProfile {
 						duration: 5000,
 						type: 'success'
             		}));
+					updateBtn.disabled = false;
 					window.location.href = '/my-profile';
 				}
 			})
@@ -114,6 +118,7 @@ export default class MyProfile {
 				console.error('Error:', error);
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+				updateBtn.disabled = false;
 			});
 	}
 
@@ -180,6 +185,9 @@ export default class MyProfile {
 		if (!this.checkPasswordChange({password, confirm_password})) {
 			return;
 		}
+		const pwBtn = document.getElementById("pw-submit");
+		if (pwBtn)
+			pwBtn.disabled = true;
 		fetch("https://localhost:8443/change_password", {
 			method: 'PUT',
 			headers: {
@@ -198,15 +206,18 @@ export default class MyProfile {
 				if (!ok) {
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+					pwBtn.disabled = false;
 				} else {
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast('Success', data.message, 5000, 'success');
+					pwBtn.disabled = false;
 				}
 			})
 			.catch(error => {
 				console.error('Error:', error);
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+				pwBtn.disabled = false;
 			})
 	}
 
@@ -219,6 +230,9 @@ export default class MyProfile {
 		// 	document.getElementById('delete-account-password').classList.add('is-invalid');
 		// 	return;
 		// }
+		const deleteBtn = document.getElementById("delete-account-btn")
+		if (deleteBtn)
+			deleteBtn.disabled = true;
 		fetch("https://localhost:8443/delete_account", {
 			method: 'POST',
 			headers: {
@@ -236,6 +250,7 @@ export default class MyProfile {
 				if (data.message === "Password is incorrect") {
 					document.getElementById('delete-account-password').classList.add('is-invalid');
 				}
+				deleteBtn.disabled = false;
 			} else {
 				location.href = '/';
 			}
@@ -244,6 +259,7 @@ export default class MyProfile {
 			console.error('Error:', error);
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+			deleteBtn.disabled = false;
 		})
 	}
 
@@ -297,7 +313,7 @@ export default class MyProfile {
 									</div>
 								</div>
 								<div class="d-flex">
-									<button type="submit" class="btn btn-primary">Save</button>
+									<button type="submit" id="update-btn" class="btn btn-primary">Save</button>
 								</div>
 							</div>
 						</form>
@@ -359,7 +375,7 @@ export default class MyProfile {
 										</div>
 									</div>
 									<div class="d-flex">
-										<button type="submit" class="btn btn-primary">Change password</button>
+										<button type="submit" id="pw-submit" class="btn btn-primary">Change password</button>
 									</div>
 								</div>
 							</form>
