@@ -111,7 +111,8 @@ export function remove_friend_div(userId) {
 export function accept_friend_request(event) {
 	const button = event.target;
 	const userId = button.getAttribute("data-id");
-	console.log("click on accept button ", userId);
+	if (button)
+		button.disabled = true;
 	fetch("https://localhost:8443/accept_friend", {
 		method: "POST",
 		headers: {
@@ -121,30 +122,34 @@ export function accept_friend_request(event) {
 		credentials: "include",
 		body: JSON.stringify({ from_id: userId })
 	})
-		.then(response => response.json().then(data => ({ ok: response.ok, data })))
-		.then(({ ok, data }) => {
-			console.log("Data: ", data);
-			if (!ok) {
-				const toastComponent = new ToastComponent();
-				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
-			} else {
-				const toastComponent = new ToastComponent();
-				toastComponent.throwToast("Success", data.message || "Friend request accepted", 5000);
-				remove_friend_request_div(userId);
-				create_friend_div_ws(data.status, data.id, data.img_url, data.username);
-			}
-		})
-		.catch(error => {
-			console.error("Error accepting friend request: ", error);
+	.then(response => response.json().then(data => ({ ok: response.ok, data })))
+	.then(({ ok, data }) => {
+		console.log("Data: ", data);
+		if (!ok) {
 			const toastComponent = new ToastComponent();
-			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
-		});
+			toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+			button.disabled = false;
+		} else {
+			const toastComponent = new ToastComponent();
+			toastComponent.throwToast("Success", data.message || "Friend request accepted", 5000);
+			remove_friend_request_div(userId);
+			create_friend_div_ws(data.status, data.id, data.img_url, data.username);
+			button.disabled = false;
+		}
+	})
+	.catch(error => {
+		console.error("Error accepting friend request: ", error);
+		const toastComponent = new ToastComponent();
+		toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+		button.disabled = false;
+	});
 }
 
 export function decline_friend_request(event) {
 	const button = event.target;
 	const userId = button.getAttribute("data-id");
-	console.log("click on decline button ", userId);
+	if (button)
+		button.disabled = true;
 	fetch("https://localhost:8443/decline_friend", {
 		method: "POST",
 		headers: {
@@ -154,29 +159,33 @@ export function decline_friend_request(event) {
 		credentials: "include",
 		body: JSON.stringify({ from_id: userId })
 	})
-		.then(response => response.json().then(data => ({ ok: response.ok, data })))
-		.then(({ ok, data }) => {
-			console.log("Data: ", data);
-			if (!ok) {
-				const toastComponent = new ToastComponent();
-				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
-			} else {
-				const toastComponent = new ToastComponent();
-				toastComponent.throwToast("Success", data.message || "Friend request was declined", 5000);
-				remove_friend_request_div(userId);
-			}
-		})
-		.catch(error => {
-			console.error("Error declining friend request: ", error);
+	.then(response => response.json().then(data => ({ ok: response.ok, data })))
+	.then(({ ok, data }) => {
+		console.log("Data: ", data);
+		if (!ok) {
 			const toastComponent = new ToastComponent();
-			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
-		});
+			toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+			button.disabled = false;
+		} else {
+			const toastComponent = new ToastComponent();
+			toastComponent.throwToast("Success", data.message || "Friend request was declined", 5000);
+			remove_friend_request_div(userId);
+			button.disabled = false;
+		}
+	})
+	.catch(error => {
+		console.error("Error declining friend request: ", error);
+		const toastComponent = new ToastComponent();
+		toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+		button.disabled = false;
+	});
 }
 
-// TODO: when user become friend, can't remove without reloading page
 export function remove_friend(event) {
 	const button = event.target;
 	const userId = button.getAttribute("data-id");
+	if (button)
+		button.disabled = true;
 	console.log("click on remove button ", userId);
 	fetch("https://localhost:8443/remove_friend", {
 		method: "POST",
@@ -192,15 +201,18 @@ export function remove_friend(event) {
 			if (!ok) {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+				button.disabled = false;
 			} else {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Success", data.message || "Friend successfully removed", 5000);
 				remove_friend_div(userId);
+				button.disabled = false;
 			}
 		})
 		.catch(error => {
 			console.error("Error removing friend: ", error);
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+			button.disabled = false;
 		});
 }

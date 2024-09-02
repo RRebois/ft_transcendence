@@ -89,7 +89,9 @@ export default class Friends {
 
 	send_friend_request(event) {
 		event.preventDefault();
-		console.log("HERE");
+		const requestBtn = document.getElementById("addfriend-submit")
+		if (requestBtn)
+			requestBtn.disabled = true;
 		const usernameValue = document.getElementById("username").value;
 		const csrfToken = getCookie("csrftoken");
 		fetch("https://localhost:8443/send_friend", {
@@ -106,15 +108,18 @@ export default class Friends {
 			if (!ok) {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+				requestBtn.disabled = false;
 			} else {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Success", data.message || "Friend request sent", 5000);
+				requestBtn.disabled = false;
 			}
 		})
 		.catch(error => {
 			console.error("Error sending friend request: ", error);
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+			requestBtn.disabled = false;
 		});
 	}
 }
