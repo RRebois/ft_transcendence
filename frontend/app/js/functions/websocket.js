@@ -93,7 +93,7 @@ function handle_friend_req_accept(socket, message){
 
     const toast = new ToastComponent();
     toast.throwToast('received-friend-request', `${message.to_user} Is now your friend !`, 5000);
-    create_friend_div_ws(message);
+    create_friend_div_ws(message.to_status, message.to_user_id, message.to_image_url, message.to_user);
 }
 
 function handle_friend_removed(socket, message){

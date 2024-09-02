@@ -750,8 +750,8 @@ class AcceptFriendRequestView(APIView):
                 'from_user': friend_request.from_user.username,
                 'from_user_id': friend_request.from_user.id,
                 'from_status': friend_request.from_user.status,
-                'from_image_url': get_profile_pic_url(user.get_img_url()),
-                'to_image_url': get_profile_pic_url(friend_request.from_user.get_img_url()),
+                'from_image_url': get_profile_pic_url(friend_request.from_user.get_img_url()),
+                'to_image_url': get_profile_pic_url(user.get_img_url()),
                 'to_user': user.username,
                 'to_user_id': user.id,
                 'to_status': user.status,
@@ -759,9 +759,9 @@ class AcceptFriendRequestView(APIView):
                 'request_status': friend_request.status,
             }
         )
-        return JsonResponse({"message": "Friend request accepted.", "level": "success", "from_user": friend_request.from_user.username,
-                             "from_status": friend_request.from_user.status, "from_image_url": get_profile_pic_url(friend_request.from_user.get_img_url())}
-                            , status=status.HTTP_200_OK)
+        return JsonResponse({"message": "Friend request accepted.", "level": "success", "username": friend_request.from_user.username,
+                            "status": friend_request.from_user.status, "img_url": get_profile_pic_url(friend_request.from_user.get_img_url()),
+                             "id": friend_request.from_user.id}, status=status.HTTP_200_OK)
 
 
 class DeclineFriendRequestView(APIView):
@@ -915,13 +915,3 @@ class DeleteAccountView(APIView):
                         error_messages.append(f"{field}: {error}")
             error_message = " | ".join(error_messages)
             return JsonResponse(data={'message': error_message}, status=400)
-
-
-# friend item id {friend?.from_user_id} OK
-#img src {friend?.from_image_url} OK
-# dott id friend-status-${friend?.from_user_id} OK
-# span id="friend-status-text-${friend?.from_user_id} OK
-# <p>${friend?.to_user}</p> NOOO
-# div status ${friend?.from_user_id} OK
-# p status ${friend?.to_status} NOOOO
-# remove btn ${friend?.from_user_id} OK

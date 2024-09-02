@@ -14,8 +14,6 @@ export function create_friend_request_div(request) {
 		statusDot = "bg-success";
 	else
 		statusDot = "bg-danger";
-	console.log("status is: ", request.from_user_status);
-	console.log("Dot is: ", statusDot);
 	friendRequestItem.classList.add("d-flex", "w-100", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-5", "rounded");
 	friendRequestItem.id = `friend-request-item-${request?.from_user_id}`;
 	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto";
@@ -42,7 +40,6 @@ export function create_friend_request_div(request) {
 }
 
 export function create_friend_div_load(friend) {
-	console.log("Creating friend div: ", friend);
 	const friendListContainer = document.getElementById("user-friends");
 	const friendItem = document.createElement("div");
 	let statusDot;
@@ -50,8 +47,6 @@ export function create_friend_div_load(friend) {
 		statusDot = "bg-success";
 	else
 		statusDot = "bg-danger";
-	console.log("status is: ", friend.from_status);
-	console.log("Dot is: ", statusDot);
 	friendItem.classList.add("d-flex", "w-100", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-5", "rounded");
 	friendItem.style.cssText = "--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendItem.id = `friend-item-${friend?.from_user_id}`;
@@ -75,33 +70,32 @@ export function create_friend_div_load(friend) {
 	});
 }
 
-export function create_friend_div_ws(friend) {
-	console.log("Creating friend div: ", friend);
+export function create_friend_div_ws(status, id, img_url, username) {
 	const friendListContainer = document.getElementById("user-friends");
 	const friendItem = document.createElement("div");
 	let statusDot;
-	if (friend.to_status === 'online')
+	if (status === 'online')
 		statusDot = "bg-success";
 	else
 		statusDot = "bg-danger";
-	console.log("status is: ", friend.to_status);
+	console.log("status is: ", status);
 	console.log("Dot is: ", statusDot);
 	friendItem.classList.add("d-flex", "w-100", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-5", "rounded");
 	friendItem.style.cssText = "--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto";
-	friendItem.id = `friend-item-${friend?.to_user_id}`;
+	friendItem.id = `friend-item-${id}`;
 	friendItem.innerHTML = `
         <div class="position-relative d-inline-block">
-            <img src="${friend?.from_image_url}" alt="user_pp" class="h-64 w-64 rounded-circle" />
-                <span style="left: 60px; top: 5px" id="friend-status-${friend?.to_user_id}"
+            <img src="${img_url}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+                <span style="left: 60px; top: 5px" id="friend-status-${id}"
                 class="position-absolute translate-middle p-2 ${statusDot} border border-light rounded-circle">
-                <span id="friend-status-text-${friend?.to_user_id}" class="visually-hidden">Offline</span>
+                <span id="friend-status-text-${id}" class="visually-hidden">Offline</span>
             </span>
         </div>
-        <p>${friend?.to_user}</p>
-        <div class="status-container" data-id="${friend?.to_user_id}">
-            <p class="status">Status: ${friend?.to_status}</p>
+        <p>${username}</p>
+        <div class="status-container" data-id="${id}">
+            <p class="status">Status: ${status}</p>
         </div>
-        <button class="btn btn-danger remove-friend-btn" data-id="${friend?.to_user_id}">Remove</button>
+        <button class="btn btn-danger remove-friend-btn" data-id="${id}">Remove</button>
     `;
 	friendListContainer.appendChild(friendItem);
 	document.querySelectorAll(".remove-friend-btn").forEach(button => {
@@ -137,7 +131,7 @@ export function accept_friend_request(event) {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Success", data.message || "Friend request accepted", 5000);
 				remove_friend_request_div(userId);
-				create_friend_div_load(data);
+				create_friend_div_ws(data.status, data.id, data.img_url, data.username);
 			}
 		})
 		.catch(error => {
