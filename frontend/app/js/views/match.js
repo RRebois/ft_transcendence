@@ -40,7 +40,7 @@ export default class MatchPong {
         this.camera.lookAt(0, 250, 0);
 
         // Renderer
-        this.renderer = new THREE.WebGLRenderer();
+        this.renderer = new THREE.WebGLRenderer({antialias: true});
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -85,19 +85,15 @@ export default class MatchPong {
 
         const   spotLight = new SpotLight(0xffffff, 5000000)
         spotLight.position.set(0, 600, 700)
-        spotLight.lookAt(0, 250, 0);
-        spotLight.angle = .5; // change it for higher or lower coverage of the spot
-        spotLight.penumbra = 0.75;
+//        spotLight.lookAt(0, 0, 0);
+        spotLight.angle = .6; // change it for higher or lower coverage of the spot
+        spotLight.penumbra = .5;
         spotLight.castShadow = true;
-        spotLight.shadow.radius = 10;
-        spotLight.shadow.blurSamples = 10;
         spotLight.shadow.camera.far = 1500;
         spotLight.shadow.camera.near = 10;
-        // spotLight.shadow.camera.fov = 30;
 
         this.scene.add(spotLight);
     }
-
 
     waiting() {
         // Set lights
@@ -243,6 +239,31 @@ export default class MatchPong {
 
         this.xPosition = 0;
 
+        // Creatematerials just once
+        // Material for nicknames
+        const nickTextMaterialP1 = new THREE.MeshStandardMaterial({
+            color: 0xff0000,
+            emissive: 0xff0000,
+            roughness: 0,
+            metalness: 0.555,
+        });
+
+        const nickTextMaterialP2 = new THREE.MeshStandardMaterial({
+            color: 0x1f51ff,
+            emissive: 0x0000ff,
+            roughness: 0,
+            metalness: 0.555,
+        });
+
+        // Material for scores
+        const textMaterial = new THREE.MeshStandardMaterial({
+            color: 0x8cff00,
+            emissive: 0x00ff00,
+            emissiveIntensity: 0.8,
+            metalness: 0.8,
+            roughness: 0,
+        });
+
         // vecto to get coords of text and center it on scene
         loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
             this.textArray.forEach((text, index) => {
@@ -250,6 +271,7 @@ export default class MatchPong {
                     text = "Team 1\n" + text
                 else if (index === 4)
                     text = "Team 2\n" + text
+
                 const textGeometry = new TextGeometry(text, {
                     font: font,
                     size: 45,
@@ -259,30 +281,6 @@ export default class MatchPong {
                     bevelThickness: 2,
                     bevelSize: 1.5,
                     bevelEnabled: true,
-                });
-
-                // Material for nicknames
-                const nickTextMaterialP1 = new THREE.MeshStandardMaterial({
-                    color: 0xff0000,
-                    emissive: 0xff0000,
-                    roughness: 0,
-                    metalness: 0.555,
-                });
-
-                const nickTextMaterialP2 = new THREE.MeshStandardMaterial({
-                    color: 0x1f51ff,
-                    emissive: 0x0000ff,
-                    roughness: 0,
-                    metalness: 0.555,
-                });
-
-                // Material for scores
-                const textMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x8cff00,
-                    emissive: 0x00ff00,
-                    emissiveIntensity: 0.8,
-                    metalness: 0.8,
-                    roughness: 0,
                 });
 
                 let textAdd;
@@ -381,35 +379,41 @@ export default class MatchPong {
 
     // Create blocks all around + needs floor + animation
     createStadium() {
+        // Create gem and material once
+        const   geometry = new THREE.BoxGeometry(20, 20, 20);
+        const   redMaterial = this.createRedMaterial();
+        const   blueMaterial = this.createBlueMaterial();
+
+        // Create stuff needed for cube position
         const   stadium = this.scene.getObjectByName("stadium");
         const   cubes = [];
         const   targetPositions = [];
         let     cube;
         let     end;
-        let     x = -160;
+        let     x = -210;
         let     y = 400;
         let     z = 250;
-        let     step = 10;
+        let     step = 20;
         let     i = -1;
 
-        while (++i < 96) {
-            if (i < 36) {
-                cube = this.createCube(x);
+        while (++i < 66) {
+            if (i < 21) { // 36
+                cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
                 x += step;
             }
-            else if (i >= 36 && i < 48) { // 12
-                cube = this.createCube(x);
+            else if (i >= 21 && i < 33) { // 24
+                cube = cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
                 z -= step;
             }
-            else if (i >= 48 && i < 84) {
-                cube = this.createCube(x);
+            else if (i >= 33 && i < 54) { // 42
+                cube = cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
                 x -= step;
             }
-            else {
-                cube = this.createCube(x);
+            else { // 24
+                cube = cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
                 z += step;
             }
@@ -443,10 +447,9 @@ export default class MatchPong {
             const   now = new Date();
             const   secs = (now - lt) / 1000;
             const   p = f / fm;
-//            const   b = 1 - Math.abs(0.5 - p) / 0.5;
 
             requestAnimationFrame(animate);
-            cube.position.lerp(targetPosition, 0.01);
+            cube.position.lerp(targetPosition, 0.03);
 
             f += 30 * secs;
             f %= fm;
@@ -460,8 +463,22 @@ export default class MatchPong {
         const   textureLoader = new THREE.TextureLoader();
 
         // load a texture
-        const   texture = textureLoader.load("/blue_wall.jpg");
-        const   material = new THREE.MeshBasicMaterial({map: texture});
+//        const   texture = textureLoader.load("/blue_basecolor.png");
+//        const   metal = textureLoader.load("/blue_metallic.png");
+//        const   rough = textureLoader.load("/blue_roughness.png");
+//const textures = textureLoader.load({
+//    map: "/blue_basecolor.png",
+//    roughnessMap: "/blue_metallic.png",
+//    metalnessMap: "/blue_metallic.png",
+//});
+        const   material = new THREE.MeshStandardMaterial({
+            map: textureLoader.load("/blue_basecolor.png"),
+//            metalness: 1,
+//            metalnessMap: textureLoader.load("/blue_metallic.png"),
+//            roughness: 0,
+//            roughnessMap: rough
+//            wireframe: true
+        });
 
         return material;
     }
@@ -471,23 +488,18 @@ export default class MatchPong {
         const   textureLoader = new THREE.TextureLoader();
 
         // load a texture
-        const   texture = textureLoader.load("/red_wall.png");
-        const   material = new THREE.MeshBasicMaterial({map: texture});
+        const   texture = textureLoader.load("/red_basecolor.jpg");
+        const   materials = new THREE.MeshStandardMaterial({map: texture});
 
-        return material;
+        return materials;
     }
 
-    createCube(i) {
-        const   geometry = new THREE.BoxGeometry(10, 10, 10);
-        let     material;
-        if (i >= 0) {
-            material = this.createBlueMaterial();
-        }
-        else {
-            material = this.createRedMaterial();
-        }
-
-        const   cube = new THREE.Mesh(geometry, material);
+    createCube(i, geometry, red, blue) {
+        let cube;
+        if (i < 0)
+            cube = new THREE.Mesh(geometry, red);
+        else
+            cube = new THREE.Mesh(geometry, blue);
         cube.castShadow = true;
         cube.receiveShadow = true;
 
@@ -682,6 +694,11 @@ export default class MatchPong {
 
         const ball = this.scene.getObjectByName('ball');
         ball.position.set(this.ball_x, this.ball_y, 0);
+    }
+
+    // Collecting info from the game logic in the back
+    display(data) {
+        console.log(data);
     }
 
     setupEventListeners() {}

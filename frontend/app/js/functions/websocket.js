@@ -35,17 +35,20 @@ export async function initializePongWebSocket(pong) {
                 };
 
                 socket.onmessage = function (event) {
-                    console.log("WebSocket connection established: " + event.data);
+//                    console.log("WebSocket connection established: " + event.data);
                     const data = JSON.parse(event.data);
                     // console.log("data: " + data);
 
                     if (data.status === "waiting") // Waiting for opponent(s)
                         pong.waiting();
-                    if (data.status === "ready") // Waiting for display in front
+                    if (data.status === "ready") { // Waiting for display in front
                         pong.builGameSet(data);
+//                        setTimeout(() => {
+//                            socket.send(JSON.stringify({"game_status": true}));
+//                        }, 3000);
+                    }
                     if (data.status === "started")
-                        ;
-//                        pong.display();
+                        pong.display(data);
                 };
 
                 socket.onclose = function (event) {

@@ -65,7 +65,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 			self.session_data['status'] = 'started'
 			database_sync_to_async(cache.set)(self.session_id, self.session_data)
 			if self.game_handler is not None:
-				self.game_handler.reset_game()
+				await self.game_handler.reset_game()
 		if self.game_handler is not None:
 			if self.game_code != 20 and self.game_code != 40:
 				player_move = data.get('player_move')
