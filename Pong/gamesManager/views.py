@@ -8,6 +8,7 @@ from django.utils.decorators import method_decorator
 from userManagement.views import authenticate_user
 from rest_framework import status
 from userManagement.models import User, UserData
+from matchs.models import *
 
 import asyncio
 import uuid
@@ -16,6 +17,7 @@ ELO_DIFF = 20
 
 class	MatchMaking():
 	matchs = {}
+	tournament = {}
 
 	@staticmethod
 	def	delete_session(session_id):
@@ -46,7 +48,7 @@ class	MatchMaking():
 		if game_code in [10, 20]:
 			usernames = [username, 'bot' if game_code == 10 else 'guest']
 			session_id = MatchMaking.create_session(game_name, game_code, usernames)
-			MatchMaking.delete_session(session_id)
+			# MatchMaking.delete_session(session_id)
 			session_data = cache.get(session_id)
 			session_data['connected_players'] = 1
 			cache.set(session_id, session_data)
@@ -81,28 +83,27 @@ class	MatchMaking():
 
 
 	@staticmethod
-	def	create_session(game_name, game_code, usernames=None, tournament=False, tournament_id=None):
+	def	create_session(game_name, game_code, tournament_id=None):
 			awaited_connections = 2
 			if game_code == 40:
 				awaited_connections = 4
 
 			players = {}
 			session_id = f"{game_name}_{str(uuid.uuid4().hex)}"
-			if tournament and tournament_id is None:
-				tournament_id = f"tournament_{str(uuid.uuid4().hex)}"
 
-			MatchMaking.matchs[session_id] = {
-				'game_name': game_name,
-				'game_code': game_code,
-				'awaited_players': awaited_connections,
-				'tournament_id': tournament_id,
-				'status': 'open',
-				'players': [],
-			}
+			if game_code not in [10, 20]:
+				MatchMaking.matchs[session_id] = {
+					'game_name': game_name,
+					'game_code': game_code,
+					'awaited_players': awaited_connections,
+					'tournament_id': tournament_id,
+					'status': 'open',
+					'players': [],
+				}
 
-			if usernames:
-				for i, username in enumerate(usernames):
-					players[username] = {'id': i + 1, 'connected': False}
+			# if usernames:
+			# 	for i, username in enumerate(usernames):
+			# 		players[username] = {'id': i + 1, 'connected': False}
 
 			cache.set(session_id, {
 
@@ -117,6 +118,44 @@ class	MatchMaking():
 			'game_state': 'waiting',
 			})
 			return session_id
+	
+	@staticmethod
+	def	create_tournament_session(tournament_id):
+			tournament = Tournament.objects.get(id=tournament_id)
+			# matchs = [match.get_players() for match in tournament.tournament_matchs.all()]
+			MatchMaking.tournament[tournament_id] = {
+				# 'status': 'open',
+				'players': {player: 0 for player in tournament.players.all()},
+				'matchs': [
+					MatchMaking.create_session('pong', 23, tournament_id) for match in tournament.tournament_matchs.all()
+				],
+			}
+			return MatchMaking.tournament[tournament_id]
+
+	@staticmethod
+	def	get_tournament_match(username, tournament_id):
+		tournament = MatchMaking.tournament.get(tournament_id)
+		if not tournament:
+			tournament = MatchMaking.create_tournament_session(tournament_id)
+		if tournament['players'][username] >= 4 - 1:
+			return JsonResponse({"error": "You have already played all matchs for this tournament."}, status=404)
+		for match in tournament['matchs']:
+			if MatchMaking.matchs[match]['status'] == 'open':
+				# TODO verify if the players already played together
+				MatchMaking.add_player(match, username)
+				tournament['players'][username] += 1
+				return match
+		return JsonResponse({"error": "This tournament is already finished."}, status=404)
+
+
+	@staticmethod
+	def	delete_tournament_session(tournament_id):
+		tournament = MatchMaking.tournament.get(tournament_id)
+		if tournament:
+			for session in tournament['matchs']:
+				MatchMaking.delete_session(session)
+			MatchMaking.tournament.pop(tournament_id)
+
 
 
 @method_decorator(csrf_protect, name='dispatch')

@@ -7,11 +7,14 @@ from django.contrib import messages
 from rest_framework import status
 from rest_framework.views import APIView
 from django.http import Http404, JsonResponse
+from django.core.cache import cache
+from channels.layers import get_channel_layer
 
 
 from userManagement.models import User, UserData
 from userManagement.views import authenticate_user
 from .models import *
+from gamesManager.views import MatchMaking
 from userManagement.utils import gen_timestamp
 
 
@@ -87,7 +90,7 @@ def update_match_data(players_data, winner, is_pong=True):
         elo_lst.append({'elo': new_elo, 'timestamp': timestamp})
         data.save()
 
-
+# TODO verify if there are data to erase from cache | maybe update here the tournament logic
 def create_match(match_result, winner, is_pong=True):
     match = Match.objects.create(is_pong=is_pong, count=len(match_result))
     players_data = []
@@ -116,43 +119,65 @@ class   CreateTournament(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
         tournament = Tournament.objects.create()
         tournament.players.add(user)
         tournament.save()
         return JsonResponse({"tournament_id": tournament.get_id()}, status=200)
 
+@method_decorator(csrf_protect, name='dispatch')
 class   JoinTournament(APIView):
 
-    def launch_tournament(self, user, tournament):
+    def add_player(self, user, tournament):
         count = tournament.players.count()
+        players = tournament.players.all()
+        if user in players:
+            return JsonResponse({"error": "You have already joined this tournament."}, status=404)
+        for player in players:
+            TournamentMatch.objects.create(tournament=tournament)
         tournament.players.add(user)
         if count + 1 == 4:
-            for i in range(3):
-                TournamentMatch.objects.create(match_order=(i + 1), tournament=tournament)
             tournament.is_closed = True
-            # create the matchs and start tournament.
-            # How to inform the users? Is it possible to use the websocket?
-            # How to manage the data?
-            # Create a cache to real time update, then deal with the db update.
-            # Create a View to handle the cache/db data when called.
         tournament.save()
+        # self.launch_tournament() ????
 
-    def get(self, request, session_id):
+        # How to inform the users? Is it possible to use the websocket? Yes
+        # How to manage the data?
+        # Create a cache to real time update, then deal with the db update.
+        # Create a View to handle the cache/db data when called.
+
+
+    def get(self, request, tournament_id):
 
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
         try:
-            tournament = Tournament.objects.get(id=session_id)
+            tournament = Tournament.objects.get(id=tournament_id)
         except:
             return JsonResponse({"error": "Tournament does not exist."}, status=404)
         if tournament.is_closed:
             return JsonResponse({"error": "Tournament is already closed."}, status=404)
-        self.launch_tournament(user, tournament)
+        self.add_player(user, tournament)
 
 
-        pass
+@method_decorator(csrf_protect, name='dispatch')
+class   PlayTournament(APIView):
+
+    def get(self, request, tournament_id):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            tournament = Tournament.objects.get(id=tournament_id)
+        except:
+            return JsonResponse({"error": "Tournament does not exist."}, status=404)
+        session_id = MatchMaking.get_tournament_match(tournament_id) # verify if it returned a json
+
+        return JsonResponse({
+			'game': 'pong',
+			'session_id': session_id,
+			'ws_route': f'/ws/game/pong/23/{session_id}/'
+		}, status=status.HTTP_200_OK)

@@ -55,36 +55,39 @@ class Tournament(models.Model):
 
     def get_id(self):
         return self.id
+    
+    def get_unfinished_matchs(self):
+        return [match for match in self.tournament_matchs.all() if not match.match]
 
-
+# TODO update to pool tournament
 class TournamentMatch(models.Model):
 
-    order_choices = [
-        (1, 'first_match'),
-        (2, 'second_match'),
-        (3, 'final_match'),
-    ]
-    match_order = models.IntegerField(choices=order_choices)
+    # order_choices = [
+    #     (1, 'first_match'),
+    #     (2, 'second_match'),
+    #     (3, 'final_match'),
+    # ]
+    # match_order = models.IntegerField(choices=order_choices)
+    # player1 = models.ForeignKey('userManagement.User', on_delete=models.SET_NULL, null=True)
+    # player2 = models.ForeignKey('userManagement.User', on_delete=models.SET_NULL, null=True)
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='tournament_matchs')
     match = models.ForeignKey(Match, on_delete=models.SET_NULL, null=True, blank=True, related_name='tournament_match')
     score = ArrayField(models.IntegerField(), blank=True)
 
+    def get_players(self):
+        return [self.player1, self.player2]
+
     def serialize(self):
         match_result = {
             'players': {},
-            'winner': [],
+            'winner': ['n/a'],
         }
         if not self.match:
-            if not self.score:
-                match_result['players'] = {
-                    '????????': 0,
-                    '????????': 0,
-                }
-            else:
-                match_result['players'] = {
-                    'deleted_user': self.score[0],
-                    'deleted_user': self.score[1],
-                }
+            match_result['players'] = {
+                {'deleted_user': self.score[0]} if self.score else {'player1': 0},
+                {'deleted_user': self.score[1]} if self.score else {'player2': 0},
+            }
+            if self.score:
                 match_result['winner'] = ['deleted_user']
         else:
             serialized = self.match.serialize()
@@ -92,9 +95,9 @@ class TournamentMatch(models.Model):
             match_result['winner'] = serialized.winner
 
         return {
-            self.match_order: {
                 match_result
-            }
+            # self.match_order: {
+            # }
         }
 
 

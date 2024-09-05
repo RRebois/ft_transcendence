@@ -232,7 +232,7 @@ class PongHandler():
 		await self.cancel_loop()
 		await self.consumer[0].send_to_group(self.message)
 		if self.message['tournament_id']:
-			# add the match to the tournament model
+			# tournament_matchs = await sync_to_async()()
 			pass
 		# await self.remove_consumer()
 
