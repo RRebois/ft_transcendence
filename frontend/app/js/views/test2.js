@@ -20,9 +20,9 @@ export default class MatchPong {
 //        this.stadium_thickness = 0.25;
 //        this.paddle_length = 2;
 
-//        // Ball initial stats
+        // Ball initial stats
 //        this.ball_x = 0;
-//        this.ball_z = 480;
+//        this.ball_y = 0;
 //        this.ball_radius = 1;
 //        const   initialSpeed = 0.2;
 //        this.baseSpeed = initialSpeed;
@@ -57,8 +57,6 @@ export default class MatchPong {
         // Display text from the beginning
         const    textGroup = new THREE.Object3D();
         textGroup.rotation.set(0, 0, 0);
-//        const   {width, height} = useThree(state => state.viewport)
-//        textGroup.position.set(width / 2, height / 2, 0);
         textGroup.name = "textGroup";
         this.scene.add(textGroup);
 
@@ -172,16 +170,12 @@ export default class MatchPong {
     }
 
     builGameSet(data) {
-        // reset camera to have stadium on
-        this.camera.position.set(0, 700, 1000);
-        this.camera.lookAt(0, -100, 0);
+    // reset camera to have stadium on
+    this.camera.position.set(0, 700, 1000);
+//    this.scene.fog = new THREE.Fog(0x000000, 250, 1400);
+    this.camera.lookAt(0, -100, 0);
+//
 
-        // Ball initial stats
-        this.ball_x = 0;
-        this.ball_z = 480;
-        this.ball_radius = 1;
-
-        // rm previous scene stuff
         this.scene.children;
         for (let i = 0; i < this.scene.children.length; i++) {
             this.scene.children[i].remove();
@@ -241,9 +235,9 @@ export default class MatchPong {
 
         this.createStadium();
 
-        this.createPaddle('p1');
-        this.createPaddle('p2');
-        this.createBall();
+//        this.createPaddle('p1');
+//        this.createPaddle('p2');
+//        this.createBall();
 
     }
 
@@ -255,97 +249,62 @@ export default class MatchPong {
         const   textGroup = this.scene.getObjectByName("textGroup");
         const   loader = new FontLoader();
 
-        this.xPosition = 0;
-
         // vecto to get coords of text and center it on scene
-        loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
-            this.textArray.forEach((text, index) => {
-                if (index === 0)
-                    text = "Team 1\n" + text
-                else if (index === 4)
-                    text = "Team 2\n" + text
-                const textGeometry = new TextGeometry(text, {
-                    font: font,
-                    size: 45,
-                    depth: 5,
-                    hover: 30,
-                    curveSegments: 4,
-                    bevelThickness: 2,
-                    bevelSize: 1.5,
-                    bevelEnabled: true,
-                });
+        this.newArray.forEach((text, index) => {
+            var     canvas = document.createElement("canvas");
+//            const   map = new THREE.TextureLoader().loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json');
+            var context = canvas.getContext("2d");
+console.log(text + index);
+            let color;
+            if (index === 0)
+                context.fillStyle = "red";
+            else if (index === 1)
+                context.fillStyle = "green";
+            else
+                context.fillStyle = "blue";
+            text = "hello world";
+            context.font = "bold 80px Serif";
+            context.textAlign = "center";
+            context.textBaseline = "top";
+            context.fillText(text, 0, 0);
 
-                // Material for nicknames
-                const nickTextMaterialP1 = new THREE.MeshStandardMaterial({
-                    color: 0xff0000,
-                    emissive: 0xff0000,
-                    roughness: 0,
-                    metalness: 0.555,
-                });
+            var texture = new THREE.Texture(canvas);
+            texture.needsUpdate = true;
 
-                const nickTextMaterialP2 = new THREE.MeshStandardMaterial({
-                    color: 0x1f51ff,
-                    emissive: 0x0000ff,
-                    roughness: 0,
-                    metalness: 0.555,
-                });
-
-                // Material for scores
-                const textMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x8cff00,
-                    emissive: 0x00ff00,
-                    emissiveIntensity: 0.8,
-                    metalness: 0.8,
-                    roughness: 0,
-                });
-
-                let textAdd;
-                if (this.nameArray[index] === "p1Nick") {
-                    textAdd = new THREE.Mesh(textGeometry, nickTextMaterialP1);
-                    textAdd.name = this.nameArray[index];
-                }
-                else if (this.nameArray[index] === "p2Nick") {
-                    textAdd = new THREE.Mesh(textGeometry, nickTextMaterialP2);
-                    textAdd.name = this.nameArray[index];
-                }
-                else {
-                    textAdd = new THREE.Mesh(textGeometry, textMaterial);
-                    textAdd.name = this.nameArray[index];
-                }
-
-                textGeometry.computeBoundingBox();
-                const   boundingBox = textGeometry.boundingBox;
-                const   textWidth = boundingBox.max.x - boundingBox.min.x;
-                const   textHeight = boundingBox.max.y - boundingBox.min.y;
-                textGroup.position.y = textHeight + 50;
-
-                textAdd.position.x = this.xPosition;
-                if (index === 0 || index === 3)
-                    this.xPosition += textWidth + 100;
-                else if (index === 2)
-                    this.xPosition += 55;
-                else
-                    this.xPosition += textWidth + 10;
-                textGroup.add(textAdd);
-                this.updateTextGroup(this.xPosition);
-
-                // Add a pulsing effect
-                const animate = () => {
-                    requestAnimationFrame(animate);
-                    if (textAdd.name === "p1Nick" || textAdd.name === "p2Nick")
-                        textAdd.material.emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-                    else
-                        textAdd.material.emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-                };
-                animate();
+            const material = new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true,
             });
-        });
-    }
 
-    updateTextGroup(value) {
-        const   textGroup = this.scene.getObjectByName("textGroup");
-        if (textGroup)
-            textGroup.position.x = - value / 2;
+            this.sprite[index] = new THREE.Sprite(material);
+
+            var width = material.map.image.width;
+	        var height = material.map.image.height;
+            this.sprite[index].scale.set(width, height, 10);
+            this.sprite[index].name = index;
+            if (index === 0)
+                this.sprite[index].center.set(0.0, 1.0);
+            else if (index === 1)
+                this.sprite[index].center.set(0.5, 1.0);
+            else
+                this.sprite[index].center.set(1.0, 1.0);
+
+            textGroup.add(this.sprite[index]);
+
+//            if (index === 4)
+//                textGroup.position.x = -(this.xPosition / 2);
+
+            // Add a pulsing effect
+//            const animate = () => {
+//                requestAnimationFrame(animate);
+//                if (textAdd.name === "p1Nick" || textAdd.name === "p2Nick")
+//                    textAdd.material.emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+//                else
+//                    textAdd.material.emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+//            };
+//            animate();
+        });
+        this.updateTextPosition();
     }
 
      handleKeyEvent(event) {
@@ -377,15 +336,10 @@ export default class MatchPong {
         const geometry = new THREE.SphereGeometry(this.ball_radius, 48, 48);
         const material = new THREE.MeshStandardMaterial({map: ballTexture});
         const ball = new THREE.Mesh(geometry, material);
-        ball.castShadow = true;
-        ball.receiveShadow = true;
-        ball.position.set(0, 0, 0);
+        ball.position.set(this.ball_x, this.ball_y, 0);
         ball.name = 'ball';
         const   stadium = this.scene.getObjectByName("stadium");
-        this.scene.add(ball);
-        const   isBall = this.scene.getObjectByName("ball");
-        if (isBall)
-            console.log("Gotcha");
+        stadium.add(ball);
     }
 
     createPaddle(player = 'p1') {
@@ -605,9 +559,7 @@ export default class MatchPong {
         const   msg = this.scene.getObjectByName("waitTxt");
         if (msg)
             this.waitMSGMove(msg);
-        const ball = this.scene.getObjectByName("ball");
-        if (ball)
-            ball.position.x += 0.1;
+
 //        const   hyphen = this.scene.getObjectByName("hyphen");
 //        if (hyphen) {
 //            if (this.camera.position.y > 400) {
@@ -619,9 +571,9 @@ export default class MatchPong {
 //                this.camera.rotation.z = 0;
 //            }
 //        }
-//        const   textGroup = this.scene.getObjectByName("textGroup");
-//        if (textGroup && textGroup.length > 0)
-//            this.updateTextPosition();
+        const   textGroup = this.scene.getObjectByName("textGroup");
+        if (textGroup && textGroup.length > 0)
+            this.updateTextPosition();
 
         this.updateBallPosition();
 
@@ -629,7 +581,24 @@ export default class MatchPong {
         this.renderer.render(this.scene, this.camera);
     }
 
+    updateTextPosition() {//this.nameArray = ["p1Nick", "p1Score", "hyphen", "p2Score", "p2Nick"];
+        var     width = window.innerWidth / 4;
+        var     height = window.innerHeight / 4;
 
+        if (this.sprite.length > 0) {
+            this.sprite[0].position.set(-width, height, 1);
+            this.sprite[1].position.set(0, height, 1);
+            this.sprite[2].position.set(width, height, 1);
+        }
+
+//        spriteTR.position.set( width, height, 1 ); // top right
+//        spriteBL.position.set( - width, - height, 1 ); // bottom left
+//        spriteBR.position.set( width, - height, 1 ); // bottom right
+//        spriteC.position.set( 0, 0, 1 ); // center
+//        this.textArray.forEach((text, index) => {
+//            up
+//        });
+    }
 
 
     waitMSGMove(msg) {

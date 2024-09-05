@@ -753,3 +753,50 @@ loop();
     setupEventListeners() {}
 
 }
+
+
+
+
+
+
+
+
+var canvas = document.createElement('canvas');
+	var context = canvas.getContext('2d');
+
+	context.font = "bold 20px Serif";
+	context.textAlign = "left";
+	context.textBaseline = "top";
+	context.fillStyle = "#ff0000";
+	context.fillText("Sample Text", 0, 0);
+
+	var texture = new THREE.Texture(canvas);
+	texture.needsUpdate = true;
+
+	var material = new THREE.SpriteMaterial({
+		map: texture,
+		useScreenCoordinates: false,
+	 	alignment: THREE.SpriteAlignment.center,
+	 	transparent: true
+	});
+	var sprite = new THREE.Sprite(material);
+
+	sprite.scale.set(100, 100, 1);
+	scene.add(sprite);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

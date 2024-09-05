@@ -20,9 +20,9 @@ export default class MatchPong {
 //        this.stadium_thickness = 0.25;
 //        this.paddle_length = 2;
 
-//        // Ball initial stats
+        // Ball initial stats
 //        this.ball_x = 0;
-//        this.ball_z = 480;
+//        this.ball_y = 0;
 //        this.ball_radius = 1;
 //        const   initialSpeed = 0.2;
 //        this.baseSpeed = initialSpeed;
@@ -55,10 +55,8 @@ export default class MatchPong {
         this.scene.add(stadiumGroup);
 
         // Display text from the beginning
-        const    textGroup = new THREE.Object3D();
+        const    textGroup = new THREE.Group();
         textGroup.rotation.set(0, 0, 0);
-//        const   {width, height} = useThree(state => state.viewport)
-//        textGroup.position.set(width / 2, height / 2, 0);
         textGroup.name = "textGroup";
         this.scene.add(textGroup);
 
@@ -81,19 +79,18 @@ export default class MatchPong {
         });
         const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.rotation.x = - Math.PI * 0.5;
-        plane.position.y = -100;
+        plane.position.y = 200;
         plane.receiveShadow = true;
         this.scene.add(plane);
 
-        const   spotLight = new SpotLight(0xffffff, 500000000)
-        spotLight.position.set(0, 600, -50)
-//        spotLight.lookAt(0, -100, 0);
-        spotLight.angle = .65; // change it for higher or lower coverage of the spot
-        spotLight.penumbra = .8;
+        const   spotLight = new SpotLight(0xffffff, 5000000)
+        spotLight.position.set(0, 600, 700)
+//        spotLight.lookAt(0, 0, 0);
+        spotLight.angle = .6; // change it for higher or lower coverage of the spot
+        spotLight.penumbra = .5;
         spotLight.castShadow = true;
         spotLight.shadow.camera.far = 1500;
         spotLight.shadow.camera.near = 10;
-        spotLight.name = "spot";
 
         this.scene.add(spotLight);
     }
@@ -172,16 +169,6 @@ export default class MatchPong {
     }
 
     builGameSet(data) {
-        // reset camera to have stadium on
-        this.camera.position.set(0, 700, 1000);
-        this.camera.lookAt(0, -100, 0);
-
-        // Ball initial stats
-        this.ball_x = 0;
-        this.ball_z = 480;
-        this.ball_radius = 1;
-
-        // rm previous scene stuff
         this.scene.children;
         for (let i = 0; i < this.scene.children.length; i++) {
             this.scene.children[i].remove();
@@ -211,19 +198,15 @@ export default class MatchPong {
 
         // Adjust this.Array for each case (2 players / 4 players)
         if (this.players_nick.length > 2) {
-            this.textArray = [`${this.players_nick[0]} + " " + ${this.players_nick[1]}`,
-            this.score_p1.toString(), " - ", this.score_p2.toString(),
-            `${this.players_nick[2]} + " " + ${this.players_nick[3]}`];
+            this.textArray = [`${this.players_nick[0]} + "\n" + ${this.players_nick[1]}`,
+            this.score_p1.toString(), "-", this.score_p2.toString(),
+            `${this.players_nick[2]} + "\n" + ${this.players_nick[3]}`];
         }
         else {
             this.textArray = [`${this.players_nick[0]}`,
-            this.score_p1.toString(), " - ", this.score_p2.toString(),
+            this.score_p1.toString(), "-", this.score_p2.toString(),
             `${this.players_nick[1]}`];
         }
-        this.newArray = ["team 1 " + this.textArray[0],
-                        this.textArray[1] + this.textArray[2] + this.textArray[3],
-                        "team 2 " + this.textArray[4]];
-        this.sprite = [];
 
         // Display scores to the scene
         this.printInitScores();
@@ -233,18 +216,17 @@ export default class MatchPong {
         this.createGameElements();
 
         // rotate stadium
-//        const   stadium = this.scene.getObjectByName("stadium");
-//        stadium.rotation.set(0.5, 0 ,0);
+        const   stadium = this.scene.getObjectByName("stadium");
+        stadium.rotation.set(0.5, 0 ,0);
     }
 
     createGameElements() { //3000
 
         this.createStadium();
 
-        this.createPaddle('p1');
-        this.createPaddle('p2');
-        this.createBall();
-
+//        this.createPaddle('p1');
+//        this.createPaddle('p2');
+//        this.createBall();
     }
 
     printInitScores() { //https://github.com/mrdoob/three.js/blob/master/examples/webgl_loader_ttf.html try it
@@ -257,6 +239,31 @@ export default class MatchPong {
 
         this.xPosition = 0;
 
+        // Creatematerials just once
+        // Material for nicknames
+        const nickTextMaterialP1 = new THREE.MeshStandardMaterial({
+            color: 0xff0000,
+            emissive: 0xff0000,
+            roughness: 0,
+            metalness: 0.555,
+        });
+
+        const nickTextMaterialP2 = new THREE.MeshStandardMaterial({
+            color: 0x1f51ff,
+            emissive: 0x0000ff,
+            roughness: 0,
+            metalness: 0.555,
+        });
+
+        // Material for scores
+        const textMaterial = new THREE.MeshStandardMaterial({
+            color: 0x8cff00,
+            emissive: 0x00ff00,
+            emissiveIntensity: 0.8,
+            metalness: 0.8,
+            roughness: 0,
+        });
+
         // vecto to get coords of text and center it on scene
         loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
             this.textArray.forEach((text, index) => {
@@ -264,6 +271,7 @@ export default class MatchPong {
                     text = "Team 1\n" + text
                 else if (index === 4)
                     text = "Team 2\n" + text
+
                 const textGeometry = new TextGeometry(text, {
                     font: font,
                     size: 45,
@@ -273,30 +281,6 @@ export default class MatchPong {
                     bevelThickness: 2,
                     bevelSize: 1.5,
                     bevelEnabled: true,
-                });
-
-                // Material for nicknames
-                const nickTextMaterialP1 = new THREE.MeshStandardMaterial({
-                    color: 0xff0000,
-                    emissive: 0xff0000,
-                    roughness: 0,
-                    metalness: 0.555,
-                });
-
-                const nickTextMaterialP2 = new THREE.MeshStandardMaterial({
-                    color: 0x1f51ff,
-                    emissive: 0x0000ff,
-                    roughness: 0,
-                    metalness: 0.555,
-                });
-
-                // Material for scores
-                const textMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x8cff00,
-                    emissive: 0x00ff00,
-                    emissiveIntensity: 0.8,
-                    metalness: 0.8,
-                    roughness: 0,
                 });
 
                 let textAdd;
@@ -317,17 +301,17 @@ export default class MatchPong {
                 const   boundingBox = textGeometry.boundingBox;
                 const   textWidth = boundingBox.max.x - boundingBox.min.x;
                 const   textHeight = boundingBox.max.y - boundingBox.min.y;
-                textGroup.position.y = textHeight + 50;
+                textGroup.position.y = (0.75 * window.innerHeight);
 
                 textAdd.position.x = this.xPosition;
                 if (index === 0 || index === 3)
-                    this.xPosition += textWidth + 100;
-                else if (index === 2)
-                    this.xPosition += 55;
+                    this.xPosition += textWidth + 250;
                 else
                     this.xPosition += textWidth + 10;
                 textGroup.add(textAdd);
-                this.updateTextGroup(this.xPosition);
+
+                if (index === 4)
+                    textGroup.position.x = -(this.xPosition / 2);
 
                 // Add a pulsing effect
                 const animate = () => {
@@ -340,12 +324,6 @@ export default class MatchPong {
                 animate();
             });
         });
-    }
-
-    updateTextGroup(value) {
-        const   textGroup = this.scene.getObjectByName("textGroup");
-        if (textGroup)
-            textGroup.position.x = - value / 2;
     }
 
      handleKeyEvent(event) {
@@ -377,15 +355,10 @@ export default class MatchPong {
         const geometry = new THREE.SphereGeometry(this.ball_radius, 48, 48);
         const material = new THREE.MeshStandardMaterial({map: ballTexture});
         const ball = new THREE.Mesh(geometry, material);
-        ball.castShadow = true;
-        ball.receiveShadow = true;
-        ball.position.set(0, 0, 0);
+        ball.position.set(this.ball_x, this.ball_y, 0);
         ball.name = 'ball';
         const   stadium = this.scene.getObjectByName("stadium");
-        this.scene.add(ball);
-        const   isBall = this.scene.getObjectByName("ball");
-        if (isBall)
-            console.log("Gotcha");
+        stadium.add(ball);
     }
 
     createPaddle(player = 'p1') {
@@ -417,24 +390,24 @@ export default class MatchPong {
         const   targetPositions = [];
         let     cube;
         let     end;
-        let     x = -300;
-        let     y = 0;
+        let     x = -210;
+        let     y = 450;
         let     z = 340;
         let     step = 20;
         let     i = -1;
 
-        while (++i < 88) {
-            if (i < 30) { // 21 -> 29
+        while (++i < 66) {
+            if (i < 21) { // 36
                 cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
                 x += step;
             }
-            else if (i >= 30 && i < 44) { // 33 -> 39
+            else if (i >= 21 && i < 33) { // 24
                 cube = cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
                 z -= step;
             }
-            else if (i >= 44 && i < 74) { // 54 -> 64
+            else if (i >= 33 && i < 54) { // 42
                 cube = cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
                 x -= step;
@@ -535,10 +508,9 @@ export default class MatchPong {
         const   s1 = new THREE.Vector3(2000,0, 0);
         const   s2 = new THREE.Vector3(0, 2000, 0);
         const   s3 = new THREE.Vector3(0, 0, 2000);
-        const   s4 = new THREE.Vector3(2000, 2000, 0);
-        startPositions.push(s1, s2, s3, s4);
+        startPositions.push(s1, s2, s3);
 
-        const   start = Math.floor(Math.random() * 4);
+        const   start = Math.floor(Math.random() * 3);
         cube.position.set(startPositions[start].x, startPositions[start].y, startPositions[start].z);
         return  cube;
     }
@@ -605,9 +577,7 @@ export default class MatchPong {
         const   msg = this.scene.getObjectByName("waitTxt");
         if (msg)
             this.waitMSGMove(msg);
-        const ball = this.scene.getObjectByName("ball");
-        if (ball)
-            ball.position.x += 0.1;
+
 //        const   hyphen = this.scene.getObjectByName("hyphen");
 //        if (hyphen) {
 //            if (this.camera.position.y > 400) {
@@ -619,17 +589,13 @@ export default class MatchPong {
 //                this.camera.rotation.z = 0;
 //            }
 //        }
-//        const   textGroup = this.scene.getObjectByName("textGroup");
-//        if (textGroup && textGroup.length > 0)
-//            this.updateTextPosition();
+
 
         this.updateBallPosition();
 
         // Render scene
         this.renderer.render(this.scene, this.camera);
     }
-
-
 
 
     waitMSGMove(msg) {
@@ -673,7 +639,7 @@ export default class MatchPong {
         }
     }
 
-    checkCollisions(ball) {
+    async checkCollisions(ball) {
         // Check for collisions with paddles
         const paddle1 = this.scene.getObjectByName('p1');
         const paddle2 = this.scene.getObjectByName('p2');
@@ -695,7 +661,7 @@ export default class MatchPong {
             ball.position.set(0, 0, 0);
             this.ball_velocity_x = 0;
             this.ball_velocity_y = 0;
-            this.rotateScore(2);
+            await this.rotateScore(2);
             this.score_p2++;
             this.textArray[3] = this.score_p2.toString();
             this.updateScores();
@@ -708,7 +674,7 @@ export default class MatchPong {
             ball.position.set(0, 0, 0);
             this.ball_velocity_x = 0;
             this.ball_velocity_y = 0;
-            this.rotateScore(1);
+            await this.rotateScore(1);
             this.score_p1++;
             this.textArray[1] = this.score_p1.toString();
             this.updateScores();
