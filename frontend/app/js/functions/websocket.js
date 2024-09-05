@@ -28,15 +28,15 @@ export async function initializePurrinhaWebSocket(gameCode) {
                 const socket = new WebSocket(url);
 
                 socket.onopen = function (e) {
-                    console.log("WebSocket connection established");
+                    console.log("Purrinha webSocket connection established");
                     resolve(socket);
                 }
 
                 socket.onmessage = function (event) {
                     console.log("WebSocket connection established: " + event.data);
                     const data = JSON.parse(event.data);
+                    console.log("Data is:", data);
                 };
-
 
                 socket.onclose = function (event) {
                     if (event.wasClean) {
@@ -48,7 +48,7 @@ export async function initializePurrinhaWebSocket(gameCode) {
                 };
 
                 socket.onerror = function (error) {
-                    // console.log(`WebSocket Error: ${error.message}`);
+                    console.log(`Purrinha webSocket Error: ${error.message}`);
                     reject(error);
                 };
                 window.mySocket = socket; // to access as a global var

@@ -131,6 +131,10 @@ body.bg-gradient {
     min-height: 100vh;
 }
 
+.w-screen {
+    width: 100vw;
+}
+
 .bg-victory {
     background: linear-gradient(to right, #3e783e 60%, transparent);
 }
@@ -231,4 +235,86 @@ body.bg-gradient {
 .play-btn:hover::after,
 .play-btn:focus::after {
     opacity: 0.6;
+}
+
+.top-edge {
+    height: 100%;
+    width: auto;
+}
+
+.bottom-edge {
+    height: 100%;
+    width: auto;
+}
+
+.left-edge {
+    /*transform: rotate(90deg) translate(0, 10%) scale(0.6);*/
+}
+
+.right-edge {
+    transform: rotate(-90deg) translate(0, 10%) scale(0.6);
+}
+
+
+.top-edge-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 25vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.bottom-edge-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 25vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.right-edge-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 25vh;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Ensure content does not overflow */
+}
+
+.left-edge-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 25vh;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Ensure content does not overflow */
+}
+
+
+
+
+.equal-elmt-x {
+    width: 50vw;
+    height: 100%;
+}
+
+.equal-elmt-y {
+    height: 50vh;
+    width: 100%;
 }

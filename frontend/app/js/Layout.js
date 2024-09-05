@@ -1,9 +1,10 @@
 import Navbar from "@js/components/Navbar.js";
 
 export default class Layout {
-    constructor(view, user = null) {
+    constructor(view, user = null, remove_navbar = false) {
         this.view = view;
         this.user = user;
+        this.remove_navbar = remove_navbar;
     }
 
     render() {
@@ -13,12 +14,17 @@ export default class Layout {
         }
         const view = new this.view({user: this.user});
         if (this.user) {
-            return `
-                ${navbar.render()}
-<!--                <div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">-->
+            if (this.remove_navbar) {
+                return `
                     ${view.render()}
-<!--                </div>-->
-            `;
+                `;
+            }
+            else {
+                return `
+                    ${navbar.render()}
+                    ${view.render()}
+                `;
+            }
         } else {
             return `
                 ${view.render()}
@@ -27,7 +33,7 @@ export default class Layout {
     }
 
     setupEventListeners() {
-        if (this.user) {
+        if (!this.remove_navbar && this.user) {
             const navbar = new Navbar(this.user);
             navbar.setupEventListeners();
         }

@@ -18,13 +18,20 @@ export default class Route {
     }
 
     renderView() {
-        const layout = new Layout(this.view, this.user);
+        let remove_navbar = false;
+        if (this.name === '/purrinha') {
+            remove_navbar = true;
+        }
+        const layout = new Layout(this.view, this.user, remove_navbar);
         return layout.render();
     }
 
     setupEventListeners() {
-        // return new this.view({ ...this.props, user: this.user }).setupEventListeners();
-        const layout = new Layout(this.view, this.user);
+        let remove_navbar = false;
+        if (this.name === '/purrinha') {
+            remove_navbar = true;
+        }
+        const layout = new Layout(this.view, this.user, remove_navbar);
         layout.setupEventListeners();
     }
 }

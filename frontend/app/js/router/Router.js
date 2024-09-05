@@ -66,6 +66,13 @@ export default class Router {
             console.log("404 Not Found");
             this.renderNode.innerHTML = '<h1>404 Not Found</h1>';
         } else {
+            const body = document.querySelector('body');
+            if (body && path.startsWith('/purrinha')) {
+                body.classList.add('overflow-hidden');
+            }
+            else if (body) {
+                body.classList.remove('overflow-hidden');
+            }
             if (!publicRoutes.includes(path) && !isUserAuth) {
                 console.log("401 Unauthorized");
                 this.renderNode.innerHTML = '<h1>401 Unauthorized</h1>';

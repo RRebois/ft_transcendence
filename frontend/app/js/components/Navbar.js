@@ -28,7 +28,7 @@ export default class Navbar {
 
 	render() {
 		return `
-			<nav class="navbar navbar-expand-lg w-full bg-light">
+			<nav id="navbar" class="navbar navbar-expand-lg w-full bg-light z-3">
 				<div class="container-fluid">
 					<a href="/dashboard" class="navbar-brand play-bold">ft_transcendence 🏓</a>
 					<div class="d-flex align-items-center">
