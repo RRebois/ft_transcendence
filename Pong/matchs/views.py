@@ -2,11 +2,15 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from rest_framework.exceptions import AuthenticationFailed
+from django.contrib import messages
+from rest_framework import status
 from rest_framework.views import APIView
 from django.http import Http404, JsonResponse
 
 
 from userManagement.models import User, UserData
+from userManagement.views import authenticate_user
 from .models import *
 from userManagement.utils import gen_timestamp
 
@@ -102,4 +106,53 @@ def create_match(match_result, winner, is_pong=True):
         match.players.add(player)
     update_match_data(players_data, winner, is_pong)
     match.save()
-    # return match
+    return match
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class   CreateTournament(APIView):
+
+    def get(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        tournament = Tournament.objects.create()
+        tournament.players.add(user)
+        tournament.save()
+        return JsonResponse({"tournament_id": tournament.get_id()}, status=200)
+
+class   JoinTournament(APIView):
+
+    def launch_tournament(self, user, tournament):
+        count = tournament.players.count()
+        tournament.players.add(user)
+        if count + 1 == 4:
+            for i in range(3):
+                TournamentMatch.objects.create(match_order=(i + 1), tournament=tournament)
+            tournament.is_closed = True
+            # create the matchs and start tournament.
+            # How to inform the users? Is it possible to use the websocket?
+            # How to manage the data?
+            # Create a cache to real time update, then deal with the db update.
+            # Create a View to handle the cache/db data when called.
+        tournament.save()
+
+    def get(self, request, session_id):
+
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            tournament = Tournament.objects.get(id=session_id)
+        except:
+            return JsonResponse({"error": "Tournament does not exist."}, status=404)
+        if tournament.is_closed:
+            return JsonResponse({"error": "Tournament is already closed."}, status=404)
+        self.launch_tournament(user, tournament)
+
+
+        pass

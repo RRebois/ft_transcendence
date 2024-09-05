@@ -101,7 +101,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		else:
 			self.game_handler = GameManagerConsumer.matchs.get(self.session_id)
 			await self.game_handler.add_consumer(self)
-			await self.loop_task.cancel()
+			self.loop_task.cancel()
 
 
 	@database_sync_to_async
@@ -159,6 +159,7 @@ class PongHandler():
 	async def	launch_game(self, players_name):
 		self.message = self.consumer[0].session_data
 		self.game = PongGame(players_name, multiplayer=(self.game_code == 40))
+		await self.send_game_state()
 		# await self.reset_game()
 		if 'bot' in self.message['players']:
 			# init_bot()
@@ -186,15 +187,18 @@ class PongHandler():
 
 	async def	game_loop(self):
 		while True:
-			await self.send_game_state()
+			await self.update_game_state()
 			await asyncio.sleep(0.1)
 
-	async def	send_game_state(self):
+	async def	update_game_state(self):
 		await self.game.update()
+		await self.send_game_state()
+		await self.end_game()
+
+	async def	send_game_state(self):
 		game_state = await self.game.serialize()
 		self.message['game_state'] = game_state
 		await self.consumer[0].send_to_group(self.message)
-		await self.end_game()
 
 	async def	cancel_loop(self):
 		if hasattr(self, 'loop_task'):
