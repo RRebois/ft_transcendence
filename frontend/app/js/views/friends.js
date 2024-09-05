@@ -22,12 +22,12 @@ export default class Friends {
 						</button>
 					</form>
 					<div class="container align-items-center">
-						<p class="play-bold d-flex flex-column">Friend requests</p>
+						<p class="play-bold text-justify d-flex flex-column fs-5">Friend requests</p>
 						<div id="friend-requests-sent" class="d-flex flex-column w-100"></div>
 						<div id="friend-requests" class="d-flex flex-column w-100"></div>
 					</div>
 					<div class="container align-items-center">
-						<p class="play-bold d-flex flex-column">Your friends</p>
+						<p class="play-bold text-justify d-flex flex-column fs-5">Your friends</p>
 						<div id="user-friends" class="d-flex flex-column w-100"></div>
 					</div>
 				</div>

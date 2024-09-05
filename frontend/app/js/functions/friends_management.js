@@ -8,6 +8,9 @@ export function remove_friend_request_div(userId) {
 
 export function create_friend_request_sent_div(request) {
 	const friendRequestContainer = document.getElementById("friend-requests-sent");
+	const friendRequestExists = document.getElementById(`friend-request-item-${request?.to_user_id}`)
+	if (friendRequestExists)
+		return ;
 	const friendRequestItem = document.createElement("div");
 	let statusDot;
 	if (request.to_user_status === 'online')
