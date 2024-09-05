@@ -1,4 +1,8 @@
+import logging
+import uuid
+
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 from userManagement.models import User
 
 
@@ -7,7 +11,7 @@ from userManagement.models import User
 
 class Match(models.Model):
     players = models.ManyToManyField('userManagement.User', related_name="matchs", default=list)
-    winner = models.ManyToManyField('userManagement.User', related_name="winners", default=list)
+    winner = models.ManyToManyField('userManagement.User', related_name="winners", default=list, blank=True)
     is_pong = models.BooleanField(default=True)
     timeMatch = models.DateTimeField(auto_now_add=True)
     count = models.IntegerField(default=2)
@@ -16,9 +20,10 @@ class Match(models.Model):
         ordering = ['-timeMatch']
 
     def serialize(self):
-        winners_list = ['deleted_user' for i in range(1, self.count // 2)]
-        for i, winner in enumerate(self.winner.all()):
-            winners_list[i] = winner.username
+        winners_list = ['deleted_user' for i in range(0, self.count // 2)]
+        if len(winners_list) > 0:
+            for i, winner in enumerate(self.winner.all()):
+                winners_list[i] = winner.username
 
         return {
             'id': self.id,
@@ -35,3 +40,60 @@ class Score(models.Model):
     player = models.ForeignKey('userManagement.User', on_delete=models.SET_NULL, null=True, related_name='scores')
     match = models.ForeignKey('Match', on_delete=models.CASCADE, related_name='scores')
     score = models.IntegerField(default=0)
+
+
+class Tournament(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    players = models.ManyToManyField('userManagement.User', related_name='tournaments', default=list)
+    is_closed = models.BooleanField(default=False)
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'matchs': {match.serialize() for match in self.tournament_matchs.all()},
+            }
+
+    def get_id(self):
+        return self.id
+
+
+class TournamentMatch(models.Model):
+
+    order_choices = [
+        (1, 'first_match'),
+        (2, 'second_match'),
+        (3, 'final_match'),
+    ]
+    match_order = models.IntegerField(choices=order_choices)
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='tournament_matchs')
+    match = models.ForeignKey(Match, on_delete=models.SET_NULL, null=True, blank=True, related_name='tournament_match')
+    score = ArrayField(models.IntegerField(), blank=True)
+
+    def serialize(self):
+        match_result = {
+            'players': {},
+            'winner': [],
+        }
+        if not self.match:
+            if not self.score:
+                match_result['players'] = {
+                    '????????': 0,
+                    '????????': 0,
+                }
+            else:
+                match_result['players'] = {
+                    'deleted_user': self.score[0],
+                    'deleted_user': self.score[1],
+                }
+                match_result['winner'] = ['deleted_user']
+        else:
+            serialized = self.match.serialize()
+            match_result['players'] = serialized.players
+            match_result['winner'] = serialized.winner
+
+        return {
+            self.match_order: {
+                match_result
+            }
+        }
+

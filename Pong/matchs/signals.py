@@ -8,3 +8,7 @@ def delete_match_if_no_users(sender, instance, **kwargs):
     for match in matchs:
         if match.players.count() <= 1:
             match.delete()
+    tournaments = instance.tournaments.all()
+    for tournament in tournaments:
+        if tournament.players.count() <= 1:
+            tournament.delete()
