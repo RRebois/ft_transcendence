@@ -18,8 +18,8 @@ export default class Friends {
 						<form id="addfriend" class="d-flex mb-2">
 							<input type="text" id="username" class="form-control m-1"/>
 							<button type="submit" class="btn btn-primary d-flex m-1" id="addfriend-submit">
-								Send
-								<i class="bi bi-person-add"></i>
+								Send 
+								<i class="bi bi-person-add ms-2"></i>
 							</button>
 						</form>
 					</div>
@@ -122,10 +122,11 @@ export default class Friends {
 
 	send_friend_request(event) {
 		event.preventDefault();
-		const requestBtn = document.getElementById("addfriend-submit")
+		const requestBtn = document.getElementById("addfriend-submit");
 		if (requestBtn)
 			requestBtn.disabled = true;
-		const usernameValue = document.getElementById("username").value;
+		const input = document.getElementById("username");
+		const usernameValue = input.value;
 		const csrfToken = getCookie("csrftoken");
 		fetch("https://localhost:8443/send_friend", {
 			method: "POST",

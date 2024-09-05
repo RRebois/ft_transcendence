@@ -423,6 +423,83 @@ class UserPersonalInformationView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
+class UpNewAvatarView(APIView):
+    serializer_class = ProfilePicSerializer
+
+    def post(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if request.method == 'POST':
+            if request.FILES:
+                image = request.FILES['newImageFile']
+                serializer = self.serializer_class(data={'image': image})
+                if serializer.is_valid():
+                    sha256_hash = hashlib.sha256(image.read()).hexdigest()
+
+                    if Avatars.objects.filter(image_hash_value=sha256_hash).exists():
+                        if Avatars.objects.get(image_hash_value=sha256_hash) == Avatars.objects.get(pk=user.avatar_id.pk):
+                            return Response({"success": False, "message": "You already have that same avatar. "
+                                                                          "Don't mess with me duh"})  # A modifier
+                        else:
+                            profile_img = Avatars.objects.get(image_hash_value=sha256_hash)
+                            profile_img.uploaded_from.add(user)
+                            profile_img.save()
+                            user.avatar_id = profile_img
+                            user.save()
+                            return Response(
+                                {"success": True, "message": "You have successfully changed your avatar"})  # A modifier
+                    else:
+                        profile_img = Avatars.objects.create(image=image, image_hash_value=sha256_hash)
+                        profile_img.uploaded_from.add(user)
+                        profile_img.save()
+                        user.avatar_id = profile_img
+                        user.save()
+                        return Response(
+                            {"success": True, "message": "You have successfully updated a new avatar"})  # A modifier
+                else:
+                    return Response(
+                        {"success": False, "message": "An error occurred. Image format and/or size not valid. "
+                                           "Only jpg/jpeg/gif and png images are allowed. "
+                                           "images cannot be larger than "
+                                           f"{convert_to_megabyte(FILE_UPLOAD_MAX_MEMORY_SIZE)}MB."})  # A modifier
+            else:
+                return Response(
+                    {"success": False, "message": "An error occurred. No new profile pic provided"})  # A modifier
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class ChangeAvatarView(APIView):
+    def put(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return Response({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+
+        data = request.data
+        res = True if "data" in data and data["data"] is not None else False
+        if not res:
+            return JsonResponse({"success": False, "message": "No avatar selected. Please try again."})
+        src = data["data"].split("media")
+        path = "/media" + src[1]
+        print(path)
+        try:
+            user_avatars = Avatars.objects.filter(uploaded_from=user)
+            for avatar in user_avatars:
+                print(avatar.serialize()["image"])
+                if avatar.serialize()["image"] == path:
+                    user.avatar_id = avatar
+                    user.save()
+                    return JsonResponse({"success": True, "message": "Avatar changed successfully."})
+            return JsonResponse({"success": False, "message": "An error occurred. Please try again."})
+        except Avatars.DoesNotExist:
+            return JsonResponse({"success": False, "message": "An error occurred. Please try again."})
+
+@method_decorator(csrf_protect, name='dispatch')
 class EditDataView(APIView):
     serializer_class = EditUserSerializer
     def put(self, request):

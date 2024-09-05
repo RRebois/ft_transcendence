@@ -128,9 +128,9 @@ export default class MyProfile {
 		const otp_enable = document.getElementById('2fa-enable').checked;
 		const otp_switch_label = document.getElementById('2fa-enable-label');
 		if (otp_enable) {
-			otp_switch_label.innerText = '2FA is enable 🔒';
+			otp_switch_label.innerText = '2FA is enabled 🔒';
 		} else {
-			otp_switch_label.innerText = '2FA is disable 🔓';
+			otp_switch_label.innerText = '2FA is disabled 🔓';
 		}
 		fetch('https://localhost:8443/2FA', {
 			method: 'PUT',
