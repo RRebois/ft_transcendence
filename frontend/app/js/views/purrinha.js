@@ -11,6 +11,9 @@ export default class PurrinhaGame {
 		this.nb_players = this.getNumberOfPlayers(this.props?.code);
 		this.max_value = this.getMaxAvailableValue(this.nb_players);
 		this.initializeWs(this.props?.code);
+
+		this.players = [];
+
 		document.addEventListener('DOMContentLoaded', this.setupEventListeners.bind(this));
 	}
 
@@ -25,6 +28,27 @@ export default class PurrinhaGame {
 	getMaxAvailableValue(nb_players) {
 		console.log("nb_players: ", nb_players);
 		return (nb_players * 3);
+	}
+
+	pick_inital_number() {
+		const root = document.getElementById('game-root');
+		if (root) {
+			root.innerHTML += `
+				<div id="pick-initial-number">
+					<p>Please, pick a number</p>
+					<div class="d-flex justify-content-center">
+						<div class="btn-group btn-group-lg" role="group" aria-label="Pick a number">
+							<input type="radio" class="btn-check" name="initial-choice" id="initial-choice-1" autocomplete="off">
+							<label class="btn btn-outline-dark" for="initial-choice-1">1</label>
+							<input type="radio" class="btn-check" name="initial-choice" id="initial-choice-2" autocomplete="off">
+							<label class="btn btn-outline-dark" for="initial-choice-2">2</label>
+							<input type="radio" class="btn-check" name="initial-choice" id="initial-choice-3" autocomplete="off">
+							<label class="btn btn-outline-dark" for="initial-choice-3">3</label>
+						</div>
+					</div>
+				</div>
+			`;
+		}
 	}
 
 
@@ -79,6 +103,7 @@ export default class PurrinhaGame {
 						<div class="equal-elmt-y"></div>
 					</div>
 				`;
+				this.pick_inital_number();
 			} else if (this.nb_players === 4) {
 				gameRoot.innerHTML = `
 <!--					<div class="top-edge-container">-->
@@ -188,6 +213,7 @@ export default class PurrinhaGame {
 		document.title = "ft_transcendence | Purrinha";
 		return `
 			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center overflow-hidden" id="game-root">
+				
 			</div>
 
 			<!-- Waiting for players modal-->

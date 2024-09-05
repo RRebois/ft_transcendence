@@ -237,25 +237,6 @@ body.bg-gradient {
     opacity: 0.6;
 }
 
-.top-edge {
-    height: 100%;
-    width: auto;
-}
-
-.bottom-edge {
-    height: 100%;
-    width: auto;
-}
-
-.left-edge {
-    /*transform: rotate(90deg) translate(0, 10%) scale(0.6);*/
-}
-
-.right-edge {
-    transform: rotate(-90deg) translate(0, 10%) scale(0.6);
-}
-
-
 .top-edge-container {
     position: absolute;
     top: 0;
@@ -305,9 +286,6 @@ body.bg-gradient {
     align-items: center;
     overflow: hidden; /* Ensure content does not overflow */
 }
-
-
-
 
 .equal-elmt-x {
     width: 50vw;
