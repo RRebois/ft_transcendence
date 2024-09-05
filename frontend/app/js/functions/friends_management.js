@@ -20,8 +20,8 @@ export function create_friend_request_sent_div(request) {
 	friendRequestItem.innerHTML = `
 		<div class="position-relative d-inline-block">
 			<img src="${request?.to_image_url}" alt="user_pp" class="h-64 w-64 rounded-circle" />
-				<span style="left: 60px; top: 5px" id="friend-status-${request?.to_user_id}"
-				 class="position-absolute translate-middle p-2 ${statusDot} border border-light rounded-circle">
+				<span style="left: 60px; top: 5px" id="friend-status-${request?.to_user_id}" data-id=${request?.to_user_id}
+				 class="position-absolute translate-middle p-2 ${statusDot} border border-light rounded-circle ">
 				<span id = "friend-status-text-${request?.to_user_id}" class="visually-hidden">Offline</span>
 			</span>
 		</div>

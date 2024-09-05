@@ -131,8 +131,6 @@ function handle_friend_status(socket, message){
         }
         console.log("User id is: ", message.user_id);
         let friendID = message.user_id
-        // let friendStatus = document.getElementById("`friend-status-${message.user_id}`");
-        // let friendStatusText = document.getElementById(`friend-status-text-${message.user_id}`);
         let friendStatusId = `friend-status-${message.user_id}`;
         let friendStatusTextId = `friend-status-text-${message.user_id}`;
 
