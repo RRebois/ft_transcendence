@@ -12,23 +12,27 @@ export default class Friends {
 		document.title = 'ft_transcendence | Friends'
 		return `
 			<div class="d-flex w-full min-h-full flex-grow-1">
-				<div class="min-h-full w-full d-flex flex-column justify-content-start align-items-center px-5" style="gap: 16px;">
-					<h1 class="play-bold">Add a friend</h1>
-					<form id="addfriend">
-						<input type="text" id="username"/>
-						<button type="submit" class="btn btn-primary" id="addfriend-submit">
-							Add friend
-							<i class="bi bi-person-add"></i>
-						</button>
-					</form>
-					<div class="container align-items-center">
-						<p class="play-bold text-justify d-flex flex-column fs-5">Friend requests</p>
-						<div id="friend-requests-sent" class="d-flex flex-column w-100"></div>
-						<div id="friend-requests" class="d-flex flex-column w-100"></div>
+				<div class="d-flex min-h-full w-full flex-column align-items-center px-5" style="gap: 16px;">
+					<div class="bg-white rounded login-card min-h-full w-75 d-flex flex-column justify-content-center align-items-center px-5 mb-5 mt-5" style="gap: 16px; --bs-bg-opacity: .5;">
+						<h1 class="play-bold text-center mt-1">Add a friend</h1>
+						<form id="addfriend" class="d-flex mb-2">
+							<input type="text" id="username" class="form-control m-1"/>
+							<button type="submit" class="btn btn-primary d-flex m-1" id="addfriend-submit">
+								Send
+								<i class="bi bi-person-add"></i>
+							</button>
+						</form>
 					</div>
-					<div class="container align-items-center">
-						<p class="play-bold text-justify d-flex flex-column fs-5">Your friends</p>
-						<div id="user-friends" class="d-flex flex-column w-100"></div>
+					<div class="min-h-full w-75 d-flex flex-column justify-content-start align-items-center mt-5" style="gap: 16px;">
+						<div class="w-full align-items-center text-center">
+							<p class="play-bold text-justify d-flex flex-column fs-5">Friend requests</p>
+							<div id="friend-requests-sent" class="d-flex flex-column w-100"></div>
+							<div id="friend-requests" class="d-flex flex-column w-100"></div>
+						</div>
+						<div class="w-full align-items-center text-center">
+							<p class="play-bold text-justify d-flex flex-column fs-5">Your friends</p>
+							<div id="user-friends" class="d-flex flex-column w-100"></div>
+						</div>
 					</div>
 				</div>
 			</div>

@@ -17,9 +17,9 @@ export function create_friend_request_sent_div(request) {
 		statusDot = "bg-success";
 	else
 		statusDot = "bg-danger";
-	friendRequestItem.classList.add("d-flex", "w-100", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-5", "rounded");
+	friendRequestItem.classList.add("d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-3", "rounded");
 	friendRequestItem.id = `friend-request-item-${request?.to_user_id}`;
-	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto";
+	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendRequestItem.innerHTML = `
 		<div class="position-relative d-inline-block">
 			<img src="${request?.to_image_url}" alt="user_pp" class="h-64 w-64 rounded-circle" />
@@ -28,9 +28,9 @@ export function create_friend_request_sent_div(request) {
 				<span id = "friend-status-text-${request?.to_user_id}" class="visually-hidden">Offline</span>
 			</span>
 		</div>
-		<p>${request?.to_user || request.to_user__username}</p>
-		<p>Sent : ${new Date(request?.time).toLocaleString()}</p>
-		<p>${request?.status}</p>
+		<p class="m-0">${request?.to_user || request.to_user__username}</p>
+		<p class="m-0">Sent : ${new Date(request?.time).toLocaleString()}</p>
+		<p class="m-0">${request?.status}</p>
 	`;
 	friendRequestContainer.appendChild(friendRequestItem);
 }
@@ -43,21 +43,23 @@ export function create_friend_request_div(request) {
 		statusDot = "bg-success";
 	else
 		statusDot = "bg-danger";
-	friendRequestItem.classList.add("d-flex", "w-100", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-5", "rounded");
+	friendRequestItem.classList.add("d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-3", "rounded");
 	friendRequestItem.id = `friend-request-item-${request?.from_user_id}`;
-	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto";
+	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendRequestItem.innerHTML = `
-		<div class="position-relative d-inline-block">
+		<div class="position-relative d-inline-block m-2">
 			<img src="${request?.from_image_url}" alt="user_pp" class="h-64 w-64 rounded-circle" />
 				<span style="left: 60px; top: 5px" id="friend-status-${request?.from_user_id}"
 				 class="position-absolute translate-middle p-2 ${statusDot} border border-light rounded-circle">
 				<span id = "friend-status-text-${request?.from_user_id}" class="visually-hidden">Offline</span>
 			</span>
 		</div>
-		<p>${request?.from_user || request.from_user__username}</p>
-		<p>Received : ${new Date(request?.time).toLocaleString()}</p>
-		<button class="btn btn-success confirm-request-btn" data-id="${request?.from_user_id}">Accept</button>
-		<button class="btn btn-danger decline-request-btn" data-id="${request?.from_user_id}">Decline</button>
+		<p class="m-2">${request?.from_user || request.from_user__username}</p>
+		<p class="m-2">Received : ${new Date(request?.time).toLocaleString()}</p>
+		<div class="d-flex flex-column m-1">
+			<button class="m-1 btn btn-success confirm-request-btn" data-id="${request?.from_user_id}">Accept</button>
+			<button class="m-1 btn btn-danger decline-request-btn" data-id="${request?.from_user_id}">Decline</button>
+		</div>
 	`;
 	friendRequestContainer.appendChild(friendRequestItem);
 	document.querySelectorAll(".confirm-request-btn").forEach(button => {
@@ -76,8 +78,8 @@ export function create_friend_div_load(friend) {
 		statusDot = "bg-success";
 	else
 		statusDot = "bg-danger";
-	friendItem.classList.add("d-flex", "w-100", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-5", "rounded");
-	friendItem.style.cssText = "--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto";
+	friendItem.classList.add("d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-3", "rounded");
+	friendItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendItem.id = `friend-item-${friend?.from_user_id}`;
 	friendItem.innerHTML = `
         <div class="position-relative d-inline-block">
@@ -87,11 +89,11 @@ export function create_friend_div_load(friend) {
                 <span id="friend-status-text-${friend?.from_user_id}" class="visually-hidden">Offline</span>
             </span>
         </div>
-        <p>${friend?.from_user}</p>
+        <p class="m-0">${friend?.from_user}</p>
         <div class="status-container" data-id="${friend?.from_user_id}">
-            <p class="status">Status: ${friend?.from_status}</p>
+            <p class="status m-0">Status: ${friend?.from_status}</p>
         </div>
-        <button class="btn btn-danger remove-friend-btn" data-id="${friend?.from_user_id}">Remove</button>
+        <button class="btn btn-danger remove-friend-btn m-1" data-id="${friend?.from_user_id}">Remove</button>
     `;
 	friendListContainer.appendChild(friendItem);
 	document.querySelectorAll(".remove-friend-btn").forEach(button => {
@@ -109,8 +111,8 @@ export function create_friend_div_ws(status, id, img_url, username) {
 		statusDot = "bg-danger";
 	console.log("status is: ", status);
 	console.log("Dot is: ", statusDot);
-	friendItem.classList.add("d-flex", "w-100", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-5", "rounded");
-	friendItem.style.cssText = "--bs-bg-opacity: .5; margin-bottom: 15px; width: 50%; display: block; margin-left: auto; margin-right: auto";
+	friendItem.classList.add("d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-3", "rounded");
+	friendItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendItem.id = `friend-item-${id}`;
 	friendItem.innerHTML = `
         <div class="position-relative d-inline-block">
@@ -120,11 +122,11 @@ export function create_friend_div_ws(status, id, img_url, username) {
                 <span id="friend-status-text-${id}" class="visually-hidden">Offline</span>
             </span>
         </div>
-        <p>${username}</p>
+        <p class="m-0">${username}</p>
         <div class="status-container" data-id="${id}">
-            <p class="status">Status: ${status}</p>
+            <p class="status m-0">Status: ${status}</p>
         </div>
-        <button class="btn btn-danger remove-friend-btn" data-id="${id}">Remove</button>
+        <button class="btn btn-danger remove-friend-btn m-1" data-id="${id}">Remove</button>
     `;
 	friendListContainer.appendChild(friendItem);
 	document.querySelectorAll(".remove-friend-btn").forEach(button => {
