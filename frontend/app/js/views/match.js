@@ -240,10 +240,11 @@ export default class MatchPong {
     createGameElements() { //3000
 
         this.createStadium();
-
-        this.createPaddle('p1');
-        this.createPaddle('p2');
+//
+//        this.createPaddle('p1');
+//        this.createPaddle('p2');
         this.createBall();
+
 
     }
 
@@ -372,20 +373,24 @@ export default class MatchPong {
 
     createBall() {
         const   textureLoader = new THREE.TextureLoader();
-        const   ballTexture = textureLoader.load('/football.jpg');
+        const   ballTexture = textureLoader.load("/football.jpg");
 
-        const geometry = new THREE.SphereGeometry(this.ball_radius, 48, 48);
-        const material = new THREE.MeshStandardMaterial({map: ballTexture});
-        const ball = new THREE.Mesh(geometry, material);
+        const   geometry = new THREE.SphereGeometry(10, 48, 48);
+        const   material = new THREE.MeshStandardMaterial({map: ballTexture});
+        const   ball = new THREE.Mesh(geometry, material);
+
+        ball.position.set(-10, 0, 200);
+
         ball.castShadow = true;
         ball.receiveShadow = true;
-        ball.position.set(0, 0, 0);
-        ball.name = 'ball';
+//        ball.position.set(0, 0, 0);
+//        ball.name = "ball";
+
         const   stadium = this.scene.getObjectByName("stadium");
-        this.scene.add(ball);
-        const   isBall = this.scene.getObjectByName("ball");
-        if (isBall)
-            console.log("Gotcha");
+        stadium.add(ball);
+//        const   isBall = this.scene.getObjectByName("ball");
+//        if (isBall)
+//            console.log("Gotcha");
     }
 
     createPaddle(player = 'p1') {
