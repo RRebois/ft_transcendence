@@ -1,5 +1,6 @@
 import { getCookie } from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
+import {create_previous_avatar_div} from "../functions/create.js";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 export default class Navbar {
@@ -71,6 +72,30 @@ export default class Navbar {
 		})
 	}
 
+	loadPreviousAvatar() {
+		fetch("https://localhost:8443/getAllTimeUserAvatars", {
+			method: "GET",
+			credentials: "include"
+		})
+		.then(response => response.json().then(data => ({ok: response.ok, data})))
+		.then(({ok, data}) => {
+			console.log("Data: ", data);
+			if (!ok) {
+				const toastComponent = new ToastComponent();
+				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+			} else {
+				data.map(avatar => {
+					create_previous_avatar_div(avatar);
+				});
+			}
+		})
+		.catch(error => {
+			console.error("Error fetching previous avatars: ", error);
+			const toastComponent = new ToastComponent();
+			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+		});
+	}
+
 	render() {
 		return `
 			<nav class="navbar navbar-expand-lg w-full bg-light">
@@ -110,12 +135,12 @@ export default class Navbar {
 								<p class="play-bold">Your current avatar</p>
 								<img src="${this.user?.image_url}" class="rounded-circle h-128 w-128" alt="avatar">
 								<div>
-									<p class="play-bold">Select one of your previous avatars</p>
+									<p class="play-bold mt-1">Select one of your previous avatars</p>
 									<!-- Previous profile pictures to load here -->
 									<div class="d-flex" id="previous-pp-list">
-										<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">
-										<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">
-										<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">
+<!--										<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">-->
+<!--										<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">-->
+<!--										<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">-->
 									</div>
 								</div>
 								<hr />
@@ -151,5 +176,6 @@ export default class Navbar {
 		if (saveAvatarBtn){
 			saveAvatarBtn.addEventListener("click", this.changeAvatar);
 		}
+		this.loadPreviousAvatar();
 	}
 }

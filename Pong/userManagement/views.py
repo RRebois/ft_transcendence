@@ -409,7 +409,7 @@ class GetAllUserAvatarsView(APIView):
         for avatar in avatars:
             if avatar != current:
                 avatar_list.append(avatar)
-        return JsonResponse([avatar.serialize() for avatar in avatar_list], safe=False)
+        return JsonResponse([avatar.serialize() for avatar in avatar_list], safe=False, status=200)
 
 
 @method_decorator(csrf_protect, name='dispatch')
