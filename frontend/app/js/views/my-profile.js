@@ -201,24 +201,24 @@ export default class MyProfile {
 				'confirm_password': confirm_password
 			})
 		})
-			.then(response => response.json().then(data => ({ok: response.ok, data})))
-			.then(({ok, data}) => {
-				if (!ok) {
-					const toastComponent = new ToastComponent();
-					toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
-					pwBtn.disabled = false;
-				} else {
-					const toastComponent = new ToastComponent();
-					toastComponent.throwToast('Success', data.message, 5000, 'success');
-					pwBtn.disabled = false;
-				}
-			})
-			.catch(error => {
-				console.error('Error:', error);
+		.then(response => response.json().then(data => ({ok: response.ok, data})))
+		.then(({ok, data}) => {
+			if (!ok) {
 				const toastComponent = new ToastComponent();
-				toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+				toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
 				pwBtn.disabled = false;
-			})
+			} else {
+				const toastComponent = new ToastComponent();
+				toastComponent.throwToast('Success', data.message, 5000, 'success');
+				pwBtn.disabled = false;
+			}
+		})
+		.catch(error => {
+			console.error('Error:', error);
+			const toastComponent = new ToastComponent();
+			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+			pwBtn.disabled = false;
+		})
 	}
 
 	handleDeleteAccount = (event) => {

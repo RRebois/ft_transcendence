@@ -435,7 +435,7 @@ class UpNewAvatarView(APIView):
 
         if request.method == 'POST':
             if request.FILES:
-                image = request.FILES['newImageFile']
+                image = request.FILES['newAvatar']
                 serializer = self.serializer_class(data={'image': image})
                 if serializer.is_valid():
                     sha256_hash = hashlib.sha256(image.read()).hexdigest()
@@ -449,21 +449,23 @@ class UpNewAvatarView(APIView):
                             profile_img.save()
                             user.avatar_id = profile_img
                             user.save()
-                            return JsonResponse(data={"message": "You have successfully changed your avatar"}, status=200)
+                            return JsonResponse(data={"redirect": True, "redirect_url": "",
+                                                      "message": "You have successfully changed your avatar"}, status=200)
                     else:
                         profile_img = Avatars.objects.create(image=image, image_hash_value=sha256_hash)
                         profile_img.uploaded_from.add(user)
                         profile_img.save()
                         user.avatar_id = profile_img
                         user.save()
-                        return JsonResponse(data={"message": "You have successfully updated a new avatar"}, status=200)
+                        return JsonResponse(data={"redirect": True, "redirect_url": "",
+                                                  "message": "You have successfully updated a new avatar"}, status=200)
                 else:
                     return JsonResponse(data={"message": "An error occurred. Image format and/or size not valid. "
                                               "Only jpg/jpeg and png images are allowed. "
-                                              "images cannot be larger than "
+                                              "Images cannot be larger than "
                                               f"{convert_to_megabyte(FILE_UPLOAD_MAX_MEMORY_SIZE)}MB."}, status=400)
             else:
-                return JsonResponse(data={"message": "An error occurred. No new profile pic provided"})
+                return JsonResponse(data={"message": "An error occurred. No new profile pic provided"}, status=400)
 
 
 @method_decorator(csrf_protect, name='dispatch')
