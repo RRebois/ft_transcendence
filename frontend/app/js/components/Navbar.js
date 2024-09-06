@@ -177,5 +177,9 @@ export default class Navbar {
 			saveAvatarBtn.addEventListener("click", this.changeAvatar);
 		}
 		this.loadPreviousAvatar();
+//TODO: load the previous pp
+		// document.querySelectorAll(".load-previous-avatar").forEach(button => {
+		// 	button.addEventListener("click", change_previous_avatar);
+		// })
 	}
 }
