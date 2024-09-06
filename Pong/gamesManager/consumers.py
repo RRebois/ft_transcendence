@@ -8,7 +8,7 @@ from django.core.cache import cache
 from random import choice
 from .games.pong import PongGame
 from .games.purrinha import PurrinhaGame
-from matchs.views import create_match
+from matchs.views import create_match, add_match_to_tournament
 from .views import MatchMaking
 
 
@@ -232,8 +232,8 @@ class PongHandler():
 		await self.cancel_loop()
 		await self.consumer[0].send_to_group(self.message)
 		if self.message['tournament_id']:
-			# tournament_matchs = await sync_to_async()()
-			pass
+			await sync_to_async(add_match_to_tournament)(self.message['tournament_id'], match)
+			# pass
 		# await self.remove_consumer()
 
 		# send notification + restart the game

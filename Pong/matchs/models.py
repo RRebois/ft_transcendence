@@ -19,6 +19,12 @@ class Match(models.Model):
     class Meta:
         ordering = ['-timeMatch']
 
+    def get_winner_score(self):
+        if self.winner:
+            for score in self.scores.all():
+                if score.player == self.winner:
+                    return score.score  
+
     def serialize(self):
         winners_list = ['deleted_user' for i in range(0, self.count // 2)]
         if len(winners_list) > 0:
@@ -46,6 +52,7 @@ class Tournament(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     players = models.ManyToManyField('userManagement.User', related_name='tournaments', default=list)
     is_closed = models.BooleanField(default=False)
+    winner = models.ForeignKey('userManagement.User', on_delete=models.SET_NULL, null=True, related_name='won_tournament')
 
     def serialize(self):
         return {

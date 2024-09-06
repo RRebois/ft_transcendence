@@ -7,6 +7,7 @@ from django.contrib import messages
 from rest_framework import status
 from rest_framework.views import APIView
 from django.http import Http404, JsonResponse
+from random import choice
 from django.core.cache import cache
 from channels.layers import get_channel_layer
 
@@ -111,6 +112,47 @@ def create_match(match_result, winner, is_pong=True):
     match.save()
     return match
 
+def find_tournament_winner(tournament):
+    players = {player.username: [0, 0, player] for player in tournament.players.all()}
+    matchs = tournament.tournament_matchs.all()
+    for match in matchs:
+        winner = match.winner.username
+        if winner in players:
+            players[winner][0] += 1
+            players[winner][1] += match.get_winner_score()
+    max_wins = max(player[0] for player in players.values())
+    players_with_max_win = [player for player in players.values() if player[0] == max_wins]
+    if len(players_with_max_win) == 1:
+        tournament.winner = players_with_max_win[0][2]
+    else:
+        max_score = max(player[1] for player in players_with_max_win)
+        players_with_max_score = [player for player in players_with_max_win if player[1] == max_score]
+        if len(players_with_max_score) == 1:
+            tournament.winner = players_with_max_score[0][2]
+        else:
+            max_elo = max(player[2].data.user_elo_pong[-1]['elo'] for player in players_with_max_win)
+            players_with_max_elo = [player for player in players_with_max_score if player[2].data.user_elo_pong[-1]['elo'] == max_elo]
+            if len(players_with_max_elo) == 1:
+                tournament.winner = players_with_max_elo[0][2]
+            else:
+                rand_winner = choice(players_with_max_elo)
+                tournament.winner = rand_winner[2]
+    tournament.save()
+
+
+def add_match_to_tournament(tournament_id, match):
+    try:
+        tournament = Tournament.objects.get(id=tournament_id)
+    except:
+        return JsonResponse({"error": "Tournament does not exist."}, status=404)
+    unfinished_matchs = tournament.get_unfinished_matchs()
+    for unfinished_match in unfinished_matchs:
+        unfinished_match.match = match
+        unfinished_match.score = [score.score for score in match.scores.all()]
+        unfinished_match.save()
+        break
+    if len(unfinished_matchs) <= 1:
+        find_tournament_winner(tournament)
 
 @method_decorator(csrf_protect, name='dispatch')
 class   CreateTournament(APIView):
