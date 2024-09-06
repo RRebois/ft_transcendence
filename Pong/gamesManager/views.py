@@ -35,7 +35,8 @@ class	MatchMaking():
 			if username not in ['guest', 'bot']:
 				user_data = UserData.objects.get(user_id=User.objects.get(username=username))
 				elo = user_data.user_elo_pong[-1]['elo'] if MatchMaking.matchs[session_id]['game_name'] == 'pong' else user_data.user_elo_purrinha[-1]['elo']
-				MatchMaking.matchs[session_id]['players'].append(elo)
+				MatchMaking.matchs[session_id]['elos'].append(elo)
+				MatchMaking.matchs[session_id]['players'].append(username)
 				if MatchMaking.matchs[session_id]['awaited_players'] == len(MatchMaking.matchs[session_id]['players']):
 					MatchMaking.change_session_status(session_id, open=False)
 				session_data = cache.get(session_id)
@@ -69,10 +70,10 @@ class	MatchMaking():
 		elo_diff = None
 		matchs_open = 0
 		for k, v in MatchMaking.matchs.items():
-			if v['status'] == 'open' and v['players'] and not v['tournament_id']\
+			if v['status'] == 'open' and v['elos'] and not v['tournament_id']\
 						and v['game_name'] == game_name and v['game_code'] == game_code:
 				matchs_open += 1
-				elo_diff = [abs(elo - user_elo) for elo in v['players'] if abs(elo - user_elo) <= diff]
+				elo_diff = [abs(elo - user_elo) for elo in v['elos'] if abs(elo - user_elo) <= diff]
 				if elo_diff:
 					return k
 		if matchs_open == 0:
@@ -99,6 +100,7 @@ class	MatchMaking():
 					'tournament_id': tournament_id,
 					'status': 'open',
 					'players': [],
+					'elos': [],
 				}
 
 			# if usernames:
@@ -125,7 +127,7 @@ class	MatchMaking():
 			# matchs = [match.get_players() for match in tournament.tournament_matchs.all()]
 			MatchMaking.tournament[tournament_id] = {
 				# 'status': 'open',
-				'players': {player: 0 for player in tournament.players.all()},
+				'players': {player: [] for player in tournament.players.all()},
 				'matchs': [
 					MatchMaking.create_session('pong', 23, tournament_id) for match in tournament.tournament_matchs.all()
 				],
@@ -141,9 +143,12 @@ class	MatchMaking():
 			return JsonResponse({"error": "You have already played all matchs for this tournament."}, status=404)
 		for match in tournament['matchs']:
 			if MatchMaking.matchs[match]['status'] == 'open':
+				players_list = MatchMaking.matchs[match]['players']
+				if not players_list or players_list[0] not in : # TODO continuer ici
+					
 				# TODO verify if the players already played together
 				MatchMaking.add_player(match, username)
-				tournament['players'][username] += 1
+				# tournament['players'][username] += 1
 				return match
 		return JsonResponse({"error": "This tournament is already finished."}, status=404)
 

@@ -138,6 +138,7 @@ def find_tournament_winner(tournament):
                 rand_winner = choice(players_with_max_elo)
                 tournament.winner = rand_winner[2]
     tournament.save()
+    MatchMaking.delete_tournament_session(tournament.get_id())
 
 
 def add_match_to_tournament(tournament_id, match):
@@ -200,7 +201,9 @@ class   JoinTournament(APIView):
         except:
             return JsonResponse({"error": "Tournament does not exist."}, status=404)
         if tournament.is_closed:
-            return JsonResponse({"error": "Tournament is already closed."}, status=404)
+            return JsonResponse({"error": "Tournament is already full."}, status=404)
+        if tournament.winner:
+            return JsonResponse({"error": "Tournament is already finished."}, status=404)
         self.add_player(user, tournament)
 
 
@@ -216,6 +219,10 @@ class   PlayTournament(APIView):
             tournament = Tournament.objects.get(id=tournament_id)
         except:
             return JsonResponse({"error": "Tournament does not exist."}, status=404)
+        if tournament.winner:
+            return JsonResponse({"error": "This tournament is already finished."}, status=404)
+        if user not in tournament.players.all():
+            return JsonResponse({"error": "You have not joined this tournament."}, status=404)
         session_id = MatchMaking.get_tournament_match(tournament_id) # verify if it returned a json
 
         return JsonResponse({
