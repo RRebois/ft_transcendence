@@ -1,3 +1,5 @@
+import logging
+
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.core.cache import cache
@@ -31,8 +33,11 @@ class	MatchMaking():
 	def	add_player(session_id, username):
 		if MatchMaking.matchs.get(session_id):
 			if username not in ['guest', 'bot']:
-				user_data = UserData.objects.get(user_id=User.objects.get(username=username))
-				elo = user_data.user_elo_pong[-1]['elo'] if MatchMaking.matchs[session_id]['game_name'] == 'pong' else user_data.user_elo_purrinha[-1]['elo']
+				try:
+					user_data = UserData.objects.get(user_id=User.objects.get(username=username))
+					elo = user_data.user_elo_pong[-1] if MatchMaking.matchs[session_id]['game_name'] == 'pong' else user_data.user_elo_purrinha[-1]
+				except UserData.DoesNotExist:
+					elo = 900
 				MatchMaking.matchs[session_id]['players'].append(elo)
 				if MatchMaking.matchs[session_id]['awaited_players'] == len(MatchMaking.matchs[session_id]['players']):
 					MatchMaking.change_session_status(session_id, open=False)
@@ -44,6 +49,7 @@ class	MatchMaking():
 	@staticmethod
 	def	get_session(game_name, game_code, username):
 		if game_code in [10, 20]:
+			logging.debug(f"local session requested by {username}")
 			usernames = [username, 'bot' if game_code == 10 else 'guest']
 			session_id = MatchMaking.create_session(game_name, game_code, usernames)
 			MatchMaking.delete_session(session_id)
@@ -52,8 +58,12 @@ class	MatchMaking():
 			cache.set(session_id, session_data)
 			return session_id
 
-		user_data = UserData.objects.get(user_id=User.objects.get(username=username))
-		user_elo = user_data.user_elo_pong[-1]['elo'] if game_name == 'pong' else user_data.user_elo_purrinha[-1]['elo']
+		logging.debug(f"remote session requested by {username}")
+		try:
+			user_data = UserData.objects.get(user_id=User.objects.get(username=username))
+			user_elo = user_data.user_elo_pong[-1] if game_name == 'pong' else user_data.user_elo_purrinha[-1]
+		except UserData.DoesNotExist:	# Try / except to avoid error when UserData is not found
+			user_elo = 900
 		session_id = MatchMaking.find_match(user_elo, game_name, game_code, ELO_DIFF)
 		if not session_id:
 			session_id = MatchMaking.create_session(game_name, game_code)
@@ -136,13 +146,15 @@ class GameManagerView(APIView):
 		return None
 
 	def	get(self, request, game_name, game_code):
-
+		logging.debug("-----------------------------------------------")
 		error_message = self.check_data(game_name, game_code)
 		if error_message is not None:
-			return JsonResponse({"success": False, "errors": error_message})
+			logging.debug(f"GameManagerView.get: {error_message}")
+			return JsonResponse({"message": error_message}, status=400)
 
 		user = authenticate_user(request)
 		username = user.username
+		logging.debug(f"GameManagerView.get: {username} wants to play {game_name} with code {game_code}")
 		session_id = MatchMaking.get_session(game_name, game_code, username)
 
 		return JsonResponse({
