@@ -264,6 +264,7 @@ class RegisterView(APIView):
         user_data = request.data
         serializer = self.serializer_class(data=user_data)
 
+        logging.debug("============================ REGISTER VIEW ============================")
         try:
             serializer_response = serializer.is_valid(raise_exception=True)
         except:
@@ -275,7 +276,7 @@ class RegisterView(APIView):
                     elif key == 'username' and error.code == 'unique':
                         return Response('username already taken', status=400)
             return Response('Something went wrong', status=400)
-
+        logging.debug("serializer_response: ", str(serializer_response))
         if serializer_response:
             try:
                 user = serializer.save()

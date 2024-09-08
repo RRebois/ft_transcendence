@@ -23,3 +23,17 @@ export function isUserConnected() {
             });
     });
 }
+
+export async function getCsrf() {
+    try {
+        await fetch('https://localhost:8443/test', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: "include"
+        });
+    } catch (e) {
+        console.error('[Router] getCsrf Error :', e);
+    }
+}

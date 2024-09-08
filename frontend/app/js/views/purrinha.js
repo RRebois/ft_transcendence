@@ -3,8 +3,13 @@ import * as bootstrap from "bootstrap";
 export default class PurrinhaGame {
 	constructor(props) {
 		this.props = props;
-		this.user = props.user;
+		this.user = props?.user;
+		this.setUser = this.setUser.bind(this);
 		document.addEventListener('DOMContentLoaded', this.setupEventListeners.bind(this));
+	}
+
+	setUser = (user) => {
+		this.user = user;
 	}
 
 	setupEventListeners() {

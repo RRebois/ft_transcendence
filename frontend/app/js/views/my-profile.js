@@ -5,9 +5,14 @@ import {validatePassword} from "../functions/validator.js";
 export default class MyProfile {
 	constructor(props) {
 		this.props = props;
-		this.user = props.user;
+		this.user = props?.user;
+		this.setUser = this.setUser.bind(this);
 		this.handlePersonalInfoSubmit = this.handlePersonalInfoSubmit.bind(this);
 		this.handlePasswordChange = this.handlePasswordChange.bind(this);
+	}
+
+	setUser(user) {
+		this.user = user;
 	}
 
 	checkPersonalData = (data) => {
@@ -264,6 +269,8 @@ export default class MyProfile {
 	}
 
 	render() {
+		console.log('Rendering my profile');
+		console.log('user in render: ', this.user);
 		return `
 			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
 				<div class="h-full w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 16px;">
@@ -274,27 +281,27 @@ export default class MyProfile {
 							<div class="row g-3">
 								<div class="row g-2">
 									<div class="form-floating has-validation">
-									<input type="text" id="first_name" class="form-control" value="${this.props.user?.first_name}" required />
+									<input type="text" id="first_name" class="form-control" value="${this.user?.first_name}" required />
 									<label for="first_name">Firstname<span class="text-danger">*</span></label>
 									<div class="invalid-feedback">Firstname have an invalid format</div>
 									</div>
 								</div>
 								<div class="row g-2">
 									<div class="form-floating has-validation">
-									<input type="text" id="last_name" class="form-control" value="${this.props.user?.last_name}" required />
+									<input type="text" id="last_name" class="form-control" value="${this.user?.last_name}" required />
 									<label for="last_name">Lastname<span class="text-danger">*</span></label>
 									<div class="invalid-feedback">Lastname have an invalid format</div>
 									</div>
 								</div>
 								<div class="row g-2">
 									<div class="form-floating has-validation">
-										<input type="email" id="email" class="form-control" value="${this.props.user?.email}" ${this.props.user.stud42 ? 'disabled' : ''} />
+										<input type="email" id="email" class="form-control" value="${this.user?.email}" ${this.user?.stud42 ? 'disabled' : ''} />
 										<label for="email">Email<span class="text-danger">*</span></label>
 									<div class="invalid-feedback">Invalid email</div>
 								</div>
 								<div class="row g-2">
 									<div class="form-floating has-validation">
-										<input type="text" id="username" class="form-control" value="${this.props.user?.username}" required />
+										<input type="text" id="username" class="form-control" value="${this.user?.username}" required />
 										<label for="username">Username<span class="text-danger">*</span></label>
 										<div class="form-text">Username has to be 5 to 12 characters long and composed only by letters, digits and hyphens (- or _)</div>
 										<div class="invalid-feedback">Username have an invalid format</div>
@@ -303,10 +310,10 @@ export default class MyProfile {
 								<div class="row g-2">
 									<div class="form-floating has-validation">
 										<select id="language" class="form-select" aria-label="Language">
-											<option value="🇬🇧 English" ${this.props.user?.language === "🇬🇧 English" ? "selected" : ""}>🇬🇧 English</option>
-											<option value="🇫🇷 French" ${this.props.user?.language === "🇫🇷 French" ? "selected" : ""}>🇫🇷 French</option>
-											<option value="🇪🇸 Spanish" ${this.props.user?.language === "🇪🇸 Spanish" ? "selected" : ""}>🇪🇸 Spanish</option>
-											<option value="🇵🇹 Portuguese" ${this.props.user?.language === "🇵🇹 Portuguese" ? "selected" : ""}>🇵🇹 Portuguese</option>
+											<option value="🇬🇧 English" ${this.user?.language === "🇬🇧 English" ? "selected" : ""}>🇬🇧 English</option>
+											<option value="🇫🇷 French" ${this.user?.language === "🇫🇷 French" ? "selected" : ""}>🇫🇷 French</option>
+											<option value="🇪🇸 Spanish" ${this.user?.language === "🇪🇸 Spanish" ? "selected" : ""}>🇪🇸 Spanish</option>
+											<option value="🇵🇹 Portuguese" ${this.user?.language === "🇵🇹 Portuguese" ? "selected" : ""}>🇵🇹 Portuguese</option>
 										</select>
 										<label for="language">Language <span class="text-danger">*</span></label>
 										<div class="invalid-feedback">Please, select a language</div>
@@ -317,7 +324,7 @@ export default class MyProfile {
 								</div>
 							</div>
 						</form>
-						${!this.user.stud42 ? `
+						${!this.user?.stud42 ? `
 							<hr class="hr" />
 							<p class="play-bold fs-5">Account security</p>
 							<form id="2fa-form">
@@ -395,7 +402,7 @@ export default class MyProfile {
 										</div>
 										<div class="modal-body">
 											<p>You are about to delete your account. This step is irreversible. Are you really sure?</p>
-											${this.user.stud42 ? ``: `
+											${this.user?.stud42 ? ``: `
 												<div class="form-floating has-validation">
 													<input type="password" id="delete-account-password" class="form-control" />
 													<label for="delete-account-password">Account password<span class="text-danger">*</span></label>

@@ -1,6 +1,11 @@
 export default class User {
 	constructor(props) {
 		this.props = props;
+		this.user = props?.user;
+		this.setUser = this.setUser.bind(this);
+	}
+
+	setUser = (user) => {
 		this.user = user;
 	}
 

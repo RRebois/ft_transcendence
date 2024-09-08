@@ -1,15 +1,22 @@
 import {getCookie} from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
+import {appRouter} from "@js/spa-router/initializeRouter.js";
 
 export default class Dashboard {
 	constructor(props) {
+		console.log("DASHBOARD CONTRUCTOR");
 		this.props = props;
 		this.handleGameRequest = this.handleGameRequest.bind(this);
+		this.user = null;
+		this.setUser = this.setUser.bind(this);
 		this.gameType = null;
 		this.gameConnectivity = 'offline';
 		this.gameNbPlayers = 'bot';
 	}
 
+	setUser(user) {
+		this.user = user;
+	}
 
 	handleGameRequest = () => {
 		console.log("Game request handled for game type: ", this.gameType);
@@ -38,6 +45,7 @@ export default class Dashboard {
 			return;
 		}
 		const csrfToken = getCookie('csrftoken');
+		console.log("before fetch");
 		fetch(`https://localhost:8443/game/${game_type}/${code}`, {
 			method: 'GET',
 			headers: {
@@ -54,6 +62,9 @@ export default class Dashboard {
 					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 				} else {
 					console.log("Game request success: ", data);
+					data.code = code;
+					const params = new URLSearchParams(data).toString();
+					appRouter.navigate(`/${game_type}?${params}`);
 				}
 			})
 			.catch(error => {
@@ -63,9 +74,6 @@ export default class Dashboard {
 			});
 
 	}
-
-
-
 
 	setupEventListeners() {
 		const modal = document.getElementById('create-match-modal');
@@ -155,7 +163,7 @@ export default class Dashboard {
 		}
 	}
 
-	render() {
+	 render() {
 		document.title = "ft_transcendence";
 		return `
 		<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">

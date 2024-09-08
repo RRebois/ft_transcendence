@@ -15,9 +15,7 @@ export default class Layout {
         if (this.user) {
             return `
                 ${navbar.render()}
-<!--                <div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">-->
-                    ${view.render()}
-<!--                </div>-->
+                ${view.render()}
             `;
         } else {
             return `

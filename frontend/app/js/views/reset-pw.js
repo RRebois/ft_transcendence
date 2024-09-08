@@ -6,8 +6,13 @@ import {passwordMatching} from "../functions/validator.js";
 export default class ResetPw {
     constructor(props) {
         this.props = props;
+        this.user = null;
+        this.setUser = this.setUser.bind(this);
         this.reset_password = this.reset_password.bind(this);
-        this.init_reset_form();
+    }
+
+    setUser = (user) => {
+        this.user = user;
     }
 
     init_reset_form(){
@@ -161,7 +166,9 @@ export default class ResetPw {
         });
     }
 
-    setupEventListeners() {}
+    setupEventListeners() {
+        this.init_reset_form();
+    }
 
     render() {
         document.title = 'ft_transcendence | Reset password';

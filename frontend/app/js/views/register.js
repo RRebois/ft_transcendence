@@ -5,7 +5,13 @@ import {validatePassword} from "../functions/validator.js";
 export default class Register {
     constructor(props) {
         this.props = props;
+        this.user = null;
+        this.setUser = this.setUser.bind(this);
         this.registerUser = this.registerUser.bind(this);
+    }
+
+    setUser = (user) => {
+        this.user = user;
     }
 
     validateInputs(firstname, lastname, username, email, password, confirm_password) {
@@ -122,12 +128,12 @@ export default class Register {
         });
     }
 
-    setupEventListeners() {
+     setupEventListeners() {
         document.getElementById('register-form').addEventListener('submit', this.registerUser);
         document.getElementById('password').addEventListener('input', validatePassword);
     }
 
-    render() {
+     render() {
         document.title = 'ft_transcendence | Register';
         return `
         <div class="w-100 min-h-screen d-flex flex-column justify-content-center align-items-center">

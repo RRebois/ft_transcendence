@@ -7,9 +7,15 @@ export default class Home {
 	constructor(props) {
 		this.props = props;
 		this.user_id = null;
+		this.user = null;
+		this.setUser = this.setUser.bind(this);
 		this.loginUser = this.loginUser.bind(this);
 		this.checkOtp = this.checkOtp.bind(this);
 		this.sendResetLink = this.sendResetLink.bind(this);
+	}
+
+	setUser(user) {
+		this.user = user;
 	}
 
     loginUser(event) {
@@ -206,6 +212,7 @@ export default class Home {
 	}
 
 	setupEventListeners() {
+		console.log("HOME - setupEventListeners");
 		const form = document.getElementById('login-form');
 		if (form) {
 			form.addEventListener('submit', this.loginUser); // Attach the event listener

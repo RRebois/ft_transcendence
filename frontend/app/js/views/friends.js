@@ -5,7 +5,13 @@ import {create_friend_div_load, create_friend_request_div, create_friend_request
 export default class Friends {
 	constructor(props) {
 		this.props = props;
+		this.user = null;
+		this.setUser = this.setUser.bind(this);
 		this.send_friend_request = this.send_friend_request.bind(this);
+	}
+
+	setUser(user) {
+		this.user = user;
 	}
 
 	render() {

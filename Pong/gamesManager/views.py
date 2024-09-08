@@ -85,22 +85,8 @@ class	GameManagerView(APIView):
 				session_data['players'][username] = {'id': connections + 1, 'connected': False}
 				cache.set(session_id, session_data)
 
-
-
-
-		if game_name == 'purrinha':
-			return render(request, "pages/purrinha.html" ,{
-				'status': 'succes',
-				'game': game_name,
-				'session_id': session_id,
-				'ws_route': f'/ws/game/{game_name}/{game_code}/{session_id}/'
-			})
-		return render(request, "pages/pong.html" ,{
-			'status': 'succes',
+		return JsonResponse({
 			'game': game_name,
 			'session_id': session_id,
 			'ws_route': f'/ws/game/{game_name}/{game_code}/{session_id}/'
-		})
-
-
-
+		}, status=200)

@@ -6,15 +6,15 @@ import Chart from 'chart.js/auto';
 export default class Stats {
 	constructor(props) {
 		this.props = props;
-		this.user = props.user;
+		this.user = props?.user;
+		this.setUser = this.setUser.bind(this);
 		this.fetchStats = this.fetchStats.bind(this);
 		this.fetchMatchHistory = this.fetchMatchHistory.bind(this);
-		this.init(this.user?.username);
+		// this.init(this.user?.username);
 	}
 
-	init = (username) => {
-		this.fetchStats(username);
-		this.fetchMatchHistory(username);
+	setUser = (user) => {
+		this.user = user;
 	}
 
 	initEloChart = (data) => {
@@ -235,6 +235,8 @@ export default class Stats {
 	}
 
 	setupEventListeners() {
+		this.fetchStats(this.user?.username);
+		this.fetchMatchHistory(this.user?.username);
 		const gameFilter = document.getElementById('game-filter');
 		if (gameFilter) {
 			gameFilter.addEventListener('change', (event) => {
