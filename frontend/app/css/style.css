@@ -42,12 +42,12 @@ body.bg-gradient {
     width: 64px;
 }
 
-.h-80 {
-    height: 80px;
+.w-80{
+    width: 80px;
 }
 
-.w-80 {
-    width: 80px;
+.h-80 {
+    height: 80px;
 }
 
 .h-128 {

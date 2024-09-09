@@ -1,12 +1,15 @@
 import * as bootstrap from "bootstrap";
 import {initializePurrinhaWebSocket} from "@js/functions/websocket.js";
+import {appRouter} from "@js/spa-router/initializeRouter.js";
 
 export default class PurrinhaGame {
 	constructor(props) {
+		this.props = props;
+		this.user = props?.user;
+		this.setUser = this.setUser.bind(this);
 		const urlParams = new URLSearchParams(window.location.search);
 		this.props = Object.fromEntries(urlParams.entries());
 		console.log(this.props);
-		this.user = props.user;
 		this.gameSocket = null;
 		this.nb_players = this.getNumberOfPlayers(this.props?.code);
 		this.max_value = this.getMaxAvailableValue(this.nb_players);
@@ -15,6 +18,10 @@ export default class PurrinhaGame {
 		this.players = [];
 
 		document.addEventListener('DOMContentLoaded', this.setupEventListeners.bind(this));
+	}
+
+	setUser = (user) => {
+		this.user = user;
 	}
 
 	getNumberOfPlayers(game_code) {
@@ -205,7 +212,13 @@ export default class PurrinhaGame {
 		}
 
 		document.getElementById('returnHomeBtn').addEventListener('click', () => {
-			window.location.href = '/';
+			console.log("click on return home");
+			const errorModal = bootstrap.Modal.getInstance(document.getElementById('ErrorModal'));
+			if (errorModal) {
+				console.log("hide error modal");
+				errorModal.hide();
+			}
+			appRouter.navigate("/");
 		});
 	}
 

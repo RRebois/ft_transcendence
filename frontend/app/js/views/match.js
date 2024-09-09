@@ -5,7 +5,13 @@ import {TextGeometry} from 'three/addons/geometries/TextGeometry.js';
 export default class Match {
     constructor(props) {
         this.props = props;
+        this.user = null;
+        this.setUser = this.setUser.bind(this);
         this.init();
+    }
+
+    setUser(user) {
+        this.user = user;
     }
 
     init() { // For responside device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
