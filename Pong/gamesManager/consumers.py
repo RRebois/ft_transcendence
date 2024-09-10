@@ -214,16 +214,16 @@ class PongHandler():
 		if not winner:
 			winner = []
 			left = gs['right_score'] < gs['left_score']
-			my_range = [1, middle] if left else [middle, middle * 2]
+			my_range = [0, middle] if left else [middle, middle * 2]
 			print('\n\nPAREI AQUI\n\n')
 			for i in range(my_range[0], my_range[1]):
-				key = f"player{i}"
+				key = f"player{i + 1}"
 				winner.append(gs[key]['name'])
 		if self.game_code != 20: # mode vs 'guest', does not save scores
 			match_result = {}
-			for i in range(1, middle * 2):
-				key = f"player{i}"
-				match_result[gs[key]['name']] = gs['left_score'] if i <= middle else gs['right_score']
+			for i in range(0, middle * 2):
+				key = f"player{i + 1}"
+				match_result[gs[key]['name']] = gs['left_score'] if i < middle else gs['right_score']
 			print(f'\n\n\n result = {match_result} \nwinner = {winner} \n\n\n')
 			match = await sync_to_async(create_match)(match_result, winner)
 		self.message['winner'] = winner

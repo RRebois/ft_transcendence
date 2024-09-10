@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from userManagement.views import authenticate_user
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import status
 from userManagement.models import User, UserData
 from matchs.models import *
@@ -14,6 +15,7 @@ import asyncio
 import uuid
 
 ELO_DIFF = 20
+TOURNAMENT_LIMIT = 4
 
 class	MatchMaking():
 	matchs = {}
@@ -45,9 +47,9 @@ class	MatchMaking():
 				cache.set(session_id, session_data)
 
 	@staticmethod
-	def	get_session(game_name, game_code, username):
+	def	get_session(game_name, game_code, user):
 		if game_code in [10, 20]:
-			usernames = [username, 'bot' if game_code == 10 else 'guest']
+			usernames = [user.username, 'bot' if game_code == 10 else 'guest']
 			session_id = MatchMaking.create_session(game_name, game_code, usernames)
 			# MatchMaking.delete_session(session_id)
 			session_data = cache.get(session_id)
@@ -55,22 +57,22 @@ class	MatchMaking():
 			cache.set(session_id, session_data)
 			return session_id
 
-		user_data = UserData.objects.get(user_id=User.objects.get(username=username))
+		user_data = user.data
 		user_elo = user_data.user_elo_pong[-1]['elo'] if game_name == 'pong' else user_data.user_elo_purrinha[-1]['elo']
-		session_id = MatchMaking.find_match(user_elo, game_name, game_code, ELO_DIFF)
+		session_id = MatchMaking.find_match(user.username, user_elo, game_name, game_code, ELO_DIFF)
 		if not session_id:
 			session_id = MatchMaking.create_session(game_name, game_code)
-		MatchMaking.add_player(session_id, username)
+		MatchMaking.add_player(session_id, user.username)
 		return session_id
 
 
 
 	@staticmethod
-	def	find_match(user_elo, game_name, game_code, diff):
+	def	find_match(username, user_elo, game_name, game_code, diff):
 		elo_diff = None
 		matchs_open = 0
 		for k, v in MatchMaking.matchs.items():
-			if v['status'] == 'open' and v['elos'] and not v['tournament_id']\
+			if v['status'] == 'open' and v['elos'] and not v['tournament_id'] and username not in v['players']\
 						and v['game_name'] == game_name and v['game_code'] == game_code:
 				matchs_open += 1
 				elo_diff = [abs(elo - user_elo) for elo in v['elos'] if abs(elo - user_elo) <= diff]
@@ -79,7 +81,7 @@ class	MatchMaking():
 		if matchs_open == 0:
 			return None
 		asyncio.sleep(1)
-		return MatchMaking.find_match(user_elo, game_name, game_code, diff + ELO_DIFF)
+		return MatchMaking.find_match(username, user_elo, game_name, game_code, diff + ELO_DIFF)
 
 
 
@@ -120,7 +122,7 @@ class	MatchMaking():
 			'game_state': 'waiting',
 			})
 			return session_id
-	
+
 	@staticmethod
 	def	create_tournament_session(tournament_id):
 			tournament = Tournament.objects.get(id=tournament_id)
@@ -139,17 +141,17 @@ class	MatchMaking():
 		tournament = MatchMaking.tournament.get(tournament_id)
 		if not tournament:
 			tournament = MatchMaking.create_tournament_session(tournament_id)
-		if tournament['players'][username] >= 4 - 1:
+		if len(tournament['players'][username]) >= TOURNAMENT_LIMIT - 1:
 			return JsonResponse({"error": "You have already played all matchs for this tournament."}, status=404)
 		for match in tournament['matchs']:
 			if MatchMaking.matchs[match]['status'] == 'open':
 				players_list = MatchMaking.matchs[match]['players']
-				if not players_list or players_list[0] not in : # TODO continuer ici
-					
-				# TODO verify if the players already played together
-				MatchMaking.add_player(match, username)
-				# tournament['players'][username] += 1
-				return match
+				if not players_list or players_list[0] not in tournament['players'][username]:
+					if players_list:
+						tournament['players'][username].append(players_list[0])
+						tournament['players'][players_list[0]].append(username)
+					MatchMaking.add_player(match, username)
+					return match
 		return JsonResponse({"error": "This tournament is already finished."}, status=404)
 
 
@@ -181,13 +183,15 @@ class GameManagerView(APIView):
 
 	def	get(self, request, game_name, game_code):
 
+		try:
+			user = authenticate_user(request)
+		except AuthenticationFailed as e:
+			return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
 		error_message = self.check_data(game_name, game_code)
 		if error_message is not None:
 			return JsonResponse({"success": False, "errors": error_message})
-
-		user = authenticate_user(request)
-		username = user.username
-		session_id = MatchMaking.get_session(game_name, game_code, username)
+		# username = user.username
+		session_id = MatchMaking.get_session(game_name, game_code, user)
 
 		return JsonResponse({
 			'game': game_name,

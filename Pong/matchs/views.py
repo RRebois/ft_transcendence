@@ -91,14 +91,13 @@ def update_match_data(players_data, winner, is_pong=True):
         elo_lst.append({'elo': new_elo, 'timestamp': timestamp})
         data.save()
 
-# TODO verify if there are data to erase from cache | maybe update here the tournament logic
 def create_match(match_result, winner, is_pong=True):
     match = Match.objects.create(is_pong=is_pong, count=len(match_result))
     players_data = []
 
     for player_username in match_result.keys():
         player = User.objects.get(username=player_username)
-        players_data.append(UserData.objects.get(user_id=player))
+        players_data.append(player.data)
         score = Score.objects.create(
             player=player,
             match=match,
@@ -174,8 +173,6 @@ class   JoinTournament(APIView):
     def add_player(self, user, tournament):
         count = tournament.players.count()
         players = tournament.players.all()
-        if user in players:
-            return JsonResponse({"error": "You have already joined this tournament."}, status=404)
         for player in players:
             TournamentMatch.objects.create(tournament=tournament)
         tournament.players.add(user)
@@ -200,10 +197,12 @@ class   JoinTournament(APIView):
             tournament = Tournament.objects.get(id=tournament_id)
         except:
             return JsonResponse({"error": "Tournament does not exist."}, status=404)
-        if tournament.is_closed:
-            return JsonResponse({"error": "Tournament is already full."}, status=404)
         if tournament.winner:
             return JsonResponse({"error": "Tournament is already finished."}, status=404)
+        if user in tournament.players.all():
+            return JsonResponse({"error": "You have already joined this tournament."}, status=404)
+        if tournament.is_closed:
+            return JsonResponse({"error": "Tournament is already full."}, status=404)
         self.add_player(user, tournament)
 
 

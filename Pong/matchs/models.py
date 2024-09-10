@@ -23,7 +23,7 @@ class Match(models.Model):
         if self.winner:
             for score in self.scores.all():
                 if score.player == self.winner:
-                    return score.score  
+                    return score.score
 
     def serialize(self):
         winners_list = ['deleted_user' for i in range(0, self.count // 2)]
@@ -62,7 +62,7 @@ class Tournament(models.Model):
 
     def get_id(self):
         return self.id
-    
+
     def get_unfinished_matchs(self):
         return [match for match in self.tournament_matchs.all() if not match.match]
 
@@ -81,8 +81,8 @@ class TournamentMatch(models.Model):
     match = models.ForeignKey(Match, on_delete=models.SET_NULL, null=True, blank=True, related_name='tournament_match')
     score = ArrayField(models.IntegerField(), blank=True)
 
-    def get_players(self):
-        return [self.player1, self.player2]
+    # def get_players(self):
+    #     return [self.player1, self.player2]
 
     def serialize(self):
         match_result = {
