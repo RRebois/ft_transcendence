@@ -52,11 +52,22 @@ class Tournament(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     players = models.ManyToManyField('userManagement.User', related_name='tournaments', default=list)
     is_closed = models.BooleanField(default=False)
+    is_finished = models.BooleanField(default=False)
     winner = models.ForeignKey('userManagement.User', on_delete=models.SET_NULL, null=True, related_name='won_tournament')
 
     def serialize(self):
+        winner_replace = 'deleted_user' if self.is_finished else 'unknown'
+        if self.is_finished:
+            status = 'finished'
+        elif self.is_closed:
+            status = 'running'
+        else:
+            status = 'waiting for players'
         return {
             'id': self.id,
+            'status': status,
+            'players': [player.username for player in self.players],
+            'winner': self.winner.username if self.winner else winner_replace,
             'matchs': {match.serialize() for match in self.tournament_matchs.all()},
             }
 
@@ -66,23 +77,11 @@ class Tournament(models.Model):
     def get_unfinished_matchs(self):
         return [match for match in self.tournament_matchs.all() if not match.match]
 
-# TODO update to pool tournament
 class TournamentMatch(models.Model):
 
-    # order_choices = [
-    #     (1, 'first_match'),
-    #     (2, 'second_match'),
-    #     (3, 'final_match'),
-    # ]
-    # match_order = models.IntegerField(choices=order_choices)
-    # player1 = models.ForeignKey('userManagement.User', on_delete=models.SET_NULL, null=True)
-    # player2 = models.ForeignKey('userManagement.User', on_delete=models.SET_NULL, null=True)
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='tournament_matchs')
     match = models.ForeignKey(Match, on_delete=models.SET_NULL, null=True, blank=True, related_name='tournament_match')
     score = ArrayField(models.IntegerField(), blank=True)
-
-    # def get_players(self):
-    #     return [self.player1, self.player2]
 
     def serialize(self):
         match_result = {
@@ -101,10 +100,6 @@ class TournamentMatch(models.Model):
             match_result['players'] = serialized.players
             match_result['winner'] = serialized.winner
 
-        return {
-                match_result
-            # self.match_order: {
-            # }
-        }
+        return match_result
 
 

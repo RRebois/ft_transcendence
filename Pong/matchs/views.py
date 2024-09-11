@@ -48,6 +48,26 @@ class MatchScoreView(APIView):
 
         return JsonResponse(game.serialize())
 
+@method_decorator(csrf_protect, name='dispatch')
+class TournamentDisplayAllView(APIView):
+    def get(self, request, username):
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User does not exist."}, status=404)
+        tournaments = user.tournaments.all()
+
+        return JsonResponse([tournament.serialize() for tournament in tournaments] if tournaments else [], safe=False, status=200)
+
+@method_decorator(csrf_protect, name='dispatch')
+class TournamentDisplayOneView(APIView):
+    def get(self, request, tournament_id):
+        try:
+            tournament = Tournament.objects.get(id=tournament_id)
+        except:
+            return JsonResponse({"error": "Tournament does not exist."}, status=404)
+
+        return JsonResponse(tournament.serialize(), safe=False, status=200)
 
 def get_new_elo(player_elo, opponent_elo, win):
 
@@ -136,6 +156,7 @@ def find_tournament_winner(tournament):
             else:
                 rand_winner = choice(players_with_max_elo)
                 tournament.winner = rand_winner[2]
+    tournament.is_finished = True
     tournament.save()
     MatchMaking.delete_tournament_session(tournament.get_id())
 
@@ -155,7 +176,7 @@ def add_match_to_tournament(tournament_id, match):
         find_tournament_winner(tournament)
 
 @method_decorator(csrf_protect, name='dispatch')
-class   CreateTournament(APIView):
+class   CreateTournamentView(APIView):
 
     def get(self, request):
         try:
@@ -168,7 +189,7 @@ class   CreateTournament(APIView):
         return JsonResponse({"tournament_id": tournament.get_id()}, status=200)
 
 @method_decorator(csrf_protect, name='dispatch')
-class   JoinTournament(APIView):
+class   JoinTournamentView(APIView):
 
     def add_player(self, user, tournament):
         count = tournament.players.count()
@@ -207,7 +228,7 @@ class   JoinTournament(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-class   PlayTournament(APIView):
+class   PlayTournamentView(APIView):
 
     def get(self, request, tournament_id):
         try:
