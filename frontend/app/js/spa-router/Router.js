@@ -32,6 +32,13 @@ export default class Router {
 	}
 
 	async navigate(path, pushState = true) {
+		// find all elements with class "modal-backdrop" and remove them
+		const modalBackdrops = document.getElementsByClassName('modal-backdrop');
+		if (modalBackdrops.length > 0) {
+			for (let i = 0; i < modalBackdrops.length; i++) {
+				modalBackdrops[i].remove();
+			}
+		}
 		const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
 		const isUserAuth = await isUserConnected();
 		const route = this.routes.find(route => this.match(route, path));
