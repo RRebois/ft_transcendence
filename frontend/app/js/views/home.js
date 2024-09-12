@@ -18,6 +18,10 @@ export default class Home {
 		this.user = user;
 	}
 
+	setProps(newProps) {
+		this.props = newProps;
+	}
+
     loginUser(event) {
         event.preventDefault();
         const username = document.getElementById('login-username').value;

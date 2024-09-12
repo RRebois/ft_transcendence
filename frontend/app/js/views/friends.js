@@ -14,6 +14,10 @@ export default class Friends {
 		this.user = user;
 	}
 
+	setProps(newProps) {
+		this.props = newProps;
+	}
+
 	render() {
 		document.title = 'ft_transcendence | Friends'
 		return `

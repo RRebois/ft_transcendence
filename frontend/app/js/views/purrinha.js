@@ -4,6 +4,7 @@ import {appRouter} from "@js/spa-router/initializeRouter.js";
 
 export default class PurrinhaGame {
 	constructor(props) {
+		console.log("============ PURRINHA WEBPAGE CONSTRUCTOR ============");
 		this.props = props;
 		this.user = props?.user;
 		this.setUser = this.setUser.bind(this);
@@ -22,6 +23,12 @@ export default class PurrinhaGame {
 
 	setUser = (user) => {
 		this.user = user;
+	}
+
+	setProps(newProps) {
+		console.log("purrihna setProps called");
+		console.log(newProps);
+		this.props = newProps;
 	}
 
 	getNumberOfPlayers(game_code) {
@@ -60,6 +67,7 @@ export default class PurrinhaGame {
 
 
 	initializeWs = async (gameCode) => {
+		console.log("purrihna initializeWs called");
 		const ws = await initializePurrinhaWebSocket(gameCode);
 		console.log("ws: ", ws);
 		this.gameSocket = ws;
@@ -200,6 +208,7 @@ export default class PurrinhaGame {
 
 
 	setupEventListeners() {
+		console.log("purrihna setupEventListeners called");
 		if (!this.props.game || !this.props.ws_route || !this.props.session_id || !this.props.code) {
 			const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
 			document.getElementById('errorModalBody').innerHTML = `
@@ -223,6 +232,7 @@ export default class PurrinhaGame {
 	}
 
 	render() {
+		console.log("purrinha render called");
 		document.title = "ft_transcendence | Purrinha";
 		return `
 			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center overflow-hidden" id="game-root">

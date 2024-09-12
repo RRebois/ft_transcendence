@@ -76,19 +76,21 @@ export default class Router {
 
 	// Match the route path to the current location path
 	match(route, requestPath) {
-		const paramNames = [];
-		const [pathWithoutQuery] = requestPath.split('?'); // Ignore query parameters
+		const splitPath = requestPath.split('?');
+		const pathWithoutQuery = splitPath[0];
+		const query = splitPath[1];
 		const regexPath = route.path.replace(/([:*])(\w+)/g, (full, colon, name) => {
-			paramNames.push(name);
 			return '([^\/]+)';
 		}) + '(?:\/|$)';
-
 		const params = {};
 		const routeMatch = pathWithoutQuery.match(new RegExp(regexPath));
 		if (routeMatch !== null) {
-			routeMatch.slice(1).forEach((value, index) => {
-				params[paramNames[index]] = value;
-			});
+			if (query) {
+				query.split('&').forEach((param) => {
+					const [key, value] = param.split('=');
+					params[key] = value;
+				});
+			}
 			route.setProps(params);
 			return true;
 		}

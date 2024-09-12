@@ -9,6 +9,10 @@ export default class User {
 		this.user = user;
 	}
 
+	setProps(newProps) {
+		this.props = newProps;
+	}
+
 	fetchUser = async () => {
 		const csrfToken = getCookie('csrftoken');
 		const response = await fetch('https://localhost:8443/users', {

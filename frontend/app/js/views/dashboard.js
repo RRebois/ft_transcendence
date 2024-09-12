@@ -18,6 +18,10 @@ export default class Dashboard {
 		this.user = user;
 	}
 
+	setProps(newProps) {
+		this.props = newProps;
+	}
+
 	handleGameRequest = () => {
 		console.log("Game request handled for game type: ", this.gameType);
 		console.log("Game connectivity: ", this.gameConnectivity);

@@ -17,6 +17,10 @@ export default class Stats {
 		this.user = user;
 	}
 
+	setProps(newProps) {
+		this.props = newProps;
+	}
+
 	initEloChart = (data) => {
 		const ctx = document.getElementById('eloChart').getContext('2d');
 		new Chart(ctx, {

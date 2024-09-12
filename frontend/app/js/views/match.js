@@ -14,6 +14,10 @@ export default class Match {
         this.user = user;
     }
 
+    setProps(newProps) {
+        this.props = newProps;
+    }
+
     init() { // For responside device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
 
         this.player1_nickname = 'player1';
