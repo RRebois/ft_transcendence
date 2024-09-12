@@ -11,9 +11,7 @@ export default class Route {
     }
 
     setUser(user) {
-        console.log("user given to route ", this.name, user)
         this.user = user;
-
         this.view.setUser(user);
     }
 
