@@ -8,7 +8,6 @@ export default class Route {
 
     setProps(newProps) {
         this.props = newProps;
-        console.log("set props to view");
         this.view.setProps(newProps);
     }
 

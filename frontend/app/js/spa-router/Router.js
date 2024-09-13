@@ -1,6 +1,5 @@
 import {getCsrf, isUserConnected} from "@js/functions/user_auth.js";
 import Navbar from "@js/components/Navbar.js";
-import Route from "@js/spa-router/Route.js";
 
 export default class Router {
 	constructor(routes = [], renderNode) {
@@ -13,7 +12,9 @@ export default class Router {
 	async init() {
 		this.addEventListeners();
 		await getCsrf();
-		await this.navigate(window.location.pathname);
+		// await this.navigate(window.location.pathname);
+		const fullPath = window.location.pathname + window.location.search;
+		await this.navigate(fullPath);
 	}
 
 	addEventListeners() {
@@ -59,7 +60,9 @@ export default class Router {
 		} else if (isPublicRoute && isUserAuth) {
 			window.history.pushState(null, null, '/dashboard'); // Redirect to dashboard
 			const dashboard = this.routes.find(route => this.match(route, "/dashboard"));
-			this.renderNode.innerHTML = dashboard.renderView();
+			this.navbar.setUser(isUserAuth);
+			this.renderNode.innerHTML = this.navbar.render() + dashboard.renderView();
+			this.navbar.setupEventListeners();
 			dashboard.setupEventListeners();
 			return ;
 		}
@@ -67,7 +70,11 @@ export default class Router {
 		// If route is valid, render the view
 		if (route.user) {
 			this.navbar.setUser(route.user);
-			this.renderNode.innerHTML = this.navbar.render() + route.renderView();
+			if (route.path === "/purrinha") {
+				this.renderNode.innerHTML = route.renderView();
+			} else {
+				this.renderNode.innerHTML = this.navbar.render() + route.renderView();
+			}
 			this.navbar.setupEventListeners();
 		}
 		else {
@@ -76,9 +83,25 @@ export default class Router {
 		route.setupEventListeners();
 
 		// Update the browser history
-		if (pushState) {
+		const currentPath = window.location.pathname + window.location.search;
+		if (currentPath === path) {
+			window.history.replaceState(null, null, path);
+		} else {
+			const query = path.split('?')[1];
+			path += query ? '?' + query : '';
 			window.history.pushState(null, null, path);
 		}
+	}
+
+	getQueryParams(query) {
+		const params = {};
+		if (!query)
+			return params;
+		query.split('&').forEach((param) => {
+			const [key, value] = param.split('=');
+			params[key] = value;
+		});
+		return params;
 	}
 
 	// Match the route path to the current location path
@@ -89,15 +112,10 @@ export default class Router {
 		const regexPath = route.path.replace(/([:*])(\w+)/g, (full, colon, name) => {
 			return '([^\/]+)';
 		}) + '(?:\/|$)';
-		const params = {};
+		let params = {};
 		const routeMatch = pathWithoutQuery.match(new RegExp(regexPath));
 		if (routeMatch !== null) {
-			if (query) {
-				query.split('&').forEach((param) => {
-					const [key, value] = param.split('=');
-					params[key] = value;
-				});
-			}
+			params = this.getQueryParams(query);
 			route.setProps(params);
 			return true;
 		}
