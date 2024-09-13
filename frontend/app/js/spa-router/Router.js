@@ -12,9 +12,7 @@ export default class Router {
 	async init() {
 		this.addEventListeners();
 		await getCsrf();
-		// await this.navigate(window.location.pathname);
-		const fullPath = window.location.pathname + window.location.search;
-		await this.navigate(fullPath);
+		await this.navigate(window.location.pathname + window.location.search);
 	}
 
 	addEventListeners() {
@@ -23,7 +21,7 @@ export default class Router {
 			if (target) {
 				e.preventDefault();
 				const path = target.getAttribute('route');
-				this.navigate(path);
+				this.navigate(window.location.pathname + window.location.search);
 			}
 		});
 
