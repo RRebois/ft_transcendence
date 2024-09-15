@@ -9,13 +9,13 @@ export function create_div_title(username, str, divName) {
     document.querySelector(`#${divName}`).append(title);
 }
 
-export function create_previous_avatar_div(avatar) {
+export function create_previous_avatar_div(avatar, changeAvatarCallback) {
     const AvatarsContainer = document.getElementById("previous-pp-list");
     const previousAvatarContainer = document.createElement("a");
     const previousAvatar = document.createElement("img");
 
     previousAvatarContainer.role = "button";
-    previousAvatarContainer.class.add("load-previous-avatar");
+    previousAvatarContainer.classList.add("load-previous-avatar");
     previousAvatarContainer.id = `previous-avatar-btn-${avatar.id}`;
 
     previousAvatar.classList.add("rounded-circle", "h-40", "w-40", "me-2");
@@ -24,6 +24,10 @@ export function create_previous_avatar_div(avatar) {
     previousAvatar.alt = "avatar";
     previousAvatarContainer.appendChild(previousAvatar);
     AvatarsContainer.appendChild(previousAvatarContainer);
+
+    previousAvatarContainer.addEventListener('click', () => {
+        changeAvatarCallback(avatar.id);
+    });
 }
 
 function setAttributes(el, attrs) {

@@ -496,6 +496,30 @@ class ChangeAvatarView(APIView):
         except Avatars.DoesNotExist:
             return JsonResponse(data={"message": "An error occurred. Please try again."}, status=500)
 
+class SetPreviousAvatar(APIView):
+    def post(self, request):
+        data = request.data
+        avatar_id = data.get('avatar_id')
+
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            logging.debug(f"AuthenticationFailed: {str(e)}")
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            avatar = Avatars.objects.filter(uploaded_from=user).get(pk=avatar_id)
+            
+            user.avatar_id = avatar
+            user.save()
+
+            return JsonResponse({
+                "message": "Profile picture updated successfully",
+                "new_avatar_url": avatar.image.url
+            })
+        except Avatars.DoesNotExist:
+            return JsonResponse({"message": "Avatar not found"}, status=404)
+        return JsonResponse({"message": "Invalid request method"}, status=405)
 
 @method_decorator(csrf_protect, name='dispatch')
 class EditDataView(APIView):

@@ -12,14 +12,14 @@ export default class Home {
 		this.sendResetLink = this.sendResetLink.bind(this);
 	}
 
-    loginUser(event) {
-        event.preventDefault();
-        const username = document.getElementById('login-username').value;
-        const password = document.getElementById('login-pwd').value;
-        const csrfToken = getCookie('csrftoken');
-        console.log("CALLING LOGIN USER");
-        console.log("CSRF Token: ", csrfToken);
-        console.log(username, password);
+	loginUser(event) {
+		event.preventDefault();
+		const username = document.getElementById('login-username').value;
+		const password = document.getElementById('login-pwd').value;
+		const csrfToken = getCookie('csrftoken');
+		console.log("CALLING LOGIN USER");
+		console.log("CSRF Token: ", csrfToken);
+		console.log(username, password);
 		const loginBtn = document.getElementById('login-btn');
 		if (loginBtn)
 			loginBtn.disabled = true;
@@ -45,7 +45,7 @@ export default class Home {
 						const otpModal = new bootstrap.Modal(document.getElementById('otpModal'));
 						otpModal.show();
 					} else {
-                        initializeWebSocket();
+						initializeWebSocket();
 						window.location.href = '/dashboard';
 					}
 				}
@@ -77,7 +77,7 @@ export default class Home {
 					OauthBtn.disabled = false;
 					window.location.href = data.redirect_url;
 				} else {
-                    initializeWebSocket();
+					initializeWebSocket();
 					console.log('Success:', data);
 					OauthBtn.disabled = false;
 					window.location.href = data.redirect_url;
@@ -128,7 +128,7 @@ export default class Home {
 					document.getElementById('otp').classList.add('is-invalid');
 					otpBtn.disabled = false;
 				} else {
-                    initializeWebSocket();
+					initializeWebSocket();
 					console.log('Success:', data);
 					document.getElementById('otp').classList.remove('is-invalid');
 					window.location.href = '/dashboard';
@@ -241,49 +241,49 @@ export default class Home {
 	render() {
 		document.title = 'ft_transcendence | Login';
 		return `
-         <div class="w-100 min-h-full d-flex flex-column justify-content-center align-items-center">
-            <div class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card" style="--bs-bg-opacity: .5;">
-            <h1 class="text-justify play-bold fs-1" >ft_transcendence 🏓</h1>
-            <form id="login-form">
-                <div class="row g-2 my-2">
-                    <label for="login-username" class="visually-hidden">Username</label>
-                    <div class="input-group">
-                        <div class="input-group-text">
-                            <i class="bi bi-person"></i>
-                        </div>
-                        <input type="text" name="username" id="login-username" class="form-control" placeholder="username" autofocus required/>
-                    </div>
-                </div>
-                <div class="row g-2">
-                    <label for="login-pwd" class="visually-hidden">Password</label>
-                    <div class="input-group">
-                        <div class="input-group-text">
-                            <i class="bi bi-lock"></i>
-                        </div>
-                        <input type="password" name="password" id="login-pwd" class="form-control" placeholder="••••••••" required/>
-                    </div>
-                    <a href="" class="text-decoration-none indexLink" id="forgot-pwd">Forgot password?</a>
-                </div>
-                <div class="w-100 d-flex justify-content-center my-2">
-                    <button type="submit" id="login-btn" class="btn btn-primary">Log in</button>
-                </div>
-            </form>
-            <div class="d-flex flex-row align-items-center w-100 my-2">
-                <hr class="flex-grow-1">
-                <span class="px-2">or</span>
-                <hr class="flex-grow-1">
-            </div>
-            <button type="button" id="42login" class="btn btn-dark my-2">
-                <img height="32" width="32" src="https://cdn.simpleicons.org/42/fff" alt="42 school logo"
-                     style="margin-right: 10px"/>
-                Sign in with your 42 account
-            </button>
-            <div class="padForm mt-2">
-                Don't have an account? <a href="/register">Register here.</a>
-            </div>
-            
-            <!-- OTP Modal -->
-            <div class="modal fade" id="otpModal" tabindex="-1" aria-labelledby="otpModal" aria-hidden="true">
+		 <div class="w-100 min-h-full d-flex flex-column justify-content-center align-items-center">
+			<div class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card" style="--bs-bg-opacity: .5;">
+			<h1 class="text-justify play-bold fs-1" >ft_transcendence 🏓</h1>
+			<form id="login-form">
+				<div class="row g-2 my-2">
+					<label for="login-username" class="visually-hidden">Username</label>
+					<div class="input-group">
+						<div class="input-group-text">
+							<i class="bi bi-person"></i>
+						</div>
+						<input type="text" name="username" id="login-username" class="form-control" placeholder="username" autofocus required/>
+					</div>
+				</div>
+				<div class="row g-2">
+					<label for="login-pwd" class="visually-hidden">Password</label>
+					<div class="input-group">
+						<div class="input-group-text">
+							<i class="bi bi-lock"></i>
+						</div>
+						<input type="password" name="password" id="login-pwd" class="form-control" placeholder="••••••••" required/>
+					</div>
+					<a href="" class="text-decoration-none indexLink" id="forgot-pwd">Forgot password?</a>
+				</div>
+				<div class="w-100 d-flex justify-content-center my-2">
+					<button type="submit" id="login-btn" class="btn btn-primary">Log in</button>
+				</div>
+			</form>
+			<div class="d-flex flex-row align-items-center w-100 my-2">
+				<hr class="flex-grow-1">
+				<span class="px-2">or</span>
+				<hr class="flex-grow-1">
+			</div>
+			<button type="button" id="42login" class="btn btn-dark my-2">
+				<img height="32" width="32" src="https://cdn.simpleicons.org/42/fff" alt="42 school logo"
+					 style="margin-right: 10px"/>
+				Sign in with your 42 account
+			</button>
+			<div class="padForm mt-2">
+				Don't have an account? <a href="/register">Register here.</a>
+			</div>
+			
+			<!-- OTP Modal -->
+			<div class="modal fade" id="otpModal" tabindex="-1" aria-labelledby="otpModal" aria-hidden="true">
 				<div class="modal-dialog modal-dialog-centered">
 					<div class="modal-content">
 						<div class="modal-header">
@@ -293,10 +293,10 @@ export default class Home {
 						<div class="modal-body">
 							<p>Enter the OTP provided by your authentication application.</p>
 							<div class="form-floating has-validation">
-                                <input type="text" id="otp" class="form-control" required />
-                                <label for="otp">One Time Password<span class="text-danger">*</span></label>
-                                <div class="invalid-feedback">OTP is invalid.</div>
-                            </div>
+								<input type="text" id="otp" class="form-control" required />
+								<label for="otp">One Time Password<span class="text-danger">*</span></label>
+								<div class="invalid-feedback">OTP is invalid.</div>
+							</div>
 						</div>
 						<div class="modal-footer">
 							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -317,10 +317,10 @@ export default class Home {
 						<div class="modal-body">
 							<p>Enter your email address, you will receive a link to reset your password.</p>
 							<div class="form-floating has-validation">
-                                <input type="text" id="email" class="form-control" required />
-                                <label for="email">Email address<span class="text-danger">*</span></label>
-                                <div id="email-feedback" class="invalid-feedback">.</div>
-                            </div>
+								<input type="text" id="email" class="form-control" required />
+								<label for="email">Email address<span class="text-danger">*</span></label>
+								<div id="email-feedback" class="invalid-feedback">.</div>
+							</div>
 						</div>
 						<div class="modal-footer">
 							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -329,7 +329,7 @@ export default class Home {
 					</div>
 				</div>
 			</div>
-         </div>
-        `;
+		 </div>
+		`;
 	}
 }

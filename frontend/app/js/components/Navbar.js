@@ -85,7 +85,7 @@ export default class Navbar {
 				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 			} else {
 				data.map(avatar => {
-					create_previous_avatar_div(avatar);
+					create_previous_avatar_div(avatar, this.change_previous_avatar.bind(this));
 				});
 			}
 		})
@@ -95,6 +95,44 @@ export default class Navbar {
 			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
 		});
 	}
+
+	change_previous_avatar(avatarId) {
+		const csrfToken = getCookie('csrftoken');
+		
+		fetch('https://localhost:8443/setPreviousAvatar', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': csrfToken
+			},
+			credentials: 'include',
+			body: JSON.stringify({ avatar_id: avatarId })
+		})
+		.then(response => response.json().then(data => ({ok: response.ok, data})))
+		.then(({ok, data}) => {
+			if (!ok) {
+				const toastComponent = new ToastComponent();
+				toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+			} else {
+				const currentAvatar = document.querySelector(".navbar img.rounded-circle");
+				if (currentAvatar) {
+					currentAvatar.src = data.new_avatar_url;
+				}
+				const modalAvatar = document.querySelector("#update-user-picture img.rounded-circle");
+				if (modalAvatar) {
+					modalAvatar.src = data.new_avatar_url;
+				}
+					const toastComponent = new ToastComponent();
+				toastComponent.throwToast('Success', 'Profile picture updated successfully', 5000, 'success');
+			}
+		})
+		.catch(error => {
+			console.error('Error:', error);
+			const toastComponent = new ToastComponent();
+			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+		});
+	}
+	
 
 	render() {
 		return `
@@ -119,8 +157,8 @@ export default class Navbar {
 								<li><hr class="dropdown-divider"></li>
 								<li><a role="button" id="logout-btn" class="dropdown-item text-danger">Logout</a></li>
 							</ul>
-						</div>   
-					</div>            
+						</div>
+					</div>
 				</div>
 				<!--	MODAL PART		-->
 				<!-- TODO: waiting for the backend to implement the previous profile pictures -->
@@ -150,7 +188,7 @@ export default class Navbar {
 									<div class="form-text">Supported format: <code>png</code>, <code>jpg</code> and <code>jpeg</code></div>
 								<div class="invalid-feedback">test</div>
 							</div>
-                        </div>
+						</div>
 							<div class="modal-footer">
 								<button type="button" class="btn text-danger" data-bs-dismiss="modal">Close</button>
 								<button type="button" id="save-avatar-btn" class="btn btn-primary">Save changes</button>
@@ -159,7 +197,7 @@ export default class Navbar {
 					</div>
 				</div>
 			</nav>
-        `;
+		`;
 	}
 
 	setupEventListeners() {
@@ -177,7 +215,6 @@ export default class Navbar {
 			saveAvatarBtn.addEventListener("click", this.changeAvatar);
 		}
 		this.loadPreviousAvatar();
-//TODO: load the previous pp
 		// document.querySelectorAll(".load-previous-avatar").forEach(button => {
 		// 	button.addEventListener("click", change_previous_avatar);
 		// })
