@@ -122,8 +122,15 @@ export default class Navbar {
 				if (modalAvatar) {
 					modalAvatar.src = data.new_avatar_url;
 				}
-					const toastComponent = new ToastComponent();
-				toastComponent.throwToast('Success', 'Profile picture updated successfully', 5000, 'success');
+				sessionStorage.setItem('toastMessage', JSON.stringify({
+					title: 'Success',
+					message: data.message,
+					duration: 5000,
+					type: 'success'
+				}));
+				if (data.redirect) {
+					window.location.href = data.redirect_url;
+				}
 			}
 		})
 		.catch(error => {
@@ -176,9 +183,6 @@ export default class Navbar {
 									<p class="play-bold mt-1">Select one of your previous avatars</p>
 									<!-- Previous profile pictures to load here -->
 									<div class="d-flex" id="previous-pp-list">
-<!--										<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">-->
-<!--										<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">-->
-<!--										<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">-->
 									</div>
 								</div>
 								<hr />
@@ -215,8 +219,5 @@ export default class Navbar {
 			saveAvatarBtn.addEventListener("click", this.changeAvatar);
 		}
 		this.loadPreviousAvatar();
-		// document.querySelectorAll(".load-previous-avatar").forEach(button => {
-		// 	button.addEventListener("click", change_previous_avatar);
-		// })
 	}
 }

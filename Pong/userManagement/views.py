@@ -515,7 +515,9 @@ class SetPreviousAvatar(APIView):
 
             return JsonResponse({
                 "message": "Profile picture updated successfully",
-                "new_avatar_url": avatar.image.url
+                "new_avatar_url": avatar.image.url,
+                "redirect": True,
+                "redirect_url": "",
             })
         except Avatars.DoesNotExist:
             return JsonResponse({"message": "Avatar not found"}, status=404)
