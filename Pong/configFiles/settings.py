@@ -86,8 +86,6 @@ TEMPLATES = [
 # WSGI_APPLICATION = 'configFiles.wsgi.application'
 ASGI_APPLICATION = 'configFiles.asgi.application'
 
-ASGI_APPLICATION = 'configFiles.asgi.application'
-
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -110,15 +108,6 @@ DATABASES = {
         'HOST': os.environ.get('SQL_HOST', 'localhost'),
         'PORT': os.environ.get('SQL_PORT', '5432'),
     }
-}
-
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("redis", 6379)],
-        },
-    },
 }
 
 AUTH_USER_MODEL = "userManagement.User"
