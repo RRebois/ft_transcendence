@@ -1,6 +1,7 @@
 import * as bootstrap from "bootstrap";
-import {initializePurrinhaWebSocket} from "@js/functions/websocket.js";
 import {appRouter} from "@js/spa-router/initializeRouter.js";
+import {curr_player_pick_number} from "@js/functions/purrinha.js";
+import {initializePurrinhaWebSocket} from "@js/functions/websocket.js";
 
 export default class PurrinhaGame {
 	constructor(props) {
@@ -8,13 +9,10 @@ export default class PurrinhaGame {
 		this.props = props;
 		this.user = props?.user;
 		this.setUser = this.setUser.bind(this);
-		const urlParams = new URLSearchParams(window.location.search);
-		this.props = Object.fromEntries(urlParams.entries());
-		console.log(this.props);
 		this.gameSocket = null;
-		this.nb_players = this.getNumberOfPlayers(this.props?.code);
-		this.max_value = this.getMaxAvailableValue(this.nb_players);
-		this.initializeWs(this.props?.code);
+		this.nb_players = 0;
+		this.max_value = 0;
+
 
 		this.players = [];
 
@@ -25,8 +23,11 @@ export default class PurrinhaGame {
 		this.user = user;
 	}
 
+	addProps(newProps) {
+		this.props = {...this.props, ...newProps};
+	}
+
 	setProps(newProps) {
-		console.log("purrihna setProps called");
 		console.log(newProps);
 		this.props = newProps;
 	}
@@ -40,7 +41,6 @@ export default class PurrinhaGame {
 	}
 
 	getMaxAvailableValue(nb_players) {
-		console.log("nb_players: ", nb_players);
 		return (nb_players * 3);
 	}
 
@@ -52,46 +52,52 @@ export default class PurrinhaGame {
 					<p>Please, pick a number</p>
 					<div class="d-flex justify-content-center">
 						<div class="btn-group btn-group-lg" role="group" aria-label="Pick a number">
-							<input type="radio" class="btn-check" name="initial-choice" id="initial-choice-1" autocomplete="off">
+							<input type="radio" class="btn-check" name="initial-choice" id="initial-choice-1" value="1" autocomplete="off">
 							<label class="btn btn-outline-dark" for="initial-choice-1">1</label>
-							<input type="radio" class="btn-check" name="initial-choice" id="initial-choice-2" autocomplete="off">
+							<input type="radio" class="btn-check" name="initial-choice" id="initial-choice-2" value="2" autocomplete="off">
 							<label class="btn btn-outline-dark" for="initial-choice-2">2</label>
-							<input type="radio" class="btn-check" name="initial-choice" id="initial-choice-3" autocomplete="off">
+							<input type="radio" class="btn-check" name="initial-choice" id="initial-choice-3" value="3" autocomplete="off">
 							<label class="btn btn-outline-dark" for="initial-choice-3">3</label>
 						</div>
 					</div>
+					<button id="pick-initial-number-btn" class="btn btn-primary">Pick</button>
 				</div>
 			`;
+			document.getElementById('pick-initial-number-btn').addEventListener('click', () => {
+				const selected = document.querySelector('input[name="initial-choice"]:checked');
+				if (selected) {
+					const selectedValue = parseInt(selected.value);
+					console.log("selectedValue: ", selectedValue);
+					const current_player_id = this.props.players.find(player => player.username === this.user.username).id;
+					console.log("current_player_id: ", current_player_id);
+					curr_player_pick_number(selectedValue, this.props.code, this.props.session_id, current_player_id, this.props.players.length, this.nb_players, this.gameSocket);
+				}
+			});
 		}
 	}
 
-
 	initializeWs = async (gameCode) => {
 		console.log("purrihna initializeWs called");
-		const ws = await initializePurrinhaWebSocket(gameCode);
+
+		let ws;
+		try {
+			ws = await initializePurrinhaWebSocket(gameCode, this.props?.session_id, this);
+		} catch (e) {
+			const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
+			document.getElementById('errorModalBody').innerHTML = `
+				<p>This match is not available. Please try again later.</p>
+			`
+			errorModal.show();
+			return;
+		}
+
 		console.log("ws: ", ws);
 		this.gameSocket = ws;
+		this.nb_players = this.getNumberOfPlayers(this.props?.code);
+		this.max_value = this.getMaxAvailableValue(this.nb_players);
 
 		const gameRoot = document.getElementById('game-root');
 		if (gameRoot) {
-			// canvas.innerHTML = `
-			// 	<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded gap-3" style="--bs-bg-opacity: .5;">
-			// 		<p>Choosing...</p>
-			// 		<div class="mb-3">
-			// 			<label for="input-player" class="form-label">Pick a number</label>
-			// 			<input type="number" min="0" max=${this.max_value} value=${0} class="form-control" id="input-player" aria-describedby="basic-addon4">
-			// 			<div class="form-text" id="basic-addon4">Pick a number between 0 and ${this.max_value}. You can't choose same number as an opponent</div>
-			// 		</div>
-			// 	</div>
-			// 	<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded gap-3" style="--bs-bg-opacity: .5;">
-			// 		<p>Choosing...</p>
-			// 		<div class="mb-3">
-			// 			<label for="input-player" class="form-label">Pick a number</label>
-			// 			<input type="number" min="0" max=${this.max_value} value=${0} class="form-control" id="input-player" aria-describedby="basic-addon4">
-			// 			<div class="form-text" id="basic-addon4">Pick a number between 0 and ${this.max_value}. You can't choose same number as an opponent</div>
-			// 		</div>
-			// 	</div>
-			// `;
 			if (this.nb_players === 2) {
 				gameRoot.innerHTML = `
 					<div class="right-edge-container">
@@ -101,7 +107,8 @@ export default class PurrinhaGame {
 						</div>
 						<div class="equal-elmt-y d-flex justify-content-center align-items-start">
 							<div style="--bs-bg-opacity: .5; width: 100%;" class="bg-white d-flex g-4 flex-column align-items-center rounded">
-								<p>USERNAME</p>
+								<p id="user_info-username-1"></p>
+								<p id="user_info-status-1">Picking a number...</p>
 							</div>
 						</div>
 					</div>
@@ -109,7 +116,8 @@ export default class PurrinhaGame {
 					<div class="left-edge-container">
 						<div class="equal-elmt-y d-flex justify-content-center align-items-end">
 							<div style="--bs-bg-opacity: .5; width: 100%;" class="bg-white d-flex g-4 flex-column align-items-center rounded">
-								<p>USERNAME</p>
+								<p id="user_info-username-2"></p>
+								<p id="user_info-status-2">Picking a number...</p>
 							</div>
 						</div>
 						<div>
@@ -121,25 +129,6 @@ export default class PurrinhaGame {
 				this.pick_inital_number();
 			} else if (this.nb_players === 4) {
 				gameRoot.innerHTML = `
-<!--					<div class="top-edge-container">-->
-<!--						<span style="flex-basis: 33.333333%;"></span>-->
-<!--						<img src="/purrinha/closed_hand_top.png" class="top-edge d-flex" alt="edge-image" />-->
-<!--						<div style="flex-basis: 33.333333%; &#45;&#45;bs-bg-opacity: .5;" class="bg-white d-flex g-4 flex-column align-items-center py-2 px-5 rounded login-card w-50">-->
-<!--							<p>USERNAME</p>-->
-<!--							<p>Choosing a number... 💭</p>-->
-<!--						</div>-->
-<!--					</div>-->
-<!--					-->
-<!--					-->
-<!--					<div class="bottom-edge-container">-->
-<!--						<div style="flex-basis: 33.333333%; &#45;&#45;bs-bg-opacity: .5;" class="bg-white d-flex g-4 flex-column align-items-center py-2 px-5 rounded login-card w-50">-->
-<!--							<p>USERNAME</p>-->
-<!--							<p>Choosing a number... 💭</p>-->
-<!--						</div>-->
-<!--						<img src="/purrinha/closed_hand_bottom.png" class="bottom-edge d-flex" alt="edge-image" />-->
-<!--						<span style="flex-basis: 33.333333%;"></span>-->
-<!--					</div>-->
-					
 					<div class="top-edge-container">
 						<div class="equal-elmt-x"></div>
 						<div style="height: 100%;">
@@ -148,7 +137,7 @@ export default class PurrinhaGame {
 						
 						<div class="equal-elmt-x d-flex justify-content-start align-items-center ">
 							<div style="--bs-bg-opacity: .5" class="bg-white d-flex g-4 flex-column align-items-center rounded">
-								<p>USERNAME</p>
+								<p id="user_info-username-3"></p>
 							</div>
 						</div>
 					</div>
@@ -160,7 +149,7 @@ export default class PurrinhaGame {
 						</div>
 						<div class="equal-elmt-x d-flex justify-content-start align-items-center ">
 							<div style="--bs-bg-opacity: .5" class="bg-white d-flex g-4 flex-column align-items-center rounded">
-								<p>USERNAME</p>
+								<p id="user_info-username-4"></p>
 							</div>
 						</div>
 					</div>
@@ -172,7 +161,7 @@ export default class PurrinhaGame {
 						</div>
 						<div class="equal-elmt-y d-flex justify-content-center align-items-start">
 							<div style="--bs-bg-opacity: .5; width: 100%;" class="bg-white d-flex g-4 flex-column align-items-center rounded">
-								<p>USERNAME</p>
+								<p id="user_info-username-2"></p>
 							</div>
 						</div>
 					</div>
@@ -180,7 +169,7 @@ export default class PurrinhaGame {
 					<div class="left-edge-container">
 						<div class="equal-elmt-y d-flex justify-content-center align-items-end">
 							<div style="--bs-bg-opacity: .5; width: 100%;" class="bg-white d-flex g-4 flex-column align-items-center rounded">
-								<p>USERNAME</p>
+								<p id="user_info-username-1"></p>
 							</div>
 						</div>
 						<div>
@@ -201,23 +190,20 @@ export default class PurrinhaGame {
 		// }));
 	}
 
-	// ws.onmessage = (event) => {
+	// this.gameSocket.onmessage = (event) => {
 	// 	console.log("--------------- Purrinha webSocket message received: " + event.data);
 	// 	const data = JSON.parse(event.data);
 	// };
 
-
 	setupEventListeners() {
 		console.log("purrihna setupEventListeners called");
-		if (!this.props.game || !this.props.ws_route || !this.props.session_id || !this.props.code) {
+		console.log("this.props: ", this.props);
+		if (!this.props?.game || !this.props?.ws_route || !this.props?.session_id || !this?.props.code) {
 			const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
 			document.getElementById('errorModalBody').innerHTML = `
 				<p>This match is not available. Please try again later.</p>
 			`
 			errorModal.show();
-		} else {
-			const lookingForPlayersModal = new bootstrap.Modal(document.getElementById('lookingForPlayersModal'));
-			lookingForPlayersModal.show();
 		}
 
 		document.getElementById('returnHomeBtn').addEventListener('click', () => {
@@ -227,12 +213,13 @@ export default class PurrinhaGame {
 				console.log("hide error modal");
 				errorModal.hide();
 			}
-			appRouter.navigate("/");
+			appRouter.navigate("/dashboard");
 		});
 	}
 
 	render() {
 		console.log("purrinha render called");
+		this.initializeWs(this.props?.code);
 		document.title = "ft_transcendence | Purrinha";
 		return `
 			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center overflow-hidden" id="game-root">
@@ -240,8 +227,8 @@ export default class PurrinhaGame {
 			</div>
 
 			<!-- Waiting for players modal-->
-			<div class="modal fade" id="lookingForPlayersModal" tabindex="-1" aria-hidden="true">
-				<div class="modal-dialog">
+			<div class="modal fade" id="lookingForPlayersModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+				<div class="modal-dialog modal-dialog-centered">
 					<div class="modal-content">
 						<div class="modal-body">
 							<p>Waiting for players...</p>
