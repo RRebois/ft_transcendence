@@ -91,6 +91,9 @@ export default class Navbar {
 		.then(({ok, data}) => {
 			console.log("Data: ", data);
 			if (!ok) {
+				if (data.message === "superuser") {
+					return;
+				}
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 			} else {
@@ -157,7 +160,7 @@ export default class Navbar {
 				<div class="container-fluid">
 					<a href="/dashboard" route="/dashboard" class="navbar-brand play-bold">ft_transcendence 🏓</a>
 					<div class="d-flex align-items-center">
-						${this.user?.stud42 ?
+						${(this.user?.stud42 || this.user?.username === "superuser") ?
 							`<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">` :
 							`<a role="button" data-bs-toggle="modal" data-bs-target="#update-user-picture" title="Update your profile picture !" data-bs-toggle="tooltip">
 								<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">
@@ -178,7 +181,6 @@ export default class Navbar {
 					</div>
 				</div>
 				<!--	MODAL PART		-->
-				<!-- TODO: waiting for the backend to implement the previous profile pictures -->
 				<div class="modal fade" id="update-user-picture" tabindex="-1" aria-labelledby="create match modal" aria-hidden="true">
 					<div class="modal-dialog">
 						<div class="modal-content">

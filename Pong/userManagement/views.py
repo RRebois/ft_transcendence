@@ -404,12 +404,12 @@ class GetAllUserAvatarsView(APIView):
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""},
                                 status=status.HTTP_401_UNAUTHORIZED)
+        if user.is_superuser:
+            return JsonResponse(data={"message": "superuser"}, status=403)
         avatar_list = []
         avatars = Avatars.objects.filter(uploaded_from=user)
-        # try:
         current = Avatars.objects.get(pk=user.avatar_id.pk)
-        # except:
-        #     pass
+
         for avatar in avatars:
             if avatar != current:
                 avatar_list.append(avatar)
@@ -440,6 +440,8 @@ class UpNewAvatarView(APIView):
         if request.method == 'POST':
             if user.stud42:
                 return JsonResponse(data={"message": "A 42 user can't change its avatar"}, status=403)
+            if user.is_superuser:
+                return JsonResponse(data={"message": "The superuser can't change its avatar"}, status=403)
             if request.FILES:
                 image = request.FILES['newAvatar']
                 serializer = self.serializer_class(data={'image': image})
@@ -484,6 +486,8 @@ class ChangeAvatarView(APIView):
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
         if user.stud42:
             return JsonResponse(data={"message": "A 42 user can't change its avatar"}, status=403)
+        if user.is_superuser:
+            return JsonResponse(data={"message": "The superuser can't change its avatar"}, status=403)
 
         data = request.data
         res = True if "data" in data and data["data"] is not None else False
@@ -516,6 +520,8 @@ class SetPreviousAvatar(APIView):
             return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         if user.stud42:
             return JsonResponse(data={"message": "A 42 user can't change its avatar"}, status=403)
+        if user.is_superuser:
+            return JsonResponse(data={"message": "The superuser can't change its avatar"}, status=403)
 
         try:
             avatar = Avatars.objects.filter(uploaded_from=user).get(pk=avatar_id)
