@@ -352,7 +352,7 @@ class UserStatsDataView(APIView):
         try:
             user_stats = UserData.objects.get(user_id=User.objects.get(username=username))
         except User.DoesNotExist:
-            return JsonResponse({"message": "User does not exist."}, status=404)
+            return JsonResponse({"message": "User does not exist."}, status=500)
         return JsonResponse(user_stats.serialize())
 
 
@@ -410,7 +410,7 @@ class GetAllUserAvatarsView(APIView):
         for avatar in avatars:
             if avatar != current:
                 avatar_list.append(avatar)
-        return JsonResponse([avatar.serialize() for avatar in avatar_list], safe=False)
+        return JsonResponse([avatar.serialize() for avatar in avatar_list], safe=False, status=200)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -436,40 +436,37 @@ class UpNewAvatarView(APIView):
 
         if request.method == 'POST':
             if request.FILES:
-                image = request.FILES['newImageFile']
+                image = request.FILES['newAvatar']
                 serializer = self.serializer_class(data={'image': image})
                 if serializer.is_valid():
                     sha256_hash = hashlib.sha256(image.read()).hexdigest()
 
                     if Avatars.objects.filter(image_hash_value=sha256_hash).exists():
                         if Avatars.objects.get(image_hash_value=sha256_hash) == Avatars.objects.get(pk=user.avatar_id.pk):
-                            return Response({"success": False, "message": "You already have that same avatar. "
-                                                                          "Don't mess with me duh"})  # A modifier
+                            return JsonResponse(data={"message": "You already have that same avatar."}, status=400)
                         else:
                             profile_img = Avatars.objects.get(image_hash_value=sha256_hash)
                             profile_img.uploaded_from.add(user)
                             profile_img.save()
                             user.avatar_id = profile_img
                             user.save()
-                            return Response(
-                                {"success": True, "message": "You have successfully changed your avatar"})  # A modifier
+                            return JsonResponse(data={"redirect": True, "redirect_url": "",
+                                                      "message": "You have successfully changed your avatar"}, status=200)
                     else:
                         profile_img = Avatars.objects.create(image=image, image_hash_value=sha256_hash)
                         profile_img.uploaded_from.add(user)
                         profile_img.save()
                         user.avatar_id = profile_img
                         user.save()
-                        return Response(
-                            {"success": True, "message": "You have successfully updated a new avatar"})  # A modifier
+                        return JsonResponse(data={"redirect": True, "redirect_url": "",
+                                                  "message": "You have successfully uploaded a new avatar"}, status=200)
                 else:
-                    return Response(
-                        {"success": False, "message": "An error occurred. Image format and/or size not valid. "
-                                           "Only jpg/jpeg/gif and png images are allowed. "
-                                           "images cannot be larger than "
-                                           f"{convert_to_megabyte(FILE_UPLOAD_MAX_MEMORY_SIZE)}MB."})  # A modifier
+                    return JsonResponse(data={"message": "An error occurred. Image format and/or size not valid. "
+                                              "Only jpg/jpeg and png images are allowed. "
+                                              "Images cannot be larger than "
+                                              f"{convert_to_megabyte(FILE_UPLOAD_MAX_MEMORY_SIZE)}MB."}, status=400)
             else:
-                return Response(
-                    {"success": False, "message": "An error occurred. No new profile pic provided"})  # A modifier
+                return JsonResponse(data={"message": "An error occurred. No new profile pic provided"}, status=400)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -479,12 +476,12 @@ class ChangeAvatarView(APIView):
             user = authenticate_user(request)
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
-            return Response({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
 
         data = request.data
         res = True if "data" in data and data["data"] is not None else False
         if not res:
-            return JsonResponse({"success": False, "message": "No avatar selected. Please try again."})
+            return JsonResponse(data={"message": "No avatar selected. Please try again."}, status=400)
         src = data["data"].split("media")
         path = "/media" + src[1]
         print(path)
@@ -495,10 +492,37 @@ class ChangeAvatarView(APIView):
                 if avatar.serialize()["image"] == path:
                     user.avatar_id = avatar
                     user.save()
-                    return JsonResponse({"success": True, "message": "Avatar changed successfully."})
-            return JsonResponse({"success": False, "message": "An error occurred. Please try again."})
+                    return JsonResponse(data={"message": "Avatar changed successfully."})
+            return JsonResponse(data={"message": "An error occurred. Please try again."})
         except Avatars.DoesNotExist:
-            return JsonResponse({"success": False, "message": "An error occurred. Please try again."})
+            return JsonResponse(data={"message": "An error occurred. Please try again."}, status=500)
+
+class SetPreviousAvatar(APIView):
+    def post(self, request):
+        data = request.data
+        avatar_id = data.get('avatar_id')
+
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            logging.debug(f"AuthenticationFailed: {str(e)}")
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            avatar = Avatars.objects.filter(uploaded_from=user).get(pk=avatar_id)
+            
+            user.avatar_id = avatar
+            user.save()
+
+            return JsonResponse({
+                "message": "Profile picture updated successfully",
+                "new_avatar_url": avatar.image.url,
+                "redirect": True,
+                "redirect_url": "",
+            })
+        except Avatars.DoesNotExist:
+            return JsonResponse({"message": "Avatar not found"}, status=404)
+        return JsonResponse({"message": "Invalid request method"}, status=405)
 
 @method_decorator(csrf_protect, name='dispatch')
 class EditDataView(APIView):
@@ -818,7 +842,7 @@ class AcceptFriendRequestView(APIView):
         try:
             friend_request = FriendRequest.objects.get(from_user=friend_request_user_id, to_user=user)
         except FriendRequest.DoesNotExist as e:
-            return JsonResponse({"message": str(e), "level": "warning"}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"message": str(e), "level": "warning"}, status=500)
 
         if friend_request.to_user != user:
             return JsonResponse({"message": "You cannot accept this friend request.", "level": "warning"},
@@ -869,7 +893,7 @@ class DeclineFriendRequestView(APIView):
         try:
             friend_request = FriendRequest.objects.get(from_user=friend_request_user_id, to_user=user)
         except FriendRequest.DoesNotExist as e:
-            return JsonResponse({"message": str(e), "level": "warning"}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"message": str(e), "level": "warning"}, status=500)
 
         if friend_request.to_user != user:
             return JsonResponse({"message": "You cannot decline this friend request.", "level": "warning"},
@@ -902,7 +926,7 @@ class RemoveFriendView(APIView):
         try:
             friend = User.objects.get(id=friend_id)
         except User.DoesNotExist as e:
-            return JsonResponse({"message": str(e), "level": "warning"}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"message": str(e), "level": "warning"}, status=500)
 
         if friend in user.friends.all():
             user.friends.remove(friend)

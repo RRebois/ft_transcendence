@@ -1,3 +1,5 @@
+import os
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinLengthValidator
@@ -7,6 +9,7 @@ from .manager import UserManager
 
 
 class Avatars(models.Model):
+    server_url = os.environ.get("SERVER_URL")
     image_url = models.URLField(blank=True)
     image = models.ImageField(upload_to='profile_pics/', max_length=255, blank=True)
     image_hash_value = models.CharField(blank=True)
@@ -15,7 +18,8 @@ class Avatars(models.Model):
     def serialize(self):
         return {
             "image": self.image.url,
-            "id": self.pk
+            "id": self.pk,
+            "url": self.server_url
         }
 
 

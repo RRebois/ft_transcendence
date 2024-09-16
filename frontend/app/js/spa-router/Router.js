@@ -50,6 +50,10 @@ export default class Router {
 			const home = this.routes.find(route => this.match(route, "/"));
 			this.renderNode.innerHTML = home.renderView();
 			home.setupEventListeners();
+			if (window.mySocket && window.mySocket.readyState === WebSocket.OPEN) {
+				window.mySocket.close();
+				console.log('WebSocket connection closed');
+			}
 			return ;
 		} else if (isPublicRoute && isUserAuth) {
 			console.log("[ROUTER] redirect to /dashboard");
