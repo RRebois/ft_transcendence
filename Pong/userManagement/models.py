@@ -77,6 +77,7 @@ class User(AbstractUser):
             "stud42": self.stud42,
             "2fa": self.tfa_activated,
             "img": self.get_img_url(),
+            # "status": self.status,
         }
 
 
@@ -103,23 +104,32 @@ class FriendRequest(models.Model):
 
 
 class UserData(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    user_wins = ArrayField(models.IntegerField(), default=[0, 0])
-    user_losses = ArrayField(models.IntegerField(), default=[0, 0])
-    user_winrate = ArrayField(models.FloatField(), default=[0, 0])
-    user_elo_pong = ArrayField(models.IntegerField(), default=[900])
-    user_elo_purrinha = ArrayField(models.IntegerField(), default=[900])
-    user_highest = ArrayField(models.IntegerField(), default=[900, 900])
+    user_id = models.OneToOneField(User, on_delete=models.CASCADE, related_name='data')
+    user_wins = ArrayField(models.IntegerField(), default=list)
+    user_losses = ArrayField(models.IntegerField(), default=list)
+    user_elo_pong = ArrayField(models.JSONField(encoder=None, decoder=None), default=list)
+    user_elo_purrinha = ArrayField(models.JSONField(encoder=None, decoder=None), default=list)
 
     def serialize(self):
+        winrate_pong = self.user_wins[0] / (self.user_wins[0] + self.user_losses[0]) if (self.user_wins[0] + self.user_losses[0]) != 0 else 0
+        winrate_purrinha = self.user_wins[1] / (self.user_wins[1] + self.user_losses[1]) if (self.user_wins[1] + self.user_losses[1]) != 0 else 0
         return {
-            "id": self.id,
-            "wins": self.user_wins,
-            "losses": self.user_losses,
-            "winrate": self.user_winrate,
-            "elo_pong": self.user_elo_pong,
-            "elo_purrinha": self.user_elo_purrinha,
-            "elo_highest": self.user_highest,
+            'pong': {
+                'wins': self.user_wins[0],
+                'losses': self.user_losses[0],
+                'elo': self.user_elo_pong,
+                'winrate': winrate_pong,
+                'max_elo': max(self.user_elo_pong, key=lambda x: x['elo']),
+                'min_elo': min(self.user_elo_pong, key=lambda x: x['elo']),
+            },
+            'purrinha': {
+                'wins': self.user_wins[1],
+                'losses': self.user_losses[1],
+                'elo': self.user_elo_purrinha,
+                'winrate': winrate_purrinha,
+                'max_elo': max(self.user_elo_purrinha, key=lambda x: x['elo']),
+                'min_elo': min(self.user_elo_purrinha, key=lambda x: x['elo']),
+            },
         }
 
     def get_username(self):

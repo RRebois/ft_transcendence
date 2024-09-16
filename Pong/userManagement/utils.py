@@ -144,3 +144,6 @@ def get_ws_token(request):
     logging.debug(user)
     token = generate_short_lived_JWT(user)
     return JsonResponse({'token': token}, status=200)
+
+def gen_timestamp():
+    return datetime.timestamp(datetime.now())
