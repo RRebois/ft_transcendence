@@ -33,15 +33,25 @@ export default class MatchPong {
         // Load all textures at once
         this.textures = {};
         const   textureLoader = new THREE.TextureLoader();
-        const   textStadium = textureLoader.load("/grass/grass_BaseColor.jpg");
-        const   textInitBall = textureLoader.load("/football.jpg");
-        const   textBlueCube = textureLoader.load("/blue_basecolor.png");
-        const   textRedCube = textureLoader.load("/red_basecolor.png");
+        const   textStadium = textureLoader.load("/textures/grass/grass_BaseColor.jpg");
+        const   textInitBall = textureLoader.load("/textures/football.jpg");
+        const   textBlueCube = textureLoader.load("/textures/blue_basecolor.png");
+//        const   textBlueCubeR = textureLoader.load("/textures/blue_metallic.png");
+//        const   textBlueCubeM = textureLoader.load("/textures/blue_roughness.png");
+        const   textRedCube = textureLoader.load("/textures/red_basecolor.png");
+        const   textPadBlue = textureLoader.load("/textures/ice/ice_basecolor.png");
+//        const   textPadBlueRoughness = textureLoader.load("/textures/ice/ice_roughness.png");
+        const   textPadRed = textureLoader.load("/textures/lava/lava_basecolor.jpg");
+
         this.textures["textStadium"] = textStadium;
         this.textures["textInitBall"] = textInitBall;
         this.textures["textBlueCube"] = textBlueCube;
+//        this.textures["textBlueCubeR"] = textBlueCubeR;
+//        this.textures["textBlueCubeM"] = textBlueCubeM;
         this.textures["textRedCube"] = textRedCube;
-        console.log(this.textures["textStadium"]);
+        this.textures["textPadBlue"] = textPadBlue;
+//        this.textures["textPadBlueRoughness"] = textPadBlueRoughness;
+        this.textures["textPadRed"] = textPadRed;
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x000000);
@@ -69,9 +79,8 @@ export default class MatchPong {
 
         // Display text from the beginning
         const    textGroup = new THREE.Object3D();
-        textGroup.rotation.set(0, 0, 0);
-//        const   {width, height} = useThree(state => state.viewport)
-//        textGroup.position.set(width / 2, height / 2, 0);
+        textGroup.position.y = 300;
+        textGroup.position.z = -300;
         textGroup.name = "textGroup";
         this.scene.add(textGroup);
 
@@ -88,7 +97,7 @@ export default class MatchPong {
 
     createLightFloor() {
         // Create plane
-        const   planeGeometry = new THREE.PlaneGeometry(2000, 2000);
+        const   planeGeometry = new THREE.PlaneGeometry(5000, 5000);
         const   planeMaterial = new THREE.MeshPhongMaterial({
             color: 0xffffff
         });
@@ -98,17 +107,35 @@ export default class MatchPong {
         plane.receiveShadow = true;
         this.scene.add(plane);
 
-        const   spotLight = new SpotLight(0xffffff, 55000000)
-        spotLight.position.set(0, 600, -50)
-//        spotLight.lookAt(0, -100, 0);
-        spotLight.angle = .65; // change it for higher or lower coverage of the spot
-        spotLight.penumbra = .8;
-        spotLight.castShadow = true;
-        spotLight.shadow.camera.far = 1500;
-        spotLight.shadow.camera.near = 10;
-        spotLight.name = "spot";
+        const   spotLightRight = new SpotLight(0xffffff, 55000000);
+        spotLightRight.position.set(920, 400, 0); //y: 300
+        spotLightRight.target.position.set(550, 0, -140);
+//        spotLightRight.distance = 5000;
+        spotLightRight.angle = .40; // change it for higher or lower coverage of the spot
+        spotLightRight.penumbra = .8;
+        spotLightRight.castShadow = true;
+        spotLightRight.shadow.camera.far = 1000;
+        spotLightRight.shadow.camera.near = 10;
+        spotLightRight.name = "spotR";
 
-        this.scene.add(spotLight);
+        const   spotLightLeft = new SpotLight(0xffffff, 55000000);
+        spotLightLeft.position.set(-300, 400, 0);
+        spotLightLeft.target.position.set(50, 0, -150);
+//        spotLightLeft.distance = 5000; spotL https://dustinpfister.github.io/2018/04/11/threejs-spotlights/
+        spotLightLeft.angle = .40; // change it for higher or lower coverage of the spot
+        spotLightLeft.penumbra = .8;
+        spotLightLeft.castShadow = true;
+        spotLightLeft.shadow.camera.far = 1000;
+        spotLightLeft.shadow.camera.near = 10;
+        spotLightLeft.name = "spotL";
+
+//        const spotLightRightHelper = new THREE.SpotLightHelper( spotLightRight );
+//this.scene.add( spotLightRightHelper );
+//const spotLightRightHelper2 = new THREE.SpotLightHelper( spotLightLeft );
+//this.scene.add( spotLightRightHelper2 );
+
+        this.scene.add(spotLightRight, spotLightLeft, spotLightRight.target, spotLightLeft.target);
+//        this.scene.add(spotLightRight, spotLightRight.target);
     }
 
     waiting() {
@@ -125,10 +152,10 @@ export default class MatchPong {
         this.scene.add(pointLight);
 
         const   txt = "Match will start soon!";
-        const   textGroup = new THREE.Group();
-        textGroup.position.y = 300;
-        textGroup.name = "waitTxt";
-        this.scene.add(textGroup);
+        const   waitText = new THREE.Group();
+        waitText.position.y = 300;
+        waitText.name = "waitTxt";
+        this.scene.add(waitText);
 
         // Create plane for mirror text to appear ghosty
         const   planeGeometry = new THREE.PlaneGeometry(10000, 10000);
@@ -174,7 +201,7 @@ export default class MatchPong {
             mirror.position.set(-0.5 * textWidth, -30, 20);
             mirror.rotation.set(Math.PI, 2 * Math.PI, 0);
 
-            textGroup.add(textAdd, mirror);
+            waitText.add(textAdd, mirror);
 
             const animate = () => {
                 requestAnimationFrame(animate);
@@ -184,14 +211,14 @@ export default class MatchPong {
         });
     }
 
-    builGameSet(data) {
+    buildGameSet(data) {console.log(data);
         // reset camera to have stadium on
-        this.camera.position.set(0, 700, 1000);
-        this.camera.lookAt(0, -100, 0);
+        this.camera.position.set(300, 700, 500);
+        this.camera.lookAt(300, -100, -300);
 
         // Ball initial stats
         this.ball_x = 0;
-        this.ball_z = 480;
+        this.ball_z = 0;
         this.ball_radius = 1;
 
         // rm previous scene stuff
@@ -225,12 +252,12 @@ export default class MatchPong {
         // Adjust this.Array for each case (2 players / 4 players)
         if (this.players_nick.length > 2) {
             this.textArray = [`${this.players_nick[0]} + " " + ${this.players_nick[1]}`,
-            this.score_p1.toString(), " - ", this.score_p2.toString(),
+            "\n" + this.score_p1.toString(), "\n - ", "\n" + this.score_p2.toString(),
             `${this.players_nick[2]} + " " + ${this.players_nick[3]}`];
         }
         else {
             this.textArray = [`${this.players_nick[0]}`,
-            this.score_p1.toString(), " - ", this.score_p2.toString(),
+            "\n" + this.score_p1.toString(), "\n - ", "\n" + this.score_p2.toString(),
             `${this.players_nick[1]}`];
         }
         this.newArray = ["team 1 " + this.textArray[0],
@@ -250,13 +277,12 @@ export default class MatchPong {
     }
 
     createGameElements() { //3000
-
-        this.createStadium();
-//        console.log("test");
         this.createBall();
         this.createPlanStadium();
         this.createPaddle('p1');
         this.createPaddle('p2');
+        this.createStadium();
+//        console.log("test");
     }
 
     printInitScores() { //https://github.com/mrdoob/three.js/blob/master/examples/webgl_loader_ttf.html try it
@@ -357,7 +383,7 @@ export default class MatchPong {
     updateTextGroup(value) {
         const   textGroup = this.scene.getObjectByName("textGroup");
         if (textGroup)
-            textGroup.position.x = - value / 2;
+            textGroup.position.x = - value / 2 + 300;
     }
 
      handleKeyEvent(event) {
@@ -392,7 +418,7 @@ export default class MatchPong {
 
         const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.rotation.x = - Math.PI * 0.5;
-        plane.position.set(0, -10, 200);
+        plane.position.set(300, -10, -140);
 //        plane.castShadow = true;
         plane.receiveShadow = true;
         this.scene.add(plane);
@@ -404,7 +430,7 @@ export default class MatchPong {
         const   ball = new THREE.Mesh(geometry, material);
 
         const   stadium = this.scene.getObjectByName("stadium");
-        ball.position.set(-10, 0, 200);
+        ball.position.set(295, 0, -140);
         ball.castShadow = true;
         ball.receiveShadow = true;
         ball.name = "ball";
@@ -430,18 +456,25 @@ export default class MatchPong {
 //    }
 
 
-    createPaddle(player = 'p1') {
+    createPaddle(player = 'p1') { // correct texture on paddles (long side)
         const geometry = new THREE.BoxGeometry(10, 10, 60);
-        let x = -270;
-        let color = 0xff0000;
+        let x = 30;
+//        this.textures["textPadRed"].wrapS = THREE.RepeatWrapping
+//        this.textures["textPadRed"].wrapT = THREE.RepeatWrapping
+        let material = new THREE.MeshStandardMaterial({
+            map: this.textures["textPadRed"],
+        });
         if (player === 'p2') {
-            x = 270;
-            color = 0x0000ff;
+            x = 570;
+            material = new THREE.MeshStandardMaterial({
+                map: this.textures["textPadBlue"],
+//                roughnessMap: this.textures["textPadBlueRoughness"],
+//                roughness: 0.0
+            });
         }
-        const material = new THREE.MeshStandardMaterial({color: color});
         const paddle = new THREE.Mesh(geometry, material);
-        paddle.position.set(x, 0, 200);
-
+        paddle.position.set(x, 0, -140);
+        paddle.castShadow = true;
         paddle.name = player;
         const   stadium = this.scene.getObjectByName("stadium");
         stadium.add(paddle);
@@ -460,9 +493,9 @@ export default class MatchPong {
         const   targetPositions = [];
         let     cube;
         let     end;
-        let     x = -300; //600 -> center must be x:300 z:140
+        let     x = 0; //600 -> center must be x:300 z:140
         let     y = 0;
-        let     z = 340;// 14 * 20 280
+        let     z = 0;// 14 * 20 280
         let     step = 20;
         let     i = -1;
 
@@ -538,18 +571,25 @@ export default class MatchPong {
     }
 
     createBlueMaterial() {
-        const   material = new THREE.MeshStandardMaterial({map: this.textures["textBlueCube"]});
+        const   material = new THREE.MeshStandardMaterial({
+            map: this.textures["textBlueCube"],
+//            metalnessMap: this.textures["textBlueCubeM"],
+//            metalness: 1.0,
+//            roughnessMap: this.textures["textBlueCubeR"]
+        });
         return material;
     }
 
     createRedMaterial() {
-        const   materials = new THREE.MeshStandardMaterial({map: this.textures["textRedCube"]});
+        const   materials = new THREE.MeshStandardMaterial({
+            map: this.textures["textRedCube"]
+        });
         return materials;
     }
 
     createCube(i, geometry, red, blue) {
         let cube;
-        if (i < 0)
+        if (i < 300)
             cube = new THREE.Mesh(geometry, red);
         else
             cube = new THREE.Mesh(geometry, blue);
@@ -660,42 +700,43 @@ export default class MatchPong {
         msg.rotation.y += 0.001;
     }
 
-//    updateBallPosition() {
-////        const ball = this.scene.getObjectByName('ball');
-//
-//        if (ball) {
-//            // Update position
+    updateBallPosition(x, z) {
+        const ball = this.scene.getObjectByName("ball");
+
+        if (ball) {
+            // Update position
 //            if (this.ball_velocity_x !== 0 || this.ball_velocity_y !== 0) {
 //                ball.position.x += this.ball_velocity_x;
 //                ball.position.y += this.ball_velocity_y;
-//
-//                // Calculate the direction of movement
-//                const movementDirection = new THREE.Vector2(this.ball_velocity_x, this.ball_velocity_y);
-//                const movementLength = movementDirection.length();
-//
-//                // Normalize the direction vector to get the direction of rotation
-//                movementDirection.normalize();
-//
-//                // Ball rotation towards its movement
-//                const rotationAxis = new THREE.Vector3(-movementDirection.y, movementDirection.x, 0);
-//                const rotationAngle = movementLength / ball.geometry.parameters.radius;
-//
-//                // Apply the rotation to the ball
-//                ball.rotateOnWorldAxis(rotationAxis, rotationAngle);
-//
-//                // Increase ball speed over time
+
+                // Calculate the direction of movement
+                const movementDirection = new THREE.Vector2(x, z);
+                const movementLength = movementDirection.length();
+
+                // Normalize the direction vector to get the direction of rotation
+                movementDirection.normalize();
+
+                // Ball rotation towards its movement
+                const rotationAxis = new THREE.Vector3(-movementDirection.y, movementDirection.x, 0);
+                const rotationAngle = movementLength / ball.geometry.parameters.radius;
+
+                // Apply the rotation to the ball
+                ball.rotateOnWorldAxis(rotationAxis, rotationAngle);
+                ball.position.x = x;
+                ball.position.z = z;
+
+                // Increase ball speed over time
 //                this.currentSpeed *= 1.0005;
 //                this.ball_velocity_x = movementDirection.x * this.currentSpeed;
 //                this.ball_velocity_y = movementDirection.y * this.currentSpeed;
-//
+
 //                if (this.ball_velocity_x === 0)
 //                    this.newRound();
-//
-//                // Check for collisions
+
+                // Check for collisions
 //                this.checkCollisions(ball);
-//            }
-//        }
-//    }
+            }
+        }
 
 //    checkCollisions(ball) {
 //        // Check for collisions with paddles
@@ -757,14 +798,12 @@ export default class MatchPong {
     // Collecting info from the game logic in the back
     display(data) {
         console.log(data);
-        const   ball = this.scene.getObjectByName("Ball");
+//        const   ball = this.scene.getObjectByName("ball");
 
-        if (ball)
-            console.log("Gotcha");
-        else
-            console.log("missing");
+// ball does not rotate, needs correction and seems laggy
+this.updateBallPosition(Object.values(data.game_state.ball)[0], -Object.values(data.game_state.ball)[1]); // or send data
 //        ball.position.x = Object.values(data.game_state.ball)[0];
-//        ball.position.z = Object.values(data.game_state.ball)[1];
+//        ball.position.z = -Object.values(data.game_state.ball)[1];
 
 //console.log("0: " + data.game_state.ball);
 //console.log("1: " + Object.keys(data.game_state));
