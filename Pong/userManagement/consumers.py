@@ -58,20 +58,12 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_add(f"user_{user.id}_group", self.channel_name)
             await self.channel_layer.group_add("Connected_users_group", self.channel_name)
             await self.user_online(user)
-            # await self.send(text_data=json.dumps({
-            #     'type': 'test_message',
-            #     'message': 'Hello from server!'
-            # }))
 
     async def disconnect(self, close_code):
         user = self.scope['user']
         await self.user_offline(user)
         await self.channel_layer.group_discard(f"user_{user.id}_group", self.channel_name)
         await self.channel_layer.group_discard("Connected_users_group", self.channel_name)
-        # await self.send(text_data=json.dumps({
-        #     'type': 'test_message',
-        #     'message': 'Goodbye from server!'
-        # }))
 
     async def receive(self, text_data):
         print(f"Received message: {text_data}")
@@ -109,6 +101,16 @@ class UserConsumer(AsyncWebsocketConsumer):
             'to_user_id': event['to_user_id'],
             'to_status': event['to_status'],
             'time': event['time'],
+            'request_status': event['request_status'],
+        }))
+
+    async def friend_req_decline(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'friend_req_decline',
+            'from_user': event['from_user'],
+            'from_user_id': event['from_user_id'],
+            'to_user': event['to_user'],
+            'to_user_id': event['to_user_id'],
             'request_status': event['request_status'],
         }))
 

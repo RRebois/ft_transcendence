@@ -26,7 +26,7 @@ export default class Layout {
         }
     }
 
-    setupEventListeners() {
+    setuIpEventListeners() {
         if (this.user) {
             const navbar = new Navbar(this.user);
             navbar.setupEventListeners();

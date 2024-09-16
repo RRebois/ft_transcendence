@@ -423,6 +423,83 @@ class UserPersonalInformationView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
+class UpNewAvatarView(APIView):
+    serializer_class = ProfilePicSerializer
+
+    def post(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if request.method == 'POST':
+            if request.FILES:
+                image = request.FILES['newImageFile']
+                serializer = self.serializer_class(data={'image': image})
+                if serializer.is_valid():
+                    sha256_hash = hashlib.sha256(image.read()).hexdigest()
+
+                    if Avatars.objects.filter(image_hash_value=sha256_hash).exists():
+                        if Avatars.objects.get(image_hash_value=sha256_hash) == Avatars.objects.get(pk=user.avatar_id.pk):
+                            return Response({"success": False, "message": "You already have that same avatar. "
+                                                                          "Don't mess with me duh"})  # A modifier
+                        else:
+                            profile_img = Avatars.objects.get(image_hash_value=sha256_hash)
+                            profile_img.uploaded_from.add(user)
+                            profile_img.save()
+                            user.avatar_id = profile_img
+                            user.save()
+                            return Response(
+                                {"success": True, "message": "You have successfully changed your avatar"})  # A modifier
+                    else:
+                        profile_img = Avatars.objects.create(image=image, image_hash_value=sha256_hash)
+                        profile_img.uploaded_from.add(user)
+                        profile_img.save()
+                        user.avatar_id = profile_img
+                        user.save()
+                        return Response(
+                            {"success": True, "message": "You have successfully updated a new avatar"})  # A modifier
+                else:
+                    return Response(
+                        {"success": False, "message": "An error occurred. Image format and/or size not valid. "
+                                           "Only jpg/jpeg/gif and png images are allowed. "
+                                           "images cannot be larger than "
+                                           f"{convert_to_megabyte(FILE_UPLOAD_MAX_MEMORY_SIZE)}MB."})  # A modifier
+            else:
+                return Response(
+                    {"success": False, "message": "An error occurred. No new profile pic provided"})  # A modifier
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class ChangeAvatarView(APIView):
+    def put(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return Response({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+
+        data = request.data
+        res = True if "data" in data and data["data"] is not None else False
+        if not res:
+            return JsonResponse({"success": False, "message": "No avatar selected. Please try again."})
+        src = data["data"].split("media")
+        path = "/media" + src[1]
+        print(path)
+        try:
+            user_avatars = Avatars.objects.filter(uploaded_from=user)
+            for avatar in user_avatars:
+                print(avatar.serialize()["image"])
+                if avatar.serialize()["image"] == path:
+                    user.avatar_id = avatar
+                    user.save()
+                    return JsonResponse({"success": True, "message": "Avatar changed successfully."})
+            return JsonResponse({"success": False, "message": "An error occurred. Please try again."})
+        except Avatars.DoesNotExist:
+            return JsonResponse({"success": False, "message": "An error occurred. Please try again."})
+
+@method_decorator(csrf_protect, name='dispatch')
 class EditDataView(APIView):
     serializer_class = EditUserSerializer
     def put(self, request):
@@ -682,9 +759,24 @@ class PendingFriendRequestsView(APIView):
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
-        friendRequests = (FriendRequest.objects.filter(from_user=user, status='pending').
-                          values('to_user__username', 'time', 'status', 'to_user_id'))
-        return JsonResponse(list(friendRequests), safe=False)
+        friendRequests = (FriendRequest.objects.filter(from_user=user, status='pending')
+                          .annotate(to_user_image=F('to_user__avatar_id__image_url'))
+                          .values('to_user__username', 'time', 'status', 'to_user_image', 'to_user_id', 'to_user__status')
+                          )
+        processedRequest = []
+        for request in friendRequests:
+            # logging.debug(f" img url :  {request['from_user_image']}")
+            # from_image_url = request['from_user_image'] or os.environ.get('SERVER_URL') + '/media/profile_pics/default_pp.jpg'
+            processedRequest.append({
+                'to_user__username': request['to_user__username'],
+                'time': request['time'],
+                'status': request['status'],
+                'to_image_url': get_profile_pic_url(request['to_user_image']),
+                'to_user_id': request['to_user_id'],
+                'to_user_status': request['to_user__status'],
+            })
+        return JsonResponse(processedRequest, safe=False)
+        # return JsonResponse(list(friendRequests), safe=False)
 
 
 class GetFriendRequestView(APIView):
@@ -750,8 +842,8 @@ class AcceptFriendRequestView(APIView):
                 'from_user': friend_request.from_user.username,
                 'from_user_id': friend_request.from_user.id,
                 'from_status': friend_request.from_user.status,
-                'from_image_url': get_profile_pic_url(user.get_img_url()),
-                'to_image_url': get_profile_pic_url(friend_request.from_user.get_img_url()),
+                'from_image_url': get_profile_pic_url(friend_request.from_user.get_img_url()),
+                'to_image_url': get_profile_pic_url(user.get_img_url()),
                 'to_user': user.username,
                 'to_user_id': user.id,
                 'to_status': user.status,
@@ -759,9 +851,9 @@ class AcceptFriendRequestView(APIView):
                 'request_status': friend_request.status,
             }
         )
-        return JsonResponse({"message": "Friend request accepted.", "level": "success", "from_user": friend_request.from_user.username,
-                             "from_status": friend_request.from_user.status, "from_image_url": get_profile_pic_url(friend_request.from_user.get_img_url())}
-                            , status=status.HTTP_200_OK)
+        return JsonResponse({"message": "Friend request accepted.", "level": "success", "username": friend_request.from_user.username,
+                            "status": friend_request.from_user.status, "img_url": get_profile_pic_url(friend_request.from_user.get_img_url()),
+                             "id": friend_request.from_user.id}, status=status.HTTP_200_OK)
 
 
 class DeclineFriendRequestView(APIView):
@@ -781,7 +873,18 @@ class DeclineFriendRequestView(APIView):
         if friend_request.to_user != user:
             return JsonResponse({"message": "You cannot decline this friend request.", "level": "warning"},
                                 status=status.HTTP_403_FORBIDDEN)
-
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"user_{friend_request.from_user_id}_group",
+            {
+                'type': 'friend_req_decline',
+                'from_user': friend_request.from_user.username,
+                'from_user_id': friend_request.from_user.id,
+                'to_user': user.username,
+                'to_user_id': user.id,
+                'request_status': friend_request.status,
+            }
+        )
         friend_request.delete()
         return JsonResponse({"message": "Friend request declined.", "level": "success"}, status=status.HTTP_200_OK)
 

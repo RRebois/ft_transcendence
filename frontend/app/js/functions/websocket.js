@@ -2,7 +2,8 @@ import {isUserConnected} from "./user_auth.js";
 import ToastComponent from "@js/components/Toast.js";
 import {getCookie} from "./cookie.js";
 import {MatchPong} from "@js/views/match.js"
-import { create_friend_div, create_friend_request_div, remove_friend_div } from "@js/functions/friends_management.js";
+import { create_friend_div_ws, create_friend_request_div, remove_friend_div } from "@js/functions/friends_management.js";
+import {remove_friend_request_div} from "./friends_management.js";
 
 export async function initializePongWebSocket(pong) {
     return new Promise(async (resolve, reject) => {
@@ -114,6 +115,10 @@ export async function initializeWebSocket() {
 //                    console.log("Friend request accepted");
                     handle_friend_req_accept(socket, data);
                 }
+                if (data.type === 'friend_req_decline') {  // accept friend request
+//                    console.log("Friend request declined");
+                    handle_friend_req_decline(socket, data);
+                }
                 if (data.type === 'friend_remove') {      // remove friend
 //                    console.log("Friend removed");
                     handle_friend_removed(socket, data);
@@ -162,8 +167,18 @@ function handle_friend_req_accept(socket, message){
 //    console.log("message is:", message);
 
     const toast = new ToastComponent();
-    toast.throwToast('received-friend-request', `${message.to_user} Is now your friend !`, 5000);
-    create_friend_div(message, message.to_user_id);
+    toast.throwToast('friend-request', `${message.to_user} Is now your friend !`, 5000);
+    create_friend_div_ws(message.to_status, message.to_user_id, message.to_image_url, message.to_user);
+    remove_friend_request_div(message.to_user_id);
+}
+
+function handle_friend_req_decline(socket, message){
+    console.log("socket is:", socket);
+    console.log("message is:", message);
+
+    const toast = new ToastComponent();
+    toast.throwToast('friend-request', `${message.to_user} declined your friend request...`, 5000);
+    remove_friend_request_div(message.to_user_id);
 }
 
 function handle_friend_removed(socket, message){
@@ -180,17 +195,30 @@ function handle_friend_status(socket, message){
 //    console.log("message is:", message);
 //    console.log("status change detected for user:", message.user_id, "new status is:", message.status);
 
-    const friendStatus = document.getElementById(`friend-status-${message.user_id}`);
-    const friendStatusText = document.getElementById(`friend-status-text-${message.user_id}`);
-//    console.log("friendStatus is:", friendStatus);
-//    console.log("friendStatusText is:", friendStatusText);
-    if (friendStatus && friendStatusText) {
-        friendStatus.classList.remove('bg-success', 'bg-danger');
-        friendStatusText.innerText = message.status;
-        if (message.status === 'online') {
-            friendStatus.classList.add('bg-success');
-        } else {
-            friendStatus.classList.add('bg-danger');
+    const friendItem = document.querySelector(`[data-id="${message.user_id}"]`)
+    if (friendItem) {
+        const statusElement = friendItem.querySelector('.status');
+        if (statusElement) {
+            statusElement.innerText = `Status: ${message.status}`;
+        }
+        console.log("User id is: ", message.user_id);
+        let friendID = message.user_id
+        let friendStatusId = `friend-status-${message.user_id}`;
+        let friendStatusTextId = `friend-status-text-${message.user_id}`;
+
+        console.log("Constructed IDs:", friendStatusId, friendStatusTextId);
+        let friendStatus = document.getElementById(friendStatusId);
+        let friendStatusText = document.getElementById(friendStatusTextId);
+        console.log("friendStatus is:", friendStatus);
+        console.log("friendStatusText is:", friendStatusText);
+        if (friendStatus && friendStatusText) {
+            friendStatus.classList.remove('bg-success', 'bg-danger');
+            friendStatusText.innerText = message.status;
+            if (message.status === 'online') {
+                friendStatus.classList.add('bg-success');
+            } else {
+                friendStatus.classList.add('bg-danger');
+            }
         }
     }
 }
