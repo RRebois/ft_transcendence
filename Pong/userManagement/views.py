@@ -406,7 +406,10 @@ class GetAllUserAvatarsView(APIView):
                                 status=status.HTTP_401_UNAUTHORIZED)
         avatar_list = []
         avatars = Avatars.objects.filter(uploaded_from=user)
+        # try:
         current = Avatars.objects.get(pk=user.avatar_id.pk)
+        # except:
+        #     pass
         for avatar in avatars:
             if avatar != current:
                 avatar_list.append(avatar)
@@ -435,6 +438,8 @@ class UpNewAvatarView(APIView):
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
 
         if request.method == 'POST':
+            if user.stud42:
+                return JsonResponse(data={"message": "A 42 user can't change its avatar"}, status=403)
             if request.FILES:
                 image = request.FILES['newAvatar']
                 serializer = self.serializer_class(data={'image': image})
@@ -477,6 +482,8 @@ class ChangeAvatarView(APIView):
         except AuthenticationFailed as e:
             messages.warning(request, str(e))
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        if user.stud42:
+            return JsonResponse(data={"message": "A 42 user can't change its avatar"}, status=403)
 
         data = request.data
         res = True if "data" in data and data["data"] is not None else False
@@ -507,6 +514,8 @@ class SetPreviousAvatar(APIView):
         except AuthenticationFailed as e:
             logging.debug(f"AuthenticationFailed: {str(e)}")
             return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        if user.stud42:
+            return JsonResponse(data={"message": "A 42 user can't change its avatar"}, status=403)
 
         try:
             avatar = Avatars.objects.filter(uploaded_from=user).get(pk=avatar_id)
@@ -577,8 +586,8 @@ class PasswordChangeView(APIView):
         except AuthenticationFailed as e:
             return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = self.serializer_class(data=request.data, context={'user': user})
-        if (user.stud42):
-            return JsonResponse(data={'message': 'You cannot change your password if you are a 42 student'}, status=401)
+        if user.stud42:
+            return JsonResponse(data={'message': 'You cannot change your password if you are a 42 student'}, status=403)
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -668,7 +677,7 @@ class Security2FAView(APIView):
         except AuthenticationFailed as e:
             return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         if user.stud42:
-            return JsonResponse(data={'message': 'You cannot enable 2FA if you are a 42 student'}, status=401)
+            return JsonResponse(data={'message': 'You cannot enable 2FA if you are a 42 student'}, status=403)
         data = request.data
         value = data.get('value')
         if value:
