@@ -30,6 +30,19 @@ export default class MatchPong {
 //        this.ball_velocity_x = this.currentSpeed * ((Math.random() - 0.5));
 //        this.ball_velocity_y = this.currentSpeed * ((Math.random() - 0.5));
 
+        // Load all textures at once
+        this.textures = {};
+        const   textureLoader = new THREE.TextureLoader();
+        const   textStadium = textureLoader.load("/grass/grass_BaseColor.jpg");
+        const   textInitBall = textureLoader.load("/football.jpg");
+        const   textBlueCube = textureLoader.load("/blue_basecolor.png");
+        const   textRedCube = textureLoader.load("/red_basecolor.png");
+        this.textures["textStadium"] = textStadium;
+        this.textures["textInitBall"] = textInitBall;
+        this.textures["textBlueCube"] = textBlueCube;
+        this.textures["textRedCube"] = textRedCube;
+        console.log(this.textures["textStadium"]);
+
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x000000);
 
@@ -371,12 +384,9 @@ export default class MatchPong {
 
      createPlanStadium() {
         // Create plane
-        const   textureLoader = new THREE.TextureLoader();
-        const   texture = textureLoader.load("/grass/grass_BaseColor.jpg");
-
         const   planeGeometry = new THREE.PlaneGeometry(600, 280, 40, 40);
         const   planeMaterial = new THREE.MeshPhongMaterial({
-            map: texture,
+            map: this.textures["textStadium"],
             wireframe: true
         });
 
@@ -389,11 +399,8 @@ export default class MatchPong {
      }
 
     createBall() { // animation goutte d'eau idee rolando + un peu felipe
-        const   textureLoader = new THREE.TextureLoader();
-        const   ballTexture = textureLoader.load("/football.jpg"); // get better texture
-
         const   geometry = new THREE.SphereGeometry(10, 48, 48);
-        const   material = new THREE.MeshStandardMaterial({map: ballTexture});
+        const   material = new THREE.MeshStandardMaterial({map: this.textures["textInitBall"]});
         const   ball = new THREE.Mesh(geometry, material);
 
         const   stadium = this.scene.getObjectByName("stadium");
@@ -453,7 +460,7 @@ export default class MatchPong {
         const   targetPositions = [];
         let     cube;
         let     end;
-        let     x = -300; //600
+        let     x = -300; //600 -> center must be x:300 z:140
         let     y = 0;
         let     z = 340;// 14 * 20 280
         let     step = 20;
@@ -531,38 +538,12 @@ export default class MatchPong {
     }
 
     createBlueMaterial() {
-        // create a texture loader.
-        const   textureLoader = new THREE.TextureLoader();
-
-        // load a texture
-//        const   texture = textureLoader.load("/blue_basecolor.png");
-//        const   metal = textureLoader.load("/blue_metallic.png");
-//        const   rough = textureLoader.load("/blue_roughness.png");
-//const textures = textureLoader.load({
-//    map: "/blue_basecolor.png",
-//    roughnessMap: "/blue_metallic.png",
-//    metalnessMap: "/blue_metallic.png",
-//});
-        const   material = new THREE.MeshStandardMaterial({
-            map: textureLoader.load("/blue_basecolor.png"),
-//            metalness: 1,
-//            metalnessMap: textureLoader.load("/blue_metallic.png"),
-//            roughness: 0,
-//            roughnessMap: rough
-//            wireframe: true
-        });
-
+        const   material = new THREE.MeshStandardMaterial({map: this.textures["textBlueCube"]});
         return material;
     }
 
     createRedMaterial() {
-        // create a texture loader.
-        const   textureLoader = new THREE.TextureLoader();
-
-        // load a texture
-        const   texture = textureLoader.load("/red_basecolor.jpg");
-        const   materials = new THREE.MeshStandardMaterial({map: texture});
-
+        const   materials = new THREE.MeshStandardMaterial({map: this.textures["textRedCube"]});
         return materials;
     }
 
@@ -776,6 +757,20 @@ export default class MatchPong {
     // Collecting info from the game logic in the back
     display(data) {
         console.log(data);
+        const   ball = this.scene.getObjectByName("Ball");
+
+        if (ball)
+            console.log("Gotcha");
+        else
+            console.log("missing");
+//        ball.position.x = Object.values(data.game_state.ball)[0];
+//        ball.position.z = Object.values(data.game_state.ball)[1];
+
+//console.log("0: " + data.game_state.ball);
+//console.log("1: " + Object.keys(data.game_state));
+//console.log("2: " + Object.keys(data.game_state)[0]);
+//console.log("3: " + Object.values(data.game_state));
+//console.log("3: " + Object.values(data.game_state.ball)[0]);
     }
 
     setupEventListeners() {}
