@@ -182,13 +182,38 @@ export default class Stats {
 		}, speed)
 	}
 
+	fetchUser = async (username) => {
+		const csrfToken = getCookie('csrftoken');
+		try {
+			const response = await fetch(`https://localhost:8443/isUserExisting/${username}`, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRFToken': csrfToken
+				},
+				credentials: 'include',
+			});
+			const data = await response.json();
+			if (!response.ok || !data) {
+				const toastComponent = new ToastComponent();
+				toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+				return null;
+			}
+			return data;
+		}
+		catch (error) {
+			console.error('Error fetching user:', error);
+			return null;
+		}
+	};
+
 	render(pathName) {
 		const stats_path = pathName.split("/");
 		const username = stats_path[2];
 
 		document.title = `ft_transcendence | ${username} stats`;
 		return `
-			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
+			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center" id="statsContainer">
 				<div class="h-full w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 16px;">
 					<div class="d-flex flex-column w-full" style="gap: 16px">
 						<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded" style="--bs-bg-opacity: .5;">
@@ -212,7 +237,7 @@ export default class Stats {
 										</div>
 									</div>
 								</div>
-								<div class="d-flex w-full justify-content-center align-items-center">
+								<div id="canvasContainer" class="d-flex w-full justify-content-center align-items-center">
 									<div class="d-flex w-full h-full justify-content-center align-items-center">
 										<canvas id="eloChart" style="width: 100%; height: 100%;"></canvas>
 									</div>
@@ -236,23 +261,28 @@ export default class Stats {
 		`;
 	}
 
-	setupEventListeners(pathName) {
-		console.log("Pathname is : ", pathName);
+	setupEventListeners =  async (pathName) => {
 		const stats_path = pathName.split("/");
 		const username = stats_path[2];
 		console.log("User is: ", username);
 
-		// this.fetchStats(this.user?.username);
-		this.fetchStats(username);
-		// this.fetchMatchHistory(this.user?.username);
-		this.fetchMatchHistory(username);
-		const gameFilter = document.getElementById('game-filter');
-		if (gameFilter) {
-			gameFilter.addEventListener('change', (event) => {
-				// this.fetchMatchHistory(this.user.username, event.target.value);
-				this.fetchMatchHistory(username, event.target.value);
-			});
+		const user = await this.fetchUser(username);
+
+		if (user) {
+			this.fetchStats(username);
+			this.fetchMatchHistory(username);
+			const gameFilter = document.getElementById('game-filter');
+			if (gameFilter) {
+				gameFilter.addEventListener('change', (event) => {
+					this.fetchMatchHistory(username, event.target.value);
+				});
+			}
+			this.initEloChart();
 		}
-		this.initEloChart();
+		else{
+			document.title = 'User not found';
+        	const contentContainer = document.getElementById("canvasContainer");
+        	contentContainer.innerHTML = '<h1>User not found</h1>';
+		}
 	}
 }

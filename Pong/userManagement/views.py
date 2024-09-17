@@ -130,6 +130,21 @@ def get_profile_pic_url(pp_path):
 
 
 @method_decorator(csrf_protect, name='dispatch')
+class UserExistsView(APIView):
+    def get(self, request, username):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            messages.warning(request, str(e))
+            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            user2 = User.objects.get(username=username)
+        except:
+            return JsonResponse({"message": "User not found"}, status=404)
+        return JsonResponse({"message": "found", "user": user2.serialize()}, status=200)
+
+
+@method_decorator(csrf_protect, name='dispatch')
 class LoginView(APIView):
     serializer_class = LoginSerializer
 
