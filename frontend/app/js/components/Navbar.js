@@ -172,7 +172,7 @@ export default class Navbar {
 							</button>
 							<ul class="dropdown-menu dropdown-menu-end">
 								<li><a class="dropdown-item" route="/my-profile" href="/my-profile">My profile</a></li>
-								<li><a class="dropdown-item" route="/stats" href="/stats">My stats</a></li>
+								<li><a class="dropdown-item" route="/stats/${this.user?.username}" href="/stats/${this.user?.username}">My stats</a></li>
 								<li><a class="dropdown-item" route="/friends" href="/friends">Friends</a></li>
 								<li><hr class="dropdown-divider"></li>
 								<li><a role="button" id="logout-btn" class="dropdown-item text-danger">Logout</a></li>

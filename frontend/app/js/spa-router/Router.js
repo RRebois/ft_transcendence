@@ -67,13 +67,14 @@ export default class Router {
 		// If route is valid, render the view
 		if (route.user) {
 			this.navbar.setUser(route.user);
-			this.renderNode.innerHTML = this.navbar.render() + route.renderView();
+			this.renderNode.innerHTML = this.navbar.render() + route.renderView(path);
 			this.navbar.setupEventListeners();
 		}
 		else {
-			this.renderNode.innerHTML = route.renderView();
+			this.renderNode.innerHTML = route.renderView(path);
 		}
-		route.setupEventListeners();
+		console.log("Navigating to path:", path);
+		route.setupEventListeners(path);
 
 		// Update the browser history
 		if (pushState) {

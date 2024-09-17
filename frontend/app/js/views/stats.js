@@ -63,23 +63,23 @@ export default class Stats {
 			},
 			credentials: 'include'
 		})
-			.then(response => response.json().then(data => ({ok: response.ok, data})))
-			.then(({ok, data}) => {
-				console.log('Stats:', data);
-				if (!ok) {
-					const toastComponent = new ToastComponent();
-					toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
-				} else {
-					console.log('Success:', data);
-					this.animateProgressBar(data.elo_pong, 'pong', '#f02e2d');
-					this.animateProgressBar(data.elo_purrinha, 'purrinha', '#f0902d');
-				}
-			})
-			.catch(error => {
-				console.error('Error:', error);
+		.then(response => response.json().then(data => ({ok: response.ok, data})))
+		.then(({ok, data}) => {
+			console.log('Stats:', data);
+			if (!ok) {
 				const toastComponent = new ToastComponent();
-				toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
-			});
+				toastComponent.throwToast('Error', data.message, 5000, 'error');
+			} else {
+				console.log('Success:', data);
+				this.animateProgressBar(data.elo_pong, 'pong', '#f02e2d');
+				this.animateProgressBar(data.elo_purrinha, 'purrinha', '#f0902d');
+			}
+		})
+		.catch(error => {
+			console.error('Error:', error);
+			const toastComponent = new ToastComponent();
+			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+		});
 	}
 
 	fetchMatchHistory = (username, type = "all") => {
@@ -92,72 +92,71 @@ export default class Stats {
 			},
 			credentials: 'include'
 		})
-			.then(response => response.json().then(data => ({ok: response.ok, data})))
-			.then(({ok, data}) => {
-				console.log('Match history:', data);
-				if (!ok) {
-					const toastComponent = new ToastComponent();
-					toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
-				} else {
-					console.log('Success:', data);
-					const matchHistoryContainer = document.getElementById('match-history');
-					if (matchHistoryContainer) {
-						matchHistoryContainer.innerHTML = '';
-						if (data.length === 0) {
-							const noMatchElement = document.createElement('div');
-							noMatchElement.classList.add('d-flex', 'flex-row', 'justify-content-center', 'align-items-center', 'rounded', 'p-2');
-							noMatchElement.innerHTML = `
-								<p class="play-regular m-0">No match history.</p>
-							`;
-							matchHistoryContainer.appendChild(noMatchElement);
-						}
-						data.forEach(match => {
-							const date = moment(match.timestamp);
-							const matchElement = document.createElement('div');
-							const background = match?.winner[0] === username ? 'bg-victory' : 'bg-defeat';
-							matchElement.classList.add('d-flex', 'flex-row', 'justify-content-between', 'play-regular', 'align-items-center', background, 'rounded', 'p-2');
-							matchElement.innerHTML = `
-								<div class="d-flex flex-column align-items-center">
-									<p class="fs-1 m-0">${match.game === 'pong' ? '🏓' : '✋'}</p>
-									<p class="fs-6 m-0">${match.game === 'pong' ? 'Pong game' : 'Purrinha game'}</p>
-								</div>
-								<div class="d-flex flex-column">
-									<div class="d-flex flex-row">
-										<div class="d-flex flex-column">
-											<div class="d-flex flex-row align-items-center gap-1">
-												<p class="m-0"><a href="/users/${match.players[0].username}" class="text-dark text-decoration-none">${match.players[0].username}</a></p>
-												<p class="play-bold m-0 fs-1">${match.players[0].score}</p>
-											</div>
-										</div>
-										<p class="play-bold m-0 fs-1">-</p>
-										<div class="d-flex flex-column">
-											<div class="d-flex flex-row align-items-center gap-1">
-												<p class="play-bold m-0 fs-1">${match.players[1].score}</p>
-												<p class="m-0"><a href="/users/${match.players[1].username}" class="text-dark text-decoration-none">${match.players[1].username}</a></p>
-											</div>
+		.then(response => response.json().then(data => ({ok: response.ok, data})))
+		.then(({ok, data}) => {
+			console.log('Match history:', data);
+			if (!ok) {
+				const toastComponent = new ToastComponent();
+				toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+			} else {
+				console.log('Success:', data);
+				const matchHistoryContainer = document.getElementById('match-history');
+				if (matchHistoryContainer) {
+					matchHistoryContainer.innerHTML = '';
+					if (data.length === 0) {
+						const noMatchElement = document.createElement('div');
+						noMatchElement.classList.add('d-flex', 'flex-row', 'justify-content-center', 'align-items-center', 'rounded', 'p-2');
+						noMatchElement.innerHTML = `
+							<p class="play-regular m-0">No match history.</p>
+						`;
+						matchHistoryContainer.appendChild(noMatchElement);
+					}
+					data.forEach(match => {
+						const date = moment(match.timestamp);
+						const matchElement = document.createElement('div');
+						const background = match?.winner[0] === username ? 'bg-victory' : 'bg-defeat';
+						matchElement.classList.add('d-flex', 'flex-row', 'justify-content-between', 'play-regular', 'align-items-center', background, 'rounded', 'p-2');
+						matchElement.innerHTML = `
+							<div class="d-flex flex-column align-items-center">
+								<p class="fs-1 m-0">${match.game === 'pong' ? '🏓' : '✋'}</p>
+								<p class="fs-6 m-0">${match.game === 'pong' ? 'Pong game' : 'Purrinha game'}</p>
+							</div>
+							<div class="d-flex flex-column">
+								<div class="d-flex flex-row">
+									<div class="d-flex flex-column">
+										<div class="d-flex flex-row align-items-center gap-1">
+											<p class="m-0"><a href="/users/${match.players[0].username}" class="text-dark text-decoration-none">${match.players[0].username}</a></p>
+											<p class="play-bold m-0 fs-1">${match.players[0].score}</p>
 										</div>
 									</div>
-									${match?.winner[0] === username ?
-										`<div class="d-flex flex-row">
-											<i class="bi bi-trophy-fill" style="color: #e4ca6a;"></i>
-											<p>Victory</p>
-										</div>` :
-										`<p>Loss</p>`
-								}
+									<p class="play-bold m-0 fs-1">-</p>
+									<div class="d-flex flex-column">
+										<div class="d-flex flex-row align-items-center gap-1">
+											<p class="play-bold m-0 fs-1">${match.players[1].score}</p>
+											<p class="m-0"><a href="/users/${match.players[1].username}" class="text-dark text-decoration-none">${match.players[1].username}</a></p>
+										</div>
+									</div>
 								</div>
-								<p class="play-regular m-0">${date.calendar()}</p>
-							`;
-							matchHistoryContainer.appendChild(matchElement);
-						});
-					}
-
+								${match?.winner[0] === username ?
+									`<div class="d-flex flex-row">
+										<i class="bi bi-trophy-fill" style="color: #e4ca6a;"></i>
+										<p>Victory</p>
+									</div>` :
+									`<p>Loss</p>`
+							}
+							</div>
+							<p class="play-regular m-0">${date.calendar()}</p>
+						`;
+						matchHistoryContainer.appendChild(matchElement);
+					});
 				}
-			})
-			.catch(error => {
-				console.error('Error:', error);
-				const toastComponent = new ToastComponent();
-				toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
-			});
+			}
+		})
+		.catch(error => {
+			console.error('Error:', error);
+			const toastComponent = new ToastComponent();
+			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+		});
 	}
 
 	animateProgressBar(elo, game, color = '#4285f4') {
@@ -183,14 +182,17 @@ export default class Stats {
 		}, speed)
 	}
 
-	render() {
-		document.title = 'ft_transcendence | My stats';
+	render(pathName) {
+		const stats_path = pathName.split("/");
+		const username = stats_path[2];
+
+		document.title = `ft_transcendence | ${username} stats`;
 		return `
 			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
 				<div class="h-full w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 16px;">
 					<div class="d-flex flex-column w-full" style="gap: 16px">
 						<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded" style="--bs-bg-opacity: .5;">
-							<p class="play-bold fs-3">My stats</p>
+							<p class="play-bold fs-3">${username} stats</p>
 							<div class="d-flex flex-row w-full gap-2">
 								<div class="d-flex flex-column w-1-4 gap-2">
 									<div class="d-flex w-full justify-content-center align-items-center">
@@ -234,13 +236,21 @@ export default class Stats {
 		`;
 	}
 
-	setupEventListeners() {
-		this.fetchStats(this.user?.username);
-		this.fetchMatchHistory(this.user?.username);
+	setupEventListeners(pathName) {
+		console.log("Pathname is : ", pathName);
+		const stats_path = pathName.split("/");
+		const username = stats_path[2];
+		console.log("User is: ", username);
+
+		// this.fetchStats(this.user?.username);
+		this.fetchStats(username);
+		// this.fetchMatchHistory(this.user?.username);
+		this.fetchMatchHistory(username);
 		const gameFilter = document.getElementById('game-filter');
 		if (gameFilter) {
 			gameFilter.addEventListener('change', (event) => {
-				this.fetchMatchHistory(this.user.username, event.target.value);
+				// this.fetchMatchHistory(this.user.username, event.target.value);
+				this.fetchMatchHistory(username, event.target.value);
 			});
 		}
 		this.initEloChart();
