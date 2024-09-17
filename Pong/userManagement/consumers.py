@@ -141,3 +141,11 @@ class UserConsumer(AsyncWebsocketConsumer):
             'from_user_id': event['from_user_id'],
             'from_image_url': event['from_image_url'],
         }))
+
+    async def tournament_update(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'tournament_update',
+            'players': event['players'],
+            'matchs': event['matchs'],
+            'message': event['message'],
+        }))

@@ -10,12 +10,14 @@ from django.http import Http404, JsonResponse
 from random import choice
 from django.core.cache import cache
 from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 
 from userManagement.models import User, UserData
 from userManagement.views import authenticate_user
 from .models import *
 from gamesManager.views import MatchMaking
+from configFiles.globals import *
 from userManagement.utils import gen_timestamp
 
 
@@ -175,6 +177,55 @@ def add_match_to_tournament(tournament_id, match):
     if len(unfinished_matchs) <= 1:
         find_tournament_winner(tournament)
 
+
+def send_to_tournament_group(tournament_id):
+    cache_db = cache.get(tournament_id)
+    if not cache_db:
+        return
+    channel_layer = get_channel_layer()
+    for channel in cache_db['channels']:
+        async_to_sync(channel_layer.group_send)(
+            channel,
+            {
+                'type': 'tournament_update',
+                'players': cache_db['players'],
+                'matchs': cache_db['matchs'],
+                'message': cache_db['message'],
+            }
+    )
+
+def add_player_to_tournament(user, tournament):
+    tournament_id = tournament.get_id()
+    cache_db = cache.get(tournament_id)
+    if not cache_db:
+        cache_db = {
+            'channels': [],
+            'players': [],
+            'matchs': [],
+            # 'live_matchs': [],
+            'message': 'waiting for other players',
+
+        }
+    count = tournament.players.count()
+    players = tournament.players.all()
+    for player in players:
+        TournamentMatch.objects.create(tournament=tournament)
+    tournament.players.add(user)
+    cache_db['players'].append(user.username)
+    cache_db['channels'].append(f"user_{user.id}_group")
+    for player in cache_db['players']:
+        cache_db['matchs'].append({user.username: 0, player: 0, 'status': 'waiting'})
+    if count + 1 == TOURNAMENT_LIMIT:
+        cache_db['message'] = 'The tournament is ready to start, you can play now.'
+        tournament.is_closed = True
+    tournament.save()
+    cache.set(
+        tournament_id,
+        cache_db,
+    )
+    send_to_tournament_group(tournament_id)
+
+
 @method_decorator(csrf_protect, name='dispatch')
 class   CreateTournamentView(APIView):
 
@@ -184,29 +235,11 @@ class   CreateTournamentView(APIView):
         except AuthenticationFailed as e:
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
         tournament = Tournament.objects.create()
-        tournament.players.add(user)
-        tournament.save()
+        add_player_to_tournament(user, tournament)
         return JsonResponse({"tournament_id": tournament.get_id()}, status=200)
 
 @method_decorator(csrf_protect, name='dispatch')
 class   JoinTournamentView(APIView):
-
-    def add_player(self, user, tournament):
-        count = tournament.players.count()
-        players = tournament.players.all()
-        for player in players:
-            TournamentMatch.objects.create(tournament=tournament)
-        tournament.players.add(user)
-        if count + 1 == 4:
-            tournament.is_closed = True
-        tournament.save()
-        # self.launch_tournament() ????
-
-        # How to inform the users? Is it possible to use the websocket? Yes
-        # How to manage the data?
-        # Create a cache to real time update, then deal with the db update.
-        # Create a View to handle the cache/db data when called.
-
 
     def get(self, request, tournament_id):
 
@@ -224,7 +257,7 @@ class   JoinTournamentView(APIView):
             return JsonResponse({"error": "You have already joined this tournament."}, status=404)
         if tournament.is_closed:
             return JsonResponse({"error": "Tournament is already full."}, status=404)
-        self.add_player(user, tournament)
+        add_player_to_tournament(user, tournament)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -239,8 +272,10 @@ class   PlayTournamentView(APIView):
             tournament = Tournament.objects.get(id=tournament_id)
         except:
             return JsonResponse({"error": "Tournament does not exist."}, status=404)
-        if tournament.winner:
+        if tournament.is_finished:
             return JsonResponse({"error": "This tournament is already finished."}, status=404)
+        if not tournament.is_closed:
+            return JsonResponse({"error": "This tournament is not ready to play. Wait for all players."}, status=404)
         if user not in tournament.players.all():
             return JsonResponse({"error": "You have not joined this tournament."}, status=404)
         session_id = MatchMaking.get_tournament_match(tournament_id) # verify if it returned a json

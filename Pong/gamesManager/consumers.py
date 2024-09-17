@@ -8,8 +8,9 @@ from django.core.cache import cache
 from random import choice
 from .games.pong import PongGame
 from .games.purrinha import PurrinhaGame
-from matchs.views import create_match, add_match_to_tournament
+from matchs.views import create_match, add_match_to_tournament, send_to_tournament_group
 from .views import MatchMaking
+from configFiles.globals import *
 
 
 class	GameManagerConsumer(AsyncWebsocketConsumer):
@@ -155,15 +156,41 @@ class PongHandler():
 	def	__init__(self, consumer):
 		self.consumer = [consumer]
 		self.game_code = consumer.game_code
+		self.left_score = self.right_score = -1
 
 	async def	launch_game(self, players_name):
 		self.message = self.consumer[0].session_data
 		self.game = PongGame(players_name, multiplayer=(self.game_code == 40))
 		await self.send_game_state()
 		# await self.reset_game()
-		if 'bot' in self.message['players']:
+		if BOT_NAME in self.message['players']:
 			# init_bot()
 			pass
+
+	@database_sync_to_async
+	def	tournament_database_update(self):
+		cache_db = cache.get(self.message['tournament_id'])
+		player1 = self.message['game_state']['players']['player1']['name']
+		player2 = self.message['game_state']['players']['player2']['name']
+		status = 'finished' if self.left_score >= self.message['game_state']['winning_score']\
+			or self.right_score >= self.message['game_state']['winning_score'] else 'running'
+		for match in cache_db['matchs']:
+			if match.get(player1) and match.get(player2):
+				match[player1] = self.left_score
+				match[player2] = self.right_score
+				match['status'] = status
+				cache.set(self.message['tournament_id'], cache_db)
+				break
+
+	async def	tournament_update(self):
+		if self.game_code != 23:
+			return
+		if self.left_score != self.message['game_state']['left_score']\
+			or self.right_score != self.message['game_state']['right_score']:
+			self.left_score = self.message['game_state']['left_score']
+			self.right_score = self.message['game_state']['right_score']
+			await self.tournament_database_update()
+			sync_to_async(send_to_tournament_group)(self.message['tournament_id'])
 
 	async def	add_consumer(self, consumer):
 		self.consumer.append(consumer)
@@ -193,6 +220,7 @@ class PongHandler():
 	async def	update_game_state(self):
 		await self.game.update()
 		await self.send_game_state()
+		await self.tournament_update()
 		await self.end_game()
 
 	async def	send_game_state(self):
@@ -251,7 +279,7 @@ class PurrinhaHandler():
 		self.message = self.consumer[0].session_data
 		self.player_nb = len(players_name)
 		self.game = PurrinhaGame(players_name)
-		if 'bot' in self.message['players']:
+		if BOT_NAME in self.message['players']:
 			# init_bot()
 			pass
 

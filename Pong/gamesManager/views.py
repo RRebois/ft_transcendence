@@ -10,12 +10,11 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import status
 from userManagement.models import User, UserData
 from matchs.models import *
+from configFiles.globals import *
 
 import asyncio
 import uuid
 
-ELO_DIFF = 20
-TOURNAMENT_LIMIT = 4
 
 class	MatchMaking():
 	matchs = {}
@@ -34,7 +33,7 @@ class	MatchMaking():
 	@staticmethod
 	def	add_player(session_id, username):
 		if MatchMaking.matchs.get(session_id):
-			if username not in ['guest', 'bot']:
+			if username not in ['guest', BOT_NAME]:
 				user_data = UserData.objects.get(user_id=User.objects.get(username=username))
 				elo = user_data.user_elo_pong[-1]['elo'] if MatchMaking.matchs[session_id]['game_name'] == 'pong' else user_data.user_elo_purrinha[-1]['elo']
 				MatchMaking.matchs[session_id]['elos'].append(elo)
@@ -49,7 +48,7 @@ class	MatchMaking():
 	@staticmethod
 	def	get_session(game_name, game_code, user):
 		if game_code in [10, 20]:
-			usernames = [user.username, 'bot' if game_code == 10 else 'guest']
+			usernames = [user.username, BOT_NAME if game_code == 10 else 'guest']
 			session_id = MatchMaking.create_session(game_name, game_code, usernames)
 			# MatchMaking.delete_session(session_id)
 			session_data = cache.get(session_id)
