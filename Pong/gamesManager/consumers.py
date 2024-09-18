@@ -1,6 +1,8 @@
 import json
 
 import asyncio
+import logging
+
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
@@ -49,7 +51,6 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 			self.session_id,
 			self.channel_name
 		)
-
 		if self.session_data['status'] == 'ready':
 			self.game_handler = PongHandler(self) if self.game_name == 'pong' else PurrinhaHandler(self)
 			GameManagerConsumer.matchs[self.session_id] = self.game_handler
@@ -62,6 +63,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 
 	async def	receive(self, text_data):
 		data = json.loads(text_data)
+		print(f'\n\n\ndata: {data}\n\n\n')
 		msg = data.get('game_status')
 		if msg:
 			self.session_data['status'] = 'started'
@@ -91,9 +93,12 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		)
 
 	async def	fetch_session_data_loop(self):
-		while True:
+		if self.game_name == 'pong':
+			while True:
+				await self.fetch_session_data()
+				await asyncio.sleep(0.2)
+		else:
 			await self.fetch_session_data()
-			await asyncio.sleep(0.2)
 
 	async def	fetch_session_data(self):
 		if self.session_data['status'] != 'started':
@@ -276,6 +281,8 @@ class PurrinhaHandler():
 		self.game_code = consumer.game_code
 
 	async def	launch_game(self, players_name):
+		logging.debug(f'launching purrinha game with players: {players_name}')
+		logging.debug(f'players_name: {players_name}')
 		self.message = self.consumer[0].session_data
 		self.player_nb = len(players_name)
 		self.game = PurrinhaGame(players_name)
@@ -299,6 +306,7 @@ class PurrinhaHandler():
 
 
 	async def	reset_game(self):
+		logging.debug('resetting purrinha game')
 		self.turns_id = [i for i in range(1, self.player_nb)]
 		await self.get_new_turn()
 		self.message['game_state'] = await self.game.get_status()
@@ -338,6 +346,7 @@ class PurrinhaHandler():
 
 
 	async def	receive(self, text_data):
+		logging.debug(f'received data: {text_data}')
 		player_move = text_data.get('player_move')
 		if player_move:
 			quantity = player_move.get('quantity')
@@ -356,7 +365,7 @@ class PurrinhaHandler():
 
 
 	async def	end_game(self, winner=None):
-
+		logging.debug('ending purrinha game')
 		self.message['winner'] = self.message['game_state']['winner']
 		self.message['status'] = 'finished'
 		await database_sync_to_async(cache.set)(self.consumer[0].session_id, self.message)
