@@ -71,7 +71,8 @@ export default class Dashboard {
 					const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-match-modal'));
 					if (createMatchModal)
 						createMatchModal.hide();
-					appRouter.navigate(`/${game_type}?${params}`);
+					appRouter.navigate(`/${game_type}`);
+//					appRouter.navigate(`/${game_type}?${params}`);
 				}
 			})
 			.catch(error => {

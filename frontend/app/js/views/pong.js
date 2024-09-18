@@ -7,149 +7,166 @@ import {DirectionalLight, SpotLight, Clock} from 'three';
 export default class MatchPong {
     constructor(props) {
         this.props = props;
-        initializePongWebSocket(this);
+        this.user = null;
+        this.setUser = this.setUser.bind(this);
+//        this.init();
     }
 
-    init () {
-    //-------- ----------
-// SCENE, CAMERA, RENDERER, LIGHT    https://dustinpfister.github.io/2022/05/17/threejs-vector3-lerp/
-//-------- ---------- Use lerpPow to add speed to some cubes
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(50, 4 / 3, 0.5, 1000);
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(640, 480, false);
-(document.getElementById('demo') || document.body).appendChild(renderer.domElement);
-scene.add(camera);
-const light = new THREE.PointLight(0xffffff);
-light.position.set(1, 2, 4);
-scene.add(light);
-//-------- ----------
-// SCENE CHILDREN
-//-------- ----------
-scene.add(new THREE.GridHelper(10, 10, 0xffffff, 0xffffff));
-const geo = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshStandardMaterial({
-        color: 0x00ff00
-    });
-const mesh = new THREE.Mesh(geo, material);
-const mesh1 = new THREE.Mesh(geo, material);
-scene.add(mesh, mesh1);
-//-------- ----------
-// LOOP
-//-------- ----------
-camera.position.set(8, 8, 8);
-camera.lookAt(0, 0, 0);
-let lt = new Date(),
-f = 0,
-fm = 200;
-const loop = function () {
-    const now = new Date();
-    const secs = (now - lt) / 1000;
-    const p = f / fm,
-    b = 1 - Math.abs(0.5 - p) / 0.5;
-    requestAnimationFrame(loop);
-    // BASIC LERP EXPRESSION between 5,0,0 and -5,0,0
-    mesh.position.set(5, 0, 0).lerp(new THREE.Vector3(-5, 0, 0), b);
-    mesh1.position.set(5, 0, -1).lerp(new THREE.Vector3(-5, 0, 1), b);
-
-    // render
-    renderer.render(scene, camera);
-    f += 30 * secs;
-    f %= fm;
-    lt = now;
-};
-loop();
-
+    setUser(user) {
+        this.user = user;
     }
 
-//    init() { // For responside device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
-//
-////        this.y_pos_p1 = 0;  // left player
-////        this.y_pos_p2 = 0;  // right player
-////        this.stadium_length = 25;
-////        this.stadium_width = 10;
-////        this.stadium_height = 1;
-////        this.stadium_thickness = 0.25;
-////        this.paddle_length = 2;
-//
+    setProps(newProps) {
+        this.props = newProps;
+    }
+
+    init() { // For responside device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
+
+//        this.y_pos_p1 = 0;  // left player
+//        this.y_pos_p2 = 0;  // right player
+//        this.stadium_length = 25;
+//        this.stadium_width = 10;
+//        this.stadium_height = 1;
+//        this.stadium_thickness = 0.25;
+//        this.paddle_length = 2;
+
 //        // Ball initial stats
-////        this.ball_x = 0;
-////        this.ball_y = 0;
-////        this.ball_radius = 1;
-////        const   initialSpeed = 0.2;
-////        this.baseSpeed = initialSpeed;
-////        this.currentSpeed = this.baseSpeed;
-////        this.ball_velocity_x = this.currentSpeed * ((Math.random() - 0.5));
-////        this.ball_velocity_y = this.currentSpeed * ((Math.random() - 0.5));
-//
-//        this.scene = new THREE.Scene();
-//        this.scene.background = new THREE.Color(0x000000);
-//
-//        // Camera
-//        this.camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 1500);
-//        this.camera.position.set(0, 400, 1000);
-//        this.scene.fog = new THREE.Fog(0x000000, 250, 1400);
-//        this.camera.lookAt(0, 250, 0);
-//
-//        // Renderer
-//        this.renderer = new THREE.WebGLRenderer();
-//        this.renderer.setSize(window.innerWidth, window.innerHeight);
-//        this.renderer.shadowMap.enabled = true;
-//        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-//        document.body.appendChild(this.renderer.domElement);
-//
-//        // Create stade group with all objetcs so when rotate everything follows
-//        const   stadiumGroup = new THREE.Group();
-//        // stadiumGroup.rotation.set(45, 0, 0);
-//        const   stadium = new THREE.Object3D();
-//        stadium.name = "stadium";
-//        stadiumGroup.add(stadium);
-//        this.scene.add(stadiumGroup);
-//
-//        // Display text from the beginning
-//        const    textGroup = new THREE.Group();
-//        textGroup.rotation.set(0, 0, 0);
-//        textGroup.name = "textGroup";
-//        this.scene.add(textGroup);
-//
-//        // Resize scene
-//        window.addEventListener('resize', () => {
-//            this.camera.aspect = window.innerWidth / window.innerHeight;
-//            this.camera.updateProjectionMatrix();
-//            this.renderer.setSize(window.innerWidth, window.innerHeight);
-//        });
-//
-//        this.animate = this.animate.bind(this);
-//        this.animate();
-//    }
+//        this.ball_x = 0;
+//        this.ball_z = 480;
+//        this.ball_radius = 1;
+//        const   initialSpeed = 0.2;
+//        this.baseSpeed = initialSpeed;
+//        this.currentSpeed = this.baseSpeed;
+//        this.ball_velocity_x = this.currentSpeed * ((Math.random() - 0.5));
+//        this.ball_velocity_y = this.currentSpeed * ((Math.random() - 0.5));
+
+        // Load all textures at once
+        this.textures = {};
+        const   textureLoader = new THREE.TextureLoader();
+        const   textStadium = textureLoader.load("/textures/grass/grass_BaseColor.jpg");
+        const   textInitBall = textureLoader.load("/textures/football.jpg");
+        const   textBlueCube = textureLoader.load("/textures/blue_basecolor.png");
+//        const   textBlueCubeR = textureLoader.load("/textures/blue_metallic.png");
+//        const   textBlueCubeM = textureLoader.load("/textures/blue_roughness.png");
+        const   textRedCube = textureLoader.load("/textures/red_basecolor.png");
+        const   textPadBlue = textureLoader.load("/textures/ice/ice_basecolor.png");
+//        const   textPadBlueRoughness = textureLoader.load("/textures/ice/ice_roughness.png");
+        const   textPadRed = textureLoader.load("/textures/lava/lava_basecolor.jpg");
+
+        this.textures["textStadium"] = textStadium;
+        this.textures["textInitBall"] = textInitBall;
+        this.textures["textBlueCube"] = textBlueCube;
+//        this.textures["textBlueCubeR"] = textBlueCubeR;
+//        this.textures["textBlueCubeM"] = textBlueCubeM;
+        this.textures["textRedCube"] = textRedCube;
+        this.textures["textPadBlue"] = textPadBlue;
+//        this.textures["textPadBlueRoughness"] = textPadBlueRoughness;
+        this.textures["textPadRed"] = textPadRed;
+
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0x000000);
+
+        // Camera
+        this.camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 1500);
+        this.camera.position.set(0, 400, 1000);
+        this.scene.fog = new THREE.Fog(0x000000, 250, 1400);
+        this.camera.lookAt(0, 250, 0);
+
+        // Renderer
+        this.renderer = new THREE.WebGLRenderer({antialias: true});
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(this.renderer.domElement);
+
+        // Create stade group with all objetcs so when rotate everything follows
+        const   stadiumGroup = new THREE.Group();
+        // stadiumGroup.rotation.set(45, 0, 0);
+        const   stadium = new THREE.Object3D();
+        stadium.name = "stadium";
+        stadiumGroup.add(stadium);
+        this.scene.add(stadiumGroup);
+
+        // Display text from the beginning
+        const    textGroup = new THREE.Object3D();
+        textGroup.position.y = 300;
+        textGroup.position.z = -300;
+        textGroup.name = "textGroup";
+        this.scene.add(textGroup);
+
+        // Resize scene
+        window.addEventListener('resize', () => {
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        this.animate = this.animate.bind(this);
+        this.animate();
+    }
+
+    render() {
+        this.init();
+    }
 
     createLightFloor() {
         // Create plane
-        const   planeGeometry = new THREE.PlaneGeometry(2000, 2000);
+        const   planeGeometry = new THREE.PlaneGeometry(5000, 5000);
         const   planeMaterial = new THREE.MeshPhongMaterial({
             color: 0xffffff
         });
         const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.rotation.x = - Math.PI * 0.5;
-        plane.position.y = 200;
+        plane.position.y = -100;
         plane.receiveShadow = true;
         this.scene.add(plane);
 
-        const   spotLight = new SpotLight(0xffffff, 5000000)
-        spotLight.position.set(0, 600, 700)
-        spotLight.lookAt(0, 250, 0);
-        spotLight.angle = .5; // change it for higher or lower coverage of the spot
-        spotLight.penumbra = 0.75;
-        spotLight.castShadow = true;
-        spotLight.shadow.radius = 10;
-        spotLight.shadow.blurSamples = 10;
-        spotLight.shadow.camera.far = 1500;
-        spotLight.shadow.camera.near = 10;
-        // spotLight.shadow.camera.fov = 30;
+        const   spotLightRight = new SpotLight(0x0000ff, 10000000);
+        spotLightRight.position.set(920, 400, 0); //y: 300
+        spotLightRight.target.position.set(550, 0, -140);
+//        spotLightRight.distance = 5000;
+        spotLightRight.angle = .40; // change it for higher or lower coverage of the spot
+        spotLightRight.penumbra = .8;
+        spotLightRight.castShadow = true;
+        spotLightRight.shadow.camera.far = 1000;
+        spotLightRight.shadow.camera.near = 10;
+        spotLightRight.name = "spotR";
 
-        this.scene.add(spotLight);
+        const   spotLightLeft = new SpotLight(0xff3300, 10000000);
+        spotLightLeft.position.set(-300, 400, 0);
+        spotLightLeft.target.position.set(50, 0, -140);
+//        spotLightLeft.distance = 5000; spotL https://dustinpfister.github.io/2018/04/11/threejs-spotlights/
+        spotLightLeft.angle = .40; // change it for higher or lower coverage of the spot
+        spotLightLeft.penumbra = .8;
+        spotLightLeft.castShadow = true;
+        spotLightLeft.shadow.camera.far = 1000;
+        spotLightLeft.shadow.camera.near = 10;
+        spotLightLeft.name = "spotL";
+
+        const   ball = this.scene.getObjectByName("ball");
+        const   ballLight = new SpotLight(0xffffff, 10000000);
+        ballLight.position.set(300, 400, 0); //y: 300
+        ballLight.target.position.set(ball.position.x, ball.position.y, ball.position.z);
+//        ballLight.distance = 5000;
+        ballLight.angle = 0.15; // change it for higher or lower coverage of the spot
+        ballLight.penumbra = 0.0;
+        ballLight.castShadow = true;
+        ballLight.shadow.camera.far = 1000;
+        ballLight.shadow.camera.near = 10;
+        ballLight.name = "ballLight";
+//        const spotLightRightHelper = new THREE.SpotLightHelper( ballLight );
+//this.scene.add( spotLightRightHelper );
+
+
+
+//        const spotLightRightHelper = new THREE.SpotLightHelper( spotLightRight );
+//this.scene.add( spotLightRightHelper );
+//const spotLightRightHelper2 = new THREE.SpotLightHelper( spotLightLeft );
+//this.scene.add( spotLightRightHelper2 );
+
+        this.scene.add(spotLightRight, spotLightLeft, spotLightRight.target, spotLightLeft.target, ballLight, ballLight.target);
+//        this.scene.add(ballLight, ballLight.target);
     }
-
 
     waiting() {
         // Set lights
@@ -165,10 +182,10 @@ loop();
         this.scene.add(pointLight);
 
         const   txt = "Match will start soon!";
-        const   textGroup = new THREE.Group();
-        textGroup.position.y = 300;
-        textGroup.name = "waitTxt";
-        this.scene.add(textGroup);
+        const   waitText = new THREE.Group();
+        waitText.position.y = 300;
+        waitText.name = "waitTxt";
+        this.scene.add(waitText);
 
         // Create plane for mirror text to appear ghosty
         const   planeGeometry = new THREE.PlaneGeometry(10000, 10000);
@@ -214,7 +231,7 @@ loop();
             mirror.position.set(-0.5 * textWidth, -30, 20);
             mirror.rotation.set(Math.PI, 2 * Math.PI, 0);
 
-            textGroup.add(textAdd, mirror);
+            waitText.add(textAdd, mirror);
 
             const animate = () => {
                 requestAnimationFrame(animate);
@@ -224,7 +241,17 @@ loop();
         });
     }
 
-    builGameSet(data) {
+    buildGameSet(data) {console.log(data);
+        // reset camera to have stadium on
+        this.camera.position.set(300, 700, 500);
+        this.camera.lookAt(300, -100, -300);
+
+        // Ball initial stats
+        this.ball_x = 0;
+        this.ball_z = 0;
+        this.ball_radius = 1;
+
+        // rm previous scene stuff
         this.scene.children;
         for (let i = 0; i < this.scene.children.length; i++) {
             this.scene.children[i].remove();
@@ -254,35 +281,38 @@ loop();
 
         // Adjust this.Array for each case (2 players / 4 players)
         if (this.players_nick.length > 2) {
-            this.textArray = [`${this.players_nick[0]} + "\n" + ${this.players_nick[1]}`,
-            this.score_p1.toString(), "-", this.score_p2.toString(),
-            `${this.players_nick[2]} + "\n" + ${this.players_nick[3]}`];
+            this.textArray = [`${this.players_nick[0]} + " " + ${this.players_nick[1]}`,
+            "\n" + this.score_p1.toString(), "\n - ", "\n" + this.score_p2.toString(),
+            `${this.players_nick[2]} + " " + ${this.players_nick[3]}`];
         }
         else {
             this.textArray = [`${this.players_nick[0]}`,
-            this.score_p1.toString(), "-", this.score_p2.toString(),
+            "\n" + this.score_p1.toString(), "\n - ", "\n" + this.score_p2.toString(),
             `${this.players_nick[1]}`];
         }
+        this.newArray = ["team 1 " + this.textArray[0],
+                        this.textArray[1] + this.textArray[2] + this.textArray[3],
+                        "team 2 " + this.textArray[4]];
+        this.sprite = [];
 
         // Display scores to the scene
         this.printInitScores();
 
         // Create floor for game and spotlight purpose
-        this.createLightFloor();
         this.createGameElements();
-
         // rotate stadium
-        const   stadium = this.scene.getObjectByName("stadium");
-        stadium.rotation.set(0.5, 0 ,0);
+//        const   stadium = this.scene.getObjectByName("stadium");
+//        stadium.rotation.set(0.5, 0 ,0);
     }
 
-    async createGameElements() { //3000
-
-        await this.createStadium();
-
-//        this.createPaddle('p1');
-//        this.createPaddle('p2');
-//        this.createBall();
+    createGameElements() { //3000
+        this.createBall();
+        this.createLightFloor();
+        this.createPlanStadium();
+        this.createPaddle('p1');
+        this.createPaddle('p2');
+        this.createStadium();
+//        console.log("test");
     }
 
     printInitScores() { //https://github.com/mrdoob/three.js/blob/master/examples/webgl_loader_ttf.html try it
@@ -355,17 +385,17 @@ loop();
                 const   boundingBox = textGeometry.boundingBox;
                 const   textWidth = boundingBox.max.x - boundingBox.min.x;
                 const   textHeight = boundingBox.max.y - boundingBox.min.y;
-                textGroup.position.y = 130 + (0.5 * window.innerHeight) - textHeight;
+                textGroup.position.y = textHeight + 50;
 
                 textAdd.position.x = this.xPosition;
                 if (index === 0 || index === 3)
-                    this.xPosition += textWidth + 250;
+                    this.xPosition += textWidth + 100;
+                else if (index === 2)
+                    this.xPosition += 55;
                 else
                     this.xPosition += textWidth + 10;
                 textGroup.add(textAdd);
-
-                if (index === 4)
-                    textGroup.position.x = -(this.xPosition / 2);
+                this.updateTextGroup(this.xPosition);
 
                 // Add a pulsing effect
                 const animate = () => {
@@ -378,6 +408,12 @@ loop();
                 animate();
             });
         });
+    }
+
+    updateTextGroup(value) {
+        const   textGroup = this.scene.getObjectByName("textGroup");
+        if (textGroup)
+            textGroup.position.x = - value / 2 + 300;
     }
 
      handleKeyEvent(event) {
@@ -402,30 +438,73 @@ loop();
         }
     }
 
-    createBall() {
-        const   textureLoader = new THREE.TextureLoader();
-        const   ballTexture = textureLoader.load('/football.jpg');
+     createPlanStadium() { // add animation https://threejs.org/examples/#webgl_gpgpu_water
+        // Create plane
+        const   planeGeometry = new THREE.PlaneGeometry(620, 300, 40, 40);
+        const   planeMaterial = new THREE.MeshPhongMaterial({
+            map: this.textures["textStadium"],
+            wireframe: true
+        });
 
-        const geometry = new THREE.SphereGeometry(this.ball_radius, 48, 48);
-        const material = new THREE.MeshStandardMaterial({map: ballTexture});
-        const ball = new THREE.Mesh(geometry, material);
-        ball.position.set(this.ball_x, this.ball_y, 0);
-        ball.name = 'ball';
+        const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.rotation.x = - Math.PI * 0.5;
+        plane.position.set(300, -10, -150);
+//        plane.castShadow = true;
+        plane.receiveShadow = true;
+        this.scene.add(plane);
+     }
+
+    createBall() { // animation goutte d'eau idee rolando + un peu felipe
+        const   geometry = new THREE.SphereGeometry(this.ball_radius, 48, 48);
+        const   material = new THREE.MeshStandardMaterial({map: this.textures["textInitBall"]});
+        const   ball = new THREE.Mesh(geometry, material);
+
         const   stadium = this.scene.getObjectByName("stadium");
+        ball.position.set(295, 0, -140);
+        ball.castShadow = true;
+        ball.receiveShadow = true;
+        ball.name = "ball";
         stadium.add(ball);
     }
 
-    createPaddle(player = 'p1') {
-        const geometry = new THREE.BoxGeometry(0.2, this.paddle_length, 1);
-        let x = Math.round(-this.stadium_length / 2);
-        let color = 0xff0000;
+//    moveBallBouncing(ball) { //https://discoverthreejs.com/book/first-steps/animation-system/
+//        const   center = new THREE.Vector3(-10, 0, 200);
+//        const   mvt = [];
+//        const   p1 = new THREE.Vector3(-10, 300, 200);
+//        const   p2 = new THREE.Vector3(-10, 150, 200);
+//        const   p3 = new THREE.Vector3(-10, 50, 200);
+//        mvt.push(p1, p2, p3);
+////        console.log("Ball init position: "); console.log( ball.position);
+////        this.moveBall(ball, center);
+//        for (let i = 0; i < mvt.length; i++) {
+////            this.moveObjectTrans(ball, mvt[i]);
+////             this.moveObjectTrans(ball, center);
+//        }
+////        this.moveObjectTrans(ball, center);
+//
+////        console.log("Ball after translation: "); console.log( ball.position);
+//    }
+
+
+    createPaddle(player = 'p1') { // correct texture on paddles (long side)
+        const geometry = new THREE.BoxGeometry(10, 10, 60);
+        let x = 10;
+//        this.textures["textPadRed"].wrapS = THREE.RepeatWrapping
+//        this.textures["textPadRed"].wrapT = THREE.RepeatWrapping
+        let material = new THREE.MeshStandardMaterial({
+            map: this.textures["textPadRed"],
+        });
         if (player === 'p2') {
-            x = Math.round(this.stadium_length / 2 - 1);
-            color = 0x0000ff;
+            x = 590;
+            material = new THREE.MeshStandardMaterial({
+                map: this.textures["textPadBlue"],
+//                roughnessMap: this.textures["textPadBlueRoughness"],
+//                roughness: 0.0
+            });
         }
-        const material = new THREE.MeshStandardMaterial({color: color});
         const paddle = new THREE.Mesh(geometry, material);
-        paddle.position.set(x, 0, 0);
+        paddle.position.set(x, 0, -140);
+        paddle.castShadow = true;
         paddle.name = player;
         const   stadium = this.scene.getObjectByName("stadium");
         stadium.add(paddle);
@@ -433,48 +512,60 @@ loop();
 
     // Create blocks all around + needs floor + animation
     createStadium() {
-        return new Promise(async (resolve) => {
-            const   stadium = this.scene.getObjectByName("stadium");
-            const   cubes = [];
-            const   targetPositions = [];
-            let     cube;
-            let     end;
-            let     x = -160;
-            let     y = 450;
-            let     z = 150;
-            let     step = 10;
+        // Create gem and material once
+        const   geometry = new THREE.BoxGeometry(20, 20, 20);
+        const   redMaterial = this.createRedMaterial();
+        const   blueMaterial = this.createBlueMaterial();
 
-            for (let i = 0; i < 96; i++) {
-                if (i < 36) {
-                    cube = this.createCube(x);
-                    end = new THREE.Vector3(x, y, z);
-                    x += step;
-                }
-                else if (i >= 36 && i < 48) { // 12
-                    cube = this.createCube(x);
-                    end = new THREE.Vector3(x, y, z);
-                    z -= step;
-                }
-                else if (i >= 48 && i < 84) {
-                    cube = this.createCube(x);
-                    end = new THREE.Vector3(x, y, z);
-                    x -= step;
-                }
-                else {
-                    cube = this.createCube(x);
-                    end = new THREE.Vector3(x, y, z);
-                    z += step;
-                }
-                cubes.push(cube);
-                targetPositions.push(end);
-                stadium.add(cube);
+        // Create stuff needed for cube position
+        const   stadium = this.scene.getObjectByName("stadium");
+        const   cubes = [];
+        const   targetPositions = [];
+        let     cube;
+        let     end;
+        let     x = -20; //600 -> center must be x:300 z:140
+        let     y = 0;
+        let     z = 20;// 14 * 20 280
+        let     step = 20;
+        let     i = -1;
+
+        while (++i < 96) {
+            if (i < 32) { // 21 -> 29
+                cube = this.createCube(x, geometry, redMaterial, blueMaterial);
+                end = new THREE.Vector3(x, y, z);
+                x += step;
             }
+            else if (i >= 32 && i < 48) { // 33 -> 39
+                cube = cube = this.createCube(x, geometry, redMaterial, blueMaterial);
+                end = new THREE.Vector3(x, y, z);
+                z -= step;
+            }
+            else if (i >= 48 && i < 80) { // 54 -> 64
+                cube = cube = this.createCube(x, geometry, redMaterial, blueMaterial);
+                end = new THREE.Vector3(x, y, z);
+                x -= step;
+            }
+            else { // 24
+                cube = cube = this.createCube(x, geometry, redMaterial, blueMaterial);
+                end = new THREE.Vector3(x, y, z);
+                z += step;
+            }
+            cubes.push(cube);
+            targetPositions.push(end);
+            stadium.add(cube);
+        }
 
-            await this.stadiumCreation(cubes, targetPositions);
-            // stadium.rotation.x = Math.PI * 0.25;
-            // if needed for the backend regroup cubes in a mesh for boxBounding and detect colisions in here
-            resolve();
-        });
+        this.moveCubes(cubes, targetPositions);
+        console.log("done0");
+    }
+
+    moveCubes(cubes, targetPositions) {
+        for (let i = 0; i < cubes.length; i++) {
+            const cube = cubes[i];
+            const targetPosition = targetPositions[i];
+            this.moveObjectTrans(cube, targetPosition);
+        }
+        console.log("done1");
     }
 
     //            const   animate = () => { //https://dustinpfister.github.io/2022/05/17/threejs-vector3-lerp/
@@ -482,103 +573,82 @@ loop();
 //            // https://sbcode.net/threejs/lerp/
 
 
-    stadiumCreation(cubes, targetPositions) {
-        return new Promise((resolve) => {
-            // Array of ending positions
-            // const targetPositions = [
-            //     new THREE.Vector3(-100, 350, 400), // z variation => profondeur
-            //     new THREE.Vector3(-100, 350, 390),
-            //     new THREE.Vector3(-80, 330, 380), // y variation => hauteur
-            //     new THREE.Vector3(-80, 320, 380),
-            //     new THREE.Vector3(-60, 310, 360),
-            // ];
+    lerp(from, to, speed) {
+        const   amount = (1 - speed) * from + speed * to;
+        return (Math.abs(from - to) < 0.2 ? to : amount);
+}
 
-            for (let i = 0; i < cubes.length; i++) { // cubes.legnth
-                const cube = cubes[i];
-                const targetPosition = targetPositions[i];
-                const delay = i * 500; // 0.5s delay between each cube's movement
-
-                setTimeout(() => {
-                    this.moveCube(cube, targetPosition, 2000);
-                }, delay);
-            }
-            resolve();
-        });
-    }
-
-    moveCube(cube, targetPosition, duration) {
-        const startPosition = cube.position.clone();
-        const startTime = performance.now();
-
+    moveObjectTrans(object, targetPosition) {
+        let lt = new Date(),
+        f = 0,
+        fm = 300;
+//console.log(object, targetPosition);
         const animate = () => {
-            const elapsedTime = performance.now() - startTime;
-            const t = Math.min(elapsedTime / duration, 1);
-            cube.position.lerpVectors(startPosition, targetPosition, t);
-            if (t < 1) {
-                requestAnimationFrame(animate);
-            }
+            const   now = new Date();
+            const   secs = (now - lt) / 1000;
+            const   p = f / fm;
+
+            requestAnimationFrame(animate);
+//            object.position.lerp(targetPosition, 0.03); // positions not being exactly what expected. Check to correct it
+            object.position.x = this.lerp(object.position.x, targetPosition.x, 0.03);
+            object.position.y = this.lerp(object.position.y, targetPosition.y, 0.03);
+            object.position.z = this.lerp(object.position.z, targetPosition.z, 0.03);
+            f += 30 * secs;
+            f %= fm;
+            lt = now;
         }
         animate();
     }
 
     createBlueMaterial() {
-        // create a texture loader.
-        const   textureLoader = new THREE.TextureLoader();
-
-        // load a texture
-        const   texture = textureLoader.load("/blue_wall.jpg");
-        const   material = new THREE.MeshStandardMaterial({map: texture});
-
+        const   material = new THREE.MeshStandardMaterial({
+            map: this.textures["textBlueCube"],
+//            metalnessMap: this.textures["textBlueCubeM"],
+//            metalness: 1.0,
+//            roughnessMap: this.textures["textBlueCubeR"]
+        });
         return material;
     }
 
     createRedMaterial() {
-        // create a texture loader.
-        const   textureLoader = new THREE.TextureLoader();
-
-        // load a texture
-        const   texture = textureLoader.load("/red_wall.png");
-        const   material = new THREE.MeshStandardMaterial({map: texture});
-
-        return material;
+        const   materials = new THREE.MeshStandardMaterial({
+            map: this.textures["textRedCube"]
+        });
+        return materials;
     }
 
-    createCube(i) {
-        const   geometry = new THREE.BoxGeometry(10, 10, 10);
-        let     material;
-        if (i >= 0) {
-            material = this.createBlueMaterial();
-        }
-        else {
-            material = this.createRedMaterial();
-        }
-
-        const   cube = new THREE.Mesh(geometry, material);
+    createCube(i, geometry, red, blue) {
+        let cube;
+        if (i < 300)
+            cube = new THREE.Mesh(geometry, red);
+        else
+            cube = new THREE.Mesh(geometry, blue);
         cube.castShadow = true;
         cube.receiveShadow = true;
 
         // Create cubes starting points
         const   startPositions = [];
-        const   s1 = new THREE.Vector3(1500,0, 0);
-        const   s2 = new THREE.Vector3(0, 1500, 0);
-        const   s3 = new THREE.Vector3(0, 0, 1500);
-        startPositions.push(s1, s2, s3);
+        const   s1 = new THREE.Vector3(2000,0, 0);
+        const   s2 = new THREE.Vector3(0, 2000, 0);
+        const   s3 = new THREE.Vector3(0, 0, 2000);
+        const   s4 = new THREE.Vector3(2000, 2000, 0);
+        startPositions.push(s1, s2, s3, s4);
 
-        const   start = Math.floor(Math.random() * 3);
+        const   start = Math.floor(Math.random() * 4);
         cube.position.set(startPositions[start].x, startPositions[start].y, startPositions[start].z);
         return  cube;
     }
 
-    updatePaddlePosition(player, y_pos) {
-        const paddle = this.scene.getObjectByName(player);
-        if (paddle) {
-            const offset = this.paddle_length / 2;
-            if ((paddle.position.y + y_pos + offset) > this.stadium_width / 2 || (paddle.position.y + y_pos - offset) < -this.stadium_width / 2) {
-                return;
-            }
-            paddle.position.y += y_pos;
-        }
-    }
+//    updatePaddlePosition(player, y_pos) {
+//        const paddle = this.scene.getObjectByName(player);
+//        if (paddle) {
+//            const offset = this.paddle_length / 2;
+//            if ((paddle.position.y + y_pos + offset) > this.stadium_width / 2 || (paddle.position.y + y_pos - offset) < -this.stadium_width / 2) {
+//                return;
+//            }
+//            paddle.position.y += y_pos;
+//        }
+//    }
 
     rotateScore(i) {
         return new Promise((resolve) => {
@@ -625,8 +695,8 @@ loop();
 
     animate() {
         requestAnimationFrame(this.animate);
-        this.updatePaddlePosition('p1', this.y_pos_p1);
-        this.updatePaddlePosition('p2', this.y_pos_p2);
+//        this.updatePaddlePosition('p1', this.y_pos_p1);
+//        this.updatePaddlePosition('p2', this.y_pos_p2);
 
         const   msg = this.scene.getObjectByName("waitTxt");
         if (msg)
@@ -643,160 +713,105 @@ loop();
 //                this.camera.rotation.z = 0;
 //            }
 //        }
+//        const   textGroup = this.scene.getObjectByName("textGroup");
+//        if (textGroup && textGroup.length > 0)
+//            this.updateTextPosition();
 
-
-        this.updateBallPosition();
+//        this.updateBallPosition();
 
         // Render scene
         this.renderer.render(this.scene, this.camera);
     }
 
 
+
+
     waitMSGMove(msg) {
         msg.rotation.y += 0.001;
     }
 
-    updateBallPosition() {
-        const ball = this.scene.getObjectByName('ball');
+    updateBallPosition(x, z) {
+        const ball = this.scene.getObjectByName("ball");
 
         if (ball) {
-            // Update position
-            if (this.ball_velocity_x !== 0 || this.ball_velocity_y !== 0) {
-                ball.position.x += this.ball_velocity_x;
-                ball.position.y += this.ball_velocity_y;
-
-                // Calculate the direction of movement
-                const movementDirection = new THREE.Vector2(this.ball_velocity_x, this.ball_velocity_y);
-                const movementLength = movementDirection.length();
-
-                // Normalize the direction vector to get the direction of rotation
-                movementDirection.normalize();
-
-                // Ball rotation towards its movement
-                const rotationAxis = new THREE.Vector3(-movementDirection.y, movementDirection.x, 0);
-                const rotationAngle = movementLength / ball.geometry.parameters.radius;
-
-                // Apply the rotation to the ball
-                ball.rotateOnWorldAxis(rotationAxis, rotationAngle);
-
-                // Increase ball speed over time
-                this.currentSpeed *= 1.0005;
-                this.ball_velocity_x = movementDirection.x * this.currentSpeed;
-                this.ball_velocity_y = movementDirection.y * this.currentSpeed;
-
-                if (this.ball_velocity_x === 0)
-                    this.newRound();
-
-                // Check for collisions
-                this.checkCollisions(ball);
+            // Calculate the direction of movement
+//            const movementDirection = new THREE.Vector2(x, z);
+//            const movementLength = movementDirection.length();
+//
+//            // Normalize the direction vector to get the direction of rotation
+//            movementDirection.normalize();
+//
+//            // Ball rotation towards its movement
+//            const rotationAxis = new THREE.Vector3(-movementDirection.y, movementDirection.x);
+//            const rotationAngle = movementLength / ball.geometry.parameters.radius;
+//
+//            // Apply the rotation to the ball
+//            ball.rotateOnWorldAxis(rotationAxis, rotationAngle);
+            ball.position.x = x;
+            ball.position.z = z;
+//const   ballDestination = new THREE.Vector3(x, 0, z);
+//        this.moveBall(ball, ballDestination);
             }
         }
+
+        moveBall(object, targetPosition) {
+//        let lt = new Date(),
+//        f = 0,
+//        fm = 300;
+//console.log(object, targetPosition);
+        const animate = () => {
+//            const   now = new Date();
+//            const   secs = (now - lt) / 1000;
+//            const   p = f / fm;
+
+            requestAnimationFrame(animate);
+//            object.position.lerp(targetPosition, 0.03); // positions not being exactly what expected. Check to correct it
+            object.position.x = this.lerp(object.position.x, targetPosition.x, 1);
+//            object.position.y = this.lerp(object.position.y, targetPosition.y, 0.03);
+            object.position.z = this.lerp(object.position.z, targetPosition.z, 1);
+//            f += 30 * secs;
+//            f %= fm;
+//            lt = now;
+        }
+        animate();
     }
 
-    async checkCollisions(ball) {
-        // Check for collisions with paddles
-        const paddle1 = this.scene.getObjectByName('p1');
-        const paddle2 = this.scene.getObjectByName('p2');
-        if (paddle1 && paddle2) {
-            if (ball.position.x - this.ball_radius < paddle1.position.x + 0.2 && ball.position.y <= paddle1.position.y + this.paddle_length / 2 && ball.position.y >= paddle1.position.y - this.paddle_length / 2) {
-                this.ball_velocity_x = -this.ball_velocity_x;
-            }
-            if (ball.position.x + this.ball_radius > paddle2.position.x - 0.2 && ball.position.y <= paddle2.position.y + this.paddle_length / 2 && ball.position.y >= paddle2.position.y - this.paddle_length / 2) {
-                this.ball_velocity_x = -this.ball_velocity_x;
-            }
-        }
+//    newRound() {
+//        this.ball_x = 0;
+//        this.ball_y = 0;
+//        this.currentSpeed = this.baseSpeed;
+//        this.ball_velocity_x = this.currentSpeed * ((Math.random() - 0.5));
+//        this.ball_velocity_y = this.currentSpeed * ((Math.random() - 0.5));
+//
+////        const ball = this.scene.getObjectByName('ball');
+//        ball.position.set(this.ball_x, this.ball_y, 0);
+//    }
 
-        // Check for collisions with walls
-        if (ball.position.y + this.ball_radius > this.stadium_width / 2 || ball.position.y - this.ball_radius < -this.stadium_width / 2) {
-            this.ball_velocity_y = -this.ball_velocity_y;
-        }
-        // Player 2 wins the round
-        if (ball.position.x - this.ball_radius < -this.stadium_length / 2) {
-            ball.position.set(0, 0, 0);
-            this.ball_velocity_x = 0;
-            this.ball_velocity_y = 0;
-            await this.rotateScore(2);
-            this.score_p2++;
-            this.textArray[3] = this.score_p2.toString();
-            this.updateScores();
-            // // if (this.score_p2 === 5)
-            // //     ;
-            this.newRound();
-        }
-        // Player 1 wins the round
-        else if (ball.position.x + this.ball_radius > this.stadium_length / 2) {
-            ball.position.set(0, 0, 0);
-            this.ball_velocity_x = 0;
-            this.ball_velocity_y = 0;
-            await this.rotateScore(1);
-            this.score_p1++;
-            this.textArray[1] = this.score_p1.toString();
-            this.updateScores();
-            // // if (this.score_p1 === 5)
-            // //     this.scene.remove(ball);
-            // //    ;
-            this.newRound();
-        }
-    }
+    // Collecting info from the game logic in the back
+    display(data) {
+//        console.log(data);
+        const   ball = this.scene.getObjectByName("ball");
+        const   ballLight = this.scene.getObjectByName("ballLight")
 
-    newRound() {
-        this.ball_x = 0;
-        this.ball_y = 0;
-        this.currentSpeed = this.baseSpeed;
-        this.ball_velocity_x = this.currentSpeed * ((Math.random() - 0.5));
-        this.ball_velocity_y = this.currentSpeed * ((Math.random() - 0.5));
 
-        const ball = this.scene.getObjectByName('ball');
-        ball.position.set(this.ball_x, this.ball_y, 0);
+
+// ball does not rotate, needs correction and seems laggy
+        this.updateBallPosition(Object.values(data.game_state.ball)[0],
+                                -Object.values(data.game_state.ball)[1]); // or send data
+
+        ballLight.target.position.set(Object.values(data.game_state.ball)[0], ball.position.y,
+                                        -Object.values(data.game_state.ball)[1]);
+
+//        ball.position.x = Object.values(data.game_state.ball)[0];
+//        ball.position.z = -Object.values(data.game_state.ball)[1];
+
+//console.log("0: " + data.game_state.ball);
+//console.log("1: " + Object.keys(data.game_state));
+//console.log("2: " + Object.keys(data.game_state)[0]);
+//console.log("3: " + Object.values(data.game_state));
+//console.log("3: " + Object.values(data.game_state.ball)[0]);
     }
 
     setupEventListeners() {}
 
 }
-
-
-
-
-
-
-
-
-var canvas = document.createElement('canvas');
-	var context = canvas.getContext('2d');
-
-	context.font = "bold 20px Serif";
-	context.textAlign = "left";
-	context.textBaseline = "top";
-	context.fillStyle = "#ff0000";
-	context.fillText("Sample Text", 0, 0);
-
-	var texture = new THREE.Texture(canvas);
-	texture.needsUpdate = true;
-
-	var material = new THREE.SpriteMaterial({
-		map: texture,
-		useScreenCoordinates: false,
-	 	alignment: THREE.SpriteAlignment.center,
-	 	transparent: true
-	});
-	var sprite = new THREE.Sprite(material);
-
-	sprite.scale.set(100, 100, 1);
-	scene.add(sprite);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
