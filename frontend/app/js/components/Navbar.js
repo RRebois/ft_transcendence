@@ -1,8 +1,15 @@
-import { getCookie } from "@js/functions/cookie.js";
+import {getCookie} from "@js/functions/cookie.js";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import {appRouter} from "@js/spa-router/initializeRouter.js";
+import ToastComponent from "@js/components/Toast.js";
 
 export default class Navbar {
 	constructor(user = null) {
+		this.user = user;
+		this.setUser = this.setUser.bind(this);
+	}
+
+	setUser(user) {
 		this.user = user;
 	}
 
@@ -18,7 +25,7 @@ export default class Navbar {
 			credentials: 'include'
 		}).then(response => {
 			console.log('Logout response:', response);
-			window.location.href = '/';
+			appRouter.navigate('/');
 		}).catch(error => {
 			console.error('Logout error:', error);
 			const toastComponent = new ToastComponent();
@@ -28,9 +35,9 @@ export default class Navbar {
 
 	render() {
 		return `
-			<nav class="navbar navbar-expand-lg bg-light">
+			<nav id="navbar" class="navbar navbar-expand-lg w-full bg-light z-3">
 				<div class="container-fluid">
-					<a href="/dashboard" class="navbar-brand play-bold">ft_transcendence 🏓</a>
+					<a href="/dashboard" route="/dashboard" class="navbar-brand play-bold">ft_transcendence 🏓</a>
 					<div class="d-flex align-items-center">
 					${this.user?.stud42 ?
 						`<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">` :
@@ -43,11 +50,10 @@ export default class Navbar {
 							<button class="btn dropdown-toggle d-flex align-items-center" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
 								<p class="d-none d-md-block mb-0 me-2">${this.user?.username}</p>
 							</button>
-							<ul class="dropdown-menu">
-								<li><a class="dropdown-item" href="/my-profile">My profile</a></li>
-								<li><a class="dropdown-item" href="#">My stats</a></li>
-								<li><a class="dropdown-item" href="/friends">Friends</a></li>
-<!--								<li><a role="button" id="friends-btn" class="dropdown-item" href="/friends">Friends</a></li>-->
+							<ul class="dropdown-menu dropdown-menu-end">
+								<li><a class="dropdown-item" route="/my-profile" href="/my-profile">My profile</a></li>
+								<li><a class="dropdown-item" route="/stats" href="/stats">My stats</a></li>
+								<li><a class="dropdown-item" route="/friends" href="/friends">Friends</a></li>
 								<li><hr class="dropdown-divider"></li>
 								<li><a role="button" id="logout-btn" class="dropdown-item text-danger">Logout</a></li>
 							</ul>

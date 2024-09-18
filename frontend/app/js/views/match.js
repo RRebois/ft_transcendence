@@ -7,7 +7,17 @@ import {DirectionalLight, SpotLight, Clock} from 'three';
 export default class MatchPong {
     constructor(props) {
         this.props = props;
-        initializePongWebSocket(this);
+        this.user = null;
+        this.setUser = this.setUser.bind(this);
+        this.init();
+    }
+
+    setUser(user) {
+        this.user = user;
+    }
+
+    setProps(newProps) {
+        this.props = newProps;
     }
 
     init() { // For responside device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module

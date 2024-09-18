@@ -1,22 +1,5 @@
 from random import choice, randrange
-
-GAME_WIDTH = 600
-GAME_HEIGHT = 280
-
-WINNING_SCORE = 100
-
-PADDLE_START_VEL = 1
-BALL_START_VEL = 4
-MAX_VEL = 4
-
-BALL_ACC = .8
-
-PADDLE_HEIGHT = 60
-PADDLE_WIDTH = 10
-PADDLE_LEFT_X = 10
-PADDLE_RIGHT_X = 580
-
-BALL_RADIUS = 10
+from configFiles.globals import *
 
 class Paddle:
 
