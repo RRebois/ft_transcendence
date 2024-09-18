@@ -1,4 +1,4 @@
-import { getCookie } from "@js/functions/cookie.js";
+import {getCookie} from "@js/functions/cookie.js";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import {appRouter} from "@js/spa-router/initializeRouter.js";
 import ToastComponent from "@js/components/Toast.js";

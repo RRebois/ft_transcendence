@@ -22,7 +22,7 @@ export default class Router {
 			if (target) {
 				e.preventDefault();
 				const path = target.getAttribute('route');
-				this.navigate(window.location.pathname + window.location.search);
+				this.navigate(path);
 			}
 		});
 

@@ -40,6 +40,10 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 					return response.json();
 				})
 				.then(data => {
+					if (!data) {
+						return;
+					}
+					console.log("Data is:", data);
 					console.log("Data.ws_route is:", data.ws_route);
 					const token = jwt.token
 					const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
@@ -56,7 +60,7 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 					socket.onmessage = function (event) {
 						// console.log("WebSocket message received: " + event.data);
 						const data = JSON.parse(event.data);
-						// console.log("Data is:", data);
+						console.log("Data is:", data);
 
 						if (data.connected_players === data.awaited_players) {
 							if (data?.action === 'pick_initial_number') {
@@ -88,11 +92,12 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 								});
 							}
 						} else {
-							const lookingForPlayersModal = new bootstrap.Modal(document.getElementById('lookingForPlayersModal'));
+							let lookingForPlayersModal = bootstrap.Modal.getInstance(document.getElementById('lookingForPlayersModal'));
+							if (!lookingForPlayersModal) {
+								lookingForPlayersModal = new bootstrap.Modal(document.getElementById('lookingForPlayersModal'));
+							}
 							lookingForPlayersModal.show();
 						}
-
-
 					};
 
 					socket.onclose = function (event) {
