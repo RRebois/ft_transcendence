@@ -49,9 +49,8 @@ export default class PongGame {
 
     init() { // For responside device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
         // init WS
-//        this.initializeWs(this.props?.code);
+        // this.initializeWs(this.props?.code);
         document.title = "ft_transcendence | Pong";
-
 
 
 //        this.y_pos_p1 = 0;  // left player
@@ -109,7 +108,8 @@ export default class PongGame {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        document.body.appendChild(this.renderer.domElement);
+        const   test = document.getElementById("display");
+        test.appendChild(this.renderer.domElement);
 
         // Create stade group with all objetcs so when rotate everything follows
         const   stadiumGroup = new THREE.Group();
@@ -269,7 +269,7 @@ export default class PongGame {
         });
     }
 
-    buildGameSet(data) {console.log(data);
+    buildGameSet(data) {console.log("buildGameSet: ", data);
         // reset camera to have stadium on
         this.camera.position.set(300, 700, 500);
         this.camera.lookAt(300, -100, -300);
@@ -845,6 +845,7 @@ export default class PongGame {
     render() {
         this.initializeWs(this.props?.code);
 //        this.init();
+        return `<div id="display">hello</div>`
     }
 
 }
