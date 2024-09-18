@@ -1,16 +1,21 @@
 DOCKER_CONTAINERS	:=	nginx		\
-						django_app	\
-						postgreSQL
+				django_app	\
+				postgreSQL	\
+				frontend	\
+				redis
 
 DOCKER_IMAGES		:=	ft_transcendence-nginx	\
-						ft_transcendence-web	\
-						ft_transcendence-db
+				ft_transcendence-web	\
+				ft_transcendence-db	\
+				ft_transcendence-redis	\
+				ft_transcendence-frontend
 
 DOCKER_VOLUMES		:=	ft_transcendence_media_volume	\
-						ft_transcendence_postgres_data	\
-						ft_transcendence_static_volume
+				ft_transcendence_postgres_data	\
+				ft_transcendence_static_volume
 
-DOCKER_NETWORKS		:=
+DOCKER_NETWORKS		:=	ft_transcendence_default	\
+				ft_transcendence_front
 
 all: up
 
@@ -31,17 +36,15 @@ logs:
 	docker compose logs -f
 
 clean: down
-	docker rm -f $(DOCKER_CONTAINERS)
 
 fclean: confirm_clean clean clear_migrations
-	docker volume rm $(DOCKER_VOLUMES)
-	docker rmi $(DOCKER_IMAGES)
 	find ./Pong/media/profile_pics/ -type f -not -name 'default_pp.jpg' -delete
 
 clear_migrations:
 	@rm -rf ./Pong/userManagement/migrations/0*.py
 	@rm -rf ./Pong/matchs/migrations/0*.py
 	@rm -rf ./Pong/anotherGame/migrations/0*.py
+	@rm -rf ./Pong/gamesManager/migrations/0*.py
 
 re: down up
 
