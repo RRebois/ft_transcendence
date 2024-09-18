@@ -5,6 +5,7 @@ import {remove_friend_request_div} from "./friends_management.js";
 import {getCookie} from "@js/functions/cookie.js";
 import * as bootstrap from 'bootstrap';
 import {remove_modal_backdrops} from "@js/functions/display.js";
+import MatchPong from "@js/views/match.js";
 
 const lst2arr = (lst) => {
 	return Object.entries(lst).map(([username, details]) => ({
@@ -123,7 +124,7 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 	});
 }
 
-export async function initializePongWebSocket(pong) {
+export async function initializePongWebSocket() {
     return new Promise(async (resolve, reject) => {
         const response = await fetch('https://localhost:8443/get_ws_token/', {
             credentials: 'include',
@@ -148,13 +149,14 @@ export async function initializePongWebSocket(pong) {
                 socket.onopen = function (e) {
                     // console.log("WebSocket connection established");
                     resolve(socket);
-                    pong.init(); // sans les txt
+                    const   pong = new MatchPong();
+//                    pong.init(); // sans les txt
 //                    pong.init(); // display du jeu puis envoyer mess au back
                     // console.log("Message from server:");
                 };
 
                 socket.onmessage = function (event) {
-//                    console.log("WebSocket connection established: " + event.data);
+                    console.log("WebSocket connection established: " + event.data);
                     const data = JSON.parse(event.data);
                     // console.log("data: " + data);
 
@@ -195,7 +197,7 @@ export async function initializePongWebSocket(pong) {
 
 export async function initializeWebSocket() {
 	return new Promise(async (resolve, reject) => {
-		console.log("In Init WS FRONT")
+//		console.log("In Init WS FRONT")
 		const response = await fetch('https://localhost:8443/get_ws_token/', {
 			credentials: 'include',
 		});
@@ -203,29 +205,29 @@ export async function initializeWebSocket() {
 		const isUserAuth = await isUserConnected();
 		if (isUserAuth) {
 			const token = jwt.token
-			console.log("In Init WS FRONT, USER AUTHENTICATED")
+//			console.log("In Init WS FRONT, USER AUTHENTICATED")
 			const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
 			const url = wsSelect + "localhost:8443" + '/ws/user/' + token + '/'
-			console.log("url is:", url);
+//			console.log("url is:", url);
 			const socket = new WebSocket(wsSelect + "localhost:8443" + '/ws/user/' + token + '/');
 
 			socket.onopen = function (e) {
-				console.log("WebSocket connection established");
+//				console.log("WebSocket connection established");
 				resolve(socket);
 			};
 			socket.onmessage = function (event) {
-				console.log("Message from server:", event.data);
+//				console.log("Message from server:", event.data);
 				const data = JSON.parse(event.data);
 				if (data.type === 'status_change') {
-					console.log("Status change detected");
+//					console.log("Status change detected");
 					handle_friend_status(socket, data);
 				}
 				if (data.type === 'test_message') {
-					console.log('Received test message:', data.message);
+//					console.log('Received test message:', data.message);
 				}
 				if (data.type === 'friend_request') {     // received friend request
-					console.log("Friend request received");
-					console.log("data is:", data);
+//					console.log("Friend request received");
+//					console.log("data is:", data);
 					handle_received_friend_request(socket, data);
 				}
 				if (data.type === 'friend_req_accept') {  // accept friend request
@@ -251,15 +253,15 @@ export async function initializeWebSocket() {
 
 			socket.onclose = function (event) {
 				if (event.wasClean) {
-					console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+//					console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
 				} else {
-					console.log('Connection died');
+//					console.log('Connection died');
 				}
 				setTimeout(initializeWebSocket, 2000);
 			};
 
 			socket.onerror = function (error) {
-				console.log(`WebSocket Error: ${error.message}`);
+//				console.log(`WebSocket Error: ${error.message}`);
 				reject(error);
 			};
 			window.mySocket = socket; // to access as a global var

@@ -7,7 +7,7 @@ import matchView from "./views/match.js";
 import dashboardView from './views/dashboard.js';
 import friendsView from './views/friends.js';
 import resetPWView from './views/reset-pw.js';
-import { initializeWebSocket } from "@js/functions/websocket.js";
+import { initializeWebSocket} from "@js/functions/websocket.js";
 import profileView from '@views/my-profile.js';
 import userView from './views/user.js';
 import statsView from './views/stats.js';
@@ -17,7 +17,7 @@ import initializeRouter from "@js/spa-router/initializeRouter.js";
 const routes = [
     new Route('/home', '/', homeView),
     new Route('/register', '/register', registerView),
-    // new Route('/match', '/match', matchView),
+    new Route('/match', '/match', matchView),
     new Route('/dashboard', '/dashboard', dashboardView),
     new Route('/my-profile', '/my-profile', profileView),
     // new Route('/user', '/user', userView),

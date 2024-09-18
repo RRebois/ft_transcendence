@@ -29,6 +29,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		self.players_max = self.session_data['awaited_players']
 
 		error_msg = ''
+		print(self.username, " ", self.session_data)
 		if self.game_name not in ['pong', 'purrinha']:
 			error_msg = 'this game does not exist'
 		elif self.game_code not in [10, 20, 22, 23, 40]:
