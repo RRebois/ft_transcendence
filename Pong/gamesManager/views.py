@@ -35,27 +35,33 @@ class	MatchMaking():
 	@staticmethod
 	def	add_player(session_id, username):
 		if MatchMaking.matchs.get(session_id):
-			if username not in ['guest', BOT_NAME]:
-				user_data = UserData.objects.get(user_id=User.objects.get(username=username))
-				elo = user_data.user_elo_pong[-1]['elo'] if MatchMaking.matchs[session_id]['game_name'] == 'pong' else user_data.user_elo_purrinha[-1]['elo']
-				MatchMaking.matchs[session_id]['elos'].append(elo)
-				MatchMaking.matchs[session_id]['players'].append(username)
-				if MatchMaking.matchs[session_id]['awaited_players'] == len(MatchMaking.matchs[session_id]['players']):
-					MatchMaking.change_session_status(session_id, open=False)
-				session_data = cache.get(session_id)
-				id = len(session_data['players']) + 1
-				session_data['players'][username] = {'id': id, 'connected': False}
-				cache.set(session_id, session_data)
+			# if username not in ['guest', BOT_NAME]:
+			user_data = UserData.objects.get(user_id=User.objects.get(username=username))
+			elo = user_data.user_elo_pong[-1]['elo'] if MatchMaking.matchs[session_id]['game_name'] == 'pong' else user_data.user_elo_purrinha[-1]['elo']
+			MatchMaking.matchs[session_id]['elos'].append(elo)
+			MatchMaking.matchs[session_id]['players'].append(username)
+			if MatchMaking.matchs[session_id]['awaited_players'] == len(MatchMaking.matchs[session_id]['players']):
+				MatchMaking.change_session_status(session_id, open=False)
+			session_data = cache.get(session_id)
+			id = len(session_data['players']) + 1
+			session_data['players'][username] = {'id': id, 'connected': False}
+			if username in ['guest', BOT_NAME]:
+				session_data['players'][username]['connected'] = True
+				session_data['connected_players'] = 1
+			cache.set(session_id, session_data)
+			print(f"\n\n\ninside add_player\nusername => {username}\nsession_data => {session_data}\n\n\n")
 
 	@staticmethod
 	def	get_session(game_name, game_code, user):
 		if game_code in [10, 20]:
-			usernames = [user.username, BOT_NAME if game_code == 10 else 'guest']
-			session_id = MatchMaking.create_session(game_name, game_code, usernames)
+			other_name = BOT_NAME if game_code == 10 else 'guest'
+			session_id = MatchMaking.create_session(game_name, game_code)
 			# MatchMaking.delete_session(session_id)
-			session_data = cache.get(session_id)
-			session_data['connected_players'] = 1
-			cache.set(session_id, session_data)
+			# session_data = cache.get(session_id)
+			# session_data['connected_players'] = 1
+			# cache.set(session_id, session_data)
+			MatchMaking.add_player(session_id, user.username)
+			MatchMaking.add_player(session_id, other_name)
 			return session_id
 
 		user_data = user.data
