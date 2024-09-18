@@ -54,8 +54,11 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		if self.session_data['status'] == 'ready':
 			self.game_handler = PongHandler(self) if self.game_name == 'pong' else PurrinhaHandler(self)
 			GameManagerConsumer.matchs[self.session_id] = self.game_handler
-			database_sync_to_async(cache.set)(self.session_id, self.session_data)
 			await self.game_handler.launch_game(self.session_data['players'])
+			if self.game_name == 'purrinha':
+				self.session_data['status'] = 'started'
+				await self.game_handler.reset_game()
+			database_sync_to_async(cache.set)(self.session_id, self.session_data)
 		else:
 			self.loop_task = asyncio.create_task(self.fetch_session_data_loop())
 		print(f'\n\n\nusername => |{self.username}|\nuser => |{self.user}|\ncode => |{self.game_code}|\n data => |{self.session_data}|\nscope => |{self.scope}| \n\n')
@@ -64,13 +67,13 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 	async def	receive(self, text_data):
 		data = json.loads(text_data)
 		msg = data.get('game_status')
-		if msg:
+		if self.game_name == 'pong' and msg:
 			self.session_data['status'] = 'started'
 			database_sync_to_async(cache.set)(self.session_id, self.session_data)
 			if self.game_handler is not None:
 				await self.game_handler.reset_game()
 		if self.game_handler is not None:
-			if self.game_code != 20 and self.game_code != 40:
+			if self.game_name == 'pong' and self.game_code != 20 and self.game_code != 40:
 				player_move = data.get('player_move')
 				if player_move:
 					player_move['player'] = self.session_data['players'][self.username]['id']
@@ -99,7 +102,8 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 	async def	fetch_session_data(self):
 		if self.session_data['status'] != 'started':
 			self.session_data = await self.get_session_data()
-			await self.send_to_group(self.session_data)
+			if self.game_name == 'pong':
+				await self.send_to_group(self.session_data)
 		else:
 			self.game_handler = GameManagerConsumer.matchs.get(self.session_id)
 			await self.game_handler.add_consumer(self)
@@ -305,6 +309,7 @@ class PurrinhaHandler():
 			await self.get_new_turn()
 			self.message['game_state'] = await self.game.get_status()
 			self.message['game_state']['turn'] = self.curr_turn
+			self.message['game_state']['history'] = self.wins
 			await self.consumer[0].send_to_group(self.message)
 
 	async def	parse_quantity(self, quantity, id):
@@ -341,17 +346,23 @@ class PurrinhaHandler():
 
 
 	async def	receive(self, text_data):
-		player_move = text_data.get('player_move')
-		if player_move:
-			quantity = player_move.get('quantity')
-			guess = player_move.get('guess')
-			if await self.parse_quantity(quantity, player_move['player']):
-				await self.game.set_player_quantity(player_move['player'], quantity)
-			elif await self.parse_guess(guess, player_move['player']):
-				await self.game.set_player_guess(player_move['player'], guess)
-				await self.get_new_turn()
+		action = text_data.get('action')
+		value = text_data.get('selected_value')
+		player_id = text_data.get('player_id')
+		ret = None
+		if action == "pick_initial_number":
+			ret = await self.parse_quantity(value, player_id)
+			if ret:
+				await self.game.set_player_quantity(player_id, value)
+		elif action == "sum_guessed":
+			ret = await self.parse_guess(value, player_id)
+			if ret:
+				await self.game.set_player_guess(player_id, value)
+		if ret:
+			await self.get_new_turn()
 			self.message['game_state'] = await self.game.get_status()
 			self.message['game_state']['turn'] = self.curr_turn
+			self.message['game_state']['history'] = self.wins
 			if self.message['game_state']['status'] == 'finished':
 				await self.end_game()
 			else:
@@ -365,6 +376,7 @@ class PurrinhaHandler():
 			winner = winner[0]
 		if winner != 'tie':
 			self.wins[winner] += 1
+			self.message['game_state']['history'] = self.wins
 			if self.wins[winner] == MAX_ROUND_WINS:
 				self.message['winner'] = winner
 				self.message['status'] = 'finished'
