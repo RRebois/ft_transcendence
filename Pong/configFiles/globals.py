@@ -16,6 +16,7 @@ PADDLE_LEFT_X = 10
 PADDLE_RIGHT_X = GAME_WIDTH - PADDLE_LEFT_X - PADDLE_WIDTH
 
 BALL_RADIUS = 10
+SLEEP = 0.02
 
 
 # for the match making - to search for another player who is within this level of ELO difference

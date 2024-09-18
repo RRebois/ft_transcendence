@@ -94,7 +94,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 	async def	fetch_session_data_loop(self):
 		while True:
 			await self.fetch_session_data()
-			await asyncio.sleep(0.2)
+			await asyncio.sleep(SLEEP)
 
 	async def	fetch_session_data(self):
 		if self.session_data['status'] != 'started':
