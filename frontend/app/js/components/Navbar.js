@@ -3,6 +3,8 @@ import ToastComponent from "@js/components/Toast.js";
 import {create_previous_avatar_div} from "../functions/create.js";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import {appRouter} from "@js/spa-router/initializeRouter.js";
+import * as bootstrap from "bootstrap";
+import {remove_modal_backdrops} from "../functions/display.js";
 
 export default class Navbar {
 	constructor(user = null) {
@@ -62,16 +64,15 @@ export default class Navbar {
 				toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
 				saveBtn.disabled = false;
 			} else {
-				sessionStorage.setItem('toastMessage', JSON.stringify({
-					title: 'Success',
-					message: data.message,
-					duration: 5000,
-					type: 'success'
-				}));
 				saveBtn.disabled = false;
-				if (data.redirect) {
-					window.location.href = data.redirect_url;
+				const modalElement = document.getElementById("update-user-picture")
+				const modal = new bootstrap.Modal(modalElement);
+				if (modal) {
+					modal.hide();
+					const backdrops = document.querySelectorAll('.modal-backdrop');
+					backdrops.forEach(backdrop => backdrop.remove());
 				}
+				appRouter.navigate(window.location.pathname, false);
 			}
 		})
 		.catch(error => {
@@ -135,15 +136,14 @@ export default class Navbar {
 				if (modalAvatar) {
 					modalAvatar.src = data.new_avatar_url;
 				}
-				sessionStorage.setItem('toastMessage', JSON.stringify({
-					title: 'Success',
-					message: data.message,
-					duration: 5000,
-					type: 'success'
-				}));
-				if (data.redirect) {
-					window.location.href = data.redirect_url;
+				const modalElement = document.getElementById("update-user-picture")
+				const modal = new bootstrap.Modal(modalElement);
+				if (modal) {
+					modal.hide();
+					const backdrops = document.querySelectorAll('.modal-backdrop');
+					backdrops.forEach(backdrop => backdrop.remove());
 				}
+				appRouter.navigate(window.location.pathname, false);
 			}
 		})
 		.catch(error => {
@@ -172,7 +172,7 @@ export default class Navbar {
 							</button>
 							<ul class="dropdown-menu dropdown-menu-end">
 								<li><a class="dropdown-item" route="/my-profile" href="/my-profile">My profile</a></li>
-								<li><a class="dropdown-item" route="/stats/${this.user?.username}" href="/stats/${this.user?.username}">My stats</a></li>
+								<li><a class="dropdown-item cursor-click" route="/stats/${this.user?.username}">My stats</a></li>
 								<li><a class="dropdown-item" route="/friends" href="/friends">Friends</a></li>
 								<li><hr class="dropdown-divider"></li>
 								<li><a role="button" id="logout-btn" class="dropdown-item text-danger">Logout</a></li>
@@ -181,7 +181,7 @@ export default class Navbar {
 					</div>
 				</div>
 				<!--	MODAL PART		-->
-				<div class="modal fade" id="update-user-picture" tabindex="-1" aria-labelledby="create match modal" aria-hidden="true">
+				<div class="modal fade" id="update-user-picture" tabindex="-1" aria-labelledby="create avatar modal" aria-hidden="true">
 					<div class="modal-dialog">
 						<div class="modal-content">
 							<div class="modal-header">

@@ -232,3 +232,7 @@ body.bg-gradient {
 .play-btn:focus::after {
     opacity: 0.6;
 }
+
+.cursor-click {
+    cursor: pointer;
+}
