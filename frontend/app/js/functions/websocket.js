@@ -5,7 +5,7 @@ import {remove_friend_request_div} from "./friends_management.js";
 import {getCookie} from "@js/functions/cookie.js";
 import * as bootstrap from 'bootstrap';
 import {remove_modal_backdrops} from "@js/functions/display.js";
-import MatchPong from "@js/views/pong.js";
+import PongGame from "@js/views/pong.js";
 
 const lst2arr = (lst) => {
 	return Object.entries(lst).map(([username, details]) => ({
@@ -44,14 +44,14 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 					if (!data) {
 						return;
 					}
-					console.log("Data is:", data);
-					console.log("Data.ws_route is:", data.ws_route);
+//					console.log("Data is:", data);
+//					console.log("Data.ws_route is:", data.ws_route);
 					const token = jwt.token
 					const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
 					const url = wsSelect + "localhost:8443" + data.ws_route + token + '/'
-					console.log("url is:", url);
+//					console.log("url is:", url);
 					const socket = new WebSocket(url);
-					console.log("Socket is:", socket);
+//					console.log("Socket is:", socket);
 
 					socket.onopen = function (e) {
 						console.log("Purrinha webSocket connection established");
@@ -124,49 +124,62 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 	});
 }
 
-export async function initializePongWebSocket() {
+export async function initializePongWebSocket(gameCode, sessionId, pong) { console.log(pong);
     return new Promise(async (resolve, reject) => {
         const response = await fetch('https://localhost:8443/get_ws_token/', {
             credentials: 'include',
         });
         const jwt = await response.json();
         const isUserAuth = await isUserConnected();
-        if (isUserAuth) { // A changer suivant type de game
+//        if (!gameCode || !sessionId) {
+//			reject(new Error("Missing game code or session id"));
+//		}
+        if (isUserAuth) { // replace    `https://localhost:8443/game/pong/${gameCode}/`
             const   gameResponse = await fetch("https://localhost:8443/game/pong/20/", {
                 method: "GET",
+//                headers: {
+//					'Content-Type': 'application/json',
+//					'X-CSRFToken': getCookie('csrftoken'),
+//				},
                 credentials: 'include',
             })
-            .then(gameResponse => gameResponse.json())
+            .then(gameResponse => {
+                if (!gameResponse.ok) {
+                    reject(new Error("Match not available"));
+                    return ;
+                }
+                return gameResponse.json();
+            })
             .then(data => {
-
+                if (!data) {
+                    return ;
+                }
                 const token = jwt.token
                 // console.log("In Init WS FRONT, USER AUTHENTICATED")
                 const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
                 const url = wsSelect + "localhost:8443" + data.ws_route + token + '/'
                 // console.log("url is:", url);
                 const   socket = new WebSocket(url);
-                const   pong = new MatchPong();
 
                 socket.onopen = function (e) {
-                    // console.log("WebSocket connection established");
+                    console.log("Pong WebSocket connection established");
                     resolve(socket);
-//                    const   pong = new MatchPong();
-//                    pong.init(); // sans les txt
-//                    pong.init(); // display du jeu puis envoyer mess au back
-                    // console.log("Message from server:");
                 };
+
                 socket.onmessage = function (event) {
-                    console.log("WebSocket connection established: " + event.data);
+                    console.log("WebSocket connection established: ", event.data);
                     const data = JSON.parse(event.data);
-                    // console.log("data: " + data);
+
 
                     if (data.status === "waiting") // Waiting for opponent(s)
                         pong.waiting();
                     if (data.status === "ready") { // Waiting for display in front
+                        console.log(data.status);
+//                        pong.init();
                         pong.buildGameSet(data);
-                        setTimeout(() => {
-                            socket.send(JSON.stringify({"game_status": true}));
-                        }, 5000);
+//                        setTimeout(() => {
+//                            socket.send(JSON.stringify({"game_status": true}));
+//                        }, 5000);
                     }
                     if (data.status === "started")
                          pong.display(data, socket);
