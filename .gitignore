@@ -1,8 +1,8 @@
-.gitignore
 Pong/env/*
 .env
 *.pyc
 .idea
+.vscode/
 .code
 .vite/
 .DS_Store
