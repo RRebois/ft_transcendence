@@ -1,5 +1,5 @@
 
-MAX_QUANTITY = 3
+from configFiles.globals import *
 
 class   PurrinhaMatch:
 
@@ -105,7 +105,7 @@ class   PurrinhaGame:
     def __init__(self, players):
         self.match = PurrinhaMatch(players)
         self.players_nb = len(players)
-        self.numbers_to_guess = [i for i in range(self.players_nb * MAX_QUANTITY)]
+        self.numbers_to_guess = [i for i in range(self.players_nb * MAX_QUANTITY + 1)]
         self.numbers_to_guess_init = self.numbers_to_guess
 
     async def   get_number_to_guess(self):
@@ -121,6 +121,7 @@ class   PurrinhaGame:
                 break
             if player['guess'] != -1:
                 guesses += 1
+        result = winner = 'waiting'
         if guesses == self.players_nb:
             status = 'finished'
             result = await self.match.get_final_result()
@@ -129,14 +130,16 @@ class   PurrinhaGame:
             for player in players:
                 if player['guess'] == result:
                     winner == player['name']
-        else:
-            result = winner = 'waiting'
+                    break
+
         return {
             'round': status,
             'players': players,
             'available_to_guess': self.numbers_to_guess,
             'result': result,
             'winner': winner,
+            'turn': None,
+            'error_message': None,
         }
     
     async def set_player_guess(self, id, guess):

@@ -279,6 +279,8 @@ class PurrinhaHandler():
 	async def	launch_game(self, players_name):
 		self.message = self.consumer[0].session_data
 		self.player_nb = len(players_name)
+		self.turns_id = [i + 1 for i in range(0, self.player_nb)]
+		self.wins = {player: 0 for player in players_name.keys()}
 		self.game = PurrinhaGame(players_name)
 		if BOT_NAME in self.message['players']:
 			# init_bot()
@@ -298,23 +300,22 @@ class PurrinhaHandler():
 			self.curr_turn = choice(self.turns_id)
 			self.turns_id.remove(self.curr_turn)
 
-
 	async def	reset_game(self):
-		self.turns_id = [i for i in range(1, self.player_nb)]
-		await self.get_new_turn()
-		self.message['game_state'] = await self.game.get_status()
-		self.message['game_state']['turn'] = self.curr_turn
-		await self.consumer[0].send_to_group(self.message)
+		if len(self.turns_id) == self.player_nb:
+			await self.get_new_turn()
+			self.message['game_state'] = await self.game.get_status()
+			self.message['game_state']['turn'] = self.curr_turn
+			await self.consumer[0].send_to_group(self.message)
 
 	async def	parse_quantity(self, quantity, id):
 		if not quantity:
 			return False
 		if self.message['game_state']['players'][f'player{id}']['quantity']:
 			name = self.message['game_state']['players'][f'player{id}']['name']
-			message = 'you have already chosen a number'
+			self.message['game_state']['error_message'] = 'you have already chosen a number'
 			for consumer in self.consumer:
 				if consumer.username == name:
-					await consumer.send(text_data=json.dumps({"error_message": message}))
+					await consumer.send(text_data=json.dumps(self.message))
 			return False
 		return True
 
@@ -330,10 +331,11 @@ class PurrinhaHandler():
 		if guess not in nb_to_guess:
 			message = 'you cannot try to guess this number'
 		if message:
+			self.message['game_state']['error_message'] = message
 			name = self.message['game_state']['players'][f'player{id}']['name']
 			for consumer in self.consumer:
 				if consumer.username == name:
-					await consumer.send(text_data=json.dumps({"error_message": message}))
+					await consumer.send(text_data=json.dumps(self.message))
 			return False
 		return True
 
@@ -357,18 +359,26 @@ class PurrinhaHandler():
 
 
 	async def	end_game(self, winner=None):
-
-		self.message['winner'] = self.message['game_state']['winner']
-		self.message['status'] = 'finished'
-		await database_sync_to_async(cache.set)(self.consumer[0].session_id, self.message)
-		winner = [self.message['winner']]
-		if self.message['winner'] != 'tie':
-			match_result = {}
-			for player in self.message['game_state']['players']:
-				name = player['name']
-				match_result[name] = 1 if name == self.message['winner'] else 0
-			await sync_to_async(create_match)(match_result, winner)
-		await self.consumer[0].send_to_group(self.message)
+		if not winner:
+			winner = [self.message['game_state']['winner']]
+		else:
+			winner = winner[0]
+		if winner != 'tie':
+			self.wins[winner] += 1
+			if self.wins[winner] == MAX_ROUND_WINS:
+				self.message['winner'] = winner
+				self.message['status'] = 'finished'
+				await database_sync_to_async(cache.set)(self.consumer[0].session_id, self.message)
+				# match_result = {}
+				# for player in self.message['game_state']['players']:
+				# 	name = player['name']
+				# 	match_result[name] = 1 if name == self.message['winner'] else 0
+				await sync_to_async(create_match)(self.wins, [winner])
+				await self.consumer[0].send_to_group(self.message)
+		else:
+			self.game.play_again()
+			self.turns_id = [i + 1 for i in range(0, self.player_nb)]
+			self.reset_game()
 		# await self.remove_consumer()
 
 		# send notification + restart the game
