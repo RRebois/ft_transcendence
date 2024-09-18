@@ -434,7 +434,7 @@ export default class MatchPong {
         }
     }
 
-     createPlanStadium() {
+     createPlanStadium() { // add animation https://threejs.org/examples/#webgl_gpgpu_water
         // Create plane
         const   planeGeometry = new THREE.PlaneGeometry(620, 300, 40, 40);
         const   planeMaterial = new THREE.MeshPhongMaterial({

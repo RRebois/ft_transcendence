@@ -110,6 +110,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 	def get_session_data(self):
 		session_data = cache.get(self.session_id)
 		if session_data:
+			print(f"\n\n\nusername => {self.username}\nsession_data => {session_data}")
 			return session_data
 		error_msg = 'this session does not exist'
 		self.send(text_data=json.dumps({"error_message": error_msg}))
