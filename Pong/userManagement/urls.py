@@ -4,6 +4,7 @@ from .views import *
 
 urlpatterns = [
     path("", views.index, name="index"),
+    path("isUserExisting/<str:username>", UserExistsView.as_view(), name="isUserExisting"),
     path("login", LoginView.as_view(), name="login"),
     path("login42", Login42View.as_view(), name="login42"),
     path("login42/redirect", Login42RedirectView.as_view()),
@@ -18,6 +19,9 @@ urlpatterns = [
     path("getStudStatus", UserGetIsStudView.as_view(), name="getIsStud"),
     path("getUserAvatar/<str:username>", UserAvatarView.as_view(), name="getAvatar"),
     path("getAllTimeUserAvatars", GetAllUserAvatarsView.as_view(), name="getAllAvatars"),
+    path("uploadAvatar", UpNewAvatarView.as_view(), name="upNewAvatar"),
+    path("changeAvatar", ChangeAvatarView.as_view(), name="changeAvatar"),
+    path("setPreviousAvatar", SetPreviousAvatar.as_view(), name="setPreviousAvatar"),
 
     path('change_password', PasswordChangeView.as_view(), name='change_password'),
     path('reset_password', PasswordResetRequestView.as_view(), name='reset_password'),

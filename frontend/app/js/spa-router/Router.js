@@ -1,6 +1,5 @@
 import {getCsrf, isUserConnected} from "@js/functions/user_auth.js";
 import Navbar from "@js/components/Navbar.js";
-import {remove_modal_backdrops} from "@js/functions/display.js";
 
 export default class Router {
 	constructor(routes = [], renderNode) {
@@ -13,7 +12,7 @@ export default class Router {
 	async init() {
 		this.addEventListeners();
 		await getCsrf();
-		await this.navigate(window.location.pathname + window.location.search);
+		await this.navigate(window.location.pathname);
 	}
 
 	addEventListeners() {
@@ -32,13 +31,15 @@ export default class Router {
 	}
 
 	async navigate(path, pushState = true) {
-		// find all elements with class "modal-backdrop" and remove them
-		remove_modal_backdrops();
 		const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
 		const isUserAuth = await isUserConnected();
+		console.log('isUserAuth', isUserAuth);
 		const route = this.routes.find(route => this.match(route, path));
 		if (!route) {
-			this.renderNode.innerHTML = '<h1>404 Not Found</h1>';
+			this.renderNode.innerHTML = '' +
+				'<h1 class="mb-6 play-bold" style="font-size: 6rem">404</h1>' +
+				'<img src="/homer.webp" alt="homer simpson disappearing" class="rounded w-1-2 mb-4" />' +
+				'<li><a role="button" route="/" class="btn btn-primary btn-lg">Return home</a></li>';
 			return;
 		}
 		if (isUserAuth) {
@@ -46,17 +47,21 @@ export default class Router {
 		}
 		const isPublicRoute = this.isPublicRoute(publicRoutes, path);
 		if (!isPublicRoute && !isUserAuth) {
+			console.log("[ROUTER] redirect to /");
 			window.history.pushState(null, null, '/'); // Redirect to home
 			const home = this.routes.find(route => this.match(route, "/"));
 			this.renderNode.innerHTML = home.renderView();
 			home.setupEventListeners();
+			if (window.mySocket && window.mySocket.readyState === WebSocket.OPEN) {
+				window.mySocket.close();
+				console.log('WebSocket connection closed');
+			}
 			return ;
 		} else if (isPublicRoute && isUserAuth) {
+			console.log("[ROUTER] redirect to /dashboard");
 			window.history.pushState(null, null, '/dashboard'); // Redirect to dashboard
 			const dashboard = this.routes.find(route => this.match(route, "/dashboard"));
-			this.navbar.setUser(isUserAuth);
-			this.renderNode.innerHTML = this.navbar.render() + dashboard.renderView();
-			this.navbar.setupEventListeners();
+			this.renderNode.innerHTML = dashboard.renderView();
 			dashboard.setupEventListeners();
 			return ;
 		}
@@ -64,47 +69,40 @@ export default class Router {
 		// If route is valid, render the view
 		if (route.user) {
 			this.navbar.setUser(route.user);
-			if (route.path === "/purrinha") {
-				this.renderNode.innerHTML = route.renderView();
-			} else {
-				this.renderNode.innerHTML = this.navbar.render() + route.renderView();
-			}
+			this.renderNode.innerHTML = this.navbar.render() + route.renderView(path);
 			this.navbar.setupEventListeners();
 		}
 		else {
-			this.renderNode.innerHTML = route.renderView();
+			this.renderNode.innerHTML = route.renderView(path);
 		}
-		route.setupEventListeners();
+		console.log("Navigating to path:", path);
+		route.setupEventListeners(path);
 
 		// Update the browser history
-		const currentPath = window.location.pathname + window.location.search;
-		if (currentPath === path) {
-			window.history.replaceState(null, null, path);
-		} else {
-			const query = path.split('?')[1];
-			path += query ? '?' + query : '';
+		if (pushState) {
 			window.history.pushState(null, null, path);
 		}
 	}
 
-	getQueryParams(query) {
-		return Object.fromEntries(new URLSearchParams(query).entries());
-	}
-
 	// Match the route path to the current location path
 	match(route, requestPath) {
-		const splitPath = requestPath.split('?');
-		const pathWithoutQuery = splitPath[0];
-		const query = splitPath[1];
+		console.log("route path", route.path);
+		console.log("request path", requestPath);
+		const paramNames = [];
 		const regexPath = route.path.replace(/([:*])(\w+)/g, (full, colon, name) => {
+			paramNames.push(name);
 			return '([^\/]+)';
 		}) + '(?:\/|$)';
-		let params = {};
-		const routeMatch = pathWithoutQuery.match(new RegExp(regexPath));
-		if (routeMatch !== null) {
-			params = this.getQueryParams(query);
 
+		const params = {};
+		const routeMatch = requestPath.match(new RegExp(regexPath));
+		console.log('routeMatch', routeMatch);
+		if (routeMatch !== null) {
+			routeMatch.slice(1).forEach((value, index) => {
+				params[paramNames[index]] = value;
+			});
 			route.setProps(params);
+			console.log("returning true");
 			return true;
 		}
 		return false;
@@ -123,4 +121,7 @@ export default class Router {
 		}
 		return false;
 	}
+
 }
+
+// https://localhost:4242/set-reset-password/Mw/ccxy73-1ae1e4b34d24b15f4fbc9fa8c3f1fc60

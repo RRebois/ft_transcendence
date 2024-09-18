@@ -22,7 +22,8 @@ const routes = [
     new Route('/my-profile', '/my-profile', profileView),
     // new Route('/user', '/user', userView),
     new Route('/friends', '/friends', friendsView),
-    new Route('/stats', '/stats', statsView),
+    // new Route('/stats', '/stats', statsView),
+    new Route('/stats/:username', '/stats/:username', statsView),
     new Route('/set-reset-password', '/set-reset-password', resetPWView),
     new Route('/purrinha', '/purrinha', purrinhaView),
 ];
