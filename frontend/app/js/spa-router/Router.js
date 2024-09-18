@@ -1,6 +1,5 @@
 import {getCsrf, isUserConnected} from "@js/functions/user_auth.js";
 import Navbar from "@js/components/Navbar.js";
-import Route from "@js/spa-router/Route.js";
 
 export default class Router {
 	constructor(routes = [], renderNode) {
@@ -37,7 +36,9 @@ export default class Router {
 		console.log('isUserAuth', isUserAuth);
 		const route = this.routes.find(route => this.match(route, path));
 		if (!route) {
-			this.renderNode.innerHTML = '<h1>404 Not Found</h1>';
+			this.renderNode.innerHTML = '' +
+				'<img src="/homer.webp" alt="homer simpson disappearing" />' +
+				'<h1 class="play-bold">404</h1>'
 			return;
 		}
 		if (isUserAuth) {
