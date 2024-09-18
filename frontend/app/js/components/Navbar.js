@@ -65,12 +65,9 @@ export default class Navbar {
 				saveBtn.disabled = false;
 			} else {
 				saveBtn.disabled = false;
-				const modalElement = document.getElementById("update-user-picture")
-				const modal = new bootstrap.Modal(modalElement);
+				const modal = bootstrap.Modal.getInstance(document.getElementById("update-user-picture"));
 				if (modal) {
 					modal.hide();
-					const backdrops = document.querySelectorAll('.modal-backdrop');
-					backdrops.forEach(backdrop => backdrop.remove());
 				}
 				appRouter.navigate(window.location.pathname, false);
 			}
@@ -136,12 +133,9 @@ export default class Navbar {
 				if (modalAvatar) {
 					modalAvatar.src = data.new_avatar_url;
 				}
-				const modalElement = document.getElementById("update-user-picture")
-				const modal = new bootstrap.Modal(modalElement);
+				const modal = bootstrap.Modal.getInstance(document.getElementById("update-user-picture"));
 				if (modal) {
 					modal.hide();
-					const backdrops = document.querySelectorAll('.modal-backdrop');
-					backdrops.forEach(backdrop => backdrop.remove());
 				}
 				appRouter.navigate(window.location.pathname, false);
 			}
