@@ -32,6 +32,12 @@ export default class Router {
 	}
 
 	async navigate(path, pushState = true) {
+		console.log('Path before regex: ', path);
+		if (path !== "/") {
+			path = path.replace(/\/+$/, ''); // Remove trailing slashes
+		}
+		console.log('Path after regex: ', path);
+
 		// find all elements with class "modal-backdrop" and remove them
 		remove_modal_backdrops();
 		const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
@@ -96,6 +102,9 @@ export default class Router {
 		const splitPath = requestPath.split('?');
 		const pathWithoutQuery = splitPath[0];
 		const query = splitPath[1];
+		if (!route.accept_parameters && route.path !== pathWithoutQuery) {
+			return false;
+		}
 		const regexPath = route.path.replace(/([:*])(\w+)/g, (full, colon, name) => {
 			return '([^\/]+)';
 		}) + '(?:\/|$)';

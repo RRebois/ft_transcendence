@@ -22,8 +22,8 @@ const routes = [
     new Route('/my-profile', '/my-profile', profileView),
     // new Route('/user', '/user', userView),
     new Route('/friends', '/friends', friendsView),
-    new Route('/stats', '/stats', statsView),
-    new Route('/set-reset-password', '/set-reset-password', resetPWView),
+    new Route('/stats', '/stats', statsView, null, true),
+    new Route('/set-reset-password', '/set-reset-password', resetPWView, null, true),
     new Route('/purrinha', '/purrinha', purrinhaView),
 ];
 
@@ -34,5 +34,3 @@ document.addEventListener('DOMContentLoaded', initializeWebSocket);
 document.addEventListener('DOMContentLoaded', () => {
     new ToastComponent();
 });
-
-// https://medium.com/swlh/lets-code-a-client-side-router-for-your-no-framework-spa-19da93105e10

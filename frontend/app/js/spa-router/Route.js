@@ -1,9 +1,14 @@
 export default class Route {
-    constructor(name, path, view, user = null) {
+    constructor(name, path, view, user = null, accept_parameters = false) {
         this.name = name;
         this.path = path;
         this.view = new view();
         this.user = user;
+        this.accept_parameters = accept_parameters;
+    }
+
+    accept_parameters() {
+        return this.accept_parameters;
     }
 
     setProps(newProps) {
