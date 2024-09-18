@@ -36,9 +36,13 @@ export default class Router {
 		remove_modal_backdrops();
 		const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
 		const isUserAuth = await isUserConnected();
+		console.log('isUserAuth', isUserAuth);
 		const route = this.routes.find(route => this.match(route, path));
 		if (!route) {
-			this.renderNode.innerHTML = '<h1>404 Not Found</h1>';
+			this.renderNode.innerHTML = '' +
+				'<h1 class="mb-6 play-bold" style="font-size: 6rem">404</h1>' +
+				'<img src="/homer.webp" alt="homer simpson disappearing" class="rounded w-1-2 mb-4" />' +
+				'<li><a role="button" route="/" class="btn btn-primary btn-lg">Return home</a></li>';
 			return;
 		}
 		if (isUserAuth) {
@@ -50,6 +54,10 @@ export default class Router {
 			const home = this.routes.find(route => this.match(route, "/"));
 			this.renderNode.innerHTML = home.renderView();
 			home.setupEventListeners();
+			if (window.mySocket && window.mySocket.readyState === WebSocket.OPEN) {
+				window.mySocket.close();
+				console.log('WebSocket connection closed');
+			}
 			return ;
 		} else if (isPublicRoute && isUserAuth) {
 			window.history.pushState(null, null, '/dashboard'); // Redirect to dashboard
@@ -64,7 +72,7 @@ export default class Router {
 		// If route is valid, render the view
 		if (route.user) {
 			this.navbar.setUser(route.user);
-			if (route.path === "/purrinha") {
+			if (route.path === "/purrinha" || route.path === "/pong") {
 				this.renderNode.innerHTML = route.renderView();
 			} else {
 				this.renderNode.innerHTML = this.navbar.render() + route.renderView();
@@ -105,6 +113,7 @@ export default class Router {
 			params = this.getQueryParams(query);
 
 			route.setProps(params);
+			console.log("returning true");
 			return true;
 		}
 		return false;

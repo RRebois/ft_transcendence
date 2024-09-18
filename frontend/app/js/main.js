@@ -3,7 +3,7 @@ import ToastComponent from "./components/Toast.js"
 
 import homeView from "./views/home.js";
 import registerView from "./views/register.js";
-import matchView from "./views/match.js";
+import matchView from "./views/pong.js";
 import dashboardView from './views/dashboard.js';
 import friendsView from './views/friends.js';
 import resetPWView from './views/reset-pw.js';
@@ -17,12 +17,13 @@ import initializeRouter from "@js/spa-router/initializeRouter.js";
 const routes = [
     new Route('/home', '/', homeView),
     new Route('/register', '/register', registerView),
-    new Route('/match', '/match', matchView),
+    new Route('/pong', '/pong', matchView),
     new Route('/dashboard', '/dashboard', dashboardView),
     new Route('/my-profile', '/my-profile', profileView),
     // new Route('/user', '/user', userView),
     new Route('/friends', '/friends', friendsView),
-    new Route('/stats', '/stats', statsView),
+    // new Route('/stats', '/stats', statsView),
+    new Route('/stats/:username', '/stats/:username', statsView),
     new Route('/set-reset-password', '/set-reset-password', resetPWView),
     new Route('/purrinha', '/purrinha', purrinhaView),
 ];

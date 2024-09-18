@@ -1,26 +1,34 @@
 import * as THREE from 'three';
 import {FontLoader} from 'three/addons/loaders/FontLoader.js';
 import {TextGeometry} from 'three/addons/geometries/TextGeometry.js';
-import {initializePongWebSocket} from "../functions/websocket.js";
+import {initializePongWebSocket} from "@js/functions/websocket.js";
 import {DirectionalLight, SpotLight, Clock} from 'three';
 
-export default class MatchPong {
+export default class PongGame {
     constructor(props) {
         this.props = props;
-        this.user = null;
+        this.user = props?.user;
         this.setUser = this.setUser.bind(this);
-        this.init();
     }
 
     setUser(user) {
         this.user = user;
     }
 
+    addProps(newProps) {
+		this.props = {...this.props, ...newProps};
+	}
+
     setProps(newProps) {
         this.props = newProps;
     }
 
-    init() { // For responside device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
+    render() { // For responside device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
+        // init WS
+        this.initialiseWs(this.props?.code);
+        document.title = "ft_transcendence | Pong";
+
+
 
 //        this.y_pos_p1 = 0;  // left player
 //        this.y_pos_p2 = 0;  // right player

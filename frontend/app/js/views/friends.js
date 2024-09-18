@@ -105,22 +105,22 @@ export default class Friends {
 			method: "GET",
 			credentials: "include"
 		})
-			.then(response => response.json().then(data => ({ok: response.ok, data})))
-			.then(({ok, data}) => {
-				if (!ok) {
-					const toastComponent = new ToastComponent();
-					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
-				} else {
-					data.map(friend => {
-						create_friend_div_load(friend);
-					});
-				}
-			})
-			.catch(error => {
-				console.error("Error fetching friends list: ", error);
+		.then(response => response.json().then(data => ({ok: response.ok, data})))
+		.then(({ok, data}) => {
+			if (!ok) {
 				const toastComponent = new ToastComponent();
-				toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
-			});
+				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+			} else {
+				data.map(friend => {
+					create_friend_div_load(friend);
+				});
+			}
+		})
+		.catch(error => {
+			console.error("Error fetching friends list: ", error);
+			const toastComponent = new ToastComponent();
+			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+		});
 	}
 
 	setupEventListeners() {

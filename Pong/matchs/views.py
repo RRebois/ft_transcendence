@@ -27,7 +27,7 @@ class MatchHistoryView(APIView):
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
-            return JsonResponse({"error": "User does not exists."}, status=404)
+            return JsonResponse({"message": "User does not exists."}, status=404)
         if word == 'all':
             matches = Match.objects.filter(players=user).order_by('-timeMatch')
         elif word == 'pong':

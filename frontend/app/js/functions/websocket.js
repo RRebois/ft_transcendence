@@ -5,7 +5,7 @@ import {remove_friend_request_div} from "./friends_management.js";
 import {getCookie} from "@js/functions/cookie.js";
 import * as bootstrap from 'bootstrap';
 import {remove_modal_backdrops} from "@js/functions/display.js";
-import MatchPong from "@js/views/match.js";
+import MatchPong from "@js/views/pong.js";
 
 const lst2arr = (lst) => {
 	return Object.entries(lst).map(([username, details]) => ({
