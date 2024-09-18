@@ -144,17 +144,17 @@ export async function initializePongWebSocket() {
                 const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
                 const url = wsSelect + "localhost:8443" + data.ws_route + token + '/'
                 // console.log("url is:", url);
-                const socket = new WebSocket(url);
+                const   socket = new WebSocket(url);
+                const   pong = new MatchPong();
 
                 socket.onopen = function (e) {
                     // console.log("WebSocket connection established");
                     resolve(socket);
-                    const   pong = new MatchPong();
+//                    const   pong = new MatchPong();
 //                    pong.init(); // sans les txt
 //                    pong.init(); // display du jeu puis envoyer mess au back
                     // console.log("Message from server:");
                 };
-
                 socket.onmessage = function (event) {
                     console.log("WebSocket connection established: " + event.data);
                     const data = JSON.parse(event.data);
