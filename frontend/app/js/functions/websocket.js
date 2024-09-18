@@ -123,6 +123,76 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 	});
 }
 
+export async function initializePongWebSocket(pong) {
+    return new Promise(async (resolve, reject) => {
+        const response = await fetch('https://localhost:8443/get_ws_token/', {
+            credentials: 'include',
+        });
+        const jwt = await response.json();
+        const isUserAuth = await isUserConnected();
+        if (isUserAuth) { // A changer suivant type de game
+            const   gameResponse = await fetch("https://localhost:8443/game/pong/20/", {
+                method: "GET",
+                credentials: 'include',
+            })
+            .then(gameResponse => gameResponse.json())
+            .then(data => {
+
+                const token = jwt.token
+                // console.log("In Init WS FRONT, USER AUTHENTICATED")
+                const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
+                const url = wsSelect + "localhost:8443" + data.ws_route + token + '/'
+                // console.log("url is:", url);
+                const socket = new WebSocket(url);
+
+                socket.onopen = function (e) {
+                    // console.log("WebSocket connection established");
+                    resolve(socket);
+                    pong.init(); // sans les txt
+//                    pong.init(); // display du jeu puis envoyer mess au back
+                    // console.log("Message from server:");
+                };
+
+                socket.onmessage = function (event) {
+//                    console.log("WebSocket connection established: " + event.data);
+                    const data = JSON.parse(event.data);
+                    // console.log("data: " + data);
+
+                    if (data.status === "waiting") // Waiting for opponent(s)
+                        pong.waiting();
+                    if (data.status === "ready") { // Waiting for display in front
+                        pong.builGameSet(data);
+//                        setTimeout(() => {
+//                            socket.send(JSON.stringify({"game_status": true}));
+//                        }, 3000);
+                    }
+                    if (data.status === "started")
+                        pong.display(data);
+                };
+
+                socket.onclose = function (event) {
+                    if (event.wasClean) {
+                        // console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+                    } else {
+                        // console.log('Connection died');
+                    }
+                    setTimeout(initializeWebSocket, 2000);
+                };
+
+                socket.onerror = function (error) {
+                    // console.log(`WebSocket Error: ${error.message}`);
+                    reject(error);
+                };
+                window.mySocket = socket; // to access as a global var
+            })
+            .catch (); //TODO
+        }
+         else {
+            reject(new Error("User not authenticated"));
+        }
+    });
+}
+
 export async function initializeWebSocket() {
 	return new Promise(async (resolve, reject) => {
 		console.log("In Init WS FRONT")
