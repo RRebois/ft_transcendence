@@ -59,6 +59,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 				self.session_data['status'] = 'started'
 				await self.game_handler.reset_game()
 			database_sync_to_async(cache.set)(self.session_id, self.session_data)
+			print(f'\n\n\ntest in ready\nsession_data => {self.session_data}\n\n\n')
 		else:
 			self.loop_task = asyncio.create_task(self.fetch_session_data_loop())
 		print(f'\n\n\nusername => |{self.username}|\nuser => |{self.user}|\ncode => |{self.game_code}|\n data => |{self.session_data}|\nscope => |{self.scope}| \n\n')
@@ -97,16 +98,17 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 	async def	fetch_session_data_loop(self):
 		while True:
 			await self.fetch_session_data()
-			await asyncio.sleep(SLEEP)
+			await asyncio.sleep(1)
 
 	async def	fetch_session_data(self):
 		if self.session_data['status'] != 'started':
 			self.session_data = await self.get_session_data()
-			if self.game_name == 'pong':
-				await self.send_to_group(self.session_data)
+			# if self.game_name == 'pong':
+			# 	await self.send_to_group(self.session_data)
 		else:
 			self.game_handler = GameManagerConsumer.matchs.get(self.session_id)
 			await self.game_handler.add_consumer(self)
+			# await self.send_to_group(self.session_data)
 			self.loop_task.cancel()
 
 
