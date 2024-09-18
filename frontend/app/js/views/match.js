@@ -107,7 +107,7 @@ export default class MatchPong {
         plane.receiveShadow = true;
         this.scene.add(plane);
 
-        const   spotLightRight = new SpotLight(0xffffff, 55000000);
+        const   spotLightRight = new SpotLight(0x0000ff, 10000000);
         spotLightRight.position.set(920, 400, 0); //y: 300
         spotLightRight.target.position.set(550, 0, -140);
 //        spotLightRight.distance = 5000;
@@ -118,9 +118,9 @@ export default class MatchPong {
         spotLightRight.shadow.camera.near = 10;
         spotLightRight.name = "spotR";
 
-        const   spotLightLeft = new SpotLight(0xffffff, 55000000);
+        const   spotLightLeft = new SpotLight(0xff3300, 10000000);
         spotLightLeft.position.set(-300, 400, 0);
-        spotLightLeft.target.position.set(50, 0, -150);
+        spotLightLeft.target.position.set(50, 0, -140);
 //        spotLightLeft.distance = 5000; spotL https://dustinpfister.github.io/2018/04/11/threejs-spotlights/
         spotLightLeft.angle = .40; // change it for higher or lower coverage of the spot
         spotLightLeft.penumbra = .8;
@@ -129,13 +129,29 @@ export default class MatchPong {
         spotLightLeft.shadow.camera.near = 10;
         spotLightLeft.name = "spotL";
 
+        const   ball = this.scene.getObjectByName("ball");
+        const   ballLight = new SpotLight(0xffffff, 10000000);
+        ballLight.position.set(300, 400, 0); //y: 300
+        ballLight.target.position.set(ball.position.x, ball.position.y, ball.position.z);
+//        ballLight.distance = 5000;
+        ballLight.angle = 0.15; // change it for higher or lower coverage of the spot
+        ballLight.penumbra = 0.0;
+        ballLight.castShadow = true;
+        ballLight.shadow.camera.far = 1000;
+        ballLight.shadow.camera.near = 10;
+        ballLight.name = "ballLight";
+//        const spotLightRightHelper = new THREE.SpotLightHelper( ballLight );
+//this.scene.add( spotLightRightHelper );
+
+
+
 //        const spotLightRightHelper = new THREE.SpotLightHelper( spotLightRight );
 //this.scene.add( spotLightRightHelper );
 //const spotLightRightHelper2 = new THREE.SpotLightHelper( spotLightLeft );
 //this.scene.add( spotLightRightHelper2 );
 
-        this.scene.add(spotLightRight, spotLightLeft, spotLightRight.target, spotLightLeft.target);
-//        this.scene.add(spotLightRight, spotLightRight.target);
+        this.scene.add(spotLightRight, spotLightLeft, spotLightRight.target, spotLightLeft.target, ballLight, ballLight.target);
+//        this.scene.add(ballLight, ballLight.target);
     }
 
     waiting() {
@@ -269,7 +285,6 @@ export default class MatchPong {
         this.printInitScores();
 
         // Create floor for game and spotlight purpose
-        this.createLightFloor();
         this.createGameElements();
         // rotate stadium
 //        const   stadium = this.scene.getObjectByName("stadium");
@@ -278,6 +293,7 @@ export default class MatchPong {
 
     createGameElements() { //3000
         this.createBall();
+        this.createLightFloor();
         this.createPlanStadium();
         this.createPaddle('p1');
         this.createPaddle('p2');
@@ -410,7 +426,7 @@ export default class MatchPong {
 
      createPlanStadium() {
         // Create plane
-        const   planeGeometry = new THREE.PlaneGeometry(600, 280, 40, 40);
+        const   planeGeometry = new THREE.PlaneGeometry(620, 300, 40, 40);
         const   planeMaterial = new THREE.MeshPhongMaterial({
             map: this.textures["textStadium"],
             wireframe: true
@@ -418,14 +434,14 @@ export default class MatchPong {
 
         const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.rotation.x = - Math.PI * 0.5;
-        plane.position.set(300, -10, -140);
+        plane.position.set(300, -10, -150);
 //        plane.castShadow = true;
         plane.receiveShadow = true;
         this.scene.add(plane);
      }
 
     createBall() { // animation goutte d'eau idee rolando + un peu felipe
-        const   geometry = new THREE.SphereGeometry(10, 48, 48);
+        const   geometry = new THREE.SphereGeometry(this.ball_radius, 48, 48);
         const   material = new THREE.MeshStandardMaterial({map: this.textures["textInitBall"]});
         const   ball = new THREE.Mesh(geometry, material);
 
@@ -458,14 +474,14 @@ export default class MatchPong {
 
     createPaddle(player = 'p1') { // correct texture on paddles (long side)
         const geometry = new THREE.BoxGeometry(10, 10, 60);
-        let x = 30;
+        let x = 10;
 //        this.textures["textPadRed"].wrapS = THREE.RepeatWrapping
 //        this.textures["textPadRed"].wrapT = THREE.RepeatWrapping
         let material = new THREE.MeshStandardMaterial({
             map: this.textures["textPadRed"],
         });
         if (player === 'p2') {
-            x = 570;
+            x = 590;
             material = new THREE.MeshStandardMaterial({
                 map: this.textures["textPadBlue"],
 //                roughnessMap: this.textures["textPadBlueRoughness"],
@@ -493,24 +509,24 @@ export default class MatchPong {
         const   targetPositions = [];
         let     cube;
         let     end;
-        let     x = 0; //600 -> center must be x:300 z:140
+        let     x = -20; //600 -> center must be x:300 z:140
         let     y = 0;
-        let     z = 0;// 14 * 20 280
+        let     z = 20;// 14 * 20 280
         let     step = 20;
         let     i = -1;
 
-        while (++i < 88) {
-            if (i < 30) { // 21 -> 29
+        while (++i < 96) {
+            if (i < 32) { // 21 -> 29
                 cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
                 x += step;
             }
-            else if (i >= 30 && i < 44) { // 33 -> 39
+            else if (i >= 32 && i < 48) { // 33 -> 39
                 cube = cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
                 z -= step;
             }
-            else if (i >= 44 && i < 74) { // 54 -> 64
+            else if (i >= 48 && i < 80) { // 54 -> 64
                 cube = cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
                 x -= step;
@@ -544,8 +560,8 @@ export default class MatchPong {
 
 
     lerp(from, to, speed) {
-        const amount = (1 - speed) * from + speed * to;
-        return Math.abs(from - to) < 0.2 ? to : amount;
+        const   amount = (1 - speed) * from + speed * to;
+        return (Math.abs(from - to) < 0.2 ? to : amount);
 }
 
     moveObjectTrans(object, targetPosition) {
@@ -704,85 +720,47 @@ export default class MatchPong {
         const ball = this.scene.getObjectByName("ball");
 
         if (ball) {
-            // Update position
-//            if (this.ball_velocity_x !== 0 || this.ball_velocity_y !== 0) {
-//                ball.position.x += this.ball_velocity_x;
-//                ball.position.y += this.ball_velocity_y;
-
-                // Calculate the direction of movement
-                const movementDirection = new THREE.Vector2(x, z);
-                const movementLength = movementDirection.length();
-
-                // Normalize the direction vector to get the direction of rotation
-                movementDirection.normalize();
-
-                // Ball rotation towards its movement
-                const rotationAxis = new THREE.Vector3(-movementDirection.y, movementDirection.x, 0);
-                const rotationAngle = movementLength / ball.geometry.parameters.radius;
-
-                // Apply the rotation to the ball
-                ball.rotateOnWorldAxis(rotationAxis, rotationAngle);
-                ball.position.x = x;
-                ball.position.z = z;
-
-                // Increase ball speed over time
-//                this.currentSpeed *= 1.0005;
-//                this.ball_velocity_x = movementDirection.x * this.currentSpeed;
-//                this.ball_velocity_y = movementDirection.y * this.currentSpeed;
-
-//                if (this.ball_velocity_x === 0)
-//                    this.newRound();
-
-                // Check for collisions
-//                this.checkCollisions(ball);
+            // Calculate the direction of movement
+//            const movementDirection = new THREE.Vector2(x, z);
+//            const movementLength = movementDirection.length();
+//
+//            // Normalize the direction vector to get the direction of rotation
+//            movementDirection.normalize();
+//
+//            // Ball rotation towards its movement
+//            const rotationAxis = new THREE.Vector3(-movementDirection.y, movementDirection.x);
+//            const rotationAngle = movementLength / ball.geometry.parameters.radius;
+//
+//            // Apply the rotation to the ball
+//            ball.rotateOnWorldAxis(rotationAxis, rotationAngle);
+            ball.position.x = x;
+            ball.position.z = z;
+//const   ballDestination = new THREE.Vector3(x, 0, z);
+//        this.moveBall(ball, ballDestination);
             }
         }
 
-//    checkCollisions(ball) {
-//        // Check for collisions with paddles
-//        const paddle1 = this.scene.getObjectByName('p1');
-//        const paddle2 = this.scene.getObjectByName('p2');
-//        if (paddle1 && paddle2) {
-//            if (ball.position.x - this.ball_radius < paddle1.position.x + 0.2 && ball.position.y <= paddle1.position.y + this.paddle_length / 2 && ball.position.y >= paddle1.position.y - this.paddle_length / 2) {
-//                this.ball_velocity_x = -this.ball_velocity_x;
-//            }
-//            if (ball.position.x + this.ball_radius > paddle2.position.x - 0.2 && ball.position.y <= paddle2.position.y + this.paddle_length / 2 && ball.position.y >= paddle2.position.y - this.paddle_length / 2) {
-//                this.ball_velocity_x = -this.ball_velocity_x;
-//            }
-//        }
-//
-//        // Check for collisions with walls
-//        if (ball.position.y + this.ball_radius > this.stadium_width / 2 || ball.position.y - this.ball_radius < -this.stadium_width / 2) {
-//            this.ball_velocity_y = -this.ball_velocity_y;
-//        }
-//        // Player 2 wins the round
-//        if (ball.position.x - this.ball_radius < -this.stadium_length / 2) {
-//            ball.position.set(0, 0, 0);
-//            this.ball_velocity_x = 0;
-//            this.ball_velocity_y = 0;
-//            this.rotateScore(2);
-//            this.score_p2++;
-//            this.textArray[3] = this.score_p2.toString();
-//            this.updateScores();
-//            // // if (this.score_p2 === 5)
-//            // //     ;
-//            this.newRound();
-//        }
-//        // Player 1 wins the round
-//        else if (ball.position.x + this.ball_radius > this.stadium_length / 2) {
-//            ball.position.set(0, 0, 0);
-//            this.ball_velocity_x = 0;
-//            this.ball_velocity_y = 0;
-//            this.rotateScore(1);
-//            this.score_p1++;
-//            this.textArray[1] = this.score_p1.toString();
-//            this.updateScores();
-//            // // if (this.score_p1 === 5)
-//            // //     this.scene.remove(ball);
-//            // //    ;
-//            this.newRound();
-//        }
-//    }
+        moveBall(object, targetPosition) {
+//        let lt = new Date(),
+//        f = 0,
+//        fm = 300;
+//console.log(object, targetPosition);
+        const animate = () => {
+//            const   now = new Date();
+//            const   secs = (now - lt) / 1000;
+//            const   p = f / fm;
+
+            requestAnimationFrame(animate);
+//            object.position.lerp(targetPosition, 0.03); // positions not being exactly what expected. Check to correct it
+            object.position.x = this.lerp(object.position.x, targetPosition.x, 1);
+//            object.position.y = this.lerp(object.position.y, targetPosition.y, 0.03);
+            object.position.z = this.lerp(object.position.z, targetPosition.z, 1);
+//            f += 30 * secs;
+//            f %= fm;
+//            lt = now;
+        }
+        animate();
+    }
 
 //    newRound() {
 //        this.ball_x = 0;
@@ -797,11 +775,19 @@ export default class MatchPong {
 
     // Collecting info from the game logic in the back
     display(data) {
-        console.log(data);
-//        const   ball = this.scene.getObjectByName("ball");
+//        console.log(data);
+        const   ball = this.scene.getObjectByName("ball");
+        const   ballLight = this.scene.getObjectByName("ballLight")
+
+
 
 // ball does not rotate, needs correction and seems laggy
-this.updateBallPosition(Object.values(data.game_state.ball)[0], -Object.values(data.game_state.ball)[1]); // or send data
+        this.updateBallPosition(Object.values(data.game_state.ball)[0],
+                                -Object.values(data.game_state.ball)[1]); // or send data
+
+        ballLight.target.position.set(Object.values(data.game_state.ball)[0], ball.position.y,
+                                        -Object.values(data.game_state.ball)[1]);
+
 //        ball.position.x = Object.values(data.game_state.ball)[0];
 //        ball.position.z = -Object.values(data.game_state.ball)[1];
 

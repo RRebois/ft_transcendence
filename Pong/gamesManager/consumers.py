@@ -91,7 +91,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 	async def	fetch_session_data_loop(self):
 		while True:
 			await self.fetch_session_data()
-			await asyncio.sleep(0.2)
+			await asyncio.sleep(0.02)
 
 	async def	fetch_session_data(self):
 		if self.session_data['status'] != 'started':
@@ -184,7 +184,7 @@ class PongHandler():
 	async def	game_loop(self):
 		while True:
 			await self.send_game_state()
-			await asyncio.sleep(0.1)
+			await asyncio.sleep(0.02)
 
 	async def	send_game_state(self):
 		await self.game.update()

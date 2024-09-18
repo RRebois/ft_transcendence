@@ -48,7 +48,7 @@ export async function initializePongWebSocket(pong) {
                         }, 5000);
                     }
                     if (data.status === "started")
-                         pong.display(data);
+                         pong.display(data, socket);
                 };
 
                 socket.onclose = function (event) {

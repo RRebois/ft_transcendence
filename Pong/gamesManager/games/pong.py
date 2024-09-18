@@ -1,20 +1,20 @@
 from random import choice, randrange
 
-GAME_WIDTH = 580
-GAME_HEIGHT = 260
+GAME_WIDTH = 600
+GAME_HEIGHT = 280
 
-WINNING_SCORE = 2
+WINNING_SCORE = 100
 
-PADDLE_START_VEL = 6
-BALL_START_VEL = 8
-MAX_VEL = 20
+PADDLE_START_VEL = 1
+BALL_START_VEL = 4
+MAX_VEL = 4
 
 BALL_ACC = .8
 
-PADDLE_HEIGHT = GAME_HEIGHT // 6
-PADDLE_WIDTH = PADDLE_HEIGHT // 10
+PADDLE_HEIGHT = 60
+PADDLE_WIDTH = 10
 PADDLE_LEFT_X = 10
-PADDLE_RIGHT_X = GAME_WIDTH - PADDLE_LEFT_X - PADDLE_WIDTH
+PADDLE_RIGHT_X = 580
 
 BALL_RADIUS = 10
 
@@ -82,6 +82,8 @@ class Ball:
             'x' : self.x,
             'y' : self.y,
             'radius': self.radius,
+            'x_vel': self.x_vel,
+            'y_vel': self.y_vel,
         }
 
 async def find_new_direction(ball, paddle):
