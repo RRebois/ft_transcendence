@@ -71,8 +71,8 @@ export default class Stats {
 				toastComponent.throwToast('Error', data.message, 5000, 'error');
 			} else {
 				console.log('Success:', data);
-				this.animateProgressBar(data.elo_pong, 'pong', '#f02e2d');
-				this.animateProgressBar(data.elo_purrinha, 'purrinha', '#f0902d');
+				this.animateProgressBar(data.pong.elo[0].elo, 'pong', '#f02e2d');
+				this.animateProgressBar(data.purrinha.elo[0].elo, 'purrinha', '#f0902d');
 			}
 		})
 		.catch(error => {
