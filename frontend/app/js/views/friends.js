@@ -1,6 +1,7 @@
 import {getCookie} from "../functions/cookie";
 import ToastComponent from "@js/components/Toast.js";
-import {create_friend_div_load, create_friend_request_div, create_friend_request_sent_div} from "@js/functions/friends_management.js";
+import {create_friend_div_load, create_friend_request_div, create_friend_request_sent_div, create_empty_request, create_empty_friend, delete_empty_request, delete_empty_friend}
+	from "@js/functions/friends_management.js";
 
 export default class Friends {
 	constructor(props) {
@@ -58,9 +59,15 @@ export default class Friends {
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 				} else {
-					data.map(request => {
-						create_friend_request_sent_div(request);
-					});
+					if (Array.isArray(data) && data.length === 0) {
+						create_empty_request();
+					}
+					else {
+						data.map(request => {
+							delete_empty_request();
+							create_friend_request_sent_div(request);
+						});
+					}
 					console.log("SUCCESS");
 				}
 			})
@@ -84,9 +91,15 @@ export default class Friends {
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 				} else {
-					data.map(request => {
-						create_friend_request_div(request);
-					});
+					if (Array.isArray(data) && data.length === 0) {
+						create_empty_request();
+					}
+					else {
+						data.map(request => {
+							delete_empty_request();
+							create_friend_request_div(request);
+						});
+					}
 				}
 			})
 			.catch(error => {
@@ -107,9 +120,15 @@ export default class Friends {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 			} else {
-				data.map(friend => {
-					create_friend_div_load(friend);
-				});
+				if (Array.isArray(data) && data.length === 0) {
+						create_empty_friend();
+					}
+				else {
+					data.map(friend => {
+						delete_empty_friend();
+						create_friend_div_load(friend);
+					});
+				}
 			}
 		})
 		.catch(error => {

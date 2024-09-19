@@ -7,11 +7,58 @@ export function remove_friend_request_div(userId) {
 	friendRequestItem.remove();
 }
 
+export function create_empty_request() {
+	const friendRequestContainer = document.getElementById("friend-requests-sent");
+	const friendRequestEmpty = document.getElementById(`empty-request`)
+	if (friendRequestEmpty)
+		return ;
+	const friendRequestItem = document.createElement("div");
+	friendRequestItem.id = `empty-request`;
+	friendRequestItem.classList.add("d-flex", "w-100", "mb-3", "justify-content-center", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
+	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
+	friendRequestItem.innerHTML = `
+		<span class="">Wow such emtpy ! 🐻</span>
+	`;
+	friendRequestContainer.appendChild(friendRequestItem);
+}
+
+export function create_empty_friend() {
+	const friendContainer = document.getElementById("user-friends");
+	const friendEmpty = document.getElementById(`empty-friends`)
+	if (friendEmpty)
+		return ;
+	const friendItem = document.createElement("div");
+	friendItem.id = `empty-friend`;
+	friendItem.classList.add("d-flex", "w-100", "mb-3", "justify-content-center", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
+	friendItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
+	friendItem.innerHTML = `
+		<span class="">Wow such emtpy ! 🐻</span>
+	`;
+	friendContainer.appendChild(friendItem);
+}
+
+export function delete_empty_request() {
+	const requestEmpty = document.getElementById(`empty-request`)
+	if (requestEmpty) {
+		requestEmpty.remove();
+	}
+}
+
+export function delete_empty_friend() {
+	const friendEmpty = document.getElementById(`empty-friends`)
+	if (friendEmpty) {
+		friendEmpty.remove();
+	}
+}
+
 export function create_friend_request_sent_div(request) {
 	const friendRequestContainer = document.getElementById("friend-requests-sent");
 	const friendRequestExists = document.getElementById(`friend-request-item-${request?.to_user_id}`)
 	if (friendRequestExists)
 		return ;
+	const requestEmpty = document.getElementById(`empty-request`)
+	if (requestEmpty)
+		delete_empty_request();
 	const friendRequestItem = document.createElement("div");
 	let statusDot;
 	if (request.to_user_status === 'online')
@@ -41,6 +88,9 @@ export function create_friend_request_sent_div(request) {
 export function create_friend_request_div(request) {
 	const friendRequestContainer = document.getElementById("friend-requests");
 	const friendRequestItem = document.createElement("div");
+	const requestEmpty = document.getElementById(`empty-request`)
+	if (requestEmpty)
+		delete_empty_request();
 	let statusDot;
 	if (request.from_user_status === 'online')
 		statusDot = "bg-success";
@@ -79,6 +129,9 @@ export function create_friend_div_load(friend) {
 	const friendListContainer = document.getElementById("user-friends");
 	const friendItem = document.createElement("div");
 	let statusDot;
+	const friendEmpty = document.getElementById(`empty-friends`)
+	if (friendEmpty)
+		delete_empty_friend();
 	if (friend.from_status === 'online')
 		statusDot = "bg-success";
 	else
@@ -111,6 +164,9 @@ export function create_friend_div_load(friend) {
 export function create_friend_div_ws(status, id, img_url, username) {
 	const friendListContainer = document.getElementById("user-friends");
 	const friendItem = document.createElement("div");
+	const friendEmpty = document.getElementById(`empty-friends`)
+	if (friendEmpty)
+		delete_empty_friend();
 	let statusDot;
 	if (status === 'online')
 		statusDot = "bg-success";
