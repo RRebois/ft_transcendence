@@ -831,7 +831,6 @@ class PendingFriendRequestsView(APIView):
                 'to_user_status': request['to_user__status'],
             })
         return JsonResponse(processedRequest, safe=False)
-        # return JsonResponse(list(friendRequests), safe=False)
 
 
 class GetFriendRequestView(APIView):
