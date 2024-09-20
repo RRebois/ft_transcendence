@@ -32,9 +32,11 @@ export default class Friends {
 					</div>
 					<div class="min-h-full w-75 d-flex flex-column justify-content-start align-items-center mt-5" style="gap: 16px;">
 						<div class="w-full align-items-center text-center">
-							<p class="play-bold text-justify d-flex flex-column fs-5">Friend requests</p>
+							<p class="play-bold text-justify d-flex flex-column fs-5">Friend requests sent</p>
 							<div id="friend-requests-sent" class="d-flex flex-column w-100"></div>
-							<div id="friend-requests" class="d-flex flex-column w-100"></div>
+						</div><div class="w-full align-items-center text-center">
+							<p class="play-bold text-justify d-flex flex-column fs-5">Friend requests received</p>
+							<div id="friend-requests-received" class="d-flex flex-column w-100"></div>
 						</div>
 						<div class="w-full align-items-center text-center">
 							<p class="play-bold text-justify d-flex flex-column fs-5">Your friends</p>
@@ -54,17 +56,17 @@ export default class Friends {
 		})
 			.then(response => response.json().then(data => ({ok: response.ok, data})))
 			.then(({ok, data}) => {
-				console.log("Data: ", data);
+				console.log("Data load friend requests sent: ", data);
 				if (!ok) {
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 				} else {
 					if (Array.isArray(data) && data.length === 0) {
-						create_empty_request();
+						create_empty_request("sent");
 					}
 					else {
 						data.map(request => {
-							delete_empty_request();
+							delete_empty_request("sent");
 							create_friend_request_sent_div(request);
 						});
 					}
@@ -86,17 +88,17 @@ export default class Friends {
 		})
 			.then(response => response.json().then(data => ({ok: response.ok, data})))
 			.then(({ok, data}) => {
-				console.log("Data: ", data);
+				console.log("Data load friend requests: ", data);
 				if (!ok) {
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 				} else {
 					if (Array.isArray(data) && data.length === 0) {
-						create_empty_request();
+						create_empty_request("received");
 					}
 					else {
 						data.map(request => {
-							delete_empty_request();
+							delete_empty_request("received");
 							create_friend_request_div(request);
 						});
 					}
@@ -116,6 +118,7 @@ export default class Friends {
 		})
 		.then(response => response.json().then(data => ({ok: response.ok, data})))
 		.then(({ok, data}) => {
+			console.log("Data load friends: ", data);
 			if (!ok) {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");

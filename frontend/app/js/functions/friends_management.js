@@ -7,13 +7,13 @@ export function remove_friend_request_div(userId) {
 	friendRequestItem.remove();
 }
 
-export function create_empty_request() {
-	const friendRequestContainer = document.getElementById("friend-requests-sent");
-	const friendRequestEmpty = document.getElementById(`empty-request`)
+export function create_empty_request(option) {
+	const friendRequestContainer = document.getElementById(`friend-requests-${option}`);
+	const friendRequestEmpty = document.getElementById(`empty-request-${option}`)
 	if (friendRequestEmpty)
 		return ;
 	const friendRequestItem = document.createElement("div");
-	friendRequestItem.id = `empty-request`;
+	friendRequestItem.id = `empty-request-${option}`;
 	friendRequestItem.classList.add("d-flex", "w-100", "mb-3", "justify-content-center", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
 	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendRequestItem.innerHTML = `
@@ -24,7 +24,7 @@ export function create_empty_request() {
 
 export function create_empty_friend() {
 	const friendContainer = document.getElementById("user-friends");
-	const friendEmpty = document.getElementById(`empty-friends`)
+	const friendEmpty = document.getElementById(`empty-friend`)
 	if (friendEmpty)
 		return ;
 	const friendItem = document.createElement("div");
@@ -37,15 +37,15 @@ export function create_empty_friend() {
 	friendContainer.appendChild(friendItem);
 }
 
-export function delete_empty_request() {
-	const requestEmpty = document.getElementById(`empty-request`)
+export function delete_empty_request(option) {
+	const requestEmpty = document.getElementById(`empty-request-${option}`)
 	if (requestEmpty) {
 		requestEmpty.remove();
 	}
 }
 
 export function delete_empty_friend() {
-	const friendEmpty = document.getElementById(`empty-friends`)
+	const friendEmpty = document.getElementById(`empty-friend`)
 	if (friendEmpty) {
 		friendEmpty.remove();
 	}
@@ -58,7 +58,7 @@ export function create_friend_request_sent_div(request) {
 		return ;
 	const requestEmpty = document.getElementById(`empty-request`)
 	if (requestEmpty)
-		delete_empty_request();
+		delete_empty_request("sent");
 	const friendRequestItem = document.createElement("div");
 	let statusDot;
 	if (request.to_user_status === 'online')
@@ -86,11 +86,11 @@ export function create_friend_request_sent_div(request) {
 }
 
 export function create_friend_request_div(request) {
-	const friendRequestContainer = document.getElementById("friend-requests");
+	const friendRequestContainer = document.getElementById("friend-requests-received");
 	const friendRequestItem = document.createElement("div");
-	const requestEmpty = document.getElementById(`empty-request`)
+	const requestEmpty = document.getElementById(`empty-request-received`)
 	if (requestEmpty)
-		delete_empty_request();
+		delete_empty_request("received");
 	let statusDot;
 	if (request.from_user_status === 'online')
 		statusDot = "bg-success";
@@ -129,9 +129,9 @@ export function create_friend_div_load(friend) {
 	const friendListContainer = document.getElementById("user-friends");
 	const friendItem = document.createElement("div");
 	let statusDot;
-	const friendEmpty = document.getElementById(`empty-friends`)
+	const friendEmpty = document.getElementById(`empty-friend`)
 	if (friendEmpty)
-		delete_empty_friend();
+		friendEmpty.remove();
 	if (friend.from_status === 'online')
 		statusDot = "bg-success";
 	else
@@ -164,9 +164,9 @@ export function create_friend_div_load(friend) {
 export function create_friend_div_ws(status, id, img_url, username) {
 	const friendListContainer = document.getElementById("user-friends");
 	const friendItem = document.createElement("div");
-	const friendEmpty = document.getElementById(`empty-friends`)
+	const friendEmpty = document.getElementById(`empty-friend`)
 	if (friendEmpty)
-		delete_empty_friend();
+		friendEmpty.remove();
 	let statusDot;
 	if (status === 'online')
 		statusDot = "bg-success";
