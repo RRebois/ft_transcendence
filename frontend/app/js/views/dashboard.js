@@ -168,12 +168,12 @@ export default class Dashboard {
 
 			});
 		}
-		const   startPongGame = document.getElementById("game-request-btn");
-		if (startPongGame) {
-		    startPongGame.addEventListener("click", () => { // Add verification of the data selected on the modal by the player
-		        initializePongWebSocket();
-		    })
-		}
+//		const   startPongGame = document.getElementById("game-request-btn");
+//		if (startPongGame) {
+//		    startPongGame.addEventListener("click", () => { // Add verification of the data selected on the modal by the player
+//		        initializePongWebSocket();
+//		    })
+//		}
 	}
 
     render() {

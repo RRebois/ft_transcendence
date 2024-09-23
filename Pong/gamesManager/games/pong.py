@@ -106,10 +106,8 @@ class   PongMatch():
         self.ball = Ball(GAME_WIDTH // 2, GAME_HEIGHT // 2, BALL_RADIUS)
         if not multiplayer:
             self.paddles = [
-                Paddle(PADDLE_LEFT_X, GAME_HEIGHT // 2 - PADDLE_HEIGHT //
-                            2, 0, GAME_HEIGHT),
-                Paddle(PADDLE_RIGHT_X, GAME_HEIGHT //
-                             2 - PADDLE_HEIGHT // 2, 0, GAME_HEIGHT),
+                Paddle(PADDLE_LEFT_X, PADDLE_Y_POSITION_PLAYERS, 0, GAME_HEIGHT),
+                Paddle(PADDLE_RIGHT_X, PADDLE_Y_POSITION_PLAYERS, 0, GAME_HEIGHT),
             ]
         else:
             self.paddles = [
