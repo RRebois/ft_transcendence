@@ -903,6 +903,7 @@ class AcceptFriendRequestView(APIView):
                 'to_status': user.status,
                 'time': str(friend_request.time),
                 'request_status': friend_request.status,
+                'size': request.data.get('size'),
             }
         )
         return JsonResponse({"message": "Friend request accepted.", "level": "success", "username": friend_request.from_user.username,
@@ -937,6 +938,7 @@ class DeclineFriendRequestView(APIView):
                 'to_user': user.username,
                 'to_user_id': user.id,
                 'request_status': friend_request.status,
+                'size': request.data.get('size'),
             }
         )
         friend_request.delete()

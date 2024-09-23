@@ -51,7 +51,7 @@ export function delete_empty_friend() {
 	}
 }
 
-export function create_friend_request_sent_div(request) {
+export function create_friend_request_sent_div(request, size) {
 	const friendRequestContainer = document.getElementById("friend-requests-sent");
 	const friendRequestExists = document.getElementById(`friend-request-item-${request?.to_user_id}`)
 	if (friendRequestExists)
@@ -65,7 +65,7 @@ export function create_friend_request_sent_div(request) {
 		statusDot = "bg-success";
 	else
 		statusDot = "bg-danger";
-	friendRequestItem.classList.add("d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
+	friendRequestItem.classList.add("friend-req-sent", "d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
 	friendRequestItem.id = `friend-request-item-${request?.to_user_id}`;
 	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendRequestItem.innerHTML = `
@@ -85,7 +85,7 @@ export function create_friend_request_sent_div(request) {
 	friendRequestContainer.appendChild(friendRequestItem);
 }
 
-export function create_friend_request_div(request) {
+export function create_friend_request_div(request, size) {
 	const friendRequestContainer = document.getElementById("friend-requests-received");
 	const friendRequestItem = document.createElement("div");
 	const requestEmpty = document.getElementById(`empty-request-received`)
@@ -96,7 +96,7 @@ export function create_friend_request_div(request) {
 		statusDot = "bg-success";
 	else
 		statusDot = "bg-danger";
-	friendRequestItem.classList.add("d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
+	friendRequestItem.classList.add("friend-req-received", "d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
 	friendRequestItem.id = `friend-request-item-${request?.from_user_id}`;
 	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendRequestItem.innerHTML = `
@@ -118,10 +118,10 @@ export function create_friend_request_div(request) {
 	`;
 	friendRequestContainer.appendChild(friendRequestItem);
 	document.querySelectorAll(".confirm-request-btn").forEach(button => {
-		button.addEventListener("click", accept_friend_request);
+		button.addEventListener("click", (event) => accept_friend_request(event, size));
 	});
 	document.querySelectorAll(".decline-request-btn").forEach(button => {
-		button.addEventListener("click", decline_friend_request);
+		button.addEventListener("click", (event) => decline_friend_request(event, size));
 	});
 }
 
@@ -136,7 +136,7 @@ export function create_friend_div_load(friend) {
 		statusDot = "bg-success";
 	else
 		statusDot = "bg-danger";
-	friendItem.classList.add("d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
+	friendItem.classList.add("friend", "d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
 	friendItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendItem.id = `friend-item-${friend?.from_user_id}`;
 	friendItem.innerHTML = `
@@ -161,20 +161,20 @@ export function create_friend_div_load(friend) {
 	});
 }
 
-export function create_friend_div_ws(status, id, img_url, username) {
+export function create_friend_div_ws(status, id, img_url, username, size) {
 	const friendListContainer = document.getElementById("user-friends");
 	const friendItem = document.createElement("div");
 	const friendEmpty = document.getElementById(`empty-friend`)
 	if (friendEmpty)
 		friendEmpty.remove();
+	if (size === 1)
+		create_empty_request("sent");
 	let statusDot;
 	if (status === 'online')
 		statusDot = "bg-success";
 	else
 		statusDot = "bg-danger";
-	console.log("status is: ", status);
-	console.log("Dot is: ", statusDot);
-	friendItem.classList.add("d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
+	friendItem.classList.add("friend", "d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
 	friendItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendItem.id = `friend-item-${id}`;
 	friendItem.innerHTML = `
@@ -204,7 +204,7 @@ export function remove_friend_div(userId) {
 	friendItem.remove();
 }
 
-export function accept_friend_request(event) {
+export function accept_friend_request(event, size) {
 	const button = event.target;
 	const userId = button.getAttribute("data-id");
 	if (button)
@@ -216,7 +216,7 @@ export function accept_friend_request(event) {
 			"X-CSRFToken": getCookie("csrftoken")
 		},
 		credentials: "include",
-		body: JSON.stringify({ from_id: userId })
+		body: JSON.stringify({ 'from_id': userId, 'size': size })
 	})
 	.then(response => response.json().then(data => ({ ok: response.ok, data })))
 	.then(({ ok, data }) => {
@@ -229,7 +229,10 @@ export function accept_friend_request(event) {
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast("Success", data.message || "Friend request accepted", 5000);
 			remove_friend_request_div(userId);
-			create_friend_div_ws(data.status, data.id, data.img_url, data.username);
+			const friendRequest = document.getElementsByClassName('friend-req-received');
+			if (size === 1 || friendRequest.length === 0)
+				create_empty_request("received");
+			create_friend_div_ws(data.status, data.id, data.img_url, data.username, size);
 			button.disabled = false;
 		}
 	})
@@ -241,7 +244,7 @@ export function accept_friend_request(event) {
 	});
 }
 
-export function decline_friend_request(event) {
+export function decline_friend_request(event, size) {
 	const button = event.target;
 	const userId = button.getAttribute("data-id");
 	if (button)
@@ -253,7 +256,7 @@ export function decline_friend_request(event) {
 			"X-CSRFToken": getCookie("csrftoken")
 		},
 		credentials: "include",
-		body: JSON.stringify({ from_id: userId })
+		body: JSON.stringify({ 'from_id': userId, 'size': size })
 	})
 	.then(response => response.json().then(data => ({ ok: response.ok, data })))
 	.then(({ ok, data }) => {
@@ -266,6 +269,9 @@ export function decline_friend_request(event) {
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast("Success", data.message || "Friend request was declined", 5000);
 			remove_friend_request_div(userId);
+			const friendRequest = document.getElementsByClassName('friend-req-received');
+			if (size === 1 || friendRequest.length === 0)
+				create_empty_request("received");
 			button.disabled = false;
 		}
 	})
@@ -282,7 +288,6 @@ export function remove_friend(event) {
 	const userId = button.getAttribute("data-id");
 	if (button)
 		button.disabled = true;
-	console.log("click on remove button ", userId);
 	fetch("https://localhost:8443/remove_friend", {
 		method: "POST",
 		headers: {
@@ -292,23 +297,27 @@ export function remove_friend(event) {
 		credentials: "include",
 		body: JSON.stringify({ from_id: userId })
 	})
-		.then(response => response.json().then(data => ({ ok: response.ok, data })))
-		.then(({ ok, data }) => {
-			if (!ok) {
-				const toastComponent = new ToastComponent();
-				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
-				button.disabled = false;
-			} else {
-				const toastComponent = new ToastComponent();
-				toastComponent.throwToast("Success", data.message || "Friend successfully removed", 5000);
-				remove_friend_div(userId);
-				button.disabled = false;
-			}
-		})
-		.catch(error => {
-			console.error("Error removing friend: ", error);
+	.then(response => response.json().then(data => ({ ok: response.ok, data })))
+	.then(({ ok, data }) => {
+		if (!ok) {
 			const toastComponent = new ToastComponent();
-			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+			toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 			button.disabled = false;
-		});
+		} else {
+			const toastComponent = new ToastComponent();
+			toastComponent.throwToast("Success", data.message || "Friend successfully removed", 5000);
+			remove_friend_div(userId);
+			button.disabled = false;
+			const friend = document.getElementsByClassName('friend');
+			if (data.size === 1 || friend.length === 0) {
+				create_empty_friend();
+			}
+		}
+	})
+	.catch(error => {
+		console.error("Error removing friend: ", error);
+		const toastComponent = new ToastComponent();
+		toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+		button.disabled = false;
+	});
 }

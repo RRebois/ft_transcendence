@@ -65,9 +65,10 @@ export default class Friends {
 						create_empty_request("sent");
 					}
 					else {
+						Array.isArray(data);
 						data.map(request => {
 							delete_empty_request("sent");
-							create_friend_request_sent_div(request);
+							create_friend_request_sent_div(request, data.length);
 						});
 					}
 					console.log("SUCCESS");
@@ -97,9 +98,10 @@ export default class Friends {
 						create_empty_request("received");
 					}
 					else {
+						Array.isArray(data);
 						data.map(request => {
 							delete_empty_request("received");
-							create_friend_request_div(request);
+							create_friend_request_div(request, data.length);
 						});
 					}
 				}
@@ -127,9 +129,10 @@ export default class Friends {
 						create_empty_friend();
 					}
 				else {
+					Array.isArray(data);
 					data.map(friend => {
 						delete_empty_friend();
-						create_friend_div_load(friend);
+						create_friend_div_load(friend, data.length);
 					});
 				}
 			}

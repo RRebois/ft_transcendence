@@ -102,6 +102,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'to_status': event['to_status'],
             'time': event['time'],
             'request_status': event['request_status'],
+            'size': event['size'],
         }))
 
     async def friend_req_decline(self, event):
@@ -112,6 +113,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'to_user': event['to_user'],
             'to_user_id': event['to_user_id'],
             'request_status': event['request_status'],
+            'size': event['size'],
         }))
 
     async def friend_remove(self, event):
@@ -123,7 +125,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             'to_image_url': event['to_image_url'],
             'to_user': event['to_user'],
             'to_user_id': event['to_user_id'],
-            # 'time': event['time'],
         }))
 
     async def friend_delete_acc(self, event):
