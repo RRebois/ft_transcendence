@@ -52,15 +52,6 @@ export default class PongGame {
         // this.initializeWs(this.props?.code);
         document.title = "ft_transcendence | Pong";
 
-
-//        this.y_pos_p1 = 0;  // left player
-//        this.y_pos_p2 = 0;  // right player
-//        this.stadium_length = 25;
-//        this.stadium_width = 10;
-//        this.stadium_height = 1;
-//        this.stadium_thickness = 0.25;
-//        this.paddle_length = 2;
-
 //        // Ball initial stats
 //        this.ball_x = 0;
 //        this.ball_z = 480;
@@ -100,7 +91,7 @@ export default class PongGame {
 
         // Camera
         this.camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 1500);
-        this.camera.position.set(0, 400, 1000);
+        this.camera.position.set(0, 400, -1000);
         this.scene.fog = new THREE.Fog(0x000000, 250, 1400);
         this.camera.lookAt(0, 250, 0);
 
@@ -339,7 +330,7 @@ export default class PongGame {
         this.createGameElements(data);
     }
 
-    createGameElements(data) {
+    createGameElements(data) { const test1 = this.scene.getObjectByName("light_1");console.log(test1);
         this.createBall();
         this.createLightFloor();
         this.createPlanStadium();
@@ -454,18 +445,18 @@ export default class PongGame {
         const   isKeyDown = event.type === 'keydown';
 
         switch (key) {
-            case 'z':
-                this.gameSocket.send(JSON.stringify({ "player": 1, "direction": -1}));
+            case 'w':
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
                 break;
             case 's':
-                this.gameSocket.send(JSON.stringify({ "player": 1, "direction": 1}));
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
                 break;
             case 'ArrowUp':
                 console.log("here");
-                this.gameSocket.send(JSON.stringify({ "player": 2, "direction": -1}));
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": 1}}));
                 break;
             case 'ArrowDown':
-                this.gameSocket.send(JSON.stringify({ "player": 2, "direction": 1}));
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": -1}}));
                 break;
         }
     }
@@ -499,7 +490,7 @@ export default class PongGame {
         stadium.add(ball);
     }
 
-//    moveBallBouncing(ball) { //https://discoverthreejs.com/book/first-steps/animation-system/
+//    Bouncing(ball) { //https://discoverthreejs.com/book/first-steps/animation-system/
 //        const   center = new THREE.Vector3(-10, 0, 200);
 //        const   mvt = [];
 //        const   p1 = new THREE.Vector3(-10, 300, 200);
@@ -532,7 +523,7 @@ export default class PongGame {
             });
 
         const paddle = new THREE.Mesh(geometry, material);
-        paddle.position.set(x, 0, -player.pos.y);
+        paddle.position.set(x, 0, -180);
         paddle.castShadow = true;
         paddle.name = `p${i}`;
         this.paddles[paddle.name] = paddle;
@@ -672,12 +663,19 @@ export default class PongGame {
     updatePaddlePosition(players) {
         console.log(players);
         for (let i = 0; i < players.length; i++) {console.log("moving: ", this.paddles[`p${i + 1}`].position.z);
-            if (this.paddles[`p${i + 1}`].position.z != players[i].pos[1]) {
-                const   targetPosition = new THREE.Vector3(players[i].pos[0], 0, -players[i].pos[1])
-                this.lerp(this.paddles[`p${i + 1}`].position.z, targetPosition.z, 0.03);
-            }
+
+        console.log(players[i].pos.x);
+        this.paddles[`p${i + 1}`].position.z = -players[i].pos.y - 40;
         }
     }
+////        let   targetPosition;
+//////            this.paddles[`p${i + 1}`].position.z = -players[i].pos[1];
+////            if (this.paddles[`p${i + 1}`].position.z != -players[i].pos.y) {
+////                targetPosition = new THREE.Vector3(players[i].pos.x, 0, -players[i].pos.y)
+////                this.lerp(this.paddles[`p${i + 1}`].position.z, targetPosition.z, 0.03);
+////            }
+////        }
+//    }
 
     rotateScore(i) {
         return new Promise((resolve) => {
@@ -758,47 +756,21 @@ export default class PongGame {
         const ball = this.scene.getObjectByName("ball");
 
         if (ball) {
-            // Calculate the direction of movement
-//            const movementDirection = new THREE.Vector2(x, z);
-//            const movementLength = movementDirection.length();
-//
-//            // Normalize the direction vector to get the direction of rotation
-//            movementDirection.normalize();
-//
-//            // Ball rotation towards its movement
-//            const rotationAxis = new THREE.Vector3(-movementDirection.y, movementDirection.x);
-//            const rotationAngle = movementLength / ball.geometry.parameters.radius;
-//
-//            // Apply the rotation to the ball
-//            ball.rotateOnWorldAxis(rotationAxis, rotationAngle);
             ball.position.x = x;
             ball.position.z = z;
-//const   ballDestination = new THREE.Vector3(x, 0, z);
-//        this.moveBall(ball, ballDestination);
-            }
         }
-
-        moveBall(object, targetPosition) {
-//        let lt = new Date(),
-//        f = 0,
-//        fm = 300;
-//console.log(object, targetPosition);
-        const animate = () => {
-//            const   now = new Date();
-//            const   secs = (now - lt) / 1000;
-//            const   p = f / fm;
-
-            requestAnimationFrame(animate);
-//            object.position.lerp(targetPosition, 0.03); // positions not being exactly what expected. Check to correct it
-            object.position.x = this.lerp(object.position.x, targetPosition.x, 1);
-//            object.position.y = this.lerp(object.position.y, targetPosition.y, 0.03);
-            object.position.z = this.lerp(object.position.z, targetPosition.z, 1);
-//            f += 30 * secs;
-//            f %= fm;
-//            lt = now;
-        }
-        animate();
     }
+
+//        moveBall(object, targetPosition) {
+//        const animate = () => {
+//            requestAnimationFrame(animate);
+////            object.position.lerp(targetPosition, 0.03); // positions not being exactly what expected. Check to correct it
+//            object.position.x = this.lerp(object.position.x, targetPosition.x, 1);
+////            object.position.y = this.lerp(object.position.y, targetPosition.y, 0.03);
+//            object.position.z = this.lerp(object.position.z, targetPosition.z, 1);
+//        }
+//        animate();
+//    }
 
 //    newRound() {
 //        this.ball_x = 0;
@@ -833,6 +805,12 @@ export default class PongGame {
 //        ballLight.target.position.set(Object.values(data.game_state.ball)[0], ball.position.y,
 //                                        -Object.values(data.game_state.ball)[1]);
         this.updatePaddlePosition(Object.values(data.game_state.players));
+//        if (this.score_p1 != Object.values(data.game_state.left_score ||
+//            this.score_p2 != != Object.values(data.game_state.right_score) {
+//            this.textArray[1] = "\n" + this.score_p1.toString();
+//            this.textArray[3] = "\n" + this.score_p1.toString();
+//        }
+
 //        ball.position.x = Object.values(data.game_state.ball)[0];
 //        ball.position.z = -Object.values(data.game_state.ball)[1];
 
