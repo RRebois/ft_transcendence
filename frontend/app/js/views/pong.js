@@ -48,19 +48,7 @@ export default class PongGame {
     }
 
     init() { // For responside device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
-        // init WS
-        // this.initializeWs(this.props?.code);
         document.title = "ft_transcendence | Pong";
-
-//        // Ball initial stats
-//        this.ball_x = 0;
-//        this.ball_z = 480;
-//        this.ball_radius = 1;
-//        const   initialSpeed = 0.2;
-//        this.baseSpeed = initialSpeed;
-//        this.currentSpeed = this.baseSpeed;
-//        this.ball_velocity_x = this.currentSpeed * ((Math.random() - 0.5));
-//        this.ball_velocity_y = this.currentSpeed * ((Math.random() - 0.5));
 
         // Load all textures at once
         this.textures = {};
@@ -91,7 +79,7 @@ export default class PongGame {
 
         // Camera
         this.camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 1500);
-        this.camera.position.set(0, 400, -1000);
+        this.camera.position.set(0, 400, 1000);
         this.scene.fog = new THREE.Fog(0x000000, 250, 1400);
         this.camera.lookAt(0, 250, 0);
 
@@ -271,8 +259,13 @@ export default class PongGame {
 
     buildGameSet(data) {console.log("buildGameSet: ", data);
         // reset camera to have stadium on
-        this.camera.position.set(300, 700, 500);
-        this.camera.lookAt(300, -100, -300);
+        this.camera.position.set(300, 700, -500);
+        this.camera.lookAt(300, -100, 300);
+
+        // initial camera setup
+//        this.camera.position.set(300, 700, 500);
+//        this.camera.lookAt(300, -100, -300);
+//        this.camera.rotation.set(0, Math.PI, 0);
 
         // Ball initial stats
         this.ball_x = 0;
@@ -726,7 +719,6 @@ export default class PongGame {
         const   msg = this.scene.getObjectByName("waitTxt");
         if (msg)
             this.waitMSGMove(msg);
-
 //        const   hyphen = this.scene.getObjectByName("hyphen");
 //        if (hyphen) {
 //            if (this.camera.position.y > 400) {
@@ -785,16 +777,9 @@ export default class PongGame {
 
     // Collecting info from the game logic in the back
     display(data) {
-
-
-    const   msg = this.scene.getObjectByName("waitTxt");
-        if (msg)
-           console.log("rm me");
-
-
 //        console.log(data);
         const   ball = this.scene.getObjectByName("ball");
-        const   ballLight = this.scene.getObjectByName("ballLight")
+//        const   ballLight = this.scene.getObjectByName("ballLight")
 
 
 
