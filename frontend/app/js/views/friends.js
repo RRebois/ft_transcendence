@@ -50,7 +50,7 @@ export default class Friends {
 
 	load_friends_requests_sent() {
 		console.log("LOAD FRIEND REQUEST SENT CALLED")
-		fetch("https://localhost:8443/pending_friend_requests", {
+		fetch(`https://${window.location.hostname}:8443/pending_friend_requests`, {
 			method: "GET",
 			credentials: "include"
 		})
@@ -83,7 +83,7 @@ export default class Friends {
 	}
 
 	load_friends_requests() {
-		fetch("https://localhost:8443/get_friend_requests", {
+		fetch(`https://${window.location.hostname}:8443/get_friend_requests`, {
 			method: "GET",
 			credentials: "include"
 		})
@@ -114,7 +114,7 @@ export default class Friends {
 	}
 
 	load_friends_list() {
-		fetch("https://localhost:8443/get_friends", {
+		fetch(`https://${window.location.hostname}:8443/get_friends`, {
 			method: "GET",
 			credentials: "include"
 		})
@@ -159,7 +159,7 @@ export default class Friends {
 		const input = document.getElementById("username");
 		const usernameValue = input.value;
 		const csrfToken = getCookie("csrftoken");
-		fetch("https://localhost:8443/send_friend", {
+		fetch(`https://${window.location.hostname}:8443/send_friend`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",

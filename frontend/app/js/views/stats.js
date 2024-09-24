@@ -81,7 +81,7 @@ export default class Stats {
 
 	fetchStats = (username) => {
 		const csrfToken = getCookie('csrftoken');
-		fetch(`https://localhost:8443/stats/${username}`, {
+		fetch(`https://${window.location.hostname}:8443/stats/${username}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ export default class Stats {
 
 	fetchMatchHistory = (username, type = "all") => {
 		const csrfToken = getCookie('csrftoken');
-		fetch(`https://localhost:8443/matches/${username}:${type}`, {
+		fetch(`https://${window.location.hostname}:8443/matches/${username}:${type}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -212,7 +212,7 @@ export default class Stats {
 	fetchUser = async (username) => {
 		const csrfToken = getCookie('csrftoken');
 		try {
-			const response = await fetch(`https://localhost:8443/isUserExisting/${username}`, {
+			const response = await fetch(`https://${window.location.hostname}:8443/isUserExisting/${username}`, {
 				method: 'GET',
 				headers: {
 					'Content-Type': 'application/json',

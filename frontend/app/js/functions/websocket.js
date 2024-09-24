@@ -7,7 +7,7 @@ import {remove_friend_request_div} from "./friends_management.js";
 export async function initializeWebSocket() {
     return new Promise(async (resolve, reject) => {
         console.log("In Init WS FRONT")
-        const response = await fetch('https://localhost:8443/get_ws_token/', {
+        const response = await fetch(`https://${window.location.hostname}:8443/get_ws_token/`, {
             credentials: 'include',
         });
         const jwt = await response.json();
@@ -16,9 +16,9 @@ export async function initializeWebSocket() {
             const token = jwt.token
             console.log("In Init WS FRONT, USER AUTHENTICATED")
             const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
-            const url = wsSelect + "localhost:8443" + '/ws/user/' + token + '/'
+            const url = wsSelect + "${window.location.hostname}:8443" + '/ws/user/' + token + '/'
             console.log("url is:", url);
-            const socket = new WebSocket(wsSelect + "localhost:8443" + '/ws/user/' + token + '/');
+            const socket = new WebSocket(wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/');
 
             socket.onopen = function (e) {
                 console.log("WebSocket connection established");

@@ -101,7 +101,7 @@ export default class Register {
             registerBtn.disabled = true;
         const csrfToken = getCookie('csrftoken');
         console.log("CSRF Token: ", csrfToken);
-        fetch('https://localhost:8443/register', {
+        fetch(`https://${window.location.hostname}:8443/register`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': csrfToken // Include CSRF token in request headers if needed

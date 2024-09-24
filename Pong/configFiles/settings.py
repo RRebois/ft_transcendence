@@ -30,6 +30,8 @@ DEBUG = bool(os.environ.get("DEBUG", default=0))
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 
+SERVER = os.environ.get("SERVER")
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -62,8 +64,10 @@ MIDDLEWARE = [
     # 'userManagement.middleware.JWTAuthenticationMiddleware',
 ]
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:8080", "https://localhost:8443", "https://localhost:3000", "https://localhost:4242"]
+# CSRF_TRUSTED_ORIGINS = ["http://localhost:8080", "https://localhost:8443", "https://localhost:3000", "https://localhost:4242"]
+CSRF_TRUSTED_ORIGINS = ["https://localhost:8080", "https://localhost:8443", "https://localhost:3000", "https://localhost:4242"]
 CORS_ORIGIN_WHITELIST = ["https://localhost:8443", "https://localhost:3000", "https://localhost:4242"]
+# CORS_ORIGIN_WHITELIST = ["https://localhost:8443", "https://localhost:3000", "https://localhost:4242"]
 
 ROOT_URLCONF = 'configFiles.urls'
 
@@ -182,33 +186,3 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_SENDER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_SENDER_PASS')
 
 FRONT_DEV = os.environ.get('FRONT_DEV', default=0)
-
-# class WarningDebugFilter(logging.Filter):
-#     def filter(self, record):
-#         return record.levelno in [logging.WARNING, logging.DEBUG]
-#
-#
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'filters': {
-#         'warning_debug_only': {
-#             '()': WarningDebugFilter,
-#         },
-#     },
-#     'handlers': {
-#         'file': {
-#             'level': 'DEBUG',
-#             'class': 'logging.FileHandler',
-#             'filename': BASE_DIR / 'debug.log',
-#             'filters': ['warning_debug_only'],
-#         },
-#     },
-#     'loggers': {
-#         '': {
-#             'handlers': ['file'],
-#             'level': 'DEBUG',
-#             'propagate': True,
-#         },
-#     },
-# }

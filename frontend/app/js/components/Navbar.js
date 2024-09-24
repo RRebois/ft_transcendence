@@ -19,7 +19,7 @@ export default class Navbar {
 	logoutUser = async (event) => {
 		event.preventDefault();
 		const csrfToken = getCookie('csrftoken');
-		fetch('https://localhost:8443/logout', {
+		fetch(`https://${window.location.hostname}:8443/logout`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -49,7 +49,7 @@ export default class Navbar {
 		if (saveBtn)
 			saveBtn.disabled = true;
 		const csrfToken = getCookie('csrftoken');
-		fetch('https://localhost:8443/uploadAvatar', {
+		fetch(`https://${window.location.hostname}:8443/uploadAvatar`, {
 			method: 'POST',
 			headers: {
 				'X-CSRFToken': csrfToken
@@ -68,6 +68,8 @@ export default class Navbar {
 				const modal = bootstrap.Modal.getInstance(document.getElementById("update-user-picture"));
 				if (modal) {
 					modal.hide();
+					const backdrops = document.querySelectorAll('.modal-backdrop');
+					backdrops.forEach(backdrop => backdrop.remove());
 				}
 				appRouter.navigate(window.location.pathname, false);
 			}
@@ -81,7 +83,7 @@ export default class Navbar {
 	}
 
 	loadPreviousAvatar() {
-		fetch("https://localhost:8443/getAllTimeUserAvatars", {
+		fetch(`https://${window.location.hostname}:8443/getAllTimeUserAvatars`, {
 			method: "GET",
 			credentials: "include"
 		})
@@ -110,7 +112,7 @@ export default class Navbar {
 	change_previous_avatar(avatarId) {
 		const csrfToken = getCookie('csrftoken');
 		
-		fetch('https://localhost:8443/setPreviousAvatar', {
+		fetch(`https://${window.location.hostname}:8443/setPreviousAvatar`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -136,6 +138,8 @@ export default class Navbar {
 				const modal = bootstrap.Modal.getInstance(document.getElementById("update-user-picture"));
 				if (modal) {
 					modal.hide();
+					const backdrops = document.querySelectorAll('.modal-backdrop');
+					backdrops.forEach(backdrop => backdrop.remove());
 				}
 				appRouter.navigate(window.location.pathname, false);
 			}

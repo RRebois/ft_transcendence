@@ -29,7 +29,7 @@ export default class Home {
 		const loginBtn = document.getElementById('login-btn');
 		if (loginBtn)
 			loginBtn.disabled = true;
-		fetch('https://localhost:8443/login', {
+		fetch(`https://${window.location.hostname}:8443/login`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -68,7 +68,7 @@ export default class Home {
 		const OauthBtn = document.getElementById("42login")
 		if (OauthBtn)
 			OauthBtn.disabled = true;
-		fetch('https://localhost:8443/login42', {
+		fetch(`https://${window.location.hostname}:8443/login42`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -119,7 +119,7 @@ export default class Home {
 			document.getElementById('otp').classList.remove('is-invalid');
 		}
 		console.log("fetching otp");
-		fetch('https://localhost:8443/verifyotp', {
+		fetch(`https://${window.location.hostname}:8443/verifyotp`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -175,7 +175,7 @@ export default class Home {
 		if (submitBtn)
 			submitBtn.disabled = true;
 		console.log("fetching reset pw");
-		fetch('https://localhost:8443/reset_password', {
+		fetch(`https://${window.location.hostname}:8443/reset_password`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -197,6 +197,8 @@ export default class Home {
 				const passwordModal = bootstrap.Modal.getInstance(document.getElementById('forgotPWModal'));
 				if (passwordModal)
 					passwordModal.hide();
+					const backdrops = document.querySelectorAll('.modal-backdrop');
+					backdrops.forEach(backdrop => backdrop.remove());
 				submitBtn.disabled = false;
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast('Success', data.message, 5000, 'success');

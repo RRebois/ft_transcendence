@@ -209,7 +209,7 @@ export function accept_friend_request(event, size) {
 	const userId = button.getAttribute("data-id");
 	if (button)
 		button.disabled = true;
-	fetch("https://localhost:8443/accept_friend", {
+	fetch(`https://${window.location.hostname}:8443/accept_friend`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -249,7 +249,7 @@ export function decline_friend_request(event, size) {
 	const userId = button.getAttribute("data-id");
 	if (button)
 		button.disabled = true;
-	fetch("https://localhost:8443/decline_friend", {
+	fetch(`https://${window.location.hostname}:8443/decline_friend`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -288,7 +288,7 @@ export function remove_friend(event) {
 	const userId = button.getAttribute("data-id");
 	if (button)
 		button.disabled = true;
-	fetch("https://localhost:8443/remove_friend", {
+	fetch(`https://${window.location.hostname}:8443/remove_friend`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
