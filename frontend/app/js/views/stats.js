@@ -23,19 +23,31 @@ export default class Stats {
 
 	initEloChart = (data) => {
 		const ctx = document.getElementById('eloChart').getContext('2d');
+
+		const getEloData = (eloArray) => {
+			const extractedElo = eloArray.map(entry => entry?.elo || 0);
+			while (extractedElo.length < 6) {
+				extractedElo.push(0);
+			}
+			return extractedElo.slice(0, 6).reverse();
+		}
+
+		const pongElo = getEloData(data.pong.elo);
+		const purrinhaElo = getEloData(data.purrinha.elo);
+
 		new Chart(ctx, {
 			type: 'line',
 			data: {
-				labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+				labels: ['L.M. -5', 'L.M. -4', 'L.M. -3', 'L.M. -2', 'L.M. -1', 'Last match'],
 				datasets: [{
 					label: 'Pong elo 🏓',
-					data: [0, 10, 5, 2, 20, 30, 45],
+					data: pongElo,
 					borderColor: '#f02e2d',
 					backgroundColor: '#f02e2d',
 					fill: false
 				}, {
 					label: 'Purrinha elo ✋',
-					data: [0, 5, 2, 15, 25, 35, 50],
+					data: purrinhaElo,
 					borderColor: '#f0902d',
 					backgroundColor: '#f0902d',
 					fill: false
@@ -52,14 +64,28 @@ export default class Stats {
 						display: true,
 						text: 'Elo progression'
 					}
-				}
+				},
+				scales: {
+					x: {
+						title: {
+							display: true,
+							text: "Previous matches"
+						}
+					},
+					y: {
+						title: {
+							display: true,
+							text: "Elo"
+						}
+					}
+				},
 			}
 		});
 	}
 
 	fetchStats = (username) => {
 		const csrfToken = getCookie('csrftoken');
-		fetch(`https://localhost:8443/stats/${username}`, {
+		fetch(`https://${window.location.hostname}:8443/stats/${username}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -75,8 +101,9 @@ export default class Stats {
 				toastComponent.throwToast('Error', data.message, 5000, 'error');
 			} else {
 				console.log('Success:', data);
-				this.animateProgressBar(data.elo_pong, 'pong', '#f02e2d');
-				this.animateProgressBar(data.elo_purrinha, 'purrinha', '#f0902d');
+				this.animateProgressBar(data.pong.elo[0].elo, 'pong', '#f02e2d');
+				this.animateProgressBar(data.purrinha.elo[0].elo, 'purrinha', '#f0902d');
+				this.initEloChart(data);
 			}
 		})
 		.catch(error => {
@@ -88,7 +115,7 @@ export default class Stats {
 
 	fetchMatchHistory = (username, type = "all") => {
 		const csrfToken = getCookie('csrftoken');
-		fetch(`https://localhost:8443/matches/${username}:${type}`, {
+		fetch(`https://${window.location.hostname}:8443/matches/${username}:${type}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -189,7 +216,7 @@ export default class Stats {
 	fetchUser = async (username) => {
 		const csrfToken = getCookie('csrftoken');
 		try {
-			const response = await fetch(`https://localhost:8443/isUserExisting/${username}`, {
+			const response = await fetch(`https://${window.location.hostname}:8443/isUserExisting/${username}`, {
 				method: 'GET',
 				headers: {
 					'Content-Type': 'application/json',
@@ -281,7 +308,7 @@ export default class Stats {
 					this.fetchMatchHistory(username, event.target.value);
 				});
 			}
-			this.initEloChart();
+			// this.initEloChart();
 		}
 		else{
 			document.title = 'User not found';

@@ -50,7 +50,8 @@ export default class Dashboard {
 			return;
 		}
 		const csrfToken = getCookie('csrftoken');
-		fetch(`https://localhost:8443/game/${game_type}/${code}`, {
+		console.log("before fetch");
+		fetch(`https://${window.location.hostname}:8443/game/${game_type}/${code}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',

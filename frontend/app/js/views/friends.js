@@ -1,6 +1,7 @@
 import {getCookie} from "../functions/cookie";
 import ToastComponent from "@js/components/Toast.js";
-import {create_friend_div_load, create_friend_request_div, create_friend_request_sent_div} from "@js/functions/friends_management.js";
+import {create_friend_div_load, create_friend_request_div, create_friend_request_sent_div, create_empty_request, create_empty_friend, delete_empty_request, delete_empty_friend}
+	from "@js/functions/friends_management.js";
 
 export default class Friends {
 	constructor(props) {
@@ -35,9 +36,11 @@ export default class Friends {
 					</div>
 					<div class="min-h-full w-75 d-flex flex-column justify-content-start align-items-center mt-5" style="gap: 16px;">
 						<div class="w-full align-items-center text-center">
-							<p class="play-bold text-justify d-flex flex-column fs-5">Friend requests</p>
+							<p class="play-bold text-justify d-flex flex-column fs-5">Friend requests sent</p>
 							<div id="friend-requests-sent" class="d-flex flex-column w-100"></div>
-							<div id="friend-requests" class="d-flex flex-column w-100"></div>
+						</div><div class="w-full align-items-center text-center">
+							<p class="play-bold text-justify d-flex flex-column fs-5">Friend requests received</p>
+							<div id="friend-requests-received" class="d-flex flex-column w-100"></div>
 						</div>
 						<div class="w-full align-items-center text-center">
 							<p class="play-bold text-justify d-flex flex-column fs-5">Your friends</p>
@@ -51,20 +54,27 @@ export default class Friends {
 
 	load_friends_requests_sent() {
 		console.log("LOAD FRIEND REQUEST SENT CALLED")
-		fetch("https://localhost:8443/pending_friend_requests", {
+		fetch(`https://${window.location.hostname}:8443/pending_friend_requests`, {
 			method: "GET",
 			credentials: "include"
 		})
 			.then(response => response.json().then(data => ({ok: response.ok, data})))
 			.then(({ok, data}) => {
-				console.log("Data: ", data);
+				console.log("Data load friend requests sent: ", data);
 				if (!ok) {
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 				} else {
-					data.map(request => {
-						create_friend_request_sent_div(request);
-					});
+					if (Array.isArray(data) && data.length === 0) {
+						create_empty_request("sent");
+					}
+					else {
+						Array.isArray(data);
+						data.map(request => {
+							delete_empty_request("sent");
+							create_friend_request_sent_div(request, data.length);
+						});
+					}
 					console.log("SUCCESS");
 				}
 			})
@@ -77,20 +87,27 @@ export default class Friends {
 	}
 
 	load_friends_requests() {
-		fetch("https://localhost:8443/get_friend_requests", {
+		fetch(`https://${window.location.hostname}:8443/get_friend_requests`, {
 			method: "GET",
 			credentials: "include"
 		})
 			.then(response => response.json().then(data => ({ok: response.ok, data})))
 			.then(({ok, data}) => {
-				console.log("Data: ", data);
+				console.log("Data load friend requests: ", data);
 				if (!ok) {
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 				} else {
-					data.map(request => {
-						create_friend_request_div(request);
-					});
+					if (Array.isArray(data) && data.length === 0) {
+						create_empty_request("received");
+					}
+					else {
+						Array.isArray(data);
+						data.map(request => {
+							delete_empty_request("received");
+							create_friend_request_div(request, data.length);
+						});
+					}
 				}
 			})
 			.catch(error => {
@@ -101,19 +118,27 @@ export default class Friends {
 	}
 
 	load_friends_list() {
-		fetch("https://localhost:8443/get_friends", {
+		fetch(`https://${window.location.hostname}:8443/get_friends`, {
 			method: "GET",
 			credentials: "include"
 		})
 		.then(response => response.json().then(data => ({ok: response.ok, data})))
 		.then(({ok, data}) => {
+			console.log("Data load friends: ", data);
 			if (!ok) {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 			} else {
-				data.map(friend => {
-					create_friend_div_load(friend);
-				});
+				if (Array.isArray(data) && data.length === 0) {
+						create_empty_friend();
+					}
+				else {
+					Array.isArray(data);
+					data.map(friend => {
+						delete_empty_friend();
+						create_friend_div_load(friend, data.length);
+					});
+				}
 			}
 		})
 		.catch(error => {
@@ -138,7 +163,7 @@ export default class Friends {
 		const input = document.getElementById("username");
 		const usernameValue = input.value;
 		const csrfToken = getCookie("csrftoken");
-		fetch("https://localhost:8443/send_friend", {
+		fetch(`https://${window.location.hostname}:8443/send_friend`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",

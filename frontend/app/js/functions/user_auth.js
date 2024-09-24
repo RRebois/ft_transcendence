@@ -1,7 +1,7 @@
 export function isUserConnected() {
     console.log("isUserConnected called");
     return new Promise((resolve, reject) => {
-        fetch('https://localhost:8443/check_jwt', {
+        fetch(`https://${window.location.hostname}:8443/check_jwt`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -26,7 +26,7 @@ export function isUserConnected() {
 
 export async function getCsrf() {
     try {
-        await fetch('https://localhost:8443/test', {
+        await fetch(`https://${window.location.hostname}:8443/test`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

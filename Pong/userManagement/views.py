@@ -118,7 +118,9 @@ def user_as_json(user):
 
 def get_profile_pic_url(pp_path):
     if not pp_path:
-        return ("https://localhost:8443/media/profile_pics/default_pp.jpg")
+        url = os.environ.get('SERVER_URL')
+        full_url = f"{url}/media/profile_pics/default_pp.jpg"
+        return full_url
     if pp_path.startswith('http://') or pp_path.startswith('https://'):
         return pp_path
     url = os.environ.get('SERVER_URL')
@@ -195,7 +197,7 @@ def exchange_token(code, next=False):
         "client_id" : os.environ.get('CLIENT42_ID'),
         "client_secret" : os.environ.get(secret),
         "code" : code,
-        "redirect_uri" : os.environ.get('REDIRECT_42URI'),
+        "redirect_uri" : os.environ.get('SERVER_URL') + "/login42/redirect",
     }
     response = requests.post("https://api.intra.42.fr/oauth/token", data=data)
     credentials = response.json()
@@ -249,9 +251,10 @@ class Login42RedirectView(APIView):
         response = JsonResponse(data={'user': user_as_json(user)}, status=200)
         response.set_cookie(key='jwt_access', value=token, httponly=True)
         response.set_cookie(key='jwt_refresh', value=refresh, httponly=True)
+        url = os.environ.get('SERVER')
         response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
-        response['Location'] = 'https://localhost:4242/dashboard' if os.environ.get(
-            'FRONT_DEV') == '1' else 'https://localhost:3000/dashboard'
+        response['Location'] = f"{url}:4242/dashboard" if os.environ.get(
+            'FRONT_DEV') == '1' else f"{url}:3000/dashboard"
         response.status_code = 302
         return response
 
@@ -831,7 +834,6 @@ class PendingFriendRequestsView(APIView):
                 'to_user_status': request['to_user__status'],
             })
         return JsonResponse(processedRequest, safe=False)
-        # return JsonResponse(list(friendRequests), safe=False)
 
 
 class GetFriendRequestView(APIView):
@@ -904,6 +906,7 @@ class AcceptFriendRequestView(APIView):
                 'to_status': user.status,
                 'time': str(friend_request.time),
                 'request_status': friend_request.status,
+                'size': request.data.get('size'),
             }
         )
         return JsonResponse({"message": "Friend request accepted.", "level": "success", "username": friend_request.from_user.username,
@@ -938,6 +941,7 @@ class DeclineFriendRequestView(APIView):
                 'to_user': user.username,
                 'to_user_id': user.id,
                 'request_status': friend_request.status,
+                'size': request.data.get('size'),
             }
         )
         friend_request.delete()

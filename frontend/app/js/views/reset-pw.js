@@ -26,7 +26,7 @@ export default class ResetPw {
         if (currentPath.startsWith('/set-reset-password')) {
             console.log("IN RESET PASSWORD ")
             const csrfToken = getCookie("csrftoken");
-            fetch("https://localhost:8443/reset_password_confirmed/" + eachpath[2] +"/" + eachpath[3] + "/" , {
+            fetch(`https://${window.location.hostname}:8443/reset_password_confirmed/` + eachpath[2] +"/" + eachpath[3] + "/" , {
                 method: 'GET',
                 credentials: 'include',
                 headers: {
@@ -131,7 +131,7 @@ export default class ResetPw {
         if (!passwordMatching) {
             return;
         }
-        fetch(`https://localhost:8443/change_reset_password/${uidb64}/${token}/`, {
+        fetch(`https://${window.location.hostname}:8443/change_reset_password/${uidb64}/${token}/`, {
             method: "POST",
 			headers: {
 				"Content-Type": "application/json",

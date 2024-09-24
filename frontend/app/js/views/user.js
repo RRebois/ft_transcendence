@@ -15,7 +15,7 @@ export default class User {
 
 	fetchUser = async () => {
 		const csrfToken = getCookie('csrftoken');
-		const response = await fetch('https://localhost:8443/users', {
+		const response = await fetch(`https://${window.location.hostname}:8443/users`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',

@@ -96,7 +96,7 @@ export default class MyProfile {
 		if (updateBtn)
 			updateBtn.disabled = true;
 		const csrfToken = getCookie('csrftoken');
-		fetch('https://localhost:8443/edit_data', {
+		fetch(`https://${window.location.hostname}:8443/edit_data`, {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ export default class MyProfile {
 		} else {
 			otp_switch_label.innerText = '2FA is disabled 🔓';
 		}
-		fetch('https://localhost:8443/2FA', {
+		fetch(`https://${window.location.hostname}:8443/2FA`, {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json',
@@ -197,7 +197,7 @@ export default class MyProfile {
 		const pwBtn = document.getElementById("pw-submit");
 		if (pwBtn)
 			pwBtn.disabled = true;
-		fetch("https://localhost:8443/change_password", {
+		fetch(`https://${window.location.hostname}:8443/change_password`, {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json',
@@ -242,7 +242,7 @@ export default class MyProfile {
 		const deleteBtn = document.getElementById("delete-account-btn")
 		if (deleteBtn)
 			deleteBtn.disabled = true;
-		fetch("https://localhost:8443/delete_account", {
+		fetch(`https://${window.location.hostname}:8443/delete_account`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
