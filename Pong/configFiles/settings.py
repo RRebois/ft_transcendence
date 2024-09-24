@@ -64,10 +64,8 @@ MIDDLEWARE = [
     # 'userManagement.middleware.JWTAuthenticationMiddleware',
 ]
 
-# CSRF_TRUSTED_ORIGINS = ["http://localhost:8080", "https://localhost:8443", "https://localhost:3000", "https://localhost:4242"]
 CSRF_TRUSTED_ORIGINS = ["https://localhost:8080", "https://localhost:8443", "https://localhost:3000", "https://localhost:4242"]
 CORS_ORIGIN_WHITELIST = ["https://localhost:8443", "https://localhost:3000", "https://localhost:4242"]
-# CORS_ORIGIN_WHITELIST = ["https://localhost:8443", "https://localhost:3000", "https://localhost:4242"]
 
 ROOT_URLCONF = 'configFiles.urls'
 
