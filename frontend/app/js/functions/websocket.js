@@ -1,6 +1,5 @@
 import {isUserConnected} from "./user_auth.js";
 import ToastComponent from "@js/components/Toast.js";
-import {getCookie} from "./cookie.js";
 import { create_friend_div_ws, create_friend_request_div, remove_friend_div, create_empty_request, create_empty_friend } from "@js/functions/friends_management.js";
 import {remove_friend_request_div} from "./friends_management.js";
 import {getCookie} from "@js/functions/cookie.js";
@@ -17,7 +16,7 @@ const lst2arr = (lst) => {
 
 export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 	return new Promise(async (resolve, reject) => {
-		const response = await fetch('https://localhost:8443/get_ws_token/', {
+		const response = await fetch(`https://${window.location.hostname}:8443/get_ws_token/`, {
 			credentials: 'include',
 		});
 		const jwt = await response.json();
@@ -26,7 +25,7 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 			reject(new Error("Missing game code or session id"));
 		}
 		if (isUserAuth) {
-			fetch(`https://localhost:8443/game/check/purrinha/${gameCode}/${sessionId}/`, {
+			fetch(`https://${window.location.hostname}:8443/game/check/purrinha/${gameCode}/${sessionId}/`, {
 				method: 'GET',
 				headers: {
 					'Content-Type': 'application/json',
@@ -49,7 +48,7 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 //					console.log("Data.ws_route is:", data.ws_route);
 					const token = jwt.token
 					const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
-					const url = wsSelect + "localhost:8443" + data.ws_route + token + '/'
+					const url = wsSelect + `${window.location.hostname}:8443` + data.ws_route + token + '/'
 //					console.log("url is:", url);
 					const socket = new WebSocket(url);
 //					console.log("Socket is:", socket);
@@ -127,7 +126,7 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 
 export async function initializePongWebSocket(gameCode, sessionId, pong) { console.log(pong);
     return new Promise(async (resolve, reject) => {
-        const response = await fetch('https://localhost:8443/get_ws_token/', {
+        const response = await fetch(`https://${window.location.hostname}:8443/get_ws_token/`, {
             credentials: 'include',
         });
         const jwt = await response.json();
@@ -136,7 +135,7 @@ export async function initializePongWebSocket(gameCode, sessionId, pong) { conso
 			reject(new Error("Missing game code or session id"));
 		}
         if (isUserAuth) { // replace  `https://localhost:8443/game/check/pong/${gameCode}/${sessionId}/`  `https://localhost:8443/game/pong/${gameCode}/`
-            fetch(`https://localhost:8443/game/pong/${gameCode}/`, {
+            fetch(`https://${window.location.hostname}:8443/game/pong/${gameCode}/`, {
                 method: "GET",
                 headers: {
 					'Content-Type': 'application/json',
@@ -158,7 +157,7 @@ export async function initializePongWebSocket(gameCode, sessionId, pong) { conso
                 const token = jwt.token
                 // console.log("In Init WS FRONT, USER AUTHENTICATED")
                 const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
-                const url = wsSelect + "localhost:8443" + data.ws_route + token + '/'
+                const url = wsSelect + `${window.location.hostname}:8443` + data.ws_route + token + '/'
                 // console.log("url is:", url);
                 const   socket = new WebSocket(url);
 
@@ -223,7 +222,7 @@ export async function initializeWebSocket() {
             const token = jwt.token
             console.log("In Init WS FRONT, USER AUTHENTICATED")
             const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
-            const url = wsSelect + "${window.location.hostname}:8443" + '/ws/user/' + token + '/'
+            const url = wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/'
             console.log("url is:", url);
             const socket = new WebSocket(wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/');
 
