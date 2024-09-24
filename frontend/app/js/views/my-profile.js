@@ -15,6 +15,10 @@ export default class MyProfile {
 		this.user = user;
 	}
 
+	setProps(newProps) {
+		this.props = newProps;
+	}
+
 	checkPersonalData = (data) => {
 		const nameRegex = new RegExp("^[a-zA-ZàâäéèêëïîôöùûüçÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ\\-]+$");
 		const usernameRegex = new RegExp("^[a-zA-Z0-9-_]{5,12}$");

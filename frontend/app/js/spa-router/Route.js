@@ -8,12 +8,11 @@ export default class Route {
 
     setProps(newProps) {
         this.props = newProps;
+        this.view.setProps(newProps);
     }
 
     setUser(user) {
-        console.log("user given to route ", this.name, user)
         this.user = user;
-
         this.view.setUser(user);
     }
 

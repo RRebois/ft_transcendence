@@ -14,6 +14,10 @@ export default class Register {
         this.user = user;
     }
 
+    setProps(newProps) {
+        this.props = newProps;
+    }
+
     validateInputs(firstname, lastname, username, email, password, confirm_password) {
         const nameRegex = new RegExp("^[a-zA-ZàâäéèêëïîôöùûüçÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ\\-]+$");
         const usernameRegex = new RegExp("^[a-zA-Z0-9-_]{5,12}$");

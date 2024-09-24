@@ -1,5 +1,6 @@
 import {getCsrf, isUserConnected} from "@js/functions/user_auth.js";
 import Navbar from "@js/components/Navbar.js";
+import {remove_modal_backdrops} from "@js/functions/display.js";
 
 export default class Router {
 	constructor(routes = [], renderNode) {
@@ -12,7 +13,7 @@ export default class Router {
 	async init() {
 		this.addEventListeners();
 		await getCsrf();
-		await this.navigate(window.location.pathname);
+		await this.navigate(window.location.pathname + window.location.search);
 	}
 
 	addEventListeners() {
@@ -31,6 +32,8 @@ export default class Router {
 	}
 
 	async navigate(path, pushState = true) {
+		// find all elements with class "modal-backdrop" and remove them
+		remove_modal_backdrops();
 		const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
 		const isUserAuth = await isUserConnected();
 		console.log('isUserAuth', isUserAuth);
@@ -47,7 +50,6 @@ export default class Router {
 		}
 		const isPublicRoute = this.isPublicRoute(publicRoutes, path);
 		if (!isPublicRoute && !isUserAuth) {
-			console.log("[ROUTER] redirect to /");
 			window.history.pushState(null, null, '/'); // Redirect to home
 			const home = this.routes.find(route => this.match(route, "/"));
 			this.renderNode.innerHTML = home.renderView();
@@ -58,10 +60,11 @@ export default class Router {
 			}
 			return ;
 		} else if (isPublicRoute && isUserAuth) {
-			console.log("[ROUTER] redirect to /dashboard");
 			window.history.pushState(null, null, '/dashboard'); // Redirect to dashboard
 			const dashboard = this.routes.find(route => this.match(route, "/dashboard"));
-			this.renderNode.innerHTML = dashboard.renderView();
+			this.navbar.setUser(isUserAuth);
+			this.renderNode.innerHTML = this.navbar.render() + dashboard.renderView();
+			this.navbar.setupEventListeners();
 			dashboard.setupEventListeners();
 			return ;
 		}
@@ -69,38 +72,46 @@ export default class Router {
 		// If route is valid, render the view
 		if (route.user) {
 			this.navbar.setUser(route.user);
-			this.renderNode.innerHTML = this.navbar.render() + route.renderView(path);
+			if (route.path === "/purrinha" || route.path === "/pong") {
+				this.renderNode.innerHTML = route.renderView();
+			} else {
+				this.renderNode.innerHTML = this.navbar.render() + route.renderView();
+			}
 			this.navbar.setupEventListeners();
 		}
 		else {
-			this.renderNode.innerHTML = route.renderView(path);
+			this.renderNode.innerHTML = route.renderView();
 		}
-		console.log("Navigating to path:", path);
-		route.setupEventListeners(path);
+		route.setupEventListeners();
 
 		// Update the browser history
-		if (pushState) {
+		const currentPath = window.location.pathname + window.location.search;
+		if (currentPath === path) {
+			window.history.replaceState(null, null, path);
+		} else {
+			const query = path.split('?')[1];
+			path += query ? '?' + query : '';
 			window.history.pushState(null, null, path);
 		}
 	}
 
+	getQueryParams(query) {
+		return Object.fromEntries(new URLSearchParams(query).entries());
+	}
+
 	// Match the route path to the current location path
 	match(route, requestPath) {
-		console.log("route path", route.path);
-		console.log("request path", requestPath);
-		const paramNames = [];
+		const splitPath = requestPath.split('?');
+		const pathWithoutQuery = splitPath[0];
+		const query = splitPath[1];
 		const regexPath = route.path.replace(/([:*])(\w+)/g, (full, colon, name) => {
-			paramNames.push(name);
 			return '([^\/]+)';
 		}) + '(?:\/|$)';
-
-		const params = {};
-		const routeMatch = requestPath.match(new RegExp(regexPath));
-		console.log('routeMatch', routeMatch);
+		let params = {};
+		const routeMatch = pathWithoutQuery.match(new RegExp(regexPath));
 		if (routeMatch !== null) {
-			routeMatch.slice(1).forEach((value, index) => {
-				params[paramNames[index]] = value;
-			});
+			params = this.getQueryParams(query);
+
 			route.setProps(params);
 			console.log("returning true");
 			return true;
@@ -121,7 +132,4 @@ export default class Router {
 		}
 		return false;
 	}
-
 }
-
-// https://localhost:4242/set-reset-password/Mw/ccxy73-1ae1e4b34d24b15f4fbc9fa8c3f1fc60

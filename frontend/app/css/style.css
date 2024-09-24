@@ -131,6 +131,10 @@ body.bg-gradient {
     min-height: 100vh;
 }
 
+.w-screen {
+    width: 100vw;
+}
+
 .bg-victory {
     background: linear-gradient(to right, #3e783e 60%, transparent);
 }
@@ -236,3 +240,4 @@ body.bg-gradient {
 .cursor-click {
     cursor: pointer;
 }
+

@@ -1,8 +1,8 @@
-.gitignore
 Pong/env/*
 .env
 *.pyc
 .idea
+.vscode/
 .code
 .vite/
 .DS_Store
@@ -10,6 +10,7 @@ stopAll
 
 Pong/configFiles/__pycache__/*
 Pong/userManagement/migrations/*
+Pong/matchs/migrations/*
 Pong/warning.log
 Pong/debug.log
 

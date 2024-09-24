@@ -1,10 +1,11 @@
 import {getCookie} from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
 import {appRouter} from "@js/spa-router/initializeRouter.js";
+import * as bootstrap from "bootstrap";
+import {initializePongWebSocket} from "../functions/websocket.js";
 
 export default class Dashboard {
 	constructor(props) {
-		console.log("DASHBOARD CONTRUCTOR");
 		this.props = props;
 		this.handleGameRequest = this.handleGameRequest.bind(this);
 		this.user = null;
@@ -16,6 +17,10 @@ export default class Dashboard {
 
 	setUser(user) {
 		this.user = user;
+	}
+
+	setProps(newProps) {
+		this.props = newProps;
 	}
 
 	handleGameRequest = () => {
@@ -56,7 +61,6 @@ export default class Dashboard {
 		})
 			.then(response => response.json().then(data => ({ok: response.ok, data})))
 			.then(({ok, data}) => {
-				console.log("Data: ", data);
 				if (!ok) {
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
@@ -64,6 +68,10 @@ export default class Dashboard {
 					console.log("Game request success: ", data);
 					data.code = code;
 					const params = new URLSearchParams(data).toString();
+					// Close modal
+					const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-match-modal'));
+					if (createMatchModal)
+						createMatchModal.hide();
 					appRouter.navigate(`/${game_type}?${params}`);
 				}
 			})
@@ -161,9 +169,15 @@ export default class Dashboard {
 
 			});
 		}
+//		const   startPongGame = document.getElementById("game-request-btn");
+//		if (startPongGame) {
+//		    startPongGame.addEventListener("click", () => { // Add verification of the data selected on the modal by the player
+//		        initializePongWebSocket();
+//		    })
+//		}
 	}
 
-	 render() {
+    render() {
 		document.title = "ft_transcendence";
 		return `
 		<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">

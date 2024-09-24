@@ -15,6 +15,10 @@ export default class ResetPw {
         this.user = user;
     }
 
+    setProps(newProps) {
+        this.props = newProps;
+    }
+
     init_reset_form(){
         const currentPath = window.location.pathname;
         console.log("current path: ", currentPath);

@@ -108,7 +108,7 @@ class FriendRequest(models.Model):
 
 
 class UserData(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_id = models.OneToOneField(User, on_delete=models.CASCADE, related_name='data')
     user_wins = ArrayField(models.IntegerField(), default=list)
     user_losses = ArrayField(models.IntegerField(), default=list)
     user_elo_pong = ArrayField(models.JSONField(encoder=None, decoder=None), default=list)

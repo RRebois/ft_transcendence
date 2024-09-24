@@ -1,22 +1,5 @@
 from random import choice, randrange
-
-GAME_WIDTH = 800
-GAME_HEIGHT = 400
-
-WINNING_SCORE = 2
-
-PADDLE_START_VEL = 6
-BALL_START_VEL = 4
-MAX_VEL = 10
-
-BALL_ACC = 0.4
-
-PADDLE_HEIGHT = GAME_HEIGHT // 6
-PADDLE_WIDTH = PADDLE_HEIGHT // 10
-PADDLE_LEFT_X = 10
-PADDLE_RIGHT_X = GAME_WIDTH - PADDLE_LEFT_X - PADDLE_WIDTH
-
-BALL_RADIUS = PADDLE_HEIGHT // 14
+from configFiles.globals import *
 
 class Paddle:
 
@@ -82,6 +65,8 @@ class Ball:
             'x' : self.x,
             'y' : self.y,
             'radius': self.radius,
+            'x_vel': self.x_vel,
+            'y_vel': self.y_vel,
         }
 
 async def find_new_direction(ball, paddle):
@@ -121,10 +106,8 @@ class   PongMatch():
         self.ball = Ball(GAME_WIDTH // 2, GAME_HEIGHT // 2, BALL_RADIUS)
         if not multiplayer:
             self.paddles = [
-                Paddle(PADDLE_LEFT_X, GAME_HEIGHT // 2 - PADDLE_HEIGHT //
-                            2, 0, GAME_HEIGHT),
-                Paddle(PADDLE_RIGHT_X, GAME_HEIGHT //
-                             2 - PADDLE_HEIGHT // 2, 0, GAME_HEIGHT),
+                Paddle(PADDLE_LEFT_X, PADDLE_Y_POSITION_PLAYERS, 0, GAME_HEIGHT),
+                Paddle(PADDLE_RIGHT_X, PADDLE_Y_POSITION_PLAYERS, 0, GAME_HEIGHT),
             ]
         else:
             self.paddles = [
@@ -146,9 +129,9 @@ class   PongMatch():
             ball = await self.ball.serialize()
             coord = {
                 'players': self.players,
-                'ball' : ball,
-                'left_score' : self.left_score,
-                'right_score' : self.right_score,
+                'ball': ball,
+                'left_score': self.left_score,
+                'right_score': self.right_score,
                 'game_width': GAME_WIDTH,
                 'game_height': GAME_HEIGHT,
                 'paddle_width': PADDLE_WIDTH,
