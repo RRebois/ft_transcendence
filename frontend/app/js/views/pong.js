@@ -63,6 +63,8 @@ export default class PongGame {
 //        const   textPadBlueRoughness = textureLoader.load("/textures/ice/ice_roughness.png");
         const   textPadRed = textureLoader.load("/textures/lava/lava_basecolor.jpg");
 
+        const   three = textureLoader.load("three.png")
+
         this.textures["textStadium"] = textStadium;
         this.textures["textInitBall"] = textInitBall;
         this.textures["textBlueCube"] = textBlueCube;
@@ -102,7 +104,8 @@ export default class PongGame {
         // Display text from the beginning
         const    textGroup = new THREE.Object3D();
         textGroup.position.y = 300;
-        textGroup.position.z = -300;
+        textGroup.position.z = 300;
+        textGroup.rotation.set(0, Math.PI, 0);
         textGroup.name = "textGroup";
         this.scene.add(textGroup);
 
@@ -134,10 +137,10 @@ export default class PongGame {
         this.scene.add(plane);
 
         const   spotLightRight = new SpotLight(0xffffff, 10000000);
-        spotLightRight.position.set(920, 400, 0); //y: 300
-        spotLightRight.target.position.set(550, 0, -140);
+        spotLightRight.position.set(920, 400, 100); //y: 300
+        spotLightRight.target.position.set(550, 0, 140);
 //        spotLightRight.distance = 5000;
-        spotLightRight.angle = .40; // change it for higher or lower coverage of the spot
+        spotLightRight.angle = .45; // change it for higher or lower coverage of the spot
         spotLightRight.penumbra = .8;
         spotLightRight.castShadow = true;
         spotLightRight.shadow.camera.far = 1000;
@@ -145,36 +148,14 @@ export default class PongGame {
         spotLightRight.name = "spotR";
 
         const   spotLightLeft = new SpotLight(0xffffff, 10000000);
-        spotLightLeft.position.set(-300, 400, 0);
-        spotLightLeft.target.position.set(50, 0, -140);
-//        spotLightLeft.distance = 5000; spotL https://dustinpfister.github.io/2018/04/11/threejs-spotlights/
-        spotLightLeft.angle = .40; // change it for higher or lower coverage of the spot
+        spotLightLeft.position.set(-300, 400, 100);
+        spotLightLeft.target.position.set(50, 0, 140);
+        spotLightLeft.angle = .45; // change it for higher or lower coverage of the spot
         spotLightLeft.penumbra = .8;
         spotLightLeft.castShadow = true;
         spotLightLeft.shadow.camera.far = 1000;
         spotLightLeft.shadow.camera.near = 10;
         spotLightLeft.name = "spotL";
-
-//        const   ball = this.scene.getObjectByName("ball");
-//        const   ballLight = new SpotLight(0xffffff, 10000000);
-//        ballLight.position.set(300, 400, 0); //y: 300
-//        ballLight.target.position.set(ball.position.x, ball.position.y, ball.position.z);
-////        ballLight.distance = 5000;
-//        ballLight.angle = 0.15; // change it for higher or lower coverage of the spot
-//        ballLight.penumbra = 0.0;
-//        ballLight.castShadow = true;
-//        ballLight.shadow.camera.far = 1000;
-//        ballLight.shadow.camera.near = 10;
-//        ballLight.name = "ballLight";
-//        const spotLightRightHelper = new THREE.SpotLightHelper( ballLight );
-//this.scene.add( spotLightRightHelper );
-
-
-
-//        const spotLightRightHelper = new THREE.SpotLightHelper( spotLightRight );
-//this.scene.add( spotLightRightHelper );
-//const spotLightRightHelper2 = new THREE.SpotLightHelper( spotLightLeft );
-//this.scene.add( spotLightRightHelper2 );
 
         this.scene.add(spotLightRight, spotLightLeft, spotLightRight.target, spotLightLeft.target);//, ballLight, ballLight.target);
 //        this.scene.add(ballLight, ballLight.target);
@@ -248,12 +229,12 @@ export default class PongGame {
 
                 waitText.add(textAdd, mirror);
 
-                const animate = () => {
-                    requestAnimationFrame(animate);
-                    textAdd.material.emissiveIntensity = 3 + Math.sin(Date.now() * 0.005) * 3;
-                };
-                animate();
             });
+            const animate = () => {
+                requestAnimationFrame(animate);
+                textAdd.material.emissiveIntensity = 3 + Math.sin(Date.now() * 0.005) * 3;
+            };
+            animate();
         }
     }
 
@@ -265,7 +246,7 @@ export default class PongGame {
         // initial camera setup
 //        this.camera.position.set(300, 700, 500);
 //        this.camera.lookAt(300, -100, -300);
-//        this.camera.rotation.set(0, Math.PI, 0);
+//        this.camera.rotation.set(0, 2 * Math.PI, 0);
 
         // Ball initial stats
         this.ball_x = 0;
@@ -323,12 +304,13 @@ export default class PongGame {
         this.createGameElements(data);
     }
 
-    createGameElements(data) { const test1 = this.scene.getObjectByName("light_1");console.log(test1);
-        this.createBall();
+    createGameElements(data) {
+        this.createBall(Object.values(data.game_state.ball));
         this.createLightFloor();
         this.createPlanStadium();
         for (let i = 0; i < Object.keys(data.players).length; i++)
-            this.createPaddle(Object.values(data.game_state.players)[i], i + 1);
+            this.createPaddle(Object.values(data.game_state),
+                                Object.values(data.game_state.players)[i], i + 1);
         this.createStadium();
     }
 
@@ -340,7 +322,8 @@ export default class PongGame {
         const   textGroup = this.scene.getObjectByName("textGroup");
         const   loader = new FontLoader();
 
-        this.xPosition = 0;
+        this.xPosition = window.innerWidth;
+//        textGroup.rotation.copy(this.camera.rotation);
 
         // vecto to get coords of text and center it on scene
         loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
@@ -417,11 +400,8 @@ export default class PongGame {
                 // Add a pulsing effect
                 const animate = () => {
                     requestAnimationFrame(animate);
-                    if (textAdd.name === "p1Nick" || textAdd.name === "p2Nick")
-                        textAdd.material.emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-                    else
-                        textAdd.material.emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-                };
+                    textAdd.material.emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+                }
                 animate();
             });
         });
@@ -430,7 +410,7 @@ export default class PongGame {
     updateTextGroup(value) {
         const   textGroup = this.scene.getObjectByName("textGroup");
         if (textGroup)
-            textGroup.position.x = - value / 2 + 300;
+            textGroup.position.x = value - 95;
     }
 
      handleKeyEvent(event) {
@@ -439,24 +419,24 @@ export default class PongGame {
 
         switch (key) {
             case 'w':
-                this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": 1}}));
                 break;
             case 's':
-                this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": -1}}));
                 break;
             case 'ArrowUp':
                 console.log("here");
-                this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": 1}}));
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
                 break;
             case 'ArrowDown':
-                this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": -1}}));
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
                 break;
         }
     }
 
      createPlanStadium() { // add animation https://threejs.org/examples/#webgl_gpgpu_water
         // Create plane
-        const   planeGeometry = new THREE.PlaneGeometry(620, 300, 40, 40);
+        const   planeGeometry = new THREE.PlaneGeometry(640, 320, 40, 40);
         const   planeMaterial = new THREE.MeshPhongMaterial({
             map: this.textures["textStadium"],
             wireframe: true
@@ -464,19 +444,20 @@ export default class PongGame {
 
         const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.rotation.x = - Math.PI * 0.5;
-        plane.position.set(300, -10, -150);
+        plane.position.set(300, -10, 140);
 //        plane.castShadow = true;
         plane.receiveShadow = true;
-        this.scene.add(plane);
+        const   stadium = this.scene.getObjectByName("stadium");
+        stadium.add(plane);
      }
 
-    createBall() { // animation goutte d'eau idee rolando + un peu felipe
+    createBall(data) { // animation goutte d'eau idee rolando + un peu felipe
         const   geometry = new THREE.SphereGeometry(this.ball_radius, 48, 48);
         const   material = new THREE.MeshStandardMaterial({map: this.textures["textInitBall"]});
         const   ball = new THREE.Mesh(geometry, material);
 
         const   stadium = this.scene.getObjectByName("stadium");
-        ball.position.set(295, 0, -140);
+        ball.position.set(data[0], 0, data[1]);
         ball.castShadow = true;
         ball.receiveShadow = true;
         ball.name = "ball";
@@ -502,11 +483,10 @@ export default class PongGame {
 //    }
 
 
-    createPaddle(player, i) { // correct texture on paddles (long side)
-        const geometry = new THREE.BoxGeometry(10, 10, 60);
-        let x = player.pos.x;
+    createPaddle(data, player, i) { // correct texture on paddles (long side) player.pos.y must be 140 not 110
+        const geometry = new THREE.BoxGeometry(data[6], data[6], data[7]);
         let material;
-        if (x < 300)
+        if (player.pos.x > 300)
             material = new THREE.MeshStandardMaterial({
                 map: this.textures["textPadRed"],
             });
@@ -516,7 +496,7 @@ export default class PongGame {
             });
 
         const paddle = new THREE.Mesh(geometry, material);
-        paddle.position.set(x, 0, -180);
+        paddle.position.set(player.pos.x, 0, player.pos.y);
         paddle.castShadow = true;
         paddle.name = `p${i}`;
         this.paddles[paddle.name] = paddle;
@@ -537,32 +517,48 @@ export default class PongGame {
         const   targetPositions = [];
         let     cube;
         let     end;
-        let     x = -20; //600 -> center must be x:300 z:140
+        let     x = -30; //600 -> 640center must be x:300 z:140
         let     y = 0;
-        let     z = 20;// 14 * 20 280
+        let     z = -10;// 14 * 20 280
         let     step = 20;
         let     i = -1;
 
-        while (++i < 96) {
+
+//        cube = new THREE.Mesh(geometry, redMaterial);
+//        cube.position.set(-10, 0, -40);stadium.add(cube);
+//        // Create plane
+//        const   planeGeometry = new THREE.PlaneGeometry(80, 80, 40, 40);
+//        const   planeMaterial = new THREE.MeshPhongMaterial({
+//            color: 0xff0000,
+//            side: THREE.DoubleSide
+//        });
+//        const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
+//        plane.rotation.x = - Math.PI;
+////        plane.rotation.y =  Math.PI * 0.5;
+//        plane.position.set(600, 0, 0);
+//        stadium.add(plane);
+
+
+        while (++i < 92) { //96
             if (i < 32) { // 21 -> 29
+                x += step;
                 cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
-                x += step;
             }
-            else if (i >= 32 && i < 48) { // 33 -> 39
-                cube = cube = this.createCube(x, geometry, redMaterial, blueMaterial);
+            else if (i >= 32 && i < 47) { // 32 -> 48
+                z += step;
+                cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
-                z -= step;
             }
-            else if (i >= 48 && i < 80) { // 54 -> 64
-                cube = cube = this.createCube(x, geometry, redMaterial, blueMaterial);
-                end = new THREE.Vector3(x, y, z);
+            else if (i >= 47 && i < 78) { // 54 -> 64
                 x -= step;
+                cube = this.createCube(x, geometry, redMaterial, blueMaterial);
+                end = new THREE.Vector3(x, y, z);
             }
             else { // 24
-                cube = cube = this.createCube(x, geometry, redMaterial, blueMaterial);
+                z -= step;
+                cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
-                z += step;
             }
             cubes.push(cube);
             targetPositions.push(end);
@@ -633,7 +629,7 @@ export default class PongGame {
 
     createCube(i, geometry, red, blue) {
         let cube;
-        if (i < 300)
+        if (i > 300)
             cube = new THREE.Mesh(geometry, red);
         else
             cube = new THREE.Mesh(geometry, blue);
@@ -658,7 +654,7 @@ export default class PongGame {
         for (let i = 0; i < players.length; i++) {console.log("moving: ", this.paddles[`p${i + 1}`].position.z);
 
         console.log(players[i].pos.x);
-        this.paddles[`p${i + 1}`].position.z = -players[i].pos.y - 40;
+        this.paddles[`p${i + 1}`].position.z = players[i].pos.y;
         }
     }
 ////        let   targetPosition;
@@ -715,6 +711,11 @@ export default class PongGame {
 
     animate() {
         requestAnimationFrame(this.animate);
+
+
+//        this.camera.rotation.y += 0.002;
+//        const   textGroup = this.scene.getObjectByName("textGroup");
+//        textGroup.rotation.copy(this.camera.rotation);
 
         const   msg = this.scene.getObjectByName("waitTxt");
         if (msg)
@@ -779,31 +780,11 @@ export default class PongGame {
     display(data) {
 //        console.log(data);
         const   ball = this.scene.getObjectByName("ball");
-//        const   ballLight = this.scene.getObjectByName("ballLight")
 
-
-
-// ball does not rotate, needs correction and seems laggy
+// ball does not rotate, needs correction
         this.updateBallPosition(Object.values(data.game_state.ball)[0],
-                                -Object.values(data.game_state.ball)[1]); // or send data
-
-//        ballLight.target.position.set(Object.values(data.game_state.ball)[0], ball.position.y,
-//                                        -Object.values(data.game_state.ball)[1]);
+                                Object.values(data.game_state.ball)[1]);
         this.updatePaddlePosition(Object.values(data.game_state.players));
-//        if (this.score_p1 != Object.values(data.game_state.left_score ||
-//            this.score_p2 != != Object.values(data.game_state.right_score) {
-//            this.textArray[1] = "\n" + this.score_p1.toString();
-//            this.textArray[3] = "\n" + this.score_p1.toString();
-//        }
-
-//        ball.position.x = Object.values(data.game_state.ball)[0];
-//        ball.position.z = -Object.values(data.game_state.ball)[1];
-
-//console.log("0: " + data.game_state.ball);
-//console.log("1: " + Object.keys(data.game_state));
-//console.log("2: " + Object.keys(data.game_state)[0]);
-//console.log("3: " + Object.values(data.game_state));
-console.log("3: " + Object.values(data.game_state.ball)[0]);
     }
 
     setupEventListeners() {}
