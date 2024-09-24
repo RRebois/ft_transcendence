@@ -239,6 +239,14 @@ export default class PongGame {
     }
 
     buildGameSet(data) {console.log("buildGameSet: ", data);
+        //  remove all from wait message(if any)
+        const   dirLight = getObjectByName("light_1");
+        const   pointLight = getObjectByName("light_2");
+        const   wait = getObjectByName("waitTxt");
+        const   planeWait = getObjectByName("waitPlane);
+        if (dirLight)
+            this.scene.remove(dirLight, pointLight, wait, planeWait);
+
         // reset camera to have stadium on
         this.camera.position.set(300, 700, -500);
         this.camera.lookAt(300, -100, 300);
