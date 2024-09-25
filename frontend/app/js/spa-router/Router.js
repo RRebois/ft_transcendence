@@ -32,6 +32,12 @@ export default class Router {
 	}
 
 	async navigate(path, pushState = true) {
+		console.log('Path before regex: ', path);
+		if (path !== "/") {
+			path = path.replace(/\/+$/, ''); // Remove trailing slashes
+		}
+		console.log('Path after regex: ', path);
+
 		// find all elements with class "modal-backdrop" and remove them
 		remove_modal_backdrops();
 		const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
@@ -39,6 +45,7 @@ export default class Router {
 		console.log('isUserAuth', isUserAuth);
 		const route = this.routes.find(route => this.match(route, path));
 		if (!route) {
+			window.history.pushState(null, null, path);
 			this.renderNode.innerHTML = '' +
 				'<h1 class="mb-6 play-bold" style="font-size: 6rem">404</h1>' +
 				'<img src="/homer.webp" alt="homer simpson disappearing" class="rounded w-1-2 mb-4" />' +
@@ -99,11 +106,42 @@ export default class Router {
 		return Object.fromEntries(new URLSearchParams(query).entries());
 	}
 
+	getURLParameters(path) {
+		if (path.startsWith('/')) {
+			path = path.slice(1);
+		}
+		const splited = path.split('/');
+		const parameters = [];
+		for (let i = 1; i < splited.length; i++) {
+			const part = splited[i];
+			parameters.push(part);
+		}
+		return parameters;
+	}
+
 	// Match the route path to the current location path
 	match(route, requestPath) {
 		const splitPath = requestPath.split('?');
 		const pathWithoutQuery = splitPath[0];
 		const query = splitPath[1];
+		if (requestPath.search("//") !== -1) {
+			console.log('invalid path');
+			return false;
+		}
+		// if (!(route.parameters() === 0 && route.path === pathWithoutQuery)) {
+		// 	console.log('parameters are not equal');
+		// 	return false;
+		// }
+		const parameters = this.getURLParameters(requestPath);
+		console.log('parameters: ', parameters);
+		if (parameters.length !== route.parameters()) {
+			console.log('parameters length are not equal');
+			return false;
+		}
+		console.log("params length are equal");
+
+
+
 		const regexPath = route.path.replace(/([:*])(\w+)/g, (full, colon, name) => {
 			return '([^\/]+)';
 		}) + '(?:\/|$)';
@@ -111,7 +149,9 @@ export default class Router {
 		const routeMatch = pathWithoutQuery.match(new RegExp(regexPath));
 		if (routeMatch !== null) {
 			params = this.getQueryParams(query);
-
+			if (route.path === '/stats') {
+				params.username = parameters[0];
+			}
 			route.setProps(params);
 			console.log("returning true");
 			return true;

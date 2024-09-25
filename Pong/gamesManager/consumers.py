@@ -50,7 +50,6 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 			self.session_id,
 			self.channel_name
 		)
-
 		if self.session_data['status'] == 'ready':
 			self.game_handler = PongHandler(self) if self.game_name == 'pong' else PurrinhaHandler(self)
 			GameManagerConsumer.matchs[self.session_id] = self.game_handler
@@ -110,7 +109,6 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 	def get_session_data(self):
 		session_data = cache.get(self.session_id)
 		if session_data:
-			print(f"\n\n\nusername => {self.username}\nsession_data => {session_data}")
 			return session_data
 		error_msg = 'this session does not exist'
 		self.send(text_data=json.dumps({"error_message": error_msg}))

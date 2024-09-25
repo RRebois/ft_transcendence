@@ -238,17 +238,14 @@ export default class Stats {
 		}
 	};
 
-	render(pathName) {
-		const stats_path = pathName.split("/");
-		const username = stats_path[2];
-
-		document.title = `ft_transcendence | ${username} stats`;
+	render() {
+		document.title = `ft_transcendence | ${this.props?.username} stats`;
 		return `
 			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center" id="statsContainer">
 				<div class="h-full w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 16px;">
 					<div class="d-flex flex-column w-full" style="gap: 16px">
 						<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded" style="--bs-bg-opacity: .5;">
-							<p class="play-bold fs-3">${username} stats</p>
+							<p class="play-bold fs-3">${this.props?.username} stats</p>
 							<div class="d-flex flex-row w-full gap-2">
 								<div class="d-flex flex-column w-1-4 gap-2">
 									<div class="d-flex w-full justify-content-center align-items-center">
@@ -292,11 +289,8 @@ export default class Stats {
 		`;
 	}
 
-	setupEventListeners =  async (pathName) => {
-		const stats_path = pathName.split("/");
-		const username = stats_path[2];
-		console.log("User is: ", username);
-
+	setupEventListeners =  async () => {
+		const username = this?.props?.username;
 		const user = await this.fetchUser(username);
 
 		if (user) {

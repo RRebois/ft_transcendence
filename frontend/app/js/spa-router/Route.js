@@ -1,9 +1,14 @@
 export default class Route {
-    constructor(name, path, view, user = null) {
+    constructor(name, path, view, user = null, nb_parameters = 0) {
         this.name = name;
         this.path = path;
         this.view = new view();
         this.user = user;
+        this.nb_parameters = nb_parameters;
+    }
+
+    parameters() {
+        return this.nb_parameters;
     }
 
     setProps(newProps) {
@@ -17,10 +22,10 @@ export default class Route {
     }
 
     renderView(path) {
-        return this.view.render(path);
+        return this.view.render();
     }
 
     setupEventListeners(path) {
-        this.view.setupEventListeners(path);
+        this.view.setupEventListeners();
     }
 }
