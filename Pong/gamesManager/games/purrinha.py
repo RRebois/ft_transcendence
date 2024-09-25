@@ -1,5 +1,5 @@
 
-MAX_QUANTITY = 3
+from configFiles.globals import *
 
 class   PurrinhaMatch:
 
@@ -17,34 +17,59 @@ class   PurrinhaMatch:
         return len(self.players) * MAX_QUANTITY
 
     async def get_final_result(self):
-        return sum(await player.get_quantity() for player in self.players)
+        sum = 0
+        for player in self.players:
+            sum += await player.get_quantity()
+        return sum
+        # return sum(await player.get_quantity() for player in self.players)
 
     async def get_players_data(self):
-        return {await player.get_data() for player in self.players}
+        players_data = {}
+        for player in self.players:
+            temp = await player.get_data()
+            players_data.update(temp)
+        return players_data
+        # return {await player.get_data() for player in self.players}
     
     async def get_player_data(self, id):
-        return await self.get_player(id).get_data()
+        player = await self.get_player(id)
+        data = await player.get_data()
+        # player_data = data.values()
+        return data[f"player{id}"]
 
     async def get_round_result(self):
-        return {await player.get_final_data() for player in self.players}
+        players_data = {}
+        for player in self.players:
+            temp = await player.get_final_data()
+            players_data.update(temp)
+        return players_data
+        # return {await player.get_final_data() for player in self.players}
 
     async def get_player_quantity(self, id):
         if id > 0 and id <= len(self.players):
-            return await self.get_player(id).get_quantity()
+            player = await self.get_player(id)
+            return await player.get_quantity()
+            # return await self.get_player(id).get_quantity()
 
     async def get_player_guess(self, id):
         if id > 0 and id <= len(self.players):
-            return await self.get_player(id).get_guess()
+            player = await self.get_player(id)
+            return await player.get_guess()
+            # return await self.get_player(id).get_guess()
 
     async def set_player_quantity(self, id, quantity):
         if id > 0 and id <= len(self.players):
             if quantity >= 0 and quantity <= MAX_QUANTITY:
-                await self.get_player(id).set_quantity(quantity)
+                player = await self.get_player(id)
+                await player.set_quantity(quantity)
+                # await self.get_player(id).
 
     async def set_player_guess(self, id, guess):
         if id > 0 and id <= len(self.players):
             if guess >= 0 and guess <= await self.get_max_guess():
-                await self.get_player(id).set_guess(guess)
+                player = await self.get_player(id)
+                await player.set_guess(guess)
+                # await self.get_player(id).
 
     async def reset_match(self):
         for player in self.players:
@@ -105,7 +130,7 @@ class   PurrinhaGame:
     def __init__(self, players):
         self.match = PurrinhaMatch(players)
         self.players_nb = len(players)
-        self.numbers_to_guess = [i for i in range(self.players_nb * MAX_QUANTITY)]
+        self.numbers_to_guess = [i for i in range(self.players_nb * MAX_QUANTITY + 1)]
         self.numbers_to_guess_init = self.numbers_to_guess
 
     async def   get_number_to_guess(self):
@@ -116,11 +141,13 @@ class   PurrinhaGame:
         status = 'guessing'
         guesses = 0
         for player in players:
-            if not player['quantity']:
+            print(f'\n\n\ninside get status => {player}\n\n\n')
+            if not players[player]['quantity']:
                 status = 'choosing'
                 break
-            if player['guess'] != -1:
+            if players[player]['guess'] != -1:
                 guesses += 1
+        result = winner = 'waiting'
         if guesses == self.players_nb:
             status = 'finished'
             result = await self.match.get_final_result()
@@ -129,18 +156,20 @@ class   PurrinhaGame:
             for player in players:
                 if player['guess'] == result:
                     winner == player['name']
-        else:
-            result = winner = 'waiting'
+                    break
+
         return {
             'round': status,
             'players': players,
             'available_to_guess': self.numbers_to_guess,
             'result': result,
             'winner': winner,
+            'player_turn': None,
+            'error_message': None,
         }
     
     async def set_player_guess(self, id, guess):
-        player = self.match.get_player_data(id)
+        player = await self.match.get_player_data(id)
         if player['quantity']:
             if player['guess'] == -1:
                 if guess in self.numbers_to_guess:
@@ -148,10 +177,11 @@ class   PurrinhaGame:
                 await self.match.set_player_guess(id, guess)
 
     async def set_player_quantity(self, id, quantity):
-        player = self.match.get_player_data(id)
+        player = await self.match.get_player_data(id)
+        print(f'\n\n\ninside set_player_quantity => {player}\n\n\n')
         if not player['quantity']:
             await self.match.set_player_quantity(id, quantity)
 
     async def play_again(self):
-        self.match.reset_match()
+        await self.match.reset_match()
         self.numbers_to_guess = self.numbers_to_guess_init
