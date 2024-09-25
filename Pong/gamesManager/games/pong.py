@@ -54,7 +54,7 @@ class Ball:
 
     async def accelerate(self):
         if abs(self.x_vel) >= MAX_VEL:
-            pass
+            return
         if self.x_vel > 0:
             self.x_vel += BALL_ACC
         else:
@@ -79,6 +79,9 @@ async def find_new_direction(ball, paddle):
     if not y_vel:
         y_vel = 0.1
     ball.y_vel = -1 * y_vel
+    # print(f"\n\n\nball y => {ball.y}\nball x => {ball.x}\nball + r => {ball.x - ball.radius}\npaddle x => {paddle.x}\npaddle y => {paddle.y}\n\n\n")
+    await ball.accelerate()
+    await ball.move()
 
 async def handle_collision(ball, left_paddle, right_paddle, first_time=True):
     if first_time and (ball.y + ball.radius >= GAME_HEIGHT or ball.y - ball.radius <= 0):
@@ -87,16 +90,14 @@ async def handle_collision(ball, left_paddle, right_paddle, first_time=True):
 
     else:
         if ball.x_vel < 0:
-            if ball.y >= left_paddle.y and ball.y <= left_paddle.y + left_paddle.height:
-                if ball.x - ball.radius <= left_paddle.x + left_paddle.width:
+            if ball.y + ball.radius >= left_paddle.y and ball.y - ball.radius <= left_paddle.y + left_paddle.height:
+                if ball.x - ball.radius <= left_paddle.x and ball.x >= left_paddle.x:
                     await find_new_direction(ball, left_paddle)
-                    await ball.accelerate()
 
         elif ball.x_vel >= 0:
-            if ball.y >= right_paddle.y and ball.y <= right_paddle.y + right_paddle.height:
-                if ball.x + ball.radius >= right_paddle.x:
+            if ball.y + ball.radius >= right_paddle.y and ball.y - ball.radius <= right_paddle.y + right_paddle.height:
+                if ball.x + ball.radius >= right_paddle.x and ball.x <= right_paddle.x:
                     await find_new_direction(ball, right_paddle)
-                    await ball.accelerate()
 
 
 class   PongMatch():
