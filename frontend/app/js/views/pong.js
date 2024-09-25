@@ -726,13 +726,14 @@ export default class PongGame {
         if (this.score_p2 === 5 || this.score_p1 === 5)
             console.log("game finished");
         const   ball = this.scene.getObjectByName("ball");
-        if (i === 0) { console.log("/n/n/n/nhere/n/n/n/n");
-            ball.material.map = THREE.ImageUtils.loadTexture( this.textures["textPadBlue"] );
+        if (i === 0) {
+            ball.material.map = this.textures["textPadRed"];
             ball.material.needsUpdate = true;
         }
-//        else
-//            this.createBall(gameState.ball, this.textures["textPadRed"]);
-
+        else {
+            ball.material.map = this.textures["textPadBlue"];
+            ball.material.needsUpdate = true;
+        }
         this.printInitScores();
     }
 
