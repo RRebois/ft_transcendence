@@ -32,6 +32,8 @@ export default class Router {
 	}
 
 	async navigate(path, pushState = true) {
+		console.log("IN NAVIGATE");
+		console.log("Real current path is: ", window.location.pathname);
 		// find all elements with class "modal-backdrop" and remove them
 		remove_modal_backdrops();
 		const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
@@ -73,16 +75,28 @@ export default class Router {
 		if (route.user) {
 			this.navbar.setUser(route.user);
 			if (route.path === "/purrinha" || route.path === "/pong") {
-				this.renderNode.innerHTML = route.renderView();
+				console.log("Path is /purrinha or /pong");
+				console.log("Destination path is: ", path);
+				this.renderNode.innerHTML = route.renderView(path);
 			} else {
-				this.renderNode.innerHTML = this.navbar.render() + route.renderView();
+				console.log("Current path is: ", window.location.pathname);
+				if (window.location.pathname === "/pong" && window.myPongSocket && window.myPongSocket.readyState === WebSocket.OPEN) {
+					window.myPongSocket.close();
+					console.log('Pong websocket connection closed');
+				}
+				else if (window.location.pathname === "/purrinha" && window.myPurrinhaSocket && window.myPurrinhaSocket.readyState === WebSocket.OPEN) {
+					window.myPurrinhaSocket.close();
+					console.log('Purrinha websocket connection closed');
+				}
+				console.log("Destination path is: ", path);
+				this.renderNode.innerHTML = this.navbar.render() + route.renderView(path);
 			}
 			this.navbar.setupEventListeners();
 		}
 		else {
-			this.renderNode.innerHTML = route.renderView();
+			this.renderNode.innerHTML = route.renderView(path);
 		}
-		route.setupEventListeners();
+		route.setupEventListeners(path);
 
 		// Update the browser history
 		const currentPath = window.location.pathname + window.location.search;

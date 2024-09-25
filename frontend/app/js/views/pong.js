@@ -47,23 +47,23 @@ export default class PongGame {
 		    this.init();
     }
 
-    init() { // For responside device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
+    init() { // For responsive device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
         document.title = "ft_transcendence | Pong";
 
         // Load all textures at once
         this.textures = {};
-        const   textureLoader = new THREE.TextureLoader();
-        const   textStadium = textureLoader.load("/textures/grass/grass_BaseColor.jpg");
-        const   textInitBall = textureLoader.load("/textures/football.jpg");
-        const   textBlueCube = textureLoader.load("/textures/blue_basecolor.png");
+        const textureLoader = new THREE.TextureLoader();
+        const textStadium = textureLoader.load("/textures/grass/grass_BaseColor.jpg");
+        const textInitBall = textureLoader.load("/textures/football.jpg");
+        const textBlueCube = textureLoader.load("/textures/blue_basecolor.png");
 //        const   textBlueCubeR = textureLoader.load("/textures/blue_metallic.png");
 //        const   textBlueCubeM = textureLoader.load("/textures/blue_roughness.png");
-        const   textRedCube = textureLoader.load("/textures/red_basecolor.png");
-        const   textPadBlue = textureLoader.load("/textures/ice/ice_basecolor.png");
+        const textRedCube = textureLoader.load("/textures/red_basecolor.png");
+        const textPadBlue = textureLoader.load("/textures/ice/ice_basecolor.png");
 //        const   textPadBlueRoughness = textureLoader.load("/textures/ice/ice_roughness.png");
-        const   textPadRed = textureLoader.load("/textures/lava/lava_basecolor.jpg");
+        const textPadRed = textureLoader.load("/textures/lava/lava_basecolor.jpg");
 
-        const   three = textureLoader.load("three.png")
+        const three = textureLoader.load("three.png")
 
         this.textures["textStadium"] = textStadium;
         this.textures["textInitBall"] = textInitBall;
@@ -90,19 +90,25 @@ export default class PongGame {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        const   test = document.getElementById("display");
+        const test = document.getElementById("display");
+        const returnBtn = document.createElement("button");
+        returnBtn.id = "return-home-btn";
+        returnBtn.route = "/dashboard";
+        returnBtn.classList.add("btn", "btn-primary");
+        returnBtn.innerHTML = "Give up";
         test.appendChild(this.renderer.domElement);
+        test.appendChild(returnBtn);
 
         // Create stade group with all objetcs so when rotate everything follows
-        const   stadiumGroup = new THREE.Group();
+        const stadiumGroup = new THREE.Group();
         // stadiumGroup.rotation.set(45, 0, 0);
-        const   stadium = new THREE.Object3D();
+        const stadium = new THREE.Object3D();
         stadium.name = "stadium";
         stadiumGroup.add(stadium);
         this.scene.add(stadiumGroup);
 
         // Display text from the beginning
-        const    textGroup = new THREE.Object3D();
+        const textGroup = new THREE.Object3D();
         textGroup.position.y = 300;
         textGroup.position.z = 300;
         textGroup.rotation.set(0, Math.PI, 0);
@@ -118,7 +124,8 @@ export default class PongGame {
         this.animate();
     }
 
-    onKeyDown(event) { console.log("/n/nKEYDOWN/n/n");
+    onKeyDown(event) {
+        console.log("/n/nKEYDOWN/n/n");
         this.keyMap[event.key] = true;
     }
 
