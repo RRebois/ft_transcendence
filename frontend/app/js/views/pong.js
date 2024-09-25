@@ -330,7 +330,7 @@ export default class PongGame {
     }
 
     createGameElements(data) {
-        this.createBall(data.game_state.ball);
+        this.createBall(data.game_state.ball, this.textures["textInitBall"]);
         this.createLightFloor();
         this.createPlanStadium();
         for (let i = 0; i < Object.keys(data.players).length; i++)
@@ -456,9 +456,9 @@ export default class PongGame {
         stadium.add(plane);
      }
 
-    createBall(data) { // animation goutte d'eau idee rolando + un peu felipe
+    createBall(data, texture) { // animation goutte d'eau idee rolando + un peu felipe
         const   geometry = new THREE.SphereGeometry(this.ball_radius, 48, 48);
-        const   material = new THREE.MeshStandardMaterial({map: this.textures["textInitBall"]});
+        const   material = new THREE.MeshStandardMaterial({map: texture});
         const   ball = new THREE.Mesh(geometry, material);
 
         const   stadium = this.scene.getObjectByName("stadium");
@@ -635,7 +635,7 @@ export default class PongGame {
 
     createBlueMaterial() {
         const   material = new THREE.MeshStandardMaterial({
-            map: this.textures["textPadBlue"], //textBlueCube
+            map: this.textures["textBlueCube"], //textBlueCube
 //            metalnessMap: this.textures["textBlueCubeM"],
 //            metalness: 1.0,
 //            roughnessMap: this.textures["textBlueCubeR"]
@@ -710,7 +710,7 @@ export default class PongGame {
         });
     }
 
-    updateScores(value, i) {
+    updateScores(gameState, i) {
         // Select textGroup
         const   text = this.scene.getObjectByName("textGroup");
         let     toRemove;
@@ -725,8 +725,15 @@ export default class PongGame {
             this.score_p1++;
         if (this.score_p2 === 5 || this.score_p1 === 5)
             console.log("game finished");
+        const   ball = this.scene.getObjectByName("ball");
+        if (i === 0) { console.log("/n/n/n/nhere/n/n/n/n");
+            ball.material.map = THREE.ImageUtils.loadTexture( this.textures["textPadBlue"] );
+            ball.material.needsUpdate = true;
+        }
+//        else
+//            this.createBall(gameState.ball, this.textures["textPadRed"]);
 
-//        this.printInitScores();
+        this.printInitScores();
     }
 
     animate() {
@@ -801,9 +808,9 @@ export default class PongGame {
         this.updateBallPosition(data.game_state.ball["x"], data.game_state.ball["y"]);
         this.updatePaddlePosition(data.game_state, Object.values(data.game_state.players));
         if (data.game_state["left_score"] != this.score_p2.toString())
-            this.updateScores(data.game_state["left_score"], 0);
+            this.updateScores(data.game_state, 0);
         else if (data.game_state["right_score"] != this.score_p1.toString())
-            this.updateScores(data.game_state["right_score"], 1);
+            this.updateScores(data.game_state, 1);
     }
 
     setupEventListeners() {
@@ -813,7 +820,7 @@ export default class PongGame {
         // Resize scene
         window.addEventListener('resize', () => {
             this.camera.aspect = window.innerWidth / window.innerHeight;
-//            this.camera.updateProjectionMatrix();
+            this.camera.updateProjectionMatrix();
             this.renderer.setSize(window.innerWidth, window.innerHeight);
         });
     }
