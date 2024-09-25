@@ -110,18 +110,31 @@ export default class PongGame {
         this.scene.add(textGroup);
 
         // Controls pad
-        window.addEventListener('keydown', this.handleKeyEvent.bind(this));
-        window.addEventListener('keyup', this.handleKeyEvent.bind(this));
-
-        // Resize scene
-        window.addEventListener('resize', () => {
-            this.camera.aspect = window.innerWidth / window.innerHeight;
-            this.camera.updateProjectionMatrix();
-            this.renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        this.keyMap = {};
+        window.addEventListener("keydown", this.onKeyDown.bind(this));
+        window.addEventListener("keyup", this.onKeyUp.bind(this));
 
         this.animate = this.animate.bind(this);
         this.animate();
+    }
+
+    onKeyDown(event) { console.log("/n/nKEYDOWN/n/n");
+        this.keyMap[event.key] = true;
+    }
+
+    onKeyUp(event) {
+        delete this.keyMap[event.key];
+    }
+
+     handleKeyEvent() {
+        if (this.keyMap['w'] === true)
+            this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": 1}}));
+        if (this.keyMap['s'] === true)
+            this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": -1}}));
+        if (this.keyMap['ArrowUp'] === true)
+            this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
+        if (this.keyMap['ArrowDown'] === true)
+            this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
     }
 
     createLightFloor() {
@@ -138,7 +151,7 @@ export default class PongGame {
 
         const   spotLightRight = new SpotLight(0xffffff, 10000000);
         spotLightRight.position.set(920, 400, 100); //y: 300
-        spotLightRight.target.position.set(550, 0, 140);
+        spotLightRight.target.position.set(550, 0, 160);
 //        spotLightRight.distance = 5000;
         spotLightRight.angle = .45; // change it for higher or lower coverage of the spot
         spotLightRight.penumbra = .8;
@@ -149,7 +162,7 @@ export default class PongGame {
 
         const   spotLightLeft = new SpotLight(0xffffff, 10000000);
         spotLightLeft.position.set(-300, 400, 100);
-        spotLightLeft.target.position.set(50, 0, 140);
+        spotLightLeft.target.position.set(50, 0, 160);
         spotLightLeft.angle = .45; // change it for higher or lower coverage of the spot
         spotLightLeft.penumbra = .8;
         spotLightLeft.castShadow = true;
@@ -240,10 +253,10 @@ export default class PongGame {
 
     buildGameSet(data) {console.log("buildGameSet: ", data);
         //  remove all from wait message(if any)
-        const   dirLight = getObjectByName("light_1");
-        const   pointLight = getObjectByName("light_2");
-        const   wait = getObjectByName("waitTxt");
-        const   planeWait = getObjectByName("waitPlane);
+        const   dirLight = this.scene.getObjectByName("light_1");
+        const   pointLight = this.scene.getObjectByName("light_2");
+        const   wait = this.scene.getObjectByName("waitTxt");
+        const   planeWait = this.scene.getObjectByName("waitPlane");
         if (dirLight)
             this.scene.remove(dirLight, pointLight, wait, planeWait);
 
@@ -271,16 +284,16 @@ export default class PongGame {
         this.xPosition = 0;
         this.score_p1 = 0;
         this.score_p2 = 0;
-        this.nameArray = ["p1Nick", "p1Score", "hyphen", "p2Score", "p2Nick"];
+        this.nameArray = ["p2Nick", "p2Score", "hyphen", "p1Score", "p1Nick"];
 
         // Set players nick
-        this.players_nick = [];
-        this.players_nick.push(Object.keys(data.players)[0]);
+        this.players_nick = []; //p2, p1, p4, p3
         this.players_nick.push(Object.keys(data.players)[1]);
+        this.players_nick.push(Object.keys(data.players)[0]);
 
         if (Object.keys(data.players).length > 2) {
-            this.players_nick.push(Object.keys(data.players)[2]);
             this.players_nick.push(Object.keys(data.players)[4]);
+            this.players_nick.push(Object.keys(data.players)[2]);
         }
 
         for (let i = 0; i < this.players_nick.length; i++) {
@@ -421,27 +434,6 @@ export default class PongGame {
             textGroup.position.x = value - 95;
     }
 
-     handleKeyEvent(event) {
-        const   key = event.key;
-        const   isKeyDown = event.type === 'keydown';
-
-        switch (key) {
-            case 'w':
-                this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": 1}}));
-                break;
-            case 's':
-                this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": -1}}));
-                break;
-            case 'ArrowUp':
-                console.log("here");
-                this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
-                break;
-            case 'ArrowDown':
-                this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
-                break;
-        }
-    }
-
      createPlanStadium() { // add animation https://threejs.org/examples/#webgl_gpgpu_water
         // Create plane
         const   planeGeometry = new THREE.PlaneGeometry(640, 320, 40, 40);
@@ -494,7 +486,7 @@ export default class PongGame {
     createPaddle(data, player, i) { // correct texture on paddles (long side) player.pos.y must be 140 not 110
         const geometry = new THREE.BoxGeometry(data[6], data[6], data[7]);
         let material;
-        if (player.pos.x > 300)
+        if (player.pos.x < 300)
             material = new THREE.MeshStandardMaterial({
                 map: this.textures["textPadRed"],
             });
@@ -637,7 +629,7 @@ export default class PongGame {
 
     createCube(i, geometry, red, blue) {
         let cube;
-        if (i > 300)
+        if (i < 300)
             cube = new THREE.Mesh(geometry, red);
         else
             cube = new THREE.Mesh(geometry, blue);
@@ -744,6 +736,14 @@ export default class PongGame {
 //            this.updateTextPosition();
 
 //        this.updateBallPosition();
+        this.handleKeyEvent();
+
+        // Resize scene
+        window.addEventListener('resize', () => {
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+        });
 
         // Render scene
         this.renderer.render(this.scene, this.camera);
