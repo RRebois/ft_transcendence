@@ -149,9 +149,9 @@ export default class PongGame {
         plane.receiveShadow = true;
         this.scene.add(plane);
 
-        const   spotLightRight = new SpotLight(0xffffff, 10000000);
+        const   spotLightRight = new SpotLight(0xffffff, 1000000);
         spotLightRight.position.set(920, 400, 100); //y: 300
-        spotLightRight.target.position.set(550, 0, 160);
+        spotLightRight.target.position.set(550, 0, 140);
 //        spotLightRight.distance = 5000;
         spotLightRight.angle = .45; // change it for higher or lower coverage of the spot
         spotLightRight.penumbra = .8;
@@ -160,9 +160,9 @@ export default class PongGame {
         spotLightRight.shadow.camera.near = 10;
         spotLightRight.name = "spotR";
 
-        const   spotLightLeft = new SpotLight(0xffffff, 10000000);
+        const   spotLightLeft = new SpotLight(0xffffff, 1000000);
         spotLightLeft.position.set(-300, 400, 100);
-        spotLightLeft.target.position.set(50, 0, 160);
+        spotLightLeft.target.position.set(50, 0, 140);
         spotLightLeft.angle = .45; // change it for higher or lower coverage of the spot
         spotLightLeft.penumbra = .8;
         spotLightLeft.castShadow = true;
@@ -257,6 +257,9 @@ export default class PongGame {
         const   pointLight = this.scene.getObjectByName("light_2");
         const   wait = this.scene.getObjectByName("waitTxt");
         const   planeWait = this.scene.getObjectByName("waitPlane");
+        this.scene.fog.near = 0.1;
+        this.scene.fog.far = 0;
+
         if (dirLight)
             this.scene.remove(dirLight, pointLight, wait, planeWait);
 
@@ -431,7 +434,7 @@ export default class PongGame {
     updateTextGroup(value) {
         const   textGroup = this.scene.getObjectByName("textGroup");
         if (textGroup)
-            textGroup.position.x = value - 95;
+            textGroup.position.x = value - 100;
     }
 
      createPlanStadium() { // add animation https://threejs.org/examples/#webgl_gpgpu_water
@@ -496,7 +499,7 @@ export default class PongGame {
             });
 
         const paddle = new THREE.Mesh(geometry, material);
-        paddle.position.set(player.pos.x, 0, player.pos.y);
+        paddle.position.set(player.pos.x, 0, player.pos.y + data[7] * 0.5);
         paddle.castShadow = true;
         paddle.name = `p${i}`;
         this.paddles[paddle.name] = paddle;
@@ -525,18 +528,39 @@ export default class PongGame {
 
 
 //        cube = new THREE.Mesh(geometry, redMaterial);
-//        cube.position.set(-10, 0, -40);stadium.add(cube);
-//        // Create plane
+//        cube.position.set(0, 0, 0);stadium.add(cube);
+////        // Create plane
 //        const   planeGeometry = new THREE.PlaneGeometry(80, 80, 40, 40);
 //        const   planeMaterial = new THREE.MeshPhongMaterial({
 //            color: 0xff0000,
 //            side: THREE.DoubleSide
 //        });
 //        const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
-//        plane.rotation.x = - Math.PI;
-////        plane.rotation.y =  Math.PI * 0.5;
-//        plane.position.set(600, 0, 0);
+//        plane.rotation.x = Math.PI * 0.5;
+//        plane.rotation.y = Math.PI * 0.5;
+//        plane.position.set(0, 0, 0);
 //        stadium.add(plane);
+//
+//        const   plane1 = new THREE.Mesh(planeGeometry, planeMaterial);
+//        plane1.rotation.x = -Math.PI * 0.5;
+//        plane1.rotation.y = Math.PI * 0.5;//z
+//        plane1.position.set(600, 0, 0);
+//        stadium.add(plane1);
+//
+//        const   plane2 = new THREE.Mesh(planeGeometry, planeMaterial);
+//        plane2.rotation.x =  Math.PI;
+//        plane2.position.set(0, 0, 0);
+//        stadium.add(plane2);
+//
+//        const   plane3 = new THREE.Mesh(planeGeometry, planeMaterial);
+//        plane3.rotation.x =  Math.PI;
+//        plane3.position.set(0, 0, 280);
+//        stadium.add(plane3);
+
+//        const   plane2 = new THREE.Mesh(planeGeometry, planeMaterial);
+//        plane2.rotation.x =  Math.PI;
+//        plane2.position.set(0, 0, 0);
+//        stadium.add(plane2);
 
 
         while (++i < 92) { //96
@@ -649,12 +673,12 @@ export default class PongGame {
         return  cube;
     }
 
-    updatePaddlePosition(players) {
+    updatePaddlePosition(data, players) {
         console.log(players);
         for (let i = 0; i < players.length; i++) {console.log("moving: ", this.paddles[`p${i + 1}`].position.z);
 
         console.log(players[i].pos.x);
-        this.paddles[`p${i + 1}`].position.z = players[i].pos.y;
+        this.paddles[`p${i + 1}`].position.z = players[i].pos.y + data[7] * 0.5;
         }
     }
 ////        let   targetPosition;
@@ -792,7 +816,7 @@ export default class PongGame {
 // ball does not rotate, needs correction
         this.updateBallPosition(Object.values(data.game_state.ball)[0],
                                 Object.values(data.game_state.ball)[1]);
-        this.updatePaddlePosition(Object.values(data.game_state.players));
+        this.updatePaddlePosition(Object.values(data.game_state), Object.values(data.game_state.players));
     }
 
     setupEventListeners() {}
