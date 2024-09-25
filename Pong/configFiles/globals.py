@@ -19,6 +19,9 @@ PADDLE_RIGHT_X = 590
 BALL_RADIUS = 10
 SLEEP = 0.02
 
+# how many game loops without update the ball position to match with SLEEP (50 * SLEEP) = 1 second
+WAITING_LOOPS = 50
+
 # for the match making - to search for another player who is within this level of ELO difference
 ELO_DIFF = 20
 

@@ -39,7 +39,7 @@ class Ball:
         self.x = self.original_x = x
         self.y = self.original_y = y
         self.radius = radius
-        self.y_vel = randrange(6) * choice([1, -1])
+        self.y_vel = randrange(15) * choice([0.1, -0.1])
         self.x_vel = BALL_START_VEL * choice([1, -1])
 
     async def move(self):
@@ -48,9 +48,11 @@ class Ball:
 
     async def reset(self):
         self.x = self.original_x
-        self.y = self.original_y
-        self.y_vel = randrange(6) * choice([1, -1])
-        self.x_vel = BALL_START_VEL * choice([1, -1])
+        self.y = GAME_HEIGHT - 10
+        # self.y_vel = randrange(15) * choice([0.1, -0.1])
+        self.y_vel = 0
+        # self.x_vel = BALL_START_VEL * choice([1, -1])
+        self.x_vel = 3 * choice([1, -1])
 
     async def accelerate(self):
         if abs(self.x_vel) >= MAX_VEL:
@@ -89,8 +91,12 @@ async def handle_collision(ball, left_paddle, right_paddle, first_time=True):
         await ball.accelerate()
 
     else:
+        if ball.x < 35 or ball.x > 565:
+            print(f"\n\n\nball y => {ball.y}\nball x => {ball.x}\nball - r => {ball.x - ball.radius}\nball + r => {ball.x + ball.radius}\
+                  \nleft_paddle x => {left_paddle.x}\nleft_paddle y => {left_paddle.y}\nright_paddle x => {right_paddle.x}\nright_paddle y => {right_paddle.y}\n\n\n")
         if ball.x_vel < 0:
             if ball.y + ball.radius >= left_paddle.y and ball.y - ball.radius <= left_paddle.y + left_paddle.height:
+            # if ball.y >= left_paddle.y and ball.y <= left_paddle.y + left_paddle.height:
                 if ball.x - ball.radius <= left_paddle.x and ball.x >= left_paddle.x:
                     await find_new_direction(ball, left_paddle)
 
@@ -113,6 +119,7 @@ class   PongMatch():
                             2, 0, GAME_HEIGHT),
             ]
         else:
+            # TODO update paddle size
             self.paddles = [
                 Paddle(PADDLE_LEFT_X, GAME_HEIGHT // 2 - PADDLE_HEIGHT, 0, GAME_HEIGHT // 2),
                 Paddle(PADDLE_LEFT_X, GAME_HEIGHT // 2, GAME_HEIGHT // 2, GAME_HEIGHT),
@@ -121,6 +128,8 @@ class   PongMatch():
             ]
         self.left_score = 0
         self.right_score = 0
+        self.new_round = False
+        self.counter = 0
         self.players = {f"player{v['id']}": {'name': k, 'pos': 0} for k,v in players_name.items()}
 
 
@@ -140,6 +149,7 @@ class   PongMatch():
                 'paddle_width': PADDLE_WIDTH,
                 'paddle_height': PADDLE_HEIGHT,
                 'winning_score': WINNING_SCORE,
+                'new_round': self.new_round,
             }
             return coord
 
@@ -147,15 +157,23 @@ class   PongMatch():
             if self.ball.x <= 0:
                 self.right_score += 1
                 await self.reset()
+                self.new_round = True
+                self.counter = WAITING_LOOPS
             elif self.ball.x >= GAME_WIDTH:
                 self.left_score += 1
                 await self.reset()
+                self.new_round = True
+                self.counter = WAITING_LOOPS
 
     async def paddle_movement(self, player, key_up=True):
         await self.paddles[player - 1].handle_movement(key_up)
 
     async def routine(self):
-        await self.ball.move()
+        self.new_round = False
+        if not self.counter:
+            await self.ball.move()
+        else:
+            self.counter -= 1
         await handle_collision(self.ball, self.paddles[0], self.paddles[-1])
         if self.multiplayer:
             await handle_collision(self.ball, self.paddles[1], self.paddles[2], first_time=False)

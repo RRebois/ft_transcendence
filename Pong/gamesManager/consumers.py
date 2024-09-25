@@ -116,7 +116,6 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 	def get_session_data(self):
 		session_data = cache.get(self.session_id)
 		if session_data:
-			print(f"\n\n\nusername => {self.username}\nsession_data => {session_data}")
 			return session_data
 		error_msg = 'this session does not exist'
 		self.send(text_data=json.dumps({"error_message": error_msg}))
@@ -164,7 +163,6 @@ class PongHandler():
 	def	__init__(self, consumer):
 		self.consumer = [consumer]
 		self.game_code = consumer.game_code
-		self.left_score = self.right_score = -1
 
 	async def	launch_game(self, players_name):
 		self.message = self.consumer[0].session_data
@@ -177,25 +175,21 @@ class PongHandler():
 	@database_sync_to_async
 	def	tournament_database_update(self):
 		cache_db = cache.get(self.message['tournament_id'])
-		player1 = self.message['game_state']['players']['player1']['name']
-		player2 = self.message['game_state']['players']['player2']['name']
-		status = 'finished' if self.left_score >= self.message['game_state']['winning_score']\
-			or self.right_score >= self.message['game_state']['winning_score'] else 'running'
+		gs = self.message['game_state']
+		player1 = gs['players']['player1']['name']
+		player2 = gs['players']['player2']['name']
+		status = 'finished' if gs['left_score'] >= gs['winning_score']\
+			or gs['right_score'] >= gs['winning_score'] else 'running'
 		for match in cache_db['matchs']:
 			if match.get(player1) and match.get(player2):
-				match[player1] = self.left_score
-				match[player2] = self.right_score
+				match[player1] = gs['left_score']
+				match[player2] = gs['right_score']
 				match['status'] = status
 				cache.set(self.message['tournament_id'], cache_db)
 				break
 
 	async def	tournament_update(self):
-		if self.game_code != 23:
-			return
-		if self.left_score != self.message['game_state']['left_score']\
-			or self.right_score != self.message['game_state']['right_score']:
-			self.left_score = self.message['game_state']['left_score']
-			self.right_score = self.message['game_state']['right_score']
+		if self.game_code == 23 and self.message['game_state']['new_round']:
 			await self.tournament_database_update()
 			await sync_to_async(send_to_tournament_group)(self.message['tournament_id'])
 
