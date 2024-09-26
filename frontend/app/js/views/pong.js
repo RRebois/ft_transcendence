@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {FontLoader} from 'three/addons/loaders/FontLoader.js';
 import {TextGeometry} from 'three/addons/geometries/TextGeometry.js';
 import {initializePongWebSocket} from "@js/functions/websocket.js";
-import {DirectionalLight, SpotLight, Clock} from 'three';
+import {DirectionalLight, SpotLight, Clock, MathUtils} from 'three';
 
 export default class PongGame {
     constructor(props) {
@@ -10,8 +10,10 @@ export default class PongGame {
         this.user = props?.user;
         this.gameSocket = null;
         this.setUser = this.setUser.bind(this);
+        this.sceneWidth = 800;
 
         document.addEventListener('DOMContentLoaded', this.setupEventListeners.bind(this));
+        window.addEventListener('resize', this.onWindowResize.bind(this));
     }
 
     setUser(user) {
@@ -113,6 +115,8 @@ export default class PongGame {
         this.camera.position.set(0, 400, 1000);
         this.scene.fog = new THREE.Fog(0x000000, 250, 1400);
         this.camera.lookAt(0, 250, 0);
+        this.camera.far = 5000;
+        this.camera.near = 0.1;
 
         // Renderer
         this.renderer = new THREE.WebGLRenderer({antialias: true});
@@ -767,14 +771,28 @@ export default class PongGame {
         this.handleKeyEvent();
 
         // Resize scene
-        window.addEventListener('resize', () => {
-            this.camera.aspect = window.innerWidth / window.innerHeight;
-            this.camera.updateProjectionMatrix();
-            this.renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        // window.addEventListener('resize', () => {
+        //     this.camera.aspect = window.innerWidth / window.innerHeight;
+        //     this.camera.updateProjectionMatrix();
+        //     this.renderer.setSize(window.innerWidth, window.innerHeight);
+        // });
 
         // Render scene
         this.renderer.render(this.scene, this.camera);
+    }
+
+     onWindowResize() {
+         console.log("RESIZE : ", window.innerWidth, window.innerHeight);
+         console.log("stadium size: ", this.scene.getObjectByName("stadium"));
+         this.camera.aspect = window.innerWidth / window.innerHeight;
+         const aspectRatio = window.innerWidth / window.innerHeight;
+         const verticalFOV = this.camera.fov * (Math.PI / 180);
+         const horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
+         const distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
+         this.camera.position.z = -distance;
+         this.camera.lookAt(300, -100, 300);
+         this.camera.updateProjectionMatrix();
+         this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
     waitMSGMove(msg) {
@@ -814,7 +832,7 @@ export default class PongGame {
 
     // Collecting info from the game logic in the back
     display(data) {
-        console.log(data);
+        // console.log(data);
         const   ball = this.scene.getObjectByName("ball");
 
 // ball does not rotate, needs correction
@@ -829,13 +847,6 @@ export default class PongGame {
     setupEventListeners() {
         window.addEventListener("keydown", this.onKeyDown.bind(this));
         window.addEventListener("keyup", this.onKeyUp.bind(this));
-
-        // Resize scene
-        window.addEventListener('resize', () => {
-            this.camera.aspect = window.innerWidth / window.innerHeight;
-            this.camera.updateProjectionMatrix();
-            this.renderer.setSize(window.innerWidth, window.innerHeight);
-        });
     }
 
     render() { //https://en.threejs-university.com/2021/08/03/chapter-7-sprites-and-particles-in-three-js/
@@ -844,5 +855,4 @@ export default class PongGame {
                     <div id="returnBtnDiv"></div>
                 </div>`
     }
-
 }
