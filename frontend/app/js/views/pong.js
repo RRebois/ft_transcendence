@@ -261,11 +261,11 @@ export default class PongGame {
                 waitText.add(textAdd, mirror);
 
             });
-            const animate = () => {
-                requestAnimationFrame(animate);
-               this.materials["wait"].emissiveIntensity = 3 + Math.sin(Date.now() * 0.005) * 3;
-            };
-            animate();
+            // const animate = () => {
+            //     requestAnimationFrame(animate);
+            //    this.materials["wait"].emissiveIntensity = 3 + Math.sin(Date.now() * 0.005) * 3;
+            // };
+            // animate();
         }
     }
 
@@ -277,9 +277,6 @@ export default class PongGame {
         const   planeWait = this.scene.getObjectByName("waitPlane");
         this.scene.fog.near = 0.1;
         this.scene.fog.far = 0;
-
-        // adjusts
-        this.camera.updateProjectionMatrix();
 
         if (dirLight)
             this.scene.remove(dirLight, pointLight, wait, planeWait);
@@ -344,19 +341,16 @@ export default class PongGame {
     // bloom https://threejs.org/examples/#webgl_postprocessing_unreal_bloom
 
         for (let i = 0; i < this.players_nick.length; i++) {
-            if (this.players_nick[i] === "fbelfort") {
-                this.players_nick[i] = "Presidente";
-            }
-            else if (this.players_nick[i].length > 8) {
+            if (this.players_nick[i].length > 8) {
                 this.players_nick[i] = this.players_nick[i].substr(0, 7) + ".";
             }
         }
 
         // Adjust this.Array for each case (2 players / 4 players)
         if (this.players_nick.length > 2) {
-            this.textArray = [`${this.players_nick[0]} + " " + ${this.players_nick[1]}`,
+            this.textArray = [`${this.players_nick[2]} + " " + ${this.players_nick[3]}`,
             "\n" + this.score_p2.toString(), "\n - ", "\n" + this.score_p1.toString(),
-            `${this.players_nick[2]} + " " + ${this.players_nick[3]}`];
+            `${this.players_nick[0]} + " " + ${this.players_nick[1]}`];
         }
         else {
             this.textArray = [`${this.players_nick[0]}`,
@@ -422,13 +416,13 @@ export default class PongGame {
                 this.updateTextGroup(this.xPosition);
 
                 // Add a pulsing effect
-                const animate = () => {
-                    requestAnimationFrame(animate);
-                    this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-                    this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-                    this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-                }
-                animate();
+                // const animate = () => {
+                //     requestAnimationFrame(animate);
+                //     this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+                //     this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+                //     this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+                // }
+                // animate();
             });
         });
     }
@@ -741,8 +735,11 @@ export default class PongGame {
         requestAnimationFrame(this.animate);
 
         const   msg = this.scene.getObjectByName("waitTxt");
-        if (msg)
+        if (msg) {
             this.waitMSGMove(msg);
+            this.materials["wait"].emissiveIntensity = 3 + Math.sin(Date.now() * 0.005) * 3;
+        }
+
 //        const   hyphen = this.scene.getObjectByName("hyphen");
 //        if (hyphen) {
 //            if (this.camera.position.y > 400) {
@@ -770,24 +767,33 @@ export default class PongGame {
     }
 
     updateBallPosition(x, z) {
-        const ball = this.scene.getObjectByName("ball");
+        const   ball = this.scene.getObjectByName("ball");
+        const   prevPosition = new THREE.Vector3(ball.x, ball.y, ball.z);
+        const   newPosition = new THREE.Vector3(x, 0, z);
 
-        if (ball) {
-            ball.position.x = x;
-            ball.position.z = z;
+        ball.position.x = x;
+        ball.position.z = z;
+
+        if (prevPosition === newPosition)
+            return ;
+        ball.position.copy(newPosition);
+
+        let     dir = newPosition.clone().sub(prevPosition);
+        let     d = dir.length();
+
+        if (d > 0) {
+            dir.normalize();
         }
-    }
+        let     rAx = new THREE.Vector3();
+        rAx.crossVectors(dir, new THREE.Vector3(0, 1, 0));
+        let     rAng = d / this.ball_radius;
+        ball.rotateOnAxis(rAx.normalize(), rAng);
 
-//        moveBall(object, targetPosition) {
-//        const animate = () => {
-//            requestAnimationFrame(animate);
-////            object.position.lerp(targetPosition, 0.03); // positions not being exactly what expected. Check to correct it
-//            object.position.x = this.lerp(object.position.x, targetPosition.x, 1);
-////            object.position.y = this.lerp(object.position.y, targetPosition.y, 0.03);
-//            object.position.z = this.lerp(object.position.z, targetPosition.z, 1);
-//        }
-//        animate();
-//    }
+        // ball.rotation.x += dir.z * r;
+        // ball.rotation.z += dir.x * r;
+        // ball.position.x = x;
+        // ball.position.z = z;
+    }
 
 //    newRound() {
 //        this.ball_x = 0;
@@ -808,9 +814,9 @@ export default class PongGame {
 // ball does not rotate, needs correction
         this.updateBallPosition(data.game_state.ball["x"], data.game_state.ball["y"]);
         this.updatePaddlePosition(data.game_state, Object.values(data.game_state.players));
-        if (data.game_state["left_score"] != this.score_p2.toString())
+        if (data.game_state["right_score"] != this.score_p2.toString())
             this.updateScores(data.game_state, 0);
-        else if (data.game_state["right_score"] != this.score_p1.toString())
+        else if (data.game_state["left_score"] != this.score_p1.toString())
             this.updateScores(data.game_state, 1);
     }
 
@@ -828,7 +834,7 @@ export default class PongGame {
 
     render() { //https://en.threejs-university.com/2021/08/03/chapter-7-sprites-and-particles-in-three-js/
         this.initializeWs(this.props?.code);
-        return `<div style="width: 100vw; height: 100vh;" id="display"></div>`
+        return `<div style="width: 100%; height: 100%;" id="display"></div>`
     }
 
 }
