@@ -6,7 +6,6 @@ import {DirectionalLight, SpotLight, Clock} from 'three';
 
 export default class PongGame {
     constructor(props) {
-    console.log("============ PONG WEBPAGE CONSTRUCTOR ============");
         this.props = props;
         this.user = props?.user;
         this.gameSocket = null;
@@ -24,13 +23,10 @@ export default class PongGame {
 	}
 
     setProps(newProps) {
-        console.log("Pong: " + newProps);
         this.props = newProps;
     }
 
     initializeWs = async (gameCode) => {
-		console.log("pong initializeWs called");
-
 		let ws;
 		try {
 			ws = await initializePongWebSocket(gameCode, this.props?.session_id, this);
@@ -52,28 +48,61 @@ export default class PongGame {
 
         // Load all textures at once
         this.textures = {};
-        const textureLoader = new THREE.TextureLoader();
-        const textStadium = textureLoader.load("/textures/grass/grass_BaseColor.jpg");
-        const textInitBall = textureLoader.load("/textures/football.jpg");
-        const textBlueCube = textureLoader.load("/textures/blue_basecolor.png");
-//        const   textBlueCubeR = textureLoader.load("/textures/blue_metallic.png");
-//        const   textBlueCubeM = textureLoader.load("/textures/blue_roughness.png");
-        const textRedCube = textureLoader.load("/textures/red_basecolor.png");
-        const textPadBlue = textureLoader.load("/textures/ice/ice_basecolor.png");
+        const   textureLoader = new THREE.TextureLoader();
+        const   textStadium = textureLoader.load("/textures/grass/grass_BaseColor.jpg");
+        const   textInitBall = textureLoader.load("/textures/football.jpg");
+//        const   redBall = textureLoader.load("/textures/blue_metallic.png");
+//        const   blueBall = textureLoader.load("/textures/ice/blue_roughness.png");
+        const   textBlueCube = textureLoader.load("/textures/blue_basecolor.png");
+        const   textRedCube = textureLoader.load("/textures/red_basecolor.png");
+        const   textPadBlue = textureLoader.load("/textures/ice/ice_basecolor.png");
 //        const   textPadBlueRoughness = textureLoader.load("/textures/ice/ice_roughness.png");
-        const textPadRed = textureLoader.load("/textures/lava/lava_basecolor.jpg");
+        const   textPadRed = textureLoader.load("/textures/lava/lava_basecolor.jpg");
 
-        const three = textureLoader.load("three.png")
+        const   three = textureLoader.load("three.png")
 
         this.textures["textStadium"] = textStadium;
         this.textures["textInitBall"] = textInitBall;
+        this.textures["redBall"] = textInitBall;
+        this.textures["blueBall"] = textInitBall;
         this.textures["textBlueCube"] = textBlueCube;
-//        this.textures["textBlueCubeR"] = textBlueCubeR;
-//        this.textures["textBlueCubeM"] = textBlueCubeM;
         this.textures["textRedCube"] = textRedCube;
         this.textures["textPadBlue"] = textPadBlue;
-//        this.textures["textPadBlueRoughness"] = textPadBlueRoughness;
         this.textures["textPadRed"] = textPadRed;
+
+        // Load all materials
+        this.materials = {};
+        this.materials["wait"] = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            flatShading: true,
+            emissive: 0xffffff,
+            emissiveIntensity: 0.8
+        });
+        this.materials["mirror"] = new THREE.MeshStandardMaterial({
+            color: 0xffffff
+        });
+        this.materials["p1"] = new THREE.MeshStandardMaterial({
+            color: 0xff0000,
+            emissive: 0xff0000,
+            roughness: 0,
+            metalness: 0.555,
+        });
+
+        this.materials["p2"] = new THREE.MeshStandardMaterial({
+            color: 0x1f51ff,
+            emissive: 0x0000ff,
+            roughness: 0,
+            metalness: 0.555,
+        });
+
+        // Material for scores
+        this.materials["scores"] = new THREE.MeshStandardMaterial({
+            color: 0x8cff00,
+            emissive: 0x00ff00,
+            emissiveIntensity: 0.8,
+            metalness: 0.8,
+            roughness: 0,
+        });
 
         this.paddles = {};
         this.scene = new THREE.Scene();
@@ -90,25 +119,25 @@ export default class PongGame {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        const test = document.getElementById("display");
+        const   container = document.getElementById("display");
         const returnBtn = document.createElement("button");
         returnBtn.id = "return-home-btn";
         returnBtn.route = "/dashboard";
         returnBtn.classList.add("btn", "btn-primary");
         returnBtn.innerHTML = "Give up";
-        test.appendChild(this.renderer.domElement);
-        test.appendChild(returnBtn);
+        container.appendChild(this.renderer.domElement);
+        container.appendChild(returnBtn);
 
         // Create stade group with all objetcs so when rotate everything follows
-        const stadiumGroup = new THREE.Group();
+        const   stadiumGroup = new THREE.Group();
         // stadiumGroup.rotation.set(45, 0, 0);
-        const stadium = new THREE.Object3D();
+        const   stadium = new THREE.Object3D();
         stadium.name = "stadium";
         stadiumGroup.add(stadium);
         this.scene.add(stadiumGroup);
 
         // Display text from the beginning
-        const textGroup = new THREE.Object3D();
+        const    textGroup = new THREE.Object3D();
         textGroup.position.y = 300;
         textGroup.position.z = 300;
         textGroup.rotation.set(0, Math.PI, 0);
@@ -117,15 +146,12 @@ export default class PongGame {
 
         // Controls pad
         this.keyMap = {};
-        window.addEventListener("keydown", this.onKeyDown.bind(this));
-        window.addEventListener("keyup", this.onKeyUp.bind(this));
 
         this.animate = this.animate.bind(this);
         this.animate();
     }
 
     onKeyDown(event) {
-        console.log("/n/nKEYDOWN/n/n");
         this.keyMap[event.key] = true;
     }
 
@@ -156,9 +182,9 @@ export default class PongGame {
         plane.receiveShadow = true;
         this.scene.add(plane);
 
-        const   spotLightRight = new SpotLight(0xffffff, 10000000);
+        const   spotLightRight = new SpotLight(0xffffff, 1000000);
         spotLightRight.position.set(920, 400, 100); //y: 300
-        spotLightRight.target.position.set(550, 0, 160);
+        spotLightRight.target.position.set(550, 0, 140);
 //        spotLightRight.distance = 5000;
         spotLightRight.angle = .45; // change it for higher or lower coverage of the spot
         spotLightRight.penumbra = .8;
@@ -167,9 +193,9 @@ export default class PongGame {
         spotLightRight.shadow.camera.near = 10;
         spotLightRight.name = "spotR";
 
-        const   spotLightLeft = new SpotLight(0xffffff, 10000000);
+        const   spotLightLeft = new SpotLight(0xffffff, 1000000);
         spotLightLeft.position.set(-300, 400, 100);
-        spotLightLeft.target.position.set(50, 0, 160);
+        spotLightLeft.target.position.set(50, 0, 140);
         spotLightLeft.angle = .45; // change it for higher or lower coverage of the spot
         spotLightLeft.penumbra = .8;
         spotLightLeft.castShadow = true;
@@ -224,26 +250,17 @@ export default class PongGame {
                     bevelSize: 1.5,
                     bevelThickness: 2,
                 });
-                const   material = new THREE.MeshStandardMaterial({
-                    color: 0xffffff,
-                    flatShading: true,
-                    emissive: 0xffffff,
-                    emissiveIntensity: 0.8
-                });
-                const   mirrorMat = new THREE.MeshStandardMaterial({
-                    color: 0xffffff
-                })
 
                 // Create bounding box
                 geometry.computeBoundingBox();
                 const   boundingBox = geometry.boundingBox;
                 const   textWidth = boundingBox.max.x - boundingBox.min.x;
 
-                const   textAdd = new THREE.Mesh(geometry, material);
+                const   textAdd = new THREE.Mesh(geometry, this.materials["wait"]);
                 textAdd.position.set(-0.5 * textWidth, 30, 0);
                 textAdd.rotation.set(0, 2 * Math.PI, 0);
 
-                const   mirror = new THREE.Mesh(geometry, mirrorMat);
+                const   mirror = new THREE.Mesh(geometry, this.materials["mirror"]);
                 mirror.position.set(-0.5 * textWidth, -30, 20);
                 mirror.rotation.set(Math.PI, 2 * Math.PI, 0);
 
@@ -252,7 +269,7 @@ export default class PongGame {
             });
             const animate = () => {
                 requestAnimationFrame(animate);
-                textAdd.material.emissiveIntensity = 3 + Math.sin(Date.now() * 0.005) * 3;
+               this.materials["wait"].emissiveIntensity = 3 + Math.sin(Date.now() * 0.005) * 3;
             };
             animate();
         }
@@ -264,6 +281,12 @@ export default class PongGame {
         const   pointLight = this.scene.getObjectByName("light_2");
         const   wait = this.scene.getObjectByName("waitTxt");
         const   planeWait = this.scene.getObjectByName("waitPlane");
+        this.scene.fog.near = 0.1;
+        this.scene.fog.far = 0;
+
+        // adjusts
+        this.camera.updateProjectionMatrix();
+
         if (dirLight)
             this.scene.remove(dirLight, pointLight, wait, planeWait);
 
@@ -279,7 +302,7 @@ export default class PongGame {
         // Ball initial stats
         this.ball_x = 0;
         this.ball_z = 0;
-        this.ball_radius = Object.values(data.game_state.ball)[2];
+        this.ball_radius = data.game_state.ball["radius"];
 
         // rm previous scene stuff
         this.scene.children;
@@ -295,34 +318,14 @@ export default class PongGame {
 
         // Set players nick
         this.players_nick = []; //p2, p1, p4, p3
-        this.players_nick.push(Object.keys(data.players)[1]);
-        this.players_nick.push(Object.keys(data.players)[0]);
+        this.players_nick.push(data.game_state.players.player2["name"]);
+        this.players_nick.push(data.game_state.players.player1["name"]);
 
         if (Object.keys(data.players).length > 2) {
-            this.players_nick.push(Object.keys(data.players)[4]);
-            this.players_nick.push(Object.keys(data.players)[2]);
+            this.players_nick.push(data.game_state.players.player4["name"]);
+            this.players_nick.push(data.game_state.players.player3["name"]);
         }
 
-        for (let i = 0; i < this.players_nick.length; i++) {
-            if (this.players_nick[i].length > 8) {
-                this.players_nick[i] = this.players_nick[i].substr(0, 7) + ".";
-            }
-        }
-
-        // Adjust this.Array for each case (2 players / 4 players)
-        if (this.players_nick.length > 2) {
-            this.textArray = [`${this.players_nick[0]} + " " + ${this.players_nick[1]}`,
-            "\n" + this.score_p1.toString(), "\n - ", "\n" + this.score_p2.toString(),
-            `${this.players_nick[2]} + " " + ${this.players_nick[3]}`];
-        }
-        else {
-            this.textArray = [`${this.players_nick[0]}`,
-            "\n" + this.score_p1.toString(), "\n - ", "\n" + this.score_p2.toString(),
-            `${this.players_nick[1]}`];
-        }
-        this.newArray = ["team 1 " + this.textArray[0],
-                        this.textArray[1] + this.textArray[2] + this.textArray[3],
-                        "team 2 " + this.textArray[4]];
         this.sprite = [];
 
         // Display scores to the scene
@@ -333,12 +336,11 @@ export default class PongGame {
     }
 
     createGameElements(data) {
-        this.createBall(Object.values(data.game_state.ball));
+        this.createBall(data.game_state.ball, this.textures["textInitBall"]);
         this.createLightFloor();
         this.createPlanStadium();
         for (let i = 0; i < Object.keys(data.players).length; i++)
-            this.createPaddle(Object.values(data.game_state),
-                                Object.values(data.game_state.players)[i], i + 1);
+            this.createPaddle(data.game_state, Object.values(data.game_state.players)[i], i + 1);
         this.createStadium();
     }
 
@@ -346,6 +348,30 @@ export default class PongGame {
     //https://discourse.threejs.org/t/different-textures-on-each-face-of-cube/23700 onWResize
     //https://github.com/Fasani/three-js-resources?tab=readme-ov-file#images
     // bloom https://threejs.org/examples/#webgl_postprocessing_unreal_bloom
+
+        for (let i = 0; i < this.players_nick.length; i++) {
+            if (this.players_nick[i] === "fbelfort") {
+                this.players_nick[i] = "Presidente";
+            }
+            else if (this.players_nick[i].length > 8) {
+                this.players_nick[i] = this.players_nick[i].substr(0, 7) + ".";
+            }
+        }
+
+        // Adjust this.Array for each case (2 players / 4 players)
+        if (this.players_nick.length > 2) {
+            this.textArray = [`${this.players_nick[0]} + " " + ${this.players_nick[1]}`,
+            "\n" + this.score_p2.toString(), "\n - ", "\n" + this.score_p1.toString(),
+            `${this.players_nick[2]} + " " + ${this.players_nick[3]}`];
+        }
+        else {
+            this.textArray = [`${this.players_nick[0]}`,
+            "\n" + this.score_p2.toString(), "\n - ", "\n" + this.score_p1.toString(),
+            `${this.players_nick[1]}`];
+        }
+        this.newArray = ["team 1 " + this.textArray[0],
+                        this.textArray[1] + this.textArray[2] + this.textArray[3],
+                        "team 2 " + this.textArray[4]];
 
         const   textGroup = this.scene.getObjectByName("textGroup");
         const   loader = new FontLoader();
@@ -371,41 +397,17 @@ export default class PongGame {
                     bevelEnabled: true,
                 });
 
-                // Material for nicknames
-                const nickTextMaterialP1 = new THREE.MeshStandardMaterial({
-                    color: 0xff0000,
-                    emissive: 0xff0000,
-                    roughness: 0,
-                    metalness: 0.555,
-                });
-
-                const nickTextMaterialP2 = new THREE.MeshStandardMaterial({
-                    color: 0x1f51ff,
-                    emissive: 0x0000ff,
-                    roughness: 0,
-                    metalness: 0.555,
-                });
-
-                // Material for scores
-                const textMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x8cff00,
-                    emissive: 0x00ff00,
-                    emissiveIntensity: 0.8,
-                    metalness: 0.8,
-                    roughness: 0,
-                });
-
                 let textAdd;
                 if (this.nameArray[index] === "p1Nick") {
-                    textAdd = new THREE.Mesh(textGeometry, nickTextMaterialP1);
+                    textAdd = new THREE.Mesh(textGeometry, this.materials["p1"]);
                     textAdd.name = this.nameArray[index];
                 }
                 else if (this.nameArray[index] === "p2Nick") {
-                    textAdd = new THREE.Mesh(textGeometry, nickTextMaterialP2);
+                    textAdd = new THREE.Mesh(textGeometry, this.materials["p2"]);
                     textAdd.name = this.nameArray[index];
                 }
                 else {
-                    textAdd = new THREE.Mesh(textGeometry, textMaterial);
+                    textAdd = new THREE.Mesh(textGeometry, this.materials["scores"]);
                     textAdd.name = this.nameArray[index];
                 }
 
@@ -428,7 +430,9 @@ export default class PongGame {
                 // Add a pulsing effect
                 const animate = () => {
                     requestAnimationFrame(animate);
-                    textAdd.material.emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+                    this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+                    this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+                    this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
                 }
                 animate();
             });
@@ -438,7 +442,7 @@ export default class PongGame {
     updateTextGroup(value) {
         const   textGroup = this.scene.getObjectByName("textGroup");
         if (textGroup)
-            textGroup.position.x = value - 95;
+            textGroup.position.x = value - 100;
     }
 
      createPlanStadium() { // add animation https://threejs.org/examples/#webgl_gpgpu_water
@@ -458,13 +462,13 @@ export default class PongGame {
         stadium.add(plane);
      }
 
-    createBall(data) { // animation goutte d'eau idee rolando + un peu felipe
+    createBall(data, texture) { // animation goutte d'eau idee rolando + un peu felipe
         const   geometry = new THREE.SphereGeometry(this.ball_radius, 48, 48);
-        const   material = new THREE.MeshStandardMaterial({map: this.textures["textInitBall"]});
+        const   material = new THREE.MeshStandardMaterial({map: texture});
         const   ball = new THREE.Mesh(geometry, material);
 
         const   stadium = this.scene.getObjectByName("stadium");
-        ball.position.set(data[0], 0, data[1]);
+        ball.position.set(data["x"], 0, data["y"]);
         ball.castShadow = true;
         ball.receiveShadow = true;
         ball.name = "ball";
@@ -491,7 +495,7 @@ export default class PongGame {
 
 
     createPaddle(data, player, i) { // correct texture on paddles (long side) player.pos.y must be 140 not 110
-        const geometry = new THREE.BoxGeometry(data[6], data[6], data[7]);
+        const geometry = new THREE.BoxGeometry(data["paddle_width"], data["paddle_width"], data["paddle_height"]);
         let material;
         if (player.pos.x < 300)
             material = new THREE.MeshStandardMaterial({
@@ -503,7 +507,7 @@ export default class PongGame {
             });
 
         const paddle = new THREE.Mesh(geometry, material);
-        paddle.position.set(player.pos.x, 0, player.pos.y);
+        paddle.position.set(player.pos.x, 0, player.pos.y + data["paddle_height"] * 0.5);
         paddle.castShadow = true;
         paddle.name = `p${i}`;
         this.paddles[paddle.name] = paddle;
@@ -532,18 +536,39 @@ export default class PongGame {
 
 
 //        cube = new THREE.Mesh(geometry, redMaterial);
-//        cube.position.set(-10, 0, -40);stadium.add(cube);
-//        // Create plane
+//        cube.position.set(0, 0, 0);stadium.add(cube);
+////        // Create plane
 //        const   planeGeometry = new THREE.PlaneGeometry(80, 80, 40, 40);
 //        const   planeMaterial = new THREE.MeshPhongMaterial({
 //            color: 0xff0000,
 //            side: THREE.DoubleSide
 //        });
 //        const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
-//        plane.rotation.x = - Math.PI;
-////        plane.rotation.y =  Math.PI * 0.5;
-//        plane.position.set(600, 0, 0);
+//        plane.rotation.x = Math.PI * 0.5;
+//        plane.rotation.y = Math.PI * 0.5;
+//        plane.position.set(0, 0, 0);
 //        stadium.add(plane);
+//
+//        const   plane1 = new THREE.Mesh(planeGeometry, planeMaterial);
+//        plane1.rotation.x = -Math.PI * 0.5;
+//        plane1.rotation.y = Math.PI * 0.5;//z
+//        plane1.position.set(600, 0, 0);
+//        stadium.add(plane1);
+//
+//        const   plane2 = new THREE.Mesh(planeGeometry, planeMaterial);
+//        plane2.rotation.x =  Math.PI;
+//        plane2.position.set(0, 0, 0);
+//        stadium.add(plane2);
+//
+//        const   plane3 = new THREE.Mesh(planeGeometry, planeMaterial);
+//        plane3.rotation.x =  Math.PI;
+//        plane3.position.set(0, 0, 280);
+//        stadium.add(plane3);
+
+//        const   plane2 = new THREE.Mesh(planeGeometry, planeMaterial);
+//        plane2.rotation.x =  Math.PI;
+//        plane2.position.set(0, 0, 0);
+//        stadium.add(plane2);
 
 
         while (++i < 92) { //96
@@ -573,7 +598,6 @@ export default class PongGame {
         }
 
         this.moveCubes(cubes, targetPositions);
-        console.log("done0");
     }
 
     moveCubes(cubes, targetPositions) {
@@ -582,7 +606,6 @@ export default class PongGame {
             const targetPosition = targetPositions[i];
             this.moveObjectTrans(cube, targetPosition);
         }
-        console.log("done1");
     }
 
     //            const   animate = () => { //https://dustinpfister.github.io/2022/05/17/threejs-vector3-lerp/
@@ -599,7 +622,6 @@ export default class PongGame {
         let lt = new Date(),
         f = 0,
         fm = 300;
-//console.log(object, targetPosition);
         const animate = () => {
             const   now = new Date();
             const   secs = (now - lt) / 1000;
@@ -619,7 +641,7 @@ export default class PongGame {
 
     createBlueMaterial() {
         const   material = new THREE.MeshStandardMaterial({
-            map: this.textures["textBlueCube"],
+            map: this.textures["textBlueCube"], //textBlueCube
 //            metalnessMap: this.textures["textBlueCubeM"],
 //            metalness: 1.0,
 //            roughnessMap: this.textures["textBlueCubeR"]
@@ -656,22 +678,11 @@ export default class PongGame {
         return  cube;
     }
 
-    updatePaddlePosition(players) {
-        console.log(players);
-        for (let i = 0; i < players.length; i++) {console.log("moving: ", this.paddles[`p${i + 1}`].position.z);
-
-        console.log(players[i].pos.x);
-        this.paddles[`p${i + 1}`].position.z = players[i].pos.y;
+    updatePaddlePosition(data, players) {
+        for (let i = 0; i < players.length; i++) {
+            this.paddles[`p${i + 1}`].position.z = players[i].pos.y + data["paddle_height"] * 0.5;
         }
     }
-////        let   targetPosition;
-//////            this.paddles[`p${i + 1}`].position.z = -players[i].pos[1];
-////            if (this.paddles[`p${i + 1}`].position.z != -players[i].pos.y) {
-////                targetPosition = new THREE.Vector3(players[i].pos.x, 0, -players[i].pos.y)
-////                this.lerp(this.paddles[`p${i + 1}`].position.z, targetPosition.z, 0.03);
-////            }
-////        }
-//    }
 
     rotateScore(i) {
         return new Promise((resolve) => {
@@ -705,7 +716,7 @@ export default class PongGame {
         });
     }
 
-    updateScores() {
+    updateScores(gameState, i) {
         // Select textGroup
         const   text = this.scene.getObjectByName("textGroup");
         let     toRemove;
@@ -713,16 +724,27 @@ export default class PongGame {
             toRemove = text.getObjectByName(value);
             text.remove(toRemove);
         })
+
+        if (i === 0)
+            this.score_p2++;
+        else
+            this.score_p1++;
+        if (this.score_p2 === 5 || this.score_p1 === 5)
+            console.log("game finished");
+        const   ball = this.scene.getObjectByName("ball");
+        if (i === 0) {
+            ball.material.map = this.textures["textPadRed"];
+            ball.material.needsUpdate = true;
+        }
+        else {
+            ball.material.map = this.textures["textPadBlue"];
+            ball.material.needsUpdate = true;
+        }
         this.printInitScores();
     }
 
     animate() {
         requestAnimationFrame(this.animate);
-
-
-//        this.camera.rotation.y += 0.002;
-//        const   textGroup = this.scene.getObjectByName("textGroup");
-//        textGroup.rotation.copy(this.camera.rotation);
 
         const   msg = this.scene.getObjectByName("waitTxt");
         if (msg)
@@ -793,20 +815,33 @@ export default class PongGame {
 
     // Collecting info from the game logic in the back
     display(data) {
-//        console.log(data);
+        console.log(data);
         const   ball = this.scene.getObjectByName("ball");
 
 // ball does not rotate, needs correction
-        this.updateBallPosition(Object.values(data.game_state.ball)[0],
-                                Object.values(data.game_state.ball)[1]);
-        this.updatePaddlePosition(Object.values(data.game_state.players));
+        this.updateBallPosition(data.game_state.ball["x"], data.game_state.ball["y"]);
+        this.updatePaddlePosition(data.game_state, Object.values(data.game_state.players));
+        if (data.game_state["left_score"] != this.score_p2.toString())
+            this.updateScores(data.game_state, 0);
+        else if (data.game_state["right_score"] != this.score_p1.toString())
+            this.updateScores(data.game_state, 1);
     }
 
-    setupEventListeners() {}
+    setupEventListeners() {
+        window.addEventListener("keydown", this.onKeyDown.bind(this));
+        window.addEventListener("keyup", this.onKeyUp.bind(this));
 
-    render() {
+        // Resize scene
+        window.addEventListener('resize', () => {
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    }
+
+    render() { //https://en.threejs-university.com/2021/08/03/chapter-7-sprites-and-particles-in-three-js/
         this.initializeWs(this.props?.code);
-        return `<div id="display"></div>`
+        return `<div style="width: 100vw; height: 100vh;" id="display"></div>`
     }
 
 }
