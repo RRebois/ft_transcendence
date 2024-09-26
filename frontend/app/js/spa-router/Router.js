@@ -7,12 +7,14 @@ export default class Router {
 		this.routes = routes;
 		this.renderNode = renderNode;
 		this.navbar = new Navbar();
+		this.historyStack = [];
 		this.init();
 	}
 
 	async init() {
 		this.addEventListeners();
 		await getCsrf();
+		this.historyStack.unshift(window.location.pathname + window.location.search)
 		await this.navigate(window.location.pathname + window.location.search);
 	}
 
@@ -32,12 +34,9 @@ export default class Router {
 	}
 
 	async navigate(path, pushState = true) {
-		console.log('Path before regex: ', path);
 		if (path !== "/") {
 			path = path.replace(/\/+$/, ''); // Remove trailing slashes
 		}
-		console.log('Path after regex: ', path);
-
 		// find all elements with class "modal-backdrop" and remove them
 		remove_modal_backdrops();
 		const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
@@ -45,6 +44,7 @@ export default class Router {
 		console.log('isUserAuth', isUserAuth);
 		const route = this.routes.find(route => this.match(route, path));
 		if (!route) {
+			this.historyStack.unshift(path);
 			window.history.pushState(null, null, path);
 			this.renderNode.innerHTML = '' +
 				'<h1 class="mb-6 play-bold" style="font-size: 6rem">404</h1>' +
@@ -57,6 +57,7 @@ export default class Router {
 		}
 		const isPublicRoute = this.isPublicRoute(publicRoutes, path);
 		if (!isPublicRoute && !isUserAuth) {
+			this.historyStack.unshift("/");
 			window.history.pushState(null, null, '/'); // Redirect to home
 			const home = this.routes.find(route => this.match(route, "/"));
 			this.renderNode.innerHTML = home.renderView();
@@ -67,6 +68,7 @@ export default class Router {
 			}
 			return ;
 		} else if (isPublicRoute && isUserAuth) {
+			this.historyStack.unshift("/dashboard");
 			window.history.pushState(null, null, '/dashboard'); // Redirect to dashboard
 			const dashboard = this.routes.find(route => this.match(route, "/dashboard"));
 			this.navbar.setUser(isUserAuth);
@@ -98,6 +100,7 @@ export default class Router {
 		} else {
 			const query = path.split('?')[1];
 			path += query ? '?' + query : '';
+			this.historyStack.unshift(path);
 			window.history.pushState(null, null, path);
 		}
 	}
@@ -125,23 +128,12 @@ export default class Router {
 		const pathWithoutQuery = splitPath[0];
 		const query = splitPath[1];
 		if (requestPath.search("//") !== -1) {
-			console.log('invalid path');
 			return false;
 		}
-		// if (!(route.parameters() === 0 && route.path === pathWithoutQuery)) {
-		// 	console.log('parameters are not equal');
-		// 	return false;
-		// }
 		const parameters = this.getURLParameters(requestPath);
-		console.log('parameters: ', parameters);
 		if (parameters.length !== route.parameters()) {
-			console.log('parameters length are not equal');
 			return false;
 		}
-		console.log("params length are equal");
-
-
-
 		const regexPath = route.path.replace(/([:*])(\w+)/g, (full, colon, name) => {
 			return '([^\/]+)';
 		}) + '(?:\/|$)';
@@ -153,7 +145,6 @@ export default class Router {
 				params.username = parameters[0];
 			}
 			route.setProps(params);
-			console.log("returning true");
 			return true;
 		}
 		return false;
@@ -164,7 +155,6 @@ export default class Router {
 			const regexPath = route.replace(/([:*])(\w+)/g, (full, colon, name) => {
 				return '([^\/]+)';
 			}) + '(?:\/|$)';
-
 			const routeMatch = path.match(new RegExp(regexPath));
 			if (routeMatch !== null) {
 				return true;
