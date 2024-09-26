@@ -261,11 +261,6 @@ export default class PongGame {
                 waitText.add(textAdd, mirror);
 
             });
-            // const animate = () => {
-            //     requestAnimationFrame(animate);
-            //    this.materials["wait"].emissiveIntensity = 3 + Math.sin(Date.now() * 0.005) * 3;
-            // };
-            // animate();
         }
     }
 
@@ -414,15 +409,6 @@ export default class PongGame {
                     this.xPosition += textWidth + 10;
                 textGroup.add(textAdd);
                 this.updateTextGroup(this.xPosition);
-
-                // Add a pulsing effect
-                // const animate = () => {
-                //     requestAnimationFrame(animate);
-                //     this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-                //     this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-                //     this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-                // }
-                // animate();
             });
         });
     }
@@ -494,6 +480,9 @@ export default class PongGame {
                 map: this.textures["textPadBlue"],
             });
 
+        this.textures["textPadRed"].wrapS = THREE.RepeatWrapping;
+        this.textures["textPadRed"].wrapT = THREE.RepeatWrapping;
+        this.textures["textPadRed"].repeat.set(1, 6); // Adjust repeat values to fit your geometry
         const paddle = new THREE.Mesh(geometry, material);
         paddle.position.set(player.pos.x, 0, player.pos.y + data["paddle_height"] * 0.5);
         paddle.castShadow = true;
@@ -672,62 +661,29 @@ export default class PongGame {
         }
     }
 
-    rotateScore(i) {
-        return new Promise((resolve) => {
-            if (i === 1) {
-                this.score = this.scene.getObjectByName('p1Score');
-            }
-            else {
-               this.score = this.scene.getObjectByName('p2Score');
-            }
-            if (this.score) {
-                // Rotation on the X axis
-                this.startRotation = this.score.rotation.x;
-                this.endRotation = this.startRotation + Math.PI;
-                const duration = 700;
-                const   startTime = Date.now();
-
-                const animate = () => {
-                    const deltaT = Date.now() - startTime;
-                    const progress = deltaT / duration;
-
-                    if (progress < 1) {
-                        this.score.rotation.x = this.startRotation + progress * (this.endRotation - this.startRotation);
-                        requestAnimationFrame(animate);
-                    } else {
-                        this.score.rotation.x = this.endRotation;
-                        resolve();
-                    }
-                };
-             animate();
-            }
-        });
-    }
-
-    updateScores(gameState, i) {
-        // Select textGroup
+    updateScores(gameState) {
+        // Select objects
         const   text = this.scene.getObjectByName("textGroup");
+        const   ball = this.scene.getObjectByName("ball");
         let     toRemove;
         this.nameArray.forEach(value => {
             toRemove = text.getObjectByName(value);
             text.remove(toRemove);
         })
 
-        if (i === 0)
+        if (gameState["right_score"] != this.score_p2.toString()) {
             this.score_p2++;
-        else
-            this.score_p1++;
-        if (this.score_p2 === 5 || this.score_p1 === 5)
-            console.log("game finished");
-        const   ball = this.scene.getObjectByName("ball");
-        if (i === 0) {
-            ball.material.map = this.textures["textPadRed"];
-            ball.material.needsUpdate = true;
-        }
-        else {
             ball.material.map = this.textures["textPadBlue"];
             ball.material.needsUpdate = true;
         }
+        else {
+            this.score_p1++;
+            ball.material.map = this.textures["textPadRed"];
+            ball.material.needsUpdate = true;
+        }
+        if (this.score_p2 === 5 || this.score_p1 === 5)
+            console.log("game finished");
+
         this.printInitScores();
     }
 
@@ -739,6 +695,10 @@ export default class PongGame {
             this.waitMSGMove(msg);
             this.materials["wait"].emissiveIntensity = 3 + Math.sin(Date.now() * 0.005) * 3;
         }
+
+        this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+        this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+        this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
 
 //        const   hyphen = this.scene.getObjectByName("hyphen");
 //        if (hyphen) {
@@ -768,31 +728,24 @@ export default class PongGame {
 
     updateBallPosition(x, z) {
         const   ball = this.scene.getObjectByName("ball");
-        const   prevPosition = new THREE.Vector3(ball.x, ball.y, ball.z);
+        const   prevPosition = new THREE.Vector3(ball.position.x, ball.position.y, ball.position.z);
         const   newPosition = new THREE.Vector3(x, 0, z);
 
+        let     mvtDir = newPosition.clone().sub(prevPosition);
+        let distance = mvtDir.length();
+
+        if (distance > 0) {
+            mvtDir.normalize();
+            let rotationAngle = distance / this.ball_radius;
+            ball.rotation.x += mvtDir.x * rotationAngle;
+            ball.rotation.z -= mvtDir.z * rotationAngle;
+        }
+        else {
+            ball.rotation.x = 0;
+            ball.rotation.z = 0;
+        }
         ball.position.x = x;
         ball.position.z = z;
-
-        if (prevPosition === newPosition)
-            return ;
-        ball.position.copy(newPosition);
-
-        let     dir = newPosition.clone().sub(prevPosition);
-        let     d = dir.length();
-
-        if (d > 0) {
-            dir.normalize();
-        }
-        let     rAx = new THREE.Vector3();
-        rAx.crossVectors(dir, new THREE.Vector3(0, 1, 0));
-        let     rAng = d / this.ball_radius;
-        ball.rotateOnAxis(rAx.normalize(), rAng);
-
-        // ball.rotation.x += dir.z * r;
-        // ball.rotation.z += dir.x * r;
-        // ball.position.x = x;
-        // ball.position.z = z;
     }
 
 //    newRound() {
@@ -814,10 +767,12 @@ export default class PongGame {
 // ball does not rotate, needs correction
         this.updateBallPosition(data.game_state.ball["x"], data.game_state.ball["y"]);
         this.updatePaddlePosition(data.game_state, Object.values(data.game_state.players));
-        if (data.game_state["right_score"] != this.score_p2.toString())
-            this.updateScores(data.game_state, 0);
-        else if (data.game_state["left_score"] != this.score_p1.toString())
-            this.updateScores(data.game_state, 1);
+        if (data.game_state["new_round"])
+            this.updateScores(data.game_state);
+        // if (data.game_state["right_score"] != this.score_p2.toString())
+        //     this.updateScores(data.game_state, 0);
+        // else if (data.game_state["left_score"] != this.score_p1.toString())
+        //     this.updateScores(data.game_state, 1);
     }
 
     setupEventListeners() {
