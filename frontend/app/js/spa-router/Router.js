@@ -7,12 +7,14 @@ export default class Router {
 		this.routes = routes;
 		this.renderNode = renderNode;
 		this.navbar = new Navbar();
+		this.historyStack = [];
 		this.init();
 	}
 
 	async init() {
 		this.addEventListeners();
 		await getCsrf();
+		this.historyStack.unshift(window.location.pathname + window.location.search)
 		await this.navigate(window.location.pathname + window.location.search);
 	}
 
@@ -32,15 +34,18 @@ export default class Router {
 	}
 
 	async navigate(path, pushState = true) {
-		console.log("IN NAVIGATE");
 		console.log("Real current path is: ", window.location.pathname);
+		if (path !== "/") {
+			path = path.replace(/\/+$/, ''); // Remove trailing slashes
+		}
 		// find all elements with class "modal-backdrop" and remove them
 		remove_modal_backdrops();
 		const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
 		const isUserAuth = await isUserConnected();
-		console.log('isUserAuth', isUserAuth);
 		const route = this.routes.find(route => this.match(route, path));
 		if (!route) {
+			this.historyStack.unshift(path);
+			window.history.pushState(null, null, path);
 			this.renderNode.innerHTML = '' +
 				'<h1 class="mb-6 play-bold" style="font-size: 6rem">404</h1>' +
 				'<img src="/homer.webp" alt="homer simpson disappearing" class="rounded w-1-2 mb-4" />' +
@@ -52,6 +57,7 @@ export default class Router {
 		}
 		const isPublicRoute = this.isPublicRoute(publicRoutes, path);
 		if (!isPublicRoute && !isUserAuth) {
+			this.historyStack.unshift("/");
 			window.history.pushState(null, null, '/'); // Redirect to home
 			const home = this.routes.find(route => this.match(route, "/"));
 			this.renderNode.innerHTML = home.renderView();
@@ -62,9 +68,19 @@ export default class Router {
 			}
 			return ;
 		} else if (isPublicRoute && isUserAuth) {
+			this.historyStack.unshift("/dashboard");
 			window.history.pushState(null, null, '/dashboard'); // Redirect to dashboard
 			const dashboard = this.routes.find(route => this.match(route, "/dashboard"));
 			this.navbar.setUser(isUserAuth);
+			if (window.myPongSocket && window.myPongSocket.readyState === WebSocket.OPEN) {
+				window.myPongSocket.close();
+				console.log('Pong websocket connection closed');
+			}
+			else if (window.myPurrinhaSocket && window.myPurrinhaSocket.readyState === WebSocket.OPEN) {
+				window.myPurrinhaSocket.close();
+				console.log('Purrinha websocket connection closed');
+			}
+			console.log("Destination path is: ", path);
 			this.renderNode.innerHTML = this.navbar.render() + dashboard.renderView();
 			this.navbar.setupEventListeners();
 			dashboard.setupEventListeners();
@@ -75,16 +91,14 @@ export default class Router {
 		if (route.user) {
 			this.navbar.setUser(route.user);
 			if (route.path === "/purrinha" || route.path === "/pong") {
-				console.log("Path is /purrinha or /pong");
-				console.log("Destination path is: ", path);
 				this.renderNode.innerHTML = route.renderView(path);
 			} else {
 				console.log("Current path is: ", window.location.pathname);
-				if (window.location.pathname === "/pong" && window.myPongSocket && window.myPongSocket.readyState === WebSocket.OPEN) {
+				if (window.myPongSocket && window.myPongSocket.readyState === WebSocket.OPEN) {
 					window.myPongSocket.close();
 					console.log('Pong websocket connection closed');
 				}
-				else if (window.location.pathname === "/purrinha" && window.myPurrinhaSocket && window.myPurrinhaSocket.readyState === WebSocket.OPEN) {
+				else if (window.myPurrinhaSocket && window.myPurrinhaSocket.readyState === WebSocket.OPEN) {
 					window.myPurrinhaSocket.close();
 					console.log('Purrinha websocket connection closed');
 				}
@@ -95,8 +109,10 @@ export default class Router {
 		}
 		else {
 			this.renderNode.innerHTML = route.renderView(path);
+			// this.renderNode.innerHTML = route.renderView();
 		}
 		route.setupEventListeners(path);
+		// route.setupEventListeners();
 
 		// Update the browser history
 		const currentPath = window.location.pathname + window.location.search;
@@ -105,6 +121,7 @@ export default class Router {
 		} else {
 			const query = path.split('?')[1];
 			path += query ? '?' + query : '';
+			this.historyStack.unshift(path);
 			window.history.pushState(null, null, path);
 		}
 	}
@@ -113,11 +130,33 @@ export default class Router {
 		return Object.fromEntries(new URLSearchParams(query).entries());
 	}
 
+	getURLParameters(path) {
+		if (path.startsWith('/')) {
+			path = path.slice(1);
+		}
+		const splited = path.split('/');
+		const parameters = [];
+		for (let i = 1; i < splited.length; i++) {
+			const part = splited[i];
+			parameters.push(part);
+		}
+		return parameters;
+	}
+
 	// Match the route path to the current location path
 	match(route, requestPath) {
 		const splitPath = requestPath.split('?');
 		const pathWithoutQuery = splitPath[0];
 		const query = splitPath[1];
+		if (requestPath.search("//") !== -1) {
+			console.log('invalid path');
+			return false;
+		}
+		const parameters = this.getURLParameters(requestPath);
+		console.log('parameters: ', parameters);
+		if (parameters.length !== route.parameters()) {
+			return false;
+		}
 		const regexPath = route.path.replace(/([:*])(\w+)/g, (full, colon, name) => {
 			return '([^\/]+)';
 		}) + '(?:\/|$)';
@@ -125,9 +164,10 @@ export default class Router {
 		const routeMatch = pathWithoutQuery.match(new RegExp(regexPath));
 		if (routeMatch !== null) {
 			params = this.getQueryParams(query);
-
+			if (route.path === '/stats') {
+				params.username = parameters[0];
+			}
 			route.setProps(params);
-			console.log("returning true");
 			return true;
 		}
 		return false;
@@ -138,7 +178,6 @@ export default class Router {
 			const regexPath = route.replace(/([:*])(\w+)/g, (full, colon, name) => {
 				return '([^\/]+)';
 			}) + '(?:\/|$)';
-
 			const routeMatch = path.match(new RegExp(regexPath));
 			if (routeMatch !== null) {
 				return true;

@@ -7,9 +7,8 @@ import matchView from "./views/pong.js";
 import dashboardView from './views/dashboard.js';
 import friendsView from './views/friends.js';
 import resetPWView from './views/reset-pw.js';
-import { initializeWebSocket} from "@js/functions/websocket.js";
+import {initializeWebSocket} from "@js/functions/websocket.js";
 import profileView from '@views/my-profile.js';
-import userView from './views/user.js';
 import statsView from './views/stats.js';
 import purrinhaView from './views/purrinha.js';
 import initializeRouter from "@js/spa-router/initializeRouter.js";
@@ -21,8 +20,8 @@ const routes = [
     new Route('/dashboard', '/dashboard', dashboardView),
     new Route('/my-profile', '/my-profile', profileView),
     new Route('/friends', '/friends', friendsView),
-    new Route('/stats/:username', '/stats/:username', statsView),
-    new Route('/set-reset-password', '/set-reset-password', resetPWView),
+    new Route('/stats', '/stats', statsView, null, 1),
+    new Route('/set-reset-password', '/set-reset-password', resetPWView, null, 2),
     new Route('/purrinha', '/purrinha', purrinhaView),
 ];
 
@@ -33,5 +32,3 @@ document.addEventListener('DOMContentLoaded', initializeWebSocket);
 document.addEventListener('DOMContentLoaded', () => {
     new ToastComponent();
 });
-
-// https://medium.com/swlh/lets-code-a-client-side-router-for-your-no-framework-spa-19da93105e10

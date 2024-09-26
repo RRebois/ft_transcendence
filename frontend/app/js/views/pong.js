@@ -120,13 +120,12 @@ export default class PongGame {
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         const   container = document.getElementById("display");
-        const returnBtn = document.createElement("button");
-        returnBtn.id = "return-home-btn";
-        returnBtn.route = "/dashboard";
-        returnBtn.classList.add("btn", "btn-primary");
-        returnBtn.innerHTML = "Give up";
+        const returnBtn = document.getElementById("returnBtnDiv");
+        returnBtn.innerHTML = `
+            <button id='return-home-btn' route="/" class='btn btn-primary'>Give up</button>
+        `;
         container.appendChild(this.renderer.domElement);
-        container.appendChild(returnBtn);
+        // container.appendChild(returnBtnDiv);
 
         // Create stade group with all objetcs so when rotate everything follows
         const   stadiumGroup = new THREE.Group();
@@ -841,7 +840,9 @@ export default class PongGame {
 
     render() { //https://en.threejs-university.com/2021/08/03/chapter-7-sprites-and-particles-in-three-js/
         this.initializeWs(this.props?.code);
-        return `<div style="width: 100vw; height: 100vh;" id="display"></div>`
+        return `<div style="width: 100vw; height: 100vh;" id="display">
+                    <div id="returnBtnDiv"></div>
+                </div>`
     }
 
 }
