@@ -10,7 +10,9 @@ export default class PongGame {
         this.user = props?.user;
         this.gameSocket = null;
         this.setUser = this.setUser.bind(this);
-        this.sceneWidth = 800;
+        this.sceneWidth = 600;
+        this.prevWidth = window.innerWidth;
+        this.prevHeight = window.innerHeight;
 
         document.addEventListener('DOMContentLoaded', this.setupEventListeners.bind(this));
         window.addEventListener('resize', this.onWindowResize.bind(this));
@@ -111,12 +113,10 @@ export default class PongGame {
         this.scene.background = new THREE.Color(0x000000);
 
         // Camera
-        this.camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 1500);
+        this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 7000);
         this.camera.position.set(0, 400, 1000);
         this.scene.fog = new THREE.Fog(0x000000, 250, 1400);
         this.camera.lookAt(0, 250, 0);
-        this.camera.far = 5000;
-        this.camera.near = 0.1;
 
         // Renderer
         this.renderer = new THREE.WebGLRenderer({antialias: true});
@@ -782,17 +782,22 @@ export default class PongGame {
     }
 
      onWindowResize() {
-         console.log("RESIZE : ", window.innerWidth, window.innerHeight);
-         console.log("stadium size: ", this.scene.getObjectByName("stadium"));
-         this.camera.aspect = window.innerWidth / window.innerHeight;
-         const aspectRatio = window.innerWidth / window.innerHeight;
-         const verticalFOV = this.camera.fov * (Math.PI / 180);
-         const horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
-         const distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
-         this.camera.position.z = -distance;
-         this.camera.lookAt(300, -100, 300);
+         const newWidth = window.innerWidth;
+         const newHeight = window.innerHeight;
+         const aspectRatio = newWidth / newHeight;
+         this.camera.aspect = aspectRatio;
+
+         if ((newWidth !== this.prevWidth && aspectRatio < 1.5)) {
+             const verticalFOV = this.camera.fov * (Math.PI / 180);
+             const horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
+             const distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
+             this.camera.position.z = -distance;
+             this.camera.position.y = ((distance * 3) * Math.tan(verticalFOV * 0.5));
+         }
          this.camera.updateProjectionMatrix();
-         this.renderer.setSize(window.innerWidth, window.innerHeight);
+         this.renderer.setSize(newWidth, newHeight);
+         this.prevHeight = newHeight;
+         this.prevWidth = newWidth;
     }
 
     waitMSGMove(msg) {
