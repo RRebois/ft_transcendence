@@ -436,12 +436,13 @@ export default class PongGame {
         stadium.add(plane);
      }
 
-    createBall(data, texture) { // animation goutte d'eau idee rolando + un peu felipe
+    createBall(data, texture) {
         const   geometry = new THREE.SphereGeometry(this.ball_radius, 48, 48);
         const   material = new THREE.MeshStandardMaterial({map: texture});
         const   ball = new THREE.Mesh(geometry, material);
 
         const   stadium = this.scene.getObjectByName("stadium");
+
         ball.position.set(data["x"], 0, data["y"]);
         ball.castShadow = true;
         ball.receiveShadow = true;
@@ -471,18 +472,22 @@ export default class PongGame {
     createPaddle(data, player, i) { // correct texture on paddles (long side) player.pos.y must be 140 not 110
         const geometry = new THREE.BoxGeometry(data["paddle_width"], data["paddle_width"], data["paddle_height"]);
         let material;
-        if (player.pos.x < 300)
+        if (player.pos.x < 300) {
             material = new THREE.MeshStandardMaterial({
                 map: this.textures["textPadRed"],
             });
-        else
+            this.textures["textPadRed"].wrapS = THREE.RepeatWrapping;
+            this.textures["textPadRed"].wrapT = THREE.RepeatWrapping;
+            this.textures["textPadRed"].repeat.set(1, 6);
+        }
+        else {
             material = new THREE.MeshStandardMaterial({
                 map: this.textures["textPadBlue"],
             });
-
-        this.textures["textPadRed"].wrapS = THREE.RepeatWrapping;
-        this.textures["textPadRed"].wrapT = THREE.RepeatWrapping;
-        this.textures["textPadRed"].repeat.set(1, 6); // Adjust repeat values to fit your geometry
+            this.textures["textPadBlue"].wrapS = THREE.RepeatWrapping;
+            this.textures["textPadBlue"].wrapT = THREE.RepeatWrapping;
+            this.textures["textPadBlue"].repeat.set(1, 6);
+        }
         const paddle = new THREE.Mesh(geometry, material);
         paddle.position.set(player.pos.x, 0, player.pos.y + data["paddle_height"] * 0.5);
         paddle.castShadow = true;
@@ -618,10 +623,7 @@ export default class PongGame {
 
     createBlueMaterial() {
         const   material = new THREE.MeshStandardMaterial({
-            map: this.textures["textBlueCube"], //textBlueCube
-//            metalnessMap: this.textures["textBlueCubeM"],
-//            metalness: 1.0,
-//            roughnessMap: this.textures["textBlueCubeR"]
+            map: this.textures["textBlueCube"],
         });
         return material;
     }
@@ -726,26 +728,38 @@ export default class PongGame {
         msg.rotation.y += 0.001;
     }
 
-    updateBallPosition(x, z) {
+    updateBallPosition(gameState) {
         const   ball = this.scene.getObjectByName("ball");
         const   prevPosition = new THREE.Vector3(ball.position.x, ball.position.y, ball.position.z);
-        const   newPosition = new THREE.Vector3(x, 0, z);
+        const   v = new THREE.Vector3(gameState.ball["x_vel"], 0, gameState.ball["y_vel"]);
+        const   newPosition = new THREE.Vector3(gameState.ball["x"], 0, gameState.ball["y"]);
 
-        let     mvtDir = newPosition.clone().sub(prevPosition);
-        let distance = mvtDir.length();
-
-        if (distance > 0) {
-            mvtDir.normalize();
-            let rotationAngle = distance / this.ball_radius;
-            ball.rotation.x += mvtDir.x * rotationAngle;
-            ball.rotation.z -= mvtDir.z * rotationAngle;
-        }
-        else {
+        ball.position.x = gameState.ball["x"];
+        ball.position.z = gameState.ball["y"];
+        if (gameState["new_round"] ||
+            (prevPosition.x === newPosition.x &&
+            prevPosition.z === newPosition.z)) {
             ball.rotation.x = 0;
             ball.rotation.z = 0;
+            return ;
         }
-        ball.position.x = x;
-        ball.position.z = z;
+
+        const movementVector = new THREE.Vector3(
+            newPosition.x - prevPosition.x,
+            newPosition.y - prevPosition.y,
+            newPosition.z - prevPosition.z
+        ).normalize();
+
+        const axis = new THREE.Vector3();
+        axis.crossVectors(movementVector, new THREE.Vector3(0, 1, 0)).normalize();
+
+        const totalVelocity = Math.sqrt(gameState.ball["x_vel"] * gameState.ball["x_vel"] + gameState.ball["y_vel"] * gameState.ball["y_vel"]);
+
+        const angle = -totalVelocity / (Math.PI * this.ball_radius) * Math.PI;
+
+        const quaternion = new THREE.Quaternion();
+        quaternion.setFromAxisAngle(axis, angle);
+        ball.quaternion.multiplyQuaternions(quaternion, ball.quaternion);
     }
 
 //    newRound() {
@@ -761,18 +775,14 @@ export default class PongGame {
 
     // Collecting info from the game logic in the back
     display(data) {
-        console.log(data);
+        // console.log(data);
         const   ball = this.scene.getObjectByName("ball");
 
-// ball does not rotate, needs correction
-        this.updateBallPosition(data.game_state.ball["x"], data.game_state.ball["y"]);
+
+        this.updateBallPosition(data.game_state);
         this.updatePaddlePosition(data.game_state, Object.values(data.game_state.players));
         if (data.game_state["new_round"])
             this.updateScores(data.game_state);
-        // if (data.game_state["right_score"] != this.score_p2.toString())
-        //     this.updateScores(data.game_state, 0);
-        // else if (data.game_state["left_score"] != this.score_p1.toString())
-        //     this.updateScores(data.game_state, 1);
     }
 
     setupEventListeners() {
