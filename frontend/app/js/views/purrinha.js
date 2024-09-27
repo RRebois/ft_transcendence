@@ -12,8 +12,6 @@ export default class PurrinhaGame {
 		this.gameSocket = null;
 		this.nb_players = 0;
 		this.max_value = 0;
-
-
 		this.players = [];
 
 		document.addEventListener('DOMContentLoaded', this.setupEventListeners.bind(this));
