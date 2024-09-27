@@ -2,7 +2,7 @@
 GAME_WIDTH = 600
 GAME_HEIGHT = 280
 
-WINNING_SCORE = 100
+WINNING_SCORE = 5
 
 PADDLE_START_VEL = 5
 BALL_START_VEL = 1
@@ -10,7 +10,8 @@ MAX_VEL = 6
 
 BALL_ACC = .1
 
-PADDLE_HEIGHT = 60
+PADDLE_HEIGHT_DUO = 60
+PADDLE_HEIGHT_MULTI = 40
 PADDLE_WIDTH = 10
 PADDLE_LEFT_X = 10
 PADDLE_RIGHT_X = 590
@@ -18,6 +19,9 @@ PADDLE_RIGHT_X = 590
 
 BALL_RADIUS = 10
 SLEEP = 0.02
+
+# how many game loops without update the ball position to match with SLEEP (50 * SLEEP) = 1 second
+WAITING_LOOPS = 50
 
 # for the match making - to search for another player who is within this level of ELO difference
 ELO_DIFF = 20
@@ -29,3 +33,7 @@ TOURNAMENT_LIMIT = 4
 BOT_NAME = 'bot'
 
 
+###		PURRINHA VARIABLES		###
+MAX_QUANTITY = 3
+
+MAX_ROUND_WINS = 3

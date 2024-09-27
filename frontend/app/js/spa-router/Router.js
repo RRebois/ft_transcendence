@@ -41,7 +41,6 @@ export default class Router {
 		remove_modal_backdrops();
 		const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
 		const isUserAuth = await isUserConnected();
-		console.log('isUserAuth', isUserAuth);
 		const route = this.routes.find(route => this.match(route, path));
 		if (!route) {
 			this.historyStack.unshift(path);
@@ -72,6 +71,15 @@ export default class Router {
 			window.history.pushState(null, null, '/dashboard'); // Redirect to dashboard
 			const dashboard = this.routes.find(route => this.match(route, "/dashboard"));
 			this.navbar.setUser(isUserAuth);
+			if (window.myPongSocket && window.myPongSocket.readyState === WebSocket.OPEN) {
+				window.myPongSocket.close();
+				console.log('Pong websocket connection closed');
+			}
+			else if (window.myPurrinhaSocket && window.myPurrinhaSocket.readyState === WebSocket.OPEN) {
+				window.myPurrinhaSocket.close();
+				console.log('Purrinha websocket connection closed');
+			}
+			console.log("Destination path is: ", path);
 			this.renderNode.innerHTML = this.navbar.render() + dashboard.renderView();
 			this.navbar.setupEventListeners();
 			dashboard.setupEventListeners();
@@ -82,16 +90,26 @@ export default class Router {
 		if (route.user) {
 			this.navbar.setUser(route.user);
 			if (route.path === "/purrinha" || route.path === "/pong") {
-				this.renderNode.innerHTML = route.renderView();
+				this.renderNode.innerHTML = route.renderView(path);
 			} else {
-				this.renderNode.innerHTML = this.navbar.render() + route.renderView();
+				console.log("Current path is: ", window.location.pathname);
+				if (window.myPongSocket && window.myPongSocket.readyState === WebSocket.OPEN) {
+					window.myPongSocket.close();
+					console.log('Pong websocket connection closed');
+				}
+				else if (window.myPurrinhaSocket && window.myPurrinhaSocket.readyState === WebSocket.OPEN) {
+					window.myPurrinhaSocket.close();
+					console.log('Purrinha websocket connection closed');
+				}
+				console.log("Destination path is: ", path);
+				this.renderNode.innerHTML = this.navbar.render() + route.renderView(path);
 			}
 			this.navbar.setupEventListeners();
 		}
 		else {
-			this.renderNode.innerHTML = route.renderView();
+			this.renderNode.innerHTML = route.renderView(path);
 		}
-		route.setupEventListeners();
+		route.setupEventListeners(path);
 
 		// Update the browser history
 		const currentPath = window.location.pathname + window.location.search;

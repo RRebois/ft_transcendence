@@ -181,6 +181,8 @@ class GameManagerView(APIView):
 		# 40 => remote 2 vs 2
 		if game_code not in [10, 20, 22, 23, 40]:
 			return "This code does not exist."
+		if game_name == 'purrinha' and game_code == 20:
+			return "This match mode is not available."
 		return None
 
 	def	get(self, request, game_name, game_code):

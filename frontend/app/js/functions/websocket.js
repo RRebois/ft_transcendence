@@ -46,7 +46,7 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 					}
 //					console.log("Data is:", data);
 //					console.log("Data.ws_route is:", data.ws_route);
-					const token = jwt.token
+					const token = jwt.token;
 					const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
 					const url = wsSelect + `${window.location.hostname}:8443` + data.ws_route + token + '/'
 //					console.log("url is:", url);
@@ -67,8 +67,6 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 							if (data?.action === 'pick_initial_number') {
 								window.alert("trigger action pick_initial_number");
 							} else {
-
-
 								// console.log("All players connected");
 								// Hide "waiting for players" modal
 								const waitingModal = bootstrap.Modal.getInstance(document.getElementById('lookingForPlayersModal'));
@@ -103,9 +101,9 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 
 					socket.onclose = function (event) {
 						if (event.wasClean) {
-							// console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+							console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
 						} else {
-							// console.log('Connection died');
+							console.log('Connection died');
 						}
 						setTimeout(initializeWebSocket, 2000);
 					};
@@ -114,7 +112,7 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 						console.log(`Purrinha webSocket Error: ${error.message}`);
 						reject(error);
 					};
-					window.mySocket = socket; // to access as a global var
+					window.myPurrinhaSocket = socket; // to access as a global var
 				})
 				.catch(error => {
 					console.error("Error:", error);
@@ -167,7 +165,7 @@ export async function initializePongWebSocket(gameCode, sessionId, pong) { conso
                 };
                 let test = 0;
                 socket.onmessage = function (event) {
-                    console.log("WebSocket connection established: ", event.data);
+                    // console.log("Pong websocket msg received: ", event.data);
                     const data = JSON.parse(event.data);
 
 
@@ -197,7 +195,7 @@ export async function initializePongWebSocket(gameCode, sessionId, pong) { conso
                     // console.log(`WebSocket Error: ${error.message}`);
                     reject(error);
                 };
-                window.mySocket = socket; // to access as a global var
+                window.myPongSocket = socket; // to access as a global var
             })
             .catch(error => {
 					console.error("Error:", error);

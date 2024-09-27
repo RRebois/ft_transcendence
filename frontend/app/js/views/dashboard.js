@@ -72,6 +72,8 @@ export default class Dashboard {
 					const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-match-modal'));
 					if (createMatchModal)
 						createMatchModal.hide();
+						const backdrops = document.querySelectorAll('.modal-backdrop');
+						backdrops.forEach(backdrop => backdrop.remove());
 					appRouter.navigate(`/${game_type}?${params}`);
 				}
 			})
