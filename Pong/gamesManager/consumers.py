@@ -296,9 +296,25 @@ class PurrinhaHandler():
 			client.close()
 
 	async def	get_new_turn(self):
-		if self.turns_id:
+		print(f"\n\n\n GET NEW TURN \n\n\n")
+		is_guessing = True
+
+		if isinstance(self.message['game_state'], dict):
+			print(f"self.player_nb: {self.player_nb}")
+			for id in range(1, self.player_nb + 1):
+				print(f"player{id} quantity: {self.message['game_state']['players'][f'player{id}']['quantity']}")
+				if not self.message['game_state']['players'][f'player{id}']['quantity']:
+					is_guessing = False
+		else:
+			is_guessing = False
+
+		print(f"is_guessing: {is_guessing}")
+
+		if self.turns_id and is_guessing:
 			self.curr_turn = choice(self.turns_id)
 			self.turns_id.remove(self.curr_turn)
+		else:
+			self.curr_turn = 0
 
 	async def	reset_game(self):
 		if len(self.turns_id) == self.player_nb:

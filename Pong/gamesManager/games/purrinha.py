@@ -88,6 +88,7 @@ class   PurrinhaPlayer:
     async def get_final_data(self):
         return {
             f"player{self.id}": {
+                "id": self.id,
                 "name": self.username,
                 'quantity': self.quantity,
                 'guess': self.guess,
@@ -97,6 +98,7 @@ class   PurrinhaPlayer:
     async def get_data(self):
         return {
             f"player{self.id}": {
+                "id": self.id,
                 "name": self.username,
                 'quantity': False if self.quantity == -1 else True,
                 'guess': self.guess,
