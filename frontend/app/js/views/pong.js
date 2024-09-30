@@ -151,8 +151,6 @@ export default class PongGame {
         // Controls pad
         this.keyMap = {};
 
-        this.onWindowResize();
-
         this.animate = this.animate.bind(this);
         this.animate();
     }
@@ -293,13 +291,23 @@ export default class PongGame {
             this.scene.remove(dirLight, pointLight, wait, planeWait);
 
         // reset camera to have stadium on
-        this.camera.position.set(300, 700, -500);
+        // this.camera.position.set(300, 700, -500);
+        // this.camera.lookAt(300, -100, 300);
+
+        const aspectRatio = window.innerWidth / window.innerHeight;
+        const verticalFOV = this.camera.fov * (Math.PI / 180);
+        const horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
+        const distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
+        this.camera.position.z = -distance;
+        this.camera.position.y = ((distance * 3) * Math.tan(verticalFOV * 0.5));
+        this.camera.position.x = 300;
+        // this.scene.fog = new THREE.Fog(0x000000, 250, 1400);
         this.camera.lookAt(300, -100, 300);
 
         // initial camera setup
-//        this.camera.position.set(300, 700, 500);
-//        this.camera.lookAt(300, -100, -300);
-//        this.camera.rotation.set(0, 2 * Math.PI, 0);
+       // this.camera.position.set(300, 700, 500);
+       // this.camera.lookAt(300, -100, -300);
+       // this.camera.rotation.set(0, 2 * Math.PI, 0);
 
         // Ball initial stats
         this.ball_x = 0;
@@ -741,19 +749,18 @@ export default class PongGame {
 
      onWindowResize() {
          if (window.location.pathname === "/pong") {
-             console.log("RESIZE");
              const newWidth = window.innerWidth;
              const newHeight = window.innerHeight;
-             console.log("newWidth: ", newWidth, " newHeight: ", newHeight);
              const aspectRatio = newWidth / newHeight;
              this.camera.aspect = aspectRatio;
 
-             if ((newWidth !== this.prevWidth && aspectRatio < 1.5)) {
+             if ((newWidth !== this.prevWidth && aspectRatio < 1.5) || (newHeight !== this.prevHeight && aspectRatio < 1.5)) {
                  const verticalFOV = this.camera.fov * (Math.PI / 180);
                  const horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
                  const distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
                  this.camera.position.z = -distance;
                  this.camera.position.y = ((distance * 3) * Math.tan(verticalFOV * 0.5));
+                 this.camera.position.x = 300;
              }
              this.camera.updateProjectionMatrix();
              this.renderer.setSize(newWidth, newHeight);
