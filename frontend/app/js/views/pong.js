@@ -120,6 +120,23 @@ export default class PongGame {
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         const   container = document.getElementById("display");
+        const returnBtn = document.getElementById("returnBtnDiv");
+        returnBtn.innerHTML = `
+            <button id='return-home-btn' route="/" class='btn btn-primary'>Give up</button>
+        `;
+        const   modal = document.getElementById("gameEndedModal");
+        modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div id="gameEndedModalBody" class="modal-body"></div>
+                    <div class="modal-footer">
+                        <button id="playAgainBtn" type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Play again</button>
+                        <button id="returnHomeBtn" type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Return home</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
         container.appendChild(this.renderer.domElement);
 
         // Create stade group with all objetcs so when rotate everything follows
@@ -683,9 +700,6 @@ export default class PongGame {
             ball.material.map = this.textures["textPadRed"];
             ball.material.needsUpdate = true;
         }
-        if (this.score_p2 === 5 || this.score_p1 === 5)
-            console.log("game finished");
-
         this.printInitScores();
     }
 
@@ -702,22 +716,6 @@ export default class PongGame {
         this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
         this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
 
-//        const   hyphen = this.scene.getObjectByName("hyphen");
-//        if (hyphen) {
-//            if (this.camera.position.y > 400) {
-//                this.camera.rotation.z -= 0.02;
-//                this.camera.position.y -= 0.5;
-//            }
-//            else {//3000 make rotation to final position smoother
-//                this.camera.position.set(0, 400, 1000);
-//                this.camera.rotation.z = 0;
-//            }
-//        }
-//        const   textGroup = this.scene.getObjectByName("textGroup");
-//        if (textGroup && textGroup.length > 0)
-//            this.updateTextPosition();
-
-//        this.updateBallPosition();
         this.handleKeyEvent();
 
         // Render scene
@@ -775,7 +773,7 @@ export default class PongGame {
 
     // Collecting info from the game logic in the back
     display(data) {
-        // console.log(data);
+        console.log(data);
         const   ball = this.scene.getObjectByName("ball");
 
 
@@ -783,6 +781,10 @@ export default class PongGame {
         this.updatePaddlePosition(data.game_state, Object.values(data.game_state.players));
         if (data.game_state["new_round"])
             this.updateScores(data.game_state);
+        if (this.score_p2 === data.game_state["winning_score"] || this.score_p1 === data.game_state["winning_score"]) {
+            // document.getElementById("GameEndedModal");
+            console.log("game finished");
+        }
     }
 
     setupEventListeners() {
@@ -799,7 +801,13 @@ export default class PongGame {
 
     render() { //https://en.threejs-university.com/2021/08/03/chapter-7-sprites-and-particles-in-three-js/
         this.initializeWs(this.props?.code);
-        return `<div style="width: 100%; height: 100%;" id="display"></div>`
+        return `
+            <div style="width: 100%; height: 100%;" id="display">
+                <div id="returnBtnDiv"></div>
+                <div class="modal fade" id="gameEndedModal" data-bs-backdrop="static"
+                    data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+                </div>
+            </div>
+        `;
     }
-
 }
