@@ -13,6 +13,7 @@ export default class PongGame {
         this.sceneWidth = 600;
         this.prevWidth = window.innerWidth;
         this.prevHeight = window.innerHeight;
+        console.log("PONG Constructor, Width: ", this.prevWidth, " Height: ", this.prevHeight);
 
         document.addEventListener('DOMContentLoaded', this.setupEventListeners.bind(this));
         window.addEventListener('resize', this.onWindowResize.bind(this));
@@ -49,6 +50,7 @@ export default class PongGame {
 
     init() { // For responsive device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
         document.title = "ft_transcendence | Pong";
+        console.log("PONG Init");
 
         // Load all textures at once
         this.textures = {};
@@ -113,7 +115,7 @@ export default class PongGame {
         this.scene.background = new THREE.Color(0x000000);
 
         // Camera
-        this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 7000);
+        this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
         this.camera.position.set(0, 400, 1000);
         this.scene.fog = new THREE.Fog(0x000000, 250, 1400);
         this.camera.lookAt(0, 250, 0);
@@ -149,16 +151,22 @@ export default class PongGame {
         // Controls pad
         this.keyMap = {};
 
+        this.onWindowResize();
+
         this.animate = this.animate.bind(this);
         this.animate();
     }
 
     onKeyDown(event) {
-        this.keyMap[event.key] = true;
+        if (window.location.pathname === "/pong") {
+            this.keyMap[event.key] = true;
+        }
     }
 
     onKeyUp(event) {
-        delete this.keyMap[event.key];
+        if (window.location.pathname === "/pong") {
+            delete this.keyMap[event.key];
+        }
     }
 
      handleKeyEvent() {
@@ -732,22 +740,26 @@ export default class PongGame {
     }
 
      onWindowResize() {
-         const newWidth = window.innerWidth;
-         const newHeight = window.innerHeight;
-         const aspectRatio = newWidth / newHeight;
-         this.camera.aspect = aspectRatio;
+         if (window.location.pathname === "/pong") {
+             console.log("RESIZE");
+             const newWidth = window.innerWidth;
+             const newHeight = window.innerHeight;
+             console.log("newWidth: ", newWidth, " newHeight: ", newHeight);
+             const aspectRatio = newWidth / newHeight;
+             this.camera.aspect = aspectRatio;
 
-         if ((newWidth !== this.prevWidth && aspectRatio < 1.5)) {
-             const verticalFOV = this.camera.fov * (Math.PI / 180);
-             const horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
-             const distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
-             this.camera.position.z = -distance;
-             this.camera.position.y = ((distance * 3) * Math.tan(verticalFOV * 0.5));
+             if ((newWidth !== this.prevWidth && aspectRatio < 1.5)) {
+                 const verticalFOV = this.camera.fov * (Math.PI / 180);
+                 const horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
+                 const distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
+                 this.camera.position.z = -distance;
+                 this.camera.position.y = ((distance * 3) * Math.tan(verticalFOV * 0.5));
+             }
+             this.camera.updateProjectionMatrix();
+             this.renderer.setSize(newWidth, newHeight);
+             this.prevHeight = newHeight;
+             this.prevWidth = newWidth;
          }
-         this.camera.updateProjectionMatrix();
-         this.renderer.setSize(newWidth, newHeight);
-         this.prevHeight = newHeight;
-         this.prevWidth = newWidth;
     }
 
     waitMSGMove(msg) {
