@@ -10,6 +10,7 @@ from .games.pong import PongGame
 from .games.purrinha import PurrinhaGame
 from matchs.views import create_match, add_match_to_tournament, send_to_tournament_group
 from .views import MatchMaking
+from .game_ai.bot_manager import init_bot
 from configFiles.globals import *
 
 
@@ -163,13 +164,14 @@ class PongHandler():
 	def	__init__(self, consumer):
 		self.consumer = [consumer]
 		self.game_code = consumer.game_code
+		self.bot = None
 
 	async def	launch_game(self, players_name):
 		self.message = self.consumer[0].session_data
 		self.game = PongGame(players_name, multiplayer=(self.game_code == 40))
 		await self.send_game_state()
 		if BOT_NAME in self.message['players']:
-			# init_bot()
+			self.bot = sync_to_async(init_bot)('pong', self.game)
 			pass
 
 	@database_sync_to_async
@@ -214,6 +216,8 @@ class PongHandler():
 			await self.game.move_player_paddle(player_move)
 
 	async def	game_loop(self):
+		if self.bot:
+			await self.bot.launch_bot()
 		while True:
 			await self.update_game_state()
 			await asyncio.sleep(SLEEP)
@@ -230,6 +234,8 @@ class PongHandler():
 		await self.consumer[0].send_to_group(self.message)
 
 	async def	cancel_loop(self):
+		if self.bot:
+			await self.bot.cancel_loop()
 		if hasattr(self, 'loop_task'):
 			self.loop_task.cancel()
 
