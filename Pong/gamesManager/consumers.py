@@ -171,8 +171,8 @@ class PongHandler():
 		self.game = PongGame(players_name, multiplayer=(self.game_code == 40))
 		await self.send_game_state()
 		if BOT_NAME in self.message['players']:
-			self.bot = sync_to_async(init_bot)('pong', self.game)
-			pass
+			self.bot = await init_bot('pong', self.game)
+			
 
 	@database_sync_to_async
 	def	tournament_database_update(self):
