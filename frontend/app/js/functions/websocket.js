@@ -132,7 +132,7 @@ export async function initializePongWebSocket(gameCode, sessionId, pong) { conso
         if (!gameCode || !sessionId) {
 			reject(new Error("Missing game code or session id"));
 		}
-        if (isUserAuth) { // replace  `https://localhost:8443/game/check/pong/${gameCode}/${sessionId}/`  `https://localhost:8443/game/pong/${gameCode}/`
+        if (isUserAuth) {
             fetch(`https://${window.location.hostname}:8443/game/pong/${gameCode}/`, {
                 method: "GET",
                 headers: {
