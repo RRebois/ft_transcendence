@@ -367,9 +367,10 @@ class PurrinhaHandler():
 	async def	end_game(self, winner=None):
 		if not winner:
 			winner = [self.message['game_state']['winner']]
-		else:
-			winner = winner[0]
+			print(f"\n\n\nwinner => {winner}\n\n\n")
+		winner = winner[0]
 		if winner != 'tie':
+			print(f"wins => {self.wins}")
 			self.wins[winner] += 1
 			self.message['game_state']['history'] = self.wins
 			if self.wins[winner] == MAX_ROUND_WINS:

@@ -155,9 +155,13 @@ class   PurrinhaGame:
             result = await self.match.get_final_result()
             players = await self.match.get_round_result()
             winner = 'tie'
-            for player in players:
+            print(f"result => {result}")
+            print(f"players => {players}")
+            for player in players.values():
+                print(f"[loop] player => {player}")
                 if player['guess'] == result:
-                    winner == player['name']
+                    winner = player['name']
+                    print(f"winner is  => {winner}")
                     break
 
         return {
