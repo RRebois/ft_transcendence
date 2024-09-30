@@ -5,7 +5,6 @@ import {send_player_action} from "../functions/purrinha.js";
 
 export default class PurrinhaGame {
     constructor(props) {
-        console.log("============ PURRINHA WEBPAGE CONSTRUCTOR ============");
         this.props = props;
         this.user = props?.user;
         this.player_set_id = null;
@@ -77,7 +76,7 @@ export default class PurrinhaGame {
 							</div>
 						</div>
 					</div>
-					
+
 					<div class="left-edge-container">
 						<div class="equal-elmt-y d-flex justify-content-center align-items-end">
 							<div style="--bs-bg-opacity: .5; width: 100%;" class="bg-white d-flex g-4 flex-column align-items-center rounded">
@@ -99,14 +98,14 @@ export default class PurrinhaGame {
 						<div style="height: 100%;">
 							<img src="/purrinha/closed_hand_top.png" style="max-width: 100%; max-height: 100%; width: auto; height: auto;" alt="edge-image" />
 						</div>
-						
+
 						<div class="equal-elmt-x d-flex justify-content-start align-items-center ">
 							<div style="--bs-bg-opacity: .5" class="bg-white d-flex g-4 flex-column align-items-center rounded">
 								<p id="user_info-username-3"></p>
 							</div>
 						</div>
 					</div>
-					
+
 					<div class="bottom-edge-container">
 						<div class="equal-elmt-x"></div>
 						<div style="height: 100%;">
@@ -118,7 +117,7 @@ export default class PurrinhaGame {
 							</div>
 						</div>
 					</div>
-					
+
 					<div class="right-edge-container">
 						<div class="equal-elmt-y"></div>
 						<div>
@@ -130,7 +129,7 @@ export default class PurrinhaGame {
 							</div>
 						</div>
 					</div>
-					
+
 					<div class="left-edge-container">
 						<div class="equal-elmt-y d-flex justify-content-center align-items-end">
 							<div style="--bs-bg-opacity: .5; width: 100%;" class="bg-white d-flex g-4 flex-column align-items-center rounded">
@@ -141,7 +140,7 @@ export default class PurrinhaGame {
 							<img src="/purrinha/closed_hand_left.png" style="height: 100%; width: 100%" alt="edge-image" />
 						</div>
 						<div class="equal-elmt-y"></div>
-					</div>					
+					</div>
 				`;
 
             }
@@ -172,13 +171,10 @@ export default class PurrinhaGame {
     }
 
     render() {
-        console.log("purrinha render called");
         this.initializeWs(this.props?.code);
         document.title = "ft_transcendence | Purrinha";
         return `
-			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center overflow-hidden" id="game-root">
-				
-			</div>
+			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center overflow-hidden" id="game-root"></div>
 
 			<!-- Waiting for players modal-->
 			<div class="modal fade" id="lookingForPlayersModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
