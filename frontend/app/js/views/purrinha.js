@@ -71,8 +71,14 @@ export default class PurrinhaGame {
 						</div>
 						<div class="equal-elmt-y d-flex justify-content-center align-items-start">
 							<div style="--bs-bg-opacity: .5; width: 100%;" class="bg-white d-flex g-4 flex-column align-items-center rounded">
-								<p id="user_info-username-1"></p>
-								<p id="user_info-status-1">Picking a number...</p>
+								<div class="d-flex flex-row justify-content-between">
+								    <p id="user_info-username-1" class="play-bold"></p>
+								    <div class="d-flex flex-row justify-content-center align-items-center">
+								        <i class="bi bi-trophy"></i>
+								        <p id="user_info_wins-1 m-0">0</p>
+								    </div>
+								</div>
+								<p id="user_info-status-1"></p>
 							</div>
 						</div>
 					</div>
@@ -81,7 +87,7 @@ export default class PurrinhaGame {
 						<div class="equal-elmt-y d-flex justify-content-center align-items-end">
 							<div style="--bs-bg-opacity: .5; width: 100%;" class="bg-white d-flex g-4 flex-column align-items-center rounded">
 								<p id="user_info-username-2"></p>
-								<p id="user_info-status-2">Picking a number...</p>
+								<p id="user_info-status-2"></p>
 							</div>
 						</div>
 						<div>
@@ -90,6 +96,7 @@ export default class PurrinhaGame {
 						<div class="equal-elmt-y"></div>
 					</div>
 				`;
+
                 // this.pick_inital_number();
             } else if (this.nb_players === 4) {
                 gameRoot.innerHTML = `
