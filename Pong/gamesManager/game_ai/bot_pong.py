@@ -23,7 +23,7 @@ class PongBot():
 
 	async def get_state(self):
 		serialize = await self.game.serialize()
-		paddle_pos = serialize[f'player{self.player}']['pos']
+		paddle_pos = serialize['players'][f'player{self.player}']['pos']
 		ball = serialize['ball']
 		self.winning_score = serialize['winning_score']
 		self.bot_score = 0
@@ -49,15 +49,19 @@ class PongBot():
         #         : WINNING_SCORE,
         #         'new_round': self.new_round,
 
-		return {'ball': ball, 'paddle': paddle_pos}
+		# return {'ball': ball, 'paddle': paddle_pos}
+		return (round(ball['x']), round(ball['y']), round(ball['x_vel']), round(ball['y_vel']), round(paddle_pos['x']), round(paddle_pos['y']))
 
-	def choose_action(self, state):
-		if self.training and random.uniform(0, 1) < PongBot.EPSILON:
-			return random.choice(PongBot.actions)
+	async def choose_action(self, state):
+		if random.uniform(0, 1) < PongBot.EPSILON:
+			# return random.choice(PongBot.actions)
+			test = random.choice(PongBot.actions)
 		else:
-			return max(PongBot.q_table.get(state, {a: 0 for a in PongBot.actions}),
+			test = max(PongBot.q_table.get(state, {a: 0 for a in PongBot.actions}),
 			  key=PongBot.q_table.get(state, {a: 0 for a in PongBot.actions}.get))
-		
+		print('escolhendo numero => ', test, '\nq table => ', PongBot.q_table.get(state, {a: 0 for a in PongBot.actions}))
+		return test
+
 	async def update_q_table(self, state, action, reward, new_state):
 		if state not in PongBot.q_table:
 			PongBot.q_table[state] = {a: 0 for a in PongBot.actions}
@@ -68,27 +72,30 @@ class PongBot():
 		PongBot.q_table[state][action] = new_value
 
 	async def continuous_paddle_mov(self, state):
-		action = self.choose_action(state)
+		action = await self.choose_action(state)
 
 		if action:
 			player_move = {'player': self.player, 'direction': action}
 			await self.game.move_player_paddle(player_move)
-		
+
 		return action
-	
+
 	async def bot_loop(self):
 		last_time = time.time()
 		state = await self.get_state()
-		action = 0
-		
+		action = await self.continuous_paddle_mov(state)
+
 		while True:
 			curr_time = time.time()
 			if curr_time - last_time >= 1:
+				# print(f'\n\nplayer => {self.player}\nlast time => {last_time}\ncurr time => {curr_time}\nstate => {state}\naction => {action}\nscore => {self.left_score} x {self.right_score} \n\n')
+				reward = self.bot_score if self.bot_score else 1
 				new_state = await self.get_state()
 				last_time = curr_time
-				reward = 1 if new_state['ball']['x'] > 0 or new_state['ball']['x'] < GAME_WIDTH else -1
-				reward = self.bot_score if self.bot_score else reward
+				# reward = 1 if new_state[0] > 0 or new_state[0] < GAME_WIDTH else -1
+				# reward = self.bot_score if self.bot_score else reward
 				await self.update_q_table(state, action, reward, new_state)
+				state = new_state
 			action = await self.continuous_paddle_mov(state)
 			await asyncio.sleep(SLEEP)
 

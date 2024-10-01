@@ -10,22 +10,22 @@ from configFiles.globals import *
 async def	init_bot(game_name, game):
 	await sync_to_async(User.objects.get_or_create)(username=BOT_NAME)
 	if game_name == 'pong':
-		print('passei aqui')
+		# print('passei aqui => ', PongBot.q_table)
 		test = []
 		# if not PongBot.is_trained():
 		# 	for i in range(100):
 		# 		TrainPong(i)
-		amount = 1
+		amount = 2
 		for i in range(amount):
 				tmp = TrainPong(i)
 				await tmp.launch_train()
 				test.append(tmp)
-		bla = 0
-		while bla < amount:
+		while test:
 			for t in test:
 				if t.finished:
-					bla += 1
+					test.remove(t)
 			await asyncio.sleep(SLEEP)
+		print(PongBot.q_table)
 		return PongBot(game, 2)
 	if game_name == 'purrinha':
 		pass
@@ -55,9 +55,10 @@ class	TrainPong():
 
 	async def try_cancel_loop(self):
 		gs = await self.game.serialize()
+		# print(f"\n\ntest {self.i} dentro de try_cancel {gs['winning_score']} => {gs['left_score']} x {gs['right_score']}")
 		if gs['left_score'] >= gs['winning_score'] or gs['right_score'] >= gs['winning_score']:
 			self.loop_task.cancel()
-			await asyncio.sleep(1)
+			# await asyncio.sleep(1)
 			await self.bot1.cancel_loop()
 			await self.bot2.cancel_loop()
 			self.finished = True
