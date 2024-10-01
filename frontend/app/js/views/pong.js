@@ -117,8 +117,8 @@ export default class PongGame {
         // this.camera.position.set(0, 400, 1000);
         // this.camera.lookAt(0, 250, 0);
 
-        this.camera.position.set(300, 700, -500);
-        this.scene.fog = new THREE.Fog(0x000000, 250, 1400);
+        this.camera.position.set(300, 600, -300); //(300, 700, -500)
+        this.scene.fog = new THREE.Fog(0x000000, -500, 1500);
         this.camera.lookAt(300, -100, 300);
 
         // Renderer
@@ -128,11 +128,11 @@ export default class PongGame {
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         const   container = document.getElementById("display");
         container.appendChild(this.renderer.domElement);
-        const stl = this.renderer.domElement.style;
-        stl.position = "absolute";
-        stl.top = "0px";
-        stl.left = "0px";
-        stl.zIndex = "-10";
+//        const stl = this.renderer.domElement.style;
+//        stl.position = "absolute";
+//        stl.top = "0px";
+//        stl.left = "0px";
+//        stl.zIndex = "-10";
 
 
         // It’s not really a THREE problem, it’s a HTML problem.
@@ -249,24 +249,32 @@ export default class PongGame {
     }
 
     waiting() {
+
+// this.camera.position.set(0, 400, 1000);
+        // this.camera.lookAt(0, 250, 0);
+
+//     this.camera.position.set(300, 700, -200); //(300, 700, -500)
+//        this.scene.fog = new THREE.Fog(0x000000, 250, 1400);
+//        this.camera.lookAt(300, -100, 300);
+
+
         const   check = this.scene.getObjectByName("light_1");
         if (!check) {
             // Set lights
             const   dirLight = new THREE.DirectionalLight(0xffffff, 0.4);
-            dirLight.position.set(0, 0, 1).normalize();
+            dirLight.position.set(300, 0, 1).normalize();
             dirLight.name = "light_1";
             this.scene.add(dirLight);
 
             const   pointLight = new THREE.PointLight(0xffffff, 4.5, 0, 0);
             pointLight.color.setHSL(Math.random(), 1, 0.5);
-            pointLight.position.set(0, 100, 90);
+            pointLight.position.set(300, 100, 90);
             pointLight.name = "light_2";
             this.scene.add(pointLight);
 
             const   txt = "Match will start soon!";
             const   waitText = new THREE.Object3D();
-    //        const    textGroup = new THREE.Object3D();
-            waitText.position.y = 300;
+            waitText.position.set(300, -100, 300);
             waitText.name = "waitTxt";
             this.scene.add(waitText);
 
@@ -274,8 +282,9 @@ export default class PongGame {
             const   planeGeometry = new THREE.PlaneGeometry(10000, 10000);
             const   planeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true });
             const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
-            plane.position.y = 300;
-            plane.rotation.x = - Math.PI * 0.5;
+            plane.position.set(300, 40, 0);
+            plane.rotation.x = - Math.PI * 0.5; //- Math.PI * 0.5;
+            plane.rotation.z = Math.PI;
             plane.name = "waitPlane";
             this.scene.add(plane);
 
@@ -284,7 +293,7 @@ export default class PongGame {
             loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
                 const   geometry = new TextGeometry(txt, {
                     font: font,
-                    size: 70,
+                    size: 85,
                     depth: 20,
                     curveSegments: 4,
                     bevelEnabled: true,
@@ -298,12 +307,12 @@ export default class PongGame {
                 const   textWidth = boundingBox.max.x - boundingBox.min.x;
 
                 const   textAdd = new THREE.Mesh(geometry, this.materials["wait"]);
-                textAdd.position.set(-0.5 * textWidth, 30, 0);
-                textAdd.rotation.set(0, 2 * Math.PI, 0);
+                textAdd.position.set(textWidth * 0.5, 150, 0);
+                textAdd.rotation.set(0, Math.PI, 0);
 
                 const   mirror = new THREE.Mesh(geometry, this.materials["mirror"]);
-                mirror.position.set(-0.5 * textWidth, -30, 20);
-                mirror.rotation.set(Math.PI, 2 * Math.PI, 0);
+                mirror.position.set(textWidth * 0.5, 90, -20);
+                mirror.rotation.set(Math.PI, - Math.PI, 0);
 
                 waitText.add(textAdd, mirror);
             });
@@ -797,7 +806,7 @@ export default class PongGame {
         this.initializeWs(this.props?.code);
 
         return `
-            <div style="width: 100vw; height: 100vh; position: relative; z-index: 10;" id="display">
+            <div style="width: 100%; height: 100%;" id="display">
                 <div id="returnBtnDiv"></div>
                 <div id="modal"></div>
             </div>
