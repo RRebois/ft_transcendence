@@ -32,6 +32,7 @@ class User(AbstractUser):
     status_choices = [
         ('online', 'Online'),
         ('offline', 'Offline'),
+        ('in-game', 'In-game'),
     ]
     language_choices = [
         ['🇬🇧 English', 'en'],

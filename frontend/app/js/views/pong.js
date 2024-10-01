@@ -290,10 +290,6 @@ export default class PongGame {
         if (dirLight)
             this.scene.remove(dirLight, pointLight, wait, planeWait);
 
-        // reset camera to have stadium on
-        // this.camera.position.set(300, 700, -500);
-        // this.camera.lookAt(300, -100, 300);
-
         const aspectRatio = window.innerWidth / window.innerHeight;
         const verticalFOV = this.camera.fov * (Math.PI / 180);
         const horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
