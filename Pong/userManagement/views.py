@@ -232,20 +232,24 @@ class Login42RedirectView(APIView):
             try:
                 user42 = exchange_token(code, next=True)
             except:
-                return JsonResponse(data={'message': 'The connexion with 42 provider failed'}, status=400)
+                error = login_42_error(request, "The connexion with 42 provider failed")
+                return error
         try:
             user = User.objects.get(email=user42["email"])
             if not user.stud42:
-                return JsonResponse(data={'message': 'email is already taken'}, status=400)
+                error = login_42_error(request, "Email already taken")
+                return error
         except User.DoesNotExist:
             try:
                 serializer = self.serializer_class(user42)
                 user = serializer.create(data=user42)
             except:
-                return JsonResponse(data={'message': 'Username already taken'}, status=400)
+                error = login_42_error(request, "Username already taken")
+                return error
 
         if user.status == "online":
-            return JsonResponse(status=401, data={'message': "User already have an active session"})
+            error = login_42_error(request, "Username already have an active session")
+            return error
         token = generate_JWT(user)
         refresh = generate_refresh_JWT(user)
         response = JsonResponse(data={'user': user_as_json(user)}, status=200)
