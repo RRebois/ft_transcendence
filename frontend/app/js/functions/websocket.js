@@ -168,7 +168,6 @@ export async function initializePongWebSocket(gameCode, sessionId, pong) { conso
                     // console.log("Pong websocket msg received: ", event.data);
                     const data = JSON.parse(event.data);
 
-
                     if (data.status === "waiting") // Waiting for opponent(s)
                         pong.waiting();
                     if (data.status === "ready" && test === 0) { // Waiting for display in front
@@ -178,7 +177,7 @@ export async function initializePongWebSocket(gameCode, sessionId, pong) { conso
                             socket.send(JSON.stringify({"game_status": true}));
                         }, 5000);
                     }
-                    if (data.status === "started")
+                    if (data.status === "started" || data.status === "finished")
                          pong.display(data, socket);
                 };
 

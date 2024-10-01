@@ -7,7 +7,7 @@ import * as bootstrap from "bootstrap";
 
 export default class PongGame {
     constructor(props) {
-        this.game_status = false;
+        this.game_finished = false;
         this.props = props;
         this.user = props?.user;
         this.winner = null;
@@ -52,6 +52,7 @@ export default class PongGame {
 
     init() { // For responsive device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
         document.title = "ft_transcendence | Pong";
+        modal.hidden = true;
 
         // Load all textures at once
         this.textures = {};
@@ -114,10 +115,11 @@ export default class PongGame {
 
         // Camera
         this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 7000);
-        // this.camera.position.set(0, 400, 1000);
-        // this.camera.lookAt(0, 250, 0);
-
-        this.camera.position.set(300, 600, -300); //(300, 700, -500)
+        const aspectRatio = window.innerWidth / window.innerHeight;
+        const verticalFOV = this.camera.fov * (Math.PI / 180);
+        const horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
+        const distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
+        this.camera.position.set(300, ((distance * 3) * Math.tan(verticalFOV * 0.5)), -distance);
         this.scene.fog = new THREE.Fog(0x000000, -500, 1500);
         this.camera.lookAt(300, -100, 300);
 
@@ -128,52 +130,14 @@ export default class PongGame {
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         const   container = document.getElementById("display");
         container.appendChild(this.renderer.domElement);
-//        const stl = this.renderer.domElement.style;
-//        stl.position = "absolute";
-//        stl.top = "0px";
-//        stl.left = "0px";
-//        stl.zIndex = "-10";
-
-
-        // It’s not really a THREE problem, it’s a HTML problem.
-
-        // As a quick solution replace this line 48 in “index.js”
-
-        // document.body.appendChild(renderer.domElement);
-        // with this:
-
-        // const stl = renderer.domElement.style;
-        // stl.position = "absolute";
-        // stl.top = "0px";
-        // stl.left = "0px";
-        // stl.zIndex = "-1";
 
         const   returnBtn = document.getElementById("returnBtnDiv");
         returnBtn.innerHTML = `
             <button id='return-home-btn' route="/" class='btn btn-primary'>Give up</button>
         `;
 
-        const   modal = document.getElementById("modal");
-        modal.innerHTML = `
-            <div class="modal fade" style="z-index: 99; position: absolute" id="gameEndedModal"
-            data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div id="gameEndedModalBody" class="modal-body"></div>
-                        <div class="modal-footer">
-                            <button id="playAgainBtn" type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Play again</button>
-                            <button id="returnHomeBtn" type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Return home</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        container.appendChild(this.renderer.domElement);
-
         // Create stade group with all objetcs so when rotate everything follows
         const   stadiumGroup = new THREE.Group();
-        // stadiumGroup.rotation.set(45, 0, 0);
         const   stadium = new THREE.Object3D();
         stadium.name = "stadium";
         stadiumGroup.add(stadium);
@@ -327,21 +291,6 @@ export default class PongGame {
 
         if (dirLight)
             this.scene.remove(dirLight, pointLight, wait, planeWait);
-
-        const aspectRatio = window.innerWidth / window.innerHeight;
-        const verticalFOV = this.camera.fov * (Math.PI / 180);
-        const horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
-        const distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
-        this.camera.position.z = -distance;
-        this.camera.position.y = ((distance * 3) * Math.tan(verticalFOV * 0.5));
-        this.camera.position.x = 300;
-        // this.scene.fog = new THREE.Fog(0x000000, 250, 1400);
-        this.camera.lookAt(300, -100, 300);
-
-        // initial camera setup
-//        this.camera.position.set(300, 700, 500);
-//        this.camera.lookAt(300, -100, -300);
-//        this.camera.rotation.set(0, 2 * Math.PI, 0);
 
         // Ball initial stats
         this.ball_x = 0;
@@ -683,7 +632,7 @@ export default class PongGame {
         const   msg = this.scene.getObjectByName("waitTxt");
         if (msg) {
             this.waitMSGMove(msg);
-            this.materials["wait"].emissiveIntensity = 3 + Math.sin(Date.now() * 0.005) * 3;
+            this.materials["wait"].emissiveIntensity = 0.5 + Math.sin(Date.now() * 0.005) * 0.8;
         }
 
         this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
@@ -694,6 +643,10 @@ export default class PongGame {
 
         // Render scene
         this.renderer.render(this.scene, this.camera);
+    }
+
+    waitMSGMove(msg) {
+        msg.rotation.y += 0.001;
     }
 
      onWindowResize() {
@@ -716,10 +669,6 @@ export default class PongGame {
              this.prevHeight = newHeight;
              this.prevWidth = newWidth;
          }
-    }
-
-    waitMSGMove(msg) {
-        msg.rotation.y += 0.001;
     }
 
     updateBallPosition(gameState) {
@@ -756,22 +705,10 @@ export default class PongGame {
         ball.quaternion.multiplyQuaternions(quaternion, ball.quaternion);
     }
 
-//    newRound() {
-//        this.ball_x = 0;
-//        this.ball_y = 0;
-//        this.currentSpeed = this.baseSpeed;
-//        this.ball_velocity_x = this.currentSpeed * ((Math.random() - 0.5));
-//        this.ball_velocity_y = this.currentSpeed * ((Math.random() - 0.5));
-//
-////        const ball = this.scene.getObjectByName('ball');
-//        ball.position.set(this.ball_x, this.ball_y, 0);
-//    }
-
     // Collecting info from the game logic in the back
     display(data) {
-        // console.log(data);
+//         console.log(data);
         const   ball = this.scene.getObjectByName("ball");
-
 
         this.updateBallPosition(data.game_state);
         this.updatePaddlePosition(data.game_state, Object.values(data.game_state.players));
@@ -779,38 +716,50 @@ export default class PongGame {
             this.updateScores(data.game_state);
         if (this.score_p2 === data.game_state["winning_score"] || this.score_p1 === data.game_state["winning_score"]) {
             console.log("game finished");
-            this.winner = "superuser"; //data.game_status["winner"]:
-            this.game_status = true;
+            this.winner = "rrebois";//data.game_status["winner"];
+//            this.game_finished = true;
+
+            const   modal = document.getElementById("modal");
+            console.log(this.winner);
+            console.log(this.user["username"]);
+            if (this.winner === this.user["username"]) { console.log("win");
+                modal.style.background = "#3e783e";
+                modal.innerHTML = `
+                    <p>Congratulations, you won!</p>
+                `;
+            }
+            else { console.log("lose");
+                modal.style.background = "#bc7575";
+                modal.innerHTML = `
+                    <p>Loser!</p>
+                `;
+            }
+// gameCode, this.props?.session_id, this
+            modal.innerHTML +=`
+                <button id="back-home-btn" route="/" class="btn btn-primary">Back to dashboard</button>
+                <button id="new-game-btn" class="btn btn-primary">Play again</button>
+            `;
+            const   restart = document.getElementById("new-game-btn");
+            restart.addEventListener("click", () => { console.log("data sent");
+                this.gameSocket.send(JSON.stringify({"restart": true}));
+            });
+			modal.hidden = false;
         }
     }
 
     setupEventListeners() {
         window.addEventListener("keydown", this.onKeyDown.bind(this));
         window.addEventListener("keyup", this.onKeyUp.bind(this));
-
-        if (this.game_status === true) {console.log("kgsfusgfdujdsgfujdsfgdsf");
-            const   modal = new bootstrap.Modal(document.getElementById("gameEndedModal"));
-            if (this.winner === this.user) {
-                document.getElementById('gameEndedModalBody').innerHTML = `
-                    <p>Congratulations, you won!.</p>
-                `
-            }
-            else {
-                document.getElementById('gameEndedModalBody').innerHTML = `
-                    <p>Noob, you lose!.</p>
-                `
-            }
-			modal.show();
-        }
     }
 
     render() { //https://en.threejs-university.com/2021/08/03/chapter-7-sprites-and-particles-in-three-js/
         this.initializeWs(this.props?.code);
 
         return `
-            <div style="width: 100%; height: 100%;" id="display">
+            <div style="width: 100%; height: 100%; position: relative" id="display">
                 <div id="returnBtnDiv"></div>
-                <div id="modal"></div>
+                <div id="modal" class="w-fit h-fit div-centered">
+                </div>
             </div>
         `;
     }
