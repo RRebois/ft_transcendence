@@ -1,8 +1,10 @@
 import random
 import asyncio
 import time
+from asgiref.sync import sync_to_async
 
 from configFiles.globals import *
+from ..models import *
 
 class PongBot():
 	q_table = {} #maybe duplicate to have one for each side
@@ -11,27 +13,30 @@ class PongBot():
 	EPSILON = 0.1 #exploration rate
 	actions = [-1, 0, 1] #moves [up, nothing, down]
 
-	def __init__(self, game, player=2, training=False):
+	def __init__(self, game, player, bot_db, training=False):
 		self.training = training
+		self.bot_db = bot_db
 		self.game = game
 		self.player = player
 		self.winning_score = self.bot_score = self.left_score = self.right_score = 0
+		# if not training:
+		# 	print(PongBot.q_table)
 
-	@staticmethod
-	def is_trained():
-		return len(PongBot.q_table)
+	# @staticmethod
+	# def is_trained():
+	# 	return len(q_table)
 
 	async def get_state(self):
 		serialize = await self.game.serialize()
 		paddle_pos = serialize['players'][f'player{self.player}']['pos']
 		ball = serialize['ball']
 		self.winning_score = serialize['winning_score']
-		self.bot_score = 0
+		self.bot_score = -(abs(ball['y'] - paddle_pos['y']))
 		if serialize['left_score'] != self.left_score:
-			self.bot_score = -10
+			self.bot_score = -100
 			self.left_score = serialize['left_score']
 		if serialize['right_score'] != self.right_score:
-			self.bot_score = 10
+			self.bot_score = 100
 			self.right_score = serialize['right_score']
 		if self.player == 1:
 			self.bot_score *= -1
@@ -53,14 +58,15 @@ class PongBot():
 		return (round(ball['x']), round(ball['y']), round(ball['x_vel']), round(ball['y_vel']), round(paddle_pos['x']), round(paddle_pos['y']))
 
 	async def choose_action(self, state):
+		if self.training and random.uniform(0, 1) < PongBot.EPSILON + 0.5:
+			return random.choice(PongBot.actions)
+		
 		if random.uniform(0, 1) < PongBot.EPSILON:
-			# return random.choice(PongBot.actions)
-			test = random.choice(PongBot.actions)
+			return random.choice(PongBot.actions)
 		else:
-			test = max(PongBot.q_table.get(state, {a: 0 for a in PongBot.actions}),
+			return max(PongBot.q_table.get(state, {a: 0 for a in PongBot.actions}),
 			  key=PongBot.q_table.get(state, {a: 0 for a in PongBot.actions}.get))
-		print('escolhendo numero => ', test, '\nq table => ', PongBot.q_table.get(state, {a: 0 for a in PongBot.actions}))
-		return test
+		# print('escolhendo numero => ', test, '\nq table => ', PongBot.q_table.get(state, {a: 0 for a in PongBot.actions}))
 
 	async def update_q_table(self, state, action, reward, new_state):
 		if state not in PongBot.q_table:
@@ -73,7 +79,8 @@ class PongBot():
 
 	async def continuous_paddle_mov(self, state):
 		action = await self.choose_action(state)
-
+		# if not self.training:
+		# 	print(f'\n\n inside paddle bot\nplayer => {self.player}\naction => {action}\n\n')
 		if action:
 			player_move = {'player': self.player, 'direction': action}
 			await self.game.move_player_paddle(player_move)
@@ -88,7 +95,8 @@ class PongBot():
 		while True:
 			curr_time = time.time()
 			if curr_time - last_time >= 1:
-				# print(f'\n\nplayer => {self.player}\nlast time => {last_time}\ncurr time => {curr_time}\nstate => {state}\naction => {action}\nscore => {self.left_score} x {self.right_score} \n\n')
+				# if not self.training:
+				# 	print(f'\n\nplayer => {self.player}\nlast time => {last_time}\ncurr time => {curr_time}\nstate => {state}\naction => {action}\nscore => {self.left_score} x {self.right_score} \n\n')
 				reward = self.bot_score if self.bot_score else 1
 				new_state = await self.get_state()
 				last_time = curr_time
@@ -97,11 +105,26 @@ class PongBot():
 				await self.update_q_table(state, action, reward, new_state)
 				state = new_state
 			action = await self.continuous_paddle_mov(state)
-			await asyncio.sleep(SLEEP)
+			await asyncio.sleep(SLEEP * 2)
 
 	async def launch_bot(self):
+		# self.bot_db = await sync_to_async(BotQTable.objects.get_or_create)(name=BOT_NAME)
+		# print('\n\nmerdei aqui')
+		if not PongBot.q_table:
+			PongBot.q_table = await sync_to_async(self.bot_db.load_table)()
+		if not self.training:
+			print(PongBot.q_table)
 		self.loop_task = asyncio.create_task(self.bot_loop())
 
 	async def cancel_loop(self):
+		print('hahahahaha3')
 		if hasattr(self, 'loop_task'):
+			# await sync_to_async(self.bot_db.save_table)(PongBot.q_table)
 			self.loop_task.cancel()
+			print('hahahahaha4')
+
+	# @staticmethod
+	@sync_to_async
+	def	update_q_table_db(self):
+		self.bot_db.save_table(PongBot.q_table)
+		PongBot.q_table = {}
