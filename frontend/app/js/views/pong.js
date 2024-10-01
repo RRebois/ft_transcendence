@@ -120,7 +120,7 @@ export default class PongGame {
         const horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
         const distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
         this.camera.position.set(300, ((distance * 3) * Math.tan(verticalFOV * 0.5)), -distance);
-        this.scene.fog = new THREE.Fog(0x000000, -500, 1500);
+        this.scene.fog = new THREE.Fog(0x000000, -300, 1500);
         this.camera.lookAt(300, -100, 300);
 
         // Renderer
@@ -131,10 +131,10 @@ export default class PongGame {
         const   container = document.getElementById("display");
         container.appendChild(this.renderer.domElement);
 
-        const   returnBtn = document.getElementById("returnBtnDiv");
-        returnBtn.innerHTML = `
-            <button id='return-home-btn' route="/" class='btn btn-primary'>Give up</button>
-        `;
+//        const   returnBtn = document.getElementById("returnBtnDiv");
+//        returnBtn.innerHTML = `
+//            <button id='return-home-btn' route="/" class='btn btn-primary'>Give up</button>
+//        `;
 
         // Create stade group with all objetcs so when rotate everything follows
         const   stadiumGroup = new THREE.Group();
@@ -332,6 +332,7 @@ export default class PongGame {
         this.createBall(data.game_state.ball, this.textures["textInitBall"]);
         this.createLightFloor();
         this.createPlanStadium();
+console.log(Object.keys(data.players).length);
         for (let i = 0; i < Object.keys(data.players).length; i++)
             this.createPaddle(data.game_state, Object.values(data.game_state.players)[i], i + 1);
         this.createStadium();
@@ -347,9 +348,9 @@ export default class PongGame {
 
         // Adjust this.Array for each case (2 players / 4 players)
         if (this.players_nick.length > 2) {
-            this.textArray = [`${this.players_nick[2]} + " " + ${this.players_nick[3]}`,
+            this.textArray = [`${this.players_nick[2]}` + "\n" + `${this.players_nick[3]}`,
             "\n" + this.score_p2.toString(), "\n - ", "\n" + this.score_p1.toString(),
-            `${this.players_nick[0]} + " " + ${this.players_nick[1]}`];
+            `${this.players_nick[0]}` + "\n" + `${this.players_nick[1]}`];
         }
         else {
             this.textArray = [`${this.players_nick[0]}`,
@@ -756,8 +757,7 @@ export default class PongGame {
         this.initializeWs(this.props?.code);
 
         return `
-            <div style="width: 100%; height: 100%; position: relative" id="display">
-                <div id="returnBtnDiv"></div>
+            <div style="width: 100%; height: 100%; position: relative;" id="display">
                 <div id="modal" class="w-fit h-fit div-centered">
                 </div>
             </div>
