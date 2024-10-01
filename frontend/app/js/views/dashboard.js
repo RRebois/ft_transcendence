@@ -75,6 +75,11 @@ export default class Dashboard {
 						const backdrops = document.querySelectorAll('.modal-backdrop');
 						backdrops.forEach(backdrop => backdrop.remove());
 					appRouter.navigate(`/${game_type}?${params}`);
+					const socket = window.mySocket;
+					socket.send(JSON.stringify({
+						'type': 'join_match',
+						'user_id': this.user.id
+					}));
 				}
 			})
 			.catch(error => {
@@ -82,7 +87,6 @@ export default class Dashboard {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
 			});
-
 	}
 
 	setupEventListeners() {
@@ -183,8 +187,8 @@ export default class Dashboard {
 		document.title = "ft_transcendence";
 		return `
 		<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
-            <div class="h-100 w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 16px;">
-            	<div class="d-flex flex-row justify-content-center w-full" style="gap: 16px">
+            <div class="h-100 w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 32px;">
+            	<div class="d-flex flex-row justify-content-center w-3-4" style="gap: 32px">
             		<!-- Pong game -->
             		<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded gap-3" style="--bs-bg-opacity: .5;">
             			<p class="play-bold fs-3">Pong 🏓</p>
@@ -207,8 +211,8 @@ export default class Dashboard {
             	</div>
             	
             	<!-- Tournament -->
-            	<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded" style="--bs-bg-opacity: .5;">
-            		<p class="play-bold fs-3">Tournament</p>
+            	<div class="w-3-4 bg-white d-flex flex-column align-items-center py-2 px-5 rounded" style="--bs-bg-opacity: .5;">
+            		<p class="play-bold fs-3">Tournament 🏆</p>
             		<div class="d-flex">
             			<div class="d-flex flex-column justify-content-center">
             				<label for="tournament-id">Join a tournament</label>
@@ -220,8 +224,10 @@ export default class Dashboard {
 							</div>
 						</div>
 						<div class="d-flex flex-column justify-content-center align-items-center">
-							<i class="bi bi-plus-circle"></i>
-							<p>Create a tournament</p>
+							<button type="button" class="btn d-flex justify-content-center align-items-center w-fit px-4 py-1 play-btn" data-game-type="purrinha" data-bs-toggle="modal" data-bs-target="#create-match-modal" style="background-color: #3b82f6">
+								<i class="bi bi-plus-circle"></i>
+            					<p class="play-regular fs-4 m-0 play-btn-text text-white">Create a tournament</p>
+							</button>
 						</div>
 					</div>
             	</div>
