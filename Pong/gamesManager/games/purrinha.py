@@ -155,7 +155,7 @@ class   PurrinhaGame:
             winner = 'tie'
             for player in players:
                 if player['guess'] == result:
-                    winner == player['name']
+                    winner = player['name']
                     break
 
         return {

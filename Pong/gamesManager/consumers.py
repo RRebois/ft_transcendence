@@ -10,6 +10,7 @@ from .games.pong import PongGame
 from .games.purrinha import PurrinhaGame
 from matchs.views import create_match, add_match_to_tournament, send_to_tournament_group
 from .views import MatchMaking
+from .game_ai.bot_manager import init_bot
 from configFiles.globals import *
 
 
@@ -104,7 +105,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		else:
 			self.game_handler = GameManagerConsumer.matchs.get(self.session_id)
 			await self.game_handler.add_consumer(self)
-			self.loop_task.cancel()
+			await self.loop_task.cancel()
 
 
 	@database_sync_to_async
@@ -162,14 +163,17 @@ class PongHandler():
 	def	__init__(self, consumer):
 		self.consumer = [consumer]
 		self.game_code = consumer.game_code
+		self.bot = None
 
 	async def	launch_game(self, players_name):
 		self.message = self.consumer[0].session_data
 		self.game = PongGame(players_name, multiplayer=(self.game_code == 40))
 		await self.send_game_state()
 		if BOT_NAME in self.message['players']:
-			# init_bot()
-			pass
+			self.bot = await init_bot('pong', self.game)
+		if self.bot:
+			print('\n\n\nYEAH\n\n\n')
+			
 
 	@database_sync_to_async
 	def	tournament_database_update(self):
@@ -213,6 +217,8 @@ class PongHandler():
 			await self.game.move_player_paddle(player_move)
 
 	async def	game_loop(self):
+		if self.bot:
+			await self.bot.launch_bot()
 		while True:
 			await self.update_game_state()
 			await asyncio.sleep(SLEEP)
@@ -229,8 +235,11 @@ class PongHandler():
 		await self.consumer[0].send_to_group(self.message)
 
 	async def	cancel_loop(self):
+		if self.bot:
+			await self.bot.cancel_loop()
+			# await self.bot.update_q_table_db()
 		if hasattr(self, 'loop_task'):
-			self.loop_task.cancel()
+			await self.loop_task.cancel()
 
 	async def	end_game(self, winner=None):
 
@@ -240,16 +249,17 @@ class PongHandler():
 		middle = 1 if self.game_code != 40 else 2
 		if not winner:
 			winner = []
-			left = gs['right_score'] < gs['left_score']
+			left = (gs['right_score'] < gs['left_score'])
 			my_range = [0, middle] if left else [middle, middle * 2]
 			for i in range(my_range[0], my_range[1]):
-				key = f"player{i + 1}"
-				winner.append(gs[key]['name'])
+				key = f'player{i + 1}'
+				winner.append(gs['players'][key]['name'])
 		if self.game_code != 20: # mode vs 'guest', does not save scores
 			match_result = {}
 			for i in range(0, middle * 2):
 				key = f"player{i + 1}"
-				match_result[gs[key]['name']] = gs['left_score'] if i < middle else gs['right_score']
+				match_result[gs['players'][key]['name']] = gs['left_score'] if i < middle else gs['right_score']
+			# print(f'\n\n\n match result => {match_result}\n\n')
 			match = await sync_to_async(create_match)(match_result, winner)
 		self.message['winner'] = winner
 		self.message['status'] = 'finished'
