@@ -278,7 +278,7 @@ export default class Stats {
 										<option value="all">All</option>
 										<option value="pong">Pong</option>
 										<option value="purrinha">Purrinha</option>
-									</select>						
+									</select>
 								</div>
 								<div id="match-history"></div>
 							</div>

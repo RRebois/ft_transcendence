@@ -13,6 +13,7 @@ export default class Dashboard {
 		this.gameType = null;
 		this.gameConnectivity = 'offline';
 		this.gameNbPlayers = 'bot';
+		this.load_tournaments= this.load_tournaments.bind(this);
 	}
 
 	setUser(user) {
@@ -23,12 +24,35 @@ export default class Dashboard {
 		this.props = newProps;
 	}
 
+	validateInput(name) {
+		const nameRegex = new RegExp("^[a-zA-Z0-9-_]{3,15}$");
+		let isValid = true;
+
+		 if (!nameRegex.test(name)) {
+            document.getElementById('tournament-name').classList.add('is-invalid');
+            isValid = false;
+        } else {
+            document.getElementById('tournament-name').classList.remove('is-invalid');
+        }
+		 return isValid;
+	}
+
 	handleTournamentCreation = () => {
 		console.log("Tournament creation handled");
 		const nbPlayers = this.gameNbPlayers;
 		console.log("Number of players: ", nbPlayers);
 		const csrfToken = getCookie('csrftoken');
-		fetch(`https://${window.location.hostname}:8443/tournament/create/`, {
+		const tournamentName = document.getElementById('tournament-name').value;
+		if (!this.validateInput(tournamentName)) {
+			return;
+		}
+		const createTournamentModal = bootstrap.Modal.getInstance(document.getElementById('create-tournament-modal'));
+		if (createTournamentModal) {
+			createTournamentModal.hide();
+			const backdrops = document.querySelectorAll('.modal-backdrop');
+			backdrops.forEach(backdrop => backdrop.remove());
+		}
+		fetch(`https://${window.location.hostname}:8443/tournament/create`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -36,7 +60,8 @@ export default class Dashboard {
 			},
 			credentials: 'include',
 			body: JSON.stringify({
-				'nb_players': nbPlayers
+				'nb_players': nbPlayers,
+				'name': document.getElementById('tournament-name').value,
 			})
 		})
 		.then(response => response.json().then(data => ({ok: response.ok, data})))
@@ -48,25 +73,8 @@ export default class Dashboard {
 			} else {
 				console.log("Tournament creation success: ", data);
 				const params = new URLSearchParams(data).toString();
-				const createTournamentModal = bootstrap.Modal.getInstance(document.getElementById('create-tournament-modal'));
-				if (createTournamentModal) {
-					createTournamentModal.hide();
-					const backdrops = document.querySelectorAll('.modal-backdrop');
-					backdrops.forEach(backdrop => backdrop.remove());
 					console.log("Params: ", params);
-					// fetch(`https://${window.location.hostname}:8443/tournament/join/${tournament_id}`, {
-					// 	method: 'POST',
-					// 	headers: {
-					// 		'Content-Type': 'application/json',
-					// 		'X-CSRFToken': csrfToken
-					// 	},
-					// 	credentials: 'include',
-					// 	body: JSON.stringify({
-					// 		'tournament_id': tournament_id,
-					// 	})
-					// })
 					appRouter.navigate(`/tournament?${params}`);
-				}
 			}
 		})
 		.catch(error => {
@@ -142,8 +150,8 @@ export default class Dashboard {
 		});
 	}
 
-	load_tournaments() {
-		fetch(`https://${window.location.hostname}:8443/`)
+	load_tournaments(type = "all") {
+		fetch(`https://${window.location.hostname}:8443/tournament/`)
 	}
 
 	setupEventListeners() {
@@ -241,6 +249,7 @@ export default class Dashboard {
 						this.gameNbPlayers = event.target.value;
 					});
 				});
+
 				const tournamentCreationBtn = document.getElementById('tournament-creation-btn');
 				if (tournamentCreationBtn) {
 					tournamentCreationBtn.addEventListener('click', this.handleTournamentCreation);
@@ -294,6 +303,11 @@ export default class Dashboard {
 <!--							</div>-->
 <!--						</div>-->
 						<div id="carouselTournament" class="carousel slide d-flex flex-column justify-content-center px-5" data-bs-ride="carousel">
+							<select class="form-select custom-select-filter-icon" id="tournament-filter" aria-label="Select filter" style="width: min-content; height: min-content;">
+								<option value="all">All</option>
+								<option value="user">Your tournaments</option>
+								<option value="opened">Opened</option>
+							</select>
 						</div>
 						<div class="d-flex flex-column justify-content-center align-items-center p-3">
 							<button type="button" class="btn d-flex justify-content-center align-items-center w-fit py-1 play-btn" data-bs-toggle="modal" data-bs-target="#create-tournament-modal" style="background-color: #3b82f6">
@@ -382,6 +396,16 @@ export default class Dashboard {
 								</div>
 							</div>
 							
+							<div class="row g-2 m-3">
+								<p class="mb-3">Choose the number of players</p>
+								<div class="form-floating has-validation">
+									<input type="text" id="tournament-name" class="form-control" required />
+									<label for="name">Name<span class="text-danger">*</span></label>
+									<div class="form-text">Username has to be 3 to 15 characters long and composed only by letters, digits and hyphens (- or _)</div>
+									<div class="invalid-feedback">Name have an invalid format</div>
+								</div>
+							</div>
+                        
 							<div class = "modal-infos">
 							<p class="mx-3 fst-italic">The tournaments are organized on the round-robin system, which means each participant plays once against everyone</p>
 							</div>

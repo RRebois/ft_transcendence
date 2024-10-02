@@ -16,6 +16,7 @@ from asgiref.sync import async_to_sync
 from userManagement.models import User, UserData
 from userManagement.views import authenticate_user
 from .models import *
+from .serializer import TournamentSerializer
 from gamesManager.views import MatchMaking
 from configFiles.globals import *
 from userManagement.utils import gen_timestamp
@@ -27,7 +28,7 @@ class MatchHistoryView(APIView):
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
-            return JsonResponse({"message": "User does not exists."}, status=404)
+            return JsonResponse({"message": "User does not exist."}, status=404)
         if word == 'all':
             matches = Match.objects.filter(players=user).order_by('-timeMatch')
         elif word == 'pong':
@@ -46,20 +47,34 @@ class MatchScoreView(APIView):
         try:
             game = Match.objects.get(pk=match_id)
         except Match.DoesNotExist:
-            raise Http404("Error: Match does not exists.")
+            raise Http404("Error: Match does not exist.")
 
         return JsonResponse(game.serialize())
 
+
+@method_decorator(csrf_protect, name='dispatch')
+class TournamentDisplayOpenView(APIView):
+    def get(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        tournaments = user.tournaments.filter(is_closed=False)
+
+        return JsonResponse([tournament.serialize() for tournament in tournaments] if tournaments else [], safe=False, status=200)
+
+
 @method_decorator(csrf_protect, name='dispatch')
 class TournamentDisplayAllUserView(APIView):
-    def get(self, request, username):
+    def get(self, request):
         try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            return JsonResponse({"error": "User does not exist."}, status=404)
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         tournaments = user.tournaments.all()
 
         return JsonResponse([tournament.serialize() for tournament in tournaments] if tournaments else [], safe=False, status=200)
+
 
 @method_decorator(csrf_protect, name='dispatch')
 class TournamentDisplayAllView(APIView):
@@ -72,6 +87,7 @@ class TournamentDisplayAllView(APIView):
 
         return JsonResponse([tournament.serialize() for tournament in tournaments] if tournaments else [], safe=False, status=200)
 
+
 @method_decorator(csrf_protect, name='dispatch')
 class TournamentDisplayOneView(APIView):
     def get(self, request, tournament_id):
@@ -81,6 +97,7 @@ class TournamentDisplayOneView(APIView):
             return JsonResponse({"error": "Tournament does not exist."}, status=404)
 
         return JsonResponse(tournament.serialize(), safe=False, status=200)
+
 
 def get_new_elo(player_elo, opponent_elo, win):
 
@@ -124,6 +141,7 @@ def update_match_data(players_data, winner, is_pong=True):
         elo_lst.append({'elo': new_elo, 'timestamp': timestamp})
         data.save()
 
+
 def create_match(match_result, winner, is_pong=True):
     match = Match.objects.create(is_pong=is_pong, count=len(match_result))
     players_data = []
@@ -143,6 +161,7 @@ def create_match(match_result, winner, is_pong=True):
     update_match_data(players_data, winner, is_pong)
     match.save()
     return match
+
 
 def find_tournament_winner(tournament):
     players = {player.username: [0, 0, player] for player in tournament.players.all()}
@@ -205,6 +224,7 @@ def send_to_tournament_group(tournament_id):
             }
     )
 
+
 def add_player_to_tournament(user, tournament):
     tournament_id = tournament.get_id()
     cache_db = cache.get(tournament_id)
@@ -243,11 +263,23 @@ class   CreateTournamentView(APIView):
     def post(self, request):
         try:
             user = authenticate_user(request)
-        except AuthenticationFailed as e:
+        except AuthenticationFailed:
             return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
-        tournament = Tournament.objects.create()
-        add_player_to_tournament(user, tournament)
-        return JsonResponse(data={"tournament_id": tournament.get_id()}, status=200)
+
+        serializer = TournamentSerializer(data=request.data)
+
+        if serializer.is_valid():
+            tournament = Tournament.objects.create(name=serializer.validated_data['name'])
+            add_player_to_tournament(user, tournament)
+            return JsonResponse(data={"tournament_id": tournament.get_id()}, status=status.HTTP_200_OK)
+        else:
+            error_messages = []
+            for field, errors in serializer.errors.items():
+                for error in errors:
+                    error_messages.append(error)
+
+            formatted_errors = " ".join(error_messages)
+            return JsonResponse(data={"message": formatted_errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @method_decorator(csrf_protect, name='dispatch')

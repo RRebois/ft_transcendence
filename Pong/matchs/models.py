@@ -50,6 +50,7 @@ class Score(models.Model):
 
 class Tournament(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(unique=True, max_length=100)
     players = models.ManyToManyField('userManagement.User', related_name='tournaments', default=list)
     is_closed = models.BooleanField(default=False)
     is_finished = models.BooleanField(default=False)
