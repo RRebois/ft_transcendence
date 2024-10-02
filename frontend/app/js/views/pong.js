@@ -50,7 +50,7 @@ export default class PongGame {
 		    this.init();
     }
 
-    init() { // For responsive device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
+    init() {
         document.title = "ft_transcendence | Pong";
         modal.hidden = true;
 
@@ -131,11 +131,6 @@ export default class PongGame {
         const   container = document.getElementById("display");
         container.appendChild(this.renderer.domElement);
 
-//        const   returnBtn = document.getElementById("returnBtnDiv");
-//        returnBtn.innerHTML = `
-//            <button id='return-home-btn' route="/" class='btn btn-primary'>Give up</button>
-//        `;
-
         // Create stade group with all objetcs so when rotate everything follows
         const   stadiumGroup = new THREE.Group();
         const   stadium = new THREE.Object3D();
@@ -196,7 +191,6 @@ export default class PongGame {
         const   spotLightRight = new SpotLight(0xffffff, 1000000);
         spotLightRight.position.set(920, 400, 100); //y: 300
         spotLightRight.target.position.set(550, 0, 140);
-//        spotLightRight.distance = 5000;
         spotLightRight.angle = .45; // change it for higher or lower coverage of the spot
         spotLightRight.penumbra = .8;
         spotLightRight.castShadow = true;
@@ -214,8 +208,7 @@ export default class PongGame {
         spotLightLeft.shadow.camera.near = 10;
         spotLightLeft.name = "spotL";
 
-        this.scene.add(spotLightRight, spotLightLeft, spotLightRight.target, spotLightLeft.target);//, ballLight, ballLight.target);
-//        this.scene.add(ballLight, ballLight.target);
+        this.scene.add(spotLightRight, spotLightLeft, spotLightRight.target, spotLightLeft.target);
     }
 
     waiting() {
@@ -244,7 +237,7 @@ export default class PongGame {
             const   planeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true });
             const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
             plane.position.set(300, 40, 0);
-            plane.rotation.x = - Math.PI * 0.5; //- Math.PI * 0.5;
+            plane.rotation.x = - Math.PI * 0.5;
             plane.rotation.z = Math.PI;
             plane.name = "waitPlane";
             this.scene.add(plane);
@@ -332,14 +325,12 @@ export default class PongGame {
         this.createBall(data.game_state.ball, this.textures["textInitBall"]);
         this.createLightFloor();
         this.createPlanStadium();
-console.log(Object.keys(data.players).length);
         for (let i = 0; i < Object.keys(data.players).length; i++)
             this.createPaddle(data.game_state, Object.values(data.game_state.players)[i], i + 1);
         this.createStadium();
     }
 
     printInitScores() {
-
         for (let i = 0; i < this.players_nick.length; i++) {
             if (this.players_nick[i].length > 8) {
                 this.players_nick[i] = this.players_nick[i].substr(0, 7) + ".";
@@ -349,17 +340,17 @@ console.log(Object.keys(data.players).length);
         // Adjust this.Array for each case (2 players / 4 players)
         if (this.players_nick.length > 2) {
             this.textArray = [`${this.players_nick[2]}` + "\n" + `${this.players_nick[3]}`,
-            "\n" + this.score_p2.toString(), "\n - ", "\n" + this.score_p1.toString(),
+            this.score_p2.toString(), " - ", this.score_p1.toString(),
             `${this.players_nick[0]}` + "\n" + `${this.players_nick[1]}`];
         }
         else {
             this.textArray = [`${this.players_nick[0]}`,
-            "\n" + this.score_p2.toString(), "\n - ", "\n" + this.score_p1.toString(),
+            this.score_p2.toString(), " - ", this.score_p1.toString(),
             `${this.players_nick[1]}`];
         }
-        this.newArray = ["team 1 " + this.textArray[0],
+        this.newArray = [this.textArray[0],
                         this.textArray[1] + this.textArray[2] + this.textArray[3],
-                        "team 2 " + this.textArray[4]];
+                        this.textArray[4]];
 
         const   textGroup = this.scene.getObjectByName("textGroup");
         const   loader = new FontLoader();
@@ -368,10 +359,7 @@ console.log(Object.keys(data.players).length);
 
         loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
             this.textArray.forEach((text, index) => {
-                if (index === 0)
-                    text = "Team 1\n" + text
-                else if (index === 4)
-                    text = "Team 2\n" + text
+                text = text
                 const textGeometry = new TextGeometry(text, {
                     font: font,
                     size: 45,
@@ -401,7 +389,10 @@ console.log(Object.keys(data.players).length);
                 const   boundingBox = textGeometry.boundingBox;
                 const   textWidth = boundingBox.max.x - boundingBox.min.x;
                 const   textHeight = boundingBox.max.y - boundingBox.min.y;
-                textGroup.position.y = textHeight + 50;
+                if (this.props?.code === "40")
+                    textGroup.position.y = textHeight + 25;
+                else
+                    textGroup.position.y = textHeight + 100;
 
                 textAdd.position.x = this.xPosition;
                 if (index === 0 || index === 3)
@@ -479,7 +470,6 @@ console.log(Object.keys(data.players).length);
         stadium.add(paddle);
     }
 
-    // Create blocks all around + needs floor + animation
     createStadium() {
         // Create gem and material once
         const   geometry = new THREE.BoxGeometry(20, 20, 20);
@@ -492,29 +482,29 @@ console.log(Object.keys(data.players).length);
         const   targetPositions = [];
         let     cube;
         let     end;
-        let     x = -30; //600 -> 640center must be x:300 z:140
+        let     x = -30;
         let     y = 0;
-        let     z = -10;// 14 * 20 280
+        let     z = -10;
         let     step = 20;
         let     i = -1;
 
-        while (++i < 92) { //96
-            if (i < 32) { // 21 -> 29
+        while (++i < 92) {
+            if (i < 32) {
                 x += step;
                 cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
             }
-            else if (i >= 32 && i < 47) { // 32 -> 48
+            else if (i >= 32 && i < 47) {
                 z += step;
                 cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
             }
-            else if (i >= 47 && i < 78) { // 54 -> 64
+            else if (i >= 47 && i < 78) {
                 x -= step;
                 cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
             }
-            else { // 24
+            else {
                 z -= step;
                 cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
@@ -535,7 +525,6 @@ console.log(Object.keys(data.players).length);
         }
     }
 
-
     lerp(from, to, speed) {
         const   amount = (1 - speed) * from + speed * to;
         return (Math.abs(from - to) < 0.2 ? to : amount);
@@ -551,7 +540,7 @@ console.log(Object.keys(data.players).length);
             const   p = f / fm;
 
             requestAnimationFrame(animate);
-//            object.position.lerp(targetPosition, 0.03); // positions not being exactly what expected. Check to correct it
+
             object.position.x = this.lerp(object.position.x, targetPosition.x, 0.03);
             object.position.y = this.lerp(object.position.y, targetPosition.y, 0.03);
             object.position.z = this.lerp(object.position.z, targetPosition.z, 0.03);
@@ -717,24 +706,74 @@ console.log(Object.keys(data.players).length);
             this.updateScores(data.game_state);
         if (this.score_p2 === data.game_state["winning_score"] || this.score_p1 === data.game_state["winning_score"]) {
             console.log("game finished");
-            this.winner = "rrebois";//data.game_status["winner"];
+            this.winner = ["superuser", "rrebois"];//data.game_status["winner"];
 //            this.game_finished = true;
 
+            // Select modal message to display
             const   modal = document.getElementById("modal");
             console.log(this.winner);
             console.log(this.user["username"]);
-            if (this.winner === this.user["username"]) { console.log("win");
+            console.log("code: ", this.props?.code);
+            var     msg;
+
+            if (this.props?.code === 22 || this.props?.code === 40) {
+                if (this.winner.includes(this.user["username"]))
+                    msg = `Congratulations ${this.user["username"]}, you won!`;
+                else
+                    msg = `${this.user["username"]} you are such a loser!`;
+            }
+            else {
+                if (this.winner.includes(this.user["username"]))
+                    msg = `Congratulations ${this.user["username"]}, you won!`;
+                else if (this.props?.code === "20")
+                    msg = `${this.user["username"]} you are such a loser. However, you have a very talented friend!`;
+                else
+                    msg = `${this.user["username"]} you are such a loser!`;
+            }
+            if (this.winner.includes(this.user["username"]))
                 modal.style.background = "#3e783e";
-                modal.innerHTML = `
-                    <p>Congratulations, you won!</p>
-                `;
-            }
-            else { console.log("lose");
+            else
                 modal.style.background = "#bc7575";
-                modal.innerHTML = `
-                    <p>Loser!</p>
-                `;
-            }
+            modal.innerHTML = `<p>${msg}</p>`;
+
+//            if (this.props?.code === 22 || this.props?.code === 40) {
+//                if (this.winner.includes(this.user["username"])) {
+//                    modal.style.background = "#3e783e";
+//                    modal.innerHTML = `
+//                        <p>`Congratulations ${this.user["username"]}, you won!`</p>
+//                    `;
+//                }
+//                else {
+//                    modal.style.background = "#bc7575";
+//                    modal.innerHTML = `
+//                        <p>`${this.user["username"]} you are such a loser!`</p>
+//                    `;
+//                }
+//            }
+//            else if (this.props?.code === 20) {
+//                if (this.winner.includes(this.user["username"])) {
+//                    modal.style.background = "#3e783e";
+//                    modal.innerHTML = `
+//                        <p>`Congratulations ${this.user["username"]}, you won!`</p>
+//                    `;
+//                }
+//                else { console.log("lose");
+//                    modal.style.background = "#bc7575";
+//                    modal.innerHTML = `
+//                        <p>`${this.user["username"]} you are such a loser.
+//                        However, you have a very talented friend!`</p>
+//                    `;
+//                }
+//            else {
+//                if (this.winner.includes(this.user["username"])) {
+//                    modal.style.background = "#3e783e";
+//                    modal.innerHTML = `
+//                        <p>`Congratulations ${this.user["username"]}, you won!`</p>
+//                    `;
+//                }
+//
+//            }
+            // Add buttons to modal + listeners
 // gameCode, this.props?.session_id, this
             modal.innerHTML +=`
                 <button id="back-home-btn" route="/" class="btn btn-primary">Back to dashboard</button>
