@@ -238,7 +238,7 @@ class PongHandler():
 	async def	cancel_loop(self):
 		if self.bot:
 			await self.bot.cancel_loop()
-			await self.bot.update_q_table_db()
+			# await self.bot.update_q_table_db()
 		if hasattr(self, 'loop_task'):
 			await self.loop_task.cancel()
 
@@ -259,7 +259,8 @@ class PongHandler():
 			match_result = {}
 			for i in range(0, middle * 2):
 				key = f"player{i + 1}"
-				match_result[gs[key]['name']] = gs['left_score'] if i < middle else gs['right_score']
+				match_result[gs['players'][key]['name']] = gs['left_score'] if i < middle else gs['right_score']
+			# print(f'\n\n\n match result => {match_result}\n\n')
 			match = await sync_to_async(create_match)(match_result, winner)
 		self.message['winner'] = winner
 		self.message['status'] = 'finished'
