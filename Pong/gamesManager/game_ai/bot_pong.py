@@ -19,30 +19,51 @@ class PongBot():
 		self.bot_db = bot_db
 		self.game = game
 		self.player = player
-		self.winning_score = self.bot_score = self.left_score = self.right_score = 0
+		self.winning_score = self.bot_score = 0
 
 	# @staticmethod
 	# def is_trained():
 	# 	return len(q_table)
 
+# TODO to optimize the training rate
+	async def get_reward(self, ball, paddle):
+		if ball['y'] >= paddle['y'] and ball['y'] <= paddle['y'] + PADDLE_HEIGHT_DUO and ball['x_vel'] > 0:
+			return 10
+		if ball['x_vel'] > 0:
+			return 1
+		if paddle['x'] - ball['x'] < 40 and (ball['y'] < paddle['y'] or ball['y'] > paddle['y'] + PADDLE_HEIGHT_DUO):
+			return -10
+		
+
 	async def get_state(self):
 		serialize = await self.game.serialize()
 		paddle_pos = serialize['players'][f'player{self.player}']['pos']
 		ball = serialize['ball']
-		self.winning_score = serialize['winning_score']
-		self.bot_score = -(abs(ball['y'] - paddle_pos['y']))
-		if serialize['left_score'] != self.left_score:
-			self.bot_score = -100
-			if self.player == 1:
-				self.bot_score *= -1
-		if serialize['right_score'] != self.right_score:
-			self.bot_score = 100
-			if self.player == 1:
-				self.bot_score *= -1
-		self.left_score = serialize['left_score']
-		self.right_score = serialize['right_score']
+		# if ball['y'] >= paddle_pos['y'] and ball['y'] <= paddle_pos['y'] + PADDLE_HEIGHT_DUO:
+		# 	# bola na altura do paddle
+		# 	self.bot_score = 100 - abs(ball['y'] - paddle_pos['y'])
+		# 	pass
+		# else:
+		# 	# bola fora do paddle
+		# 	if ball['y'] < paddle_pos['y']:
+		# 		self.bot_score = ball['y'] - paddle_pos['y']
+		# 	else:
+		# 		self.bot_score = (paddle_pos['y'] + PADDLE_HEIGHT_DUO) - ball['y']
+		# self.winning_score = serialize['winning_score']
+		self.bot_score = await self.get_reward(ball, paddle_pos)
+		# if serialize['left_score'] != self.left_score:
+		# 	self.bot_score = -300
+		# 	# if self.player == 1:
+		# 	# 	self.bot_score *= -1
+		# if serialize['right_score'] != self.right_score:
+		# 	if self.player == 1:
+		# 		self.bot_score = -300
+		# 		# self.bot_score *= -1
+		# self.left_score = serialize['left_score']
+		# self.right_score = serialize['right_score']
 
-		return (round(ball['x']), round(ball['y']), round(ball['x_vel']), round(ball['y_vel']), round(paddle_pos['x']), round(paddle_pos['y']))
+		# return (round(ball['x']), round(ball['y']), round(ball['x_vel']), round(ball['y_vel']), round(paddle_pos['x']), round(paddle_pos['y']))
+		return (ball['x'] // 10, ball['y'] // 10, (1 if ball['x_vel'] > 0 else -1), (1 if ball['y_vel'] > 0 else -1), round(paddle_pos['x']), round(paddle_pos['y']))
 
 	async def choose_action(self, state):
 		if self.training and random.uniform(0, 1) < PongBot.EPSILON + 0.4:
@@ -75,12 +96,12 @@ class PongBot():
 		last_time = time.time()
 		state = await self.get_state()
 		action = await self.continuous_paddle_mov(state)
-		refresh_rate = 1 if not self.training else 0.25
-		sleep_rate = SLEEP * 2 if not self.training else SLEEP / 2
+		refresh_rate = 1 #if not self.training else 0.25
+		sleep_rate = SLEEP * 2 #if not self.training else SLEEP / 2
 		while True:
 			curr_time = time.time()
 			if curr_time - last_time >= refresh_rate:
-				reward = self.bot_score if self.bot_score else 1
+				reward = self.bot_score
 				new_state = await self.get_state()
 				last_time = curr_time
 				await self.update_q_table(state, action, reward, new_state)
