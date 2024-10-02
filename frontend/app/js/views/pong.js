@@ -520,7 +520,7 @@ export default class PongGame {
         for (let i = 0; i < cubes.length; i++) {
             const cube = cubes[i];
             const targetPosition = targetPositions[i];
-//            this.moveObjectTrans(cube, targetPosition);
+            this.moveObjectTrans(cube, targetPosition);
         }
     }
 
@@ -618,15 +618,15 @@ export default class PongGame {
     animate() {
         requestAnimationFrame(this.animate);
 
-//        const   msg = this.scene.getObjectByName("waitTxt");
-//        if (msg) {
-//            this.waitMSGMove(msg);
-//            this.materials["wait"].emissiveIntensity = 0.5 + Math.sin(Date.now() * 0.005) * 0.8;
-//        }
+        const   msg = this.scene.getObjectByName("waitTxt");
+        if (msg) {
+            this.waitMSGMove(msg);
+            this.materials["wait"].emissiveIntensity = 0.5 + Math.sin(Date.now() * 0.005) * 0.8;
+        }
 
-//        this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-//        this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-//        this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+        this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+        this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+        this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
 
         this.handleKeyEvent();
 
@@ -755,7 +755,7 @@ export default class PongGame {
             restart.addEventListener("click", () => { console.log("data sent");
                 this.gameSocket.send(JSON.stringify({"restart": true}));
             });
-            modal.style.border = "5px solid black";
+            modal.classList.add("rounded", "border", "border-dark", "border-3");
 			modal.hidden = false;
         }
     }
@@ -770,7 +770,7 @@ export default class PongGame {
 
         return `
             <div style="width: 100%; height: 100%; position: relative;" id="display">
-                <div id="modal" class="w-fit h-fit div-centered">
+                <div id="modal" class="w-fit h-fit div-centered text-center p-3">
                 </div>
             </div>
         `;

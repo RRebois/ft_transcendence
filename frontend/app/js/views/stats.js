@@ -25,9 +25,9 @@ export default class Stats {
 		const ctx = document.getElementById('eloChart').getContext('2d');
 
 		const getEloData = (eloArray) => {
-			const extractedElo = eloArray.map(entry => entry?.elo || 0);
+			const extractedElo = eloArray.map(entry => entry?.elo || 900).reverse();
 			while (extractedElo.length < 6) {
-				extractedElo.push(0);
+				extractedElo.push(900);
 			}
 			return extractedElo.slice(0, 6).reverse();
 		}
@@ -100,9 +100,9 @@ export default class Stats {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast('Error', data.message, 5000, 'error');
 			} else {
-				console.log('Success:', data);
-				this.animateProgressBar(data.pong.elo[0].elo, 'pong', '#f02e2d');
-				this.animateProgressBar(data.purrinha.elo[0].elo, 'purrinha', '#f0902d');
+			console.log("DATA IS: ", data.pong.elo[data.pong.elo.length - 1].elo);
+				this.animateProgressBar(data.pong.elo[data.pong.elo.length - 1].elo, 'pong', '#f02e2d');
+				this.animateProgressBar(data.purrinha.elo[data.purrinha.elo.length - 1].elo, 'purrinha', '#f0902d');
 				this.initEloChart(data);
 			}
 		})
@@ -146,7 +146,7 @@ export default class Stats {
 						const date = moment(match.timestamp);
 						const matchElement = document.createElement('div');
 						const background = match?.winner[0] === username ? 'bg-victory' : 'bg-defeat';
-						matchElement.classList.add('d-flex', 'flex-row', 'justify-content-between', 'play-regular', 'align-items-center', background, 'rounded', 'p-2');
+						matchElement.classList.add('d-flex', 'my-2', 'flex-row', 'justify-content-between', 'play-regular', 'align-items-center', background, 'rounded', 'p-2');
 						matchElement.innerHTML = `
 							<div class="d-flex flex-column align-items-center">
 								<p class="fs-1 m-0">${match.game === 'pong' ? '🏓' : '✋'}</p>
@@ -173,7 +173,7 @@ export default class Stats {
 										<i class="bi bi-trophy-fill" style="color: #e4ca6a;"></i>
 										<p>Victory</p>
 									</div>` :
-									`<p>Loss</p>`
+									`<p>Defeat</p>`
 							}
 							</div>
 							<p class="play-regular m-0">${date.calendar()}</p>
@@ -190,7 +190,7 @@ export default class Stats {
 		});
 	}
 
-	animateProgressBar(elo, game, color = '#4285f4') {
+	animateProgressBar(elo, game, color = '#4285f4') { console.log("ELO: ", elo);
 		let CircularBar = document.querySelector(`.circular-bar-${game}`);
 		let PercentValue = document.querySelector(`.percent-${game}`);
 		if (!CircularBar || !PercentValue) {
@@ -205,7 +205,7 @@ export default class Stats {
 			InitialValue += 1;
 
 			CircularBar.style.background = `conic-gradient(${color} ${InitialValue * 3.6}deg, #e8f0f7 0deg)`;
-			PercentValue.innerHTML = Math.round((InitialValue / 100) * maxElo);
+			PercentValue.innerHTML = Math.round(elo);
 
 			if(InitialValue >= finaleValue){
 				clearInterval(timer);

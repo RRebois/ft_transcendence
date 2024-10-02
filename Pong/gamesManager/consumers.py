@@ -261,6 +261,7 @@ class PongHandler():
 				match_result[gs['players'][key]['name']] = gs['left_score'] if i < middle else gs['right_score']
 			# print(f'\n\n\n match result => {match_result}\n\n')
 			match = await sync_to_async(create_match)(match_result, winner)
+			# print(f'\n\n\n match => {match}\n\n')
 		self.message['winner'] = winner
 		self.message['status'] = 'finished'
 		await self.consumer[0].update_cache_db(self.message)
