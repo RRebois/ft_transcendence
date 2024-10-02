@@ -7,7 +7,6 @@ import * as bootstrap from "bootstrap";
 
 export default class PongGame {
     constructor(props) {
-        this.game_finished = false;
         this.props = props;
         this.user = props?.user;
         this.winner = null;
@@ -521,7 +520,7 @@ export default class PongGame {
         for (let i = 0; i < cubes.length; i++) {
             const cube = cubes[i];
             const targetPosition = targetPositions[i];
-            this.moveObjectTrans(cube, targetPosition);
+//            this.moveObjectTrans(cube, targetPosition);
         }
     }
 
@@ -619,15 +618,15 @@ export default class PongGame {
     animate() {
         requestAnimationFrame(this.animate);
 
-        const   msg = this.scene.getObjectByName("waitTxt");
-        if (msg) {
-            this.waitMSGMove(msg);
-            this.materials["wait"].emissiveIntensity = 0.5 + Math.sin(Date.now() * 0.005) * 0.8;
-        }
+//        const   msg = this.scene.getObjectByName("waitTxt");
+//        if (msg) {
+//            this.waitMSGMove(msg);
+//            this.materials["wait"].emissiveIntensity = 0.5 + Math.sin(Date.now() * 0.005) * 0.8;
+//        }
 
-        this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-        this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-        this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+//        this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+//        this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+//        this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
 
         this.handleKeyEvent();
 
@@ -697,17 +696,18 @@ export default class PongGame {
 
     // Collecting info from the game logic in the back
     display(data) {
-//         console.log(data);
+        console.log(data);
+
+        if (data["status"] === "started") {
         const   ball = this.scene.getObjectByName("ball");
 
         this.updateBallPosition(data.game_state);
         this.updatePaddlePosition(data.game_state, Object.values(data.game_state.players));
         if (data.game_state["new_round"])
             this.updateScores(data.game_state);
-        if (this.score_p2 === data.game_state["winning_score"] || this.score_p1 === data.game_state["winning_score"]) {
-            console.log("game finished");
-            this.winner = ["superuser", "rrebois"];//data.game_status["winner"];
-//            this.game_finished = true;
+        }
+        else {
+            this.winner = data["winner"];
 
             // Select modal message to display
             const   modal = document.getElementById("modal");
