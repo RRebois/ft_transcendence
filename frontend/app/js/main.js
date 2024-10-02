@@ -11,6 +11,7 @@ import {initializeWebSocket} from "@js/functions/websocket.js";
 import profileView from '@views/my-profile.js';
 import statsView from './views/stats.js';
 import purrinhaView from './views/purrinha.js';
+import tournamentView from './views/tournament.js';
 import initializeRouter from "@js/spa-router/initializeRouter.js";
 
 const routes = [
@@ -23,6 +24,7 @@ const routes = [
     new Route('/stats', '/stats', statsView, null, 1),
     new Route('/set-reset-password', '/set-reset-password', resetPWView, null, 2),
     new Route('/purrinha', '/purrinha', purrinhaView),
+    new Route('/tournament', '/tournament', tournamentView),
 ];
 
 initializeRouter(routes);

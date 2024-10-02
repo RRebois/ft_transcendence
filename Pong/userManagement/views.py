@@ -137,8 +137,7 @@ class UserExistsView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         try:
             user2 = User.objects.get(username=username)
         except:
@@ -384,8 +383,7 @@ class UserGetUsernameView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         return JsonResponse(user.get_username(), safe=False)
 
 
@@ -395,8 +393,7 @@ class UserGetIsStudView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         return JsonResponse(user.get_is_stud(), safe=False)
 
 
@@ -406,8 +403,7 @@ class UserAvatarView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         if user.username != username:
             try:
                 user_to_check = User.objects.get(username=username)
@@ -423,9 +419,7 @@ class GetAllUserAvatarsView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""},
-                                status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         if user.is_superuser:
             return JsonResponse(data={"message": "superuser"}, status=403)
         avatar_list = []
@@ -456,8 +450,7 @@ class UpNewAvatarView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
 
         if request.method == 'POST':
             if user.stud42:
@@ -504,8 +497,7 @@ class ChangeAvatarView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         if user.stud42:
             return JsonResponse(data={"message": "A 42 user can't change its avatar"}, status=403)
         if user.is_superuser:
@@ -538,7 +530,6 @@ class SetPreviousAvatar(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            logging.debug(f"AuthenticationFailed: {str(e)}")
             return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         if user.stud42:
             return JsonResponse(data={"message": "A 42 user can't change its avatar"}, status=403)
@@ -569,7 +560,6 @@ class EditDataView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            logging.debug(f"AuthenticationFailed: {str(e)}")
             return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
 
         serializer = self.serializer_class(user, data=user_data, partial=True)
@@ -758,8 +748,7 @@ class SendFriendRequestView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
 
         to_username = request.data.get('usernameValue')
         try:
@@ -819,8 +808,7 @@ class PendingFriendRequestsView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         friendRequests = (FriendRequest.objects.filter(from_user=user, status='pending')
                           .annotate(to_user_image=F('to_user__avatar_id__image_url'))
                           .values('to_user__username', 'time', 'status', 'to_user_image', 'to_user_id', 'to_user__status')
@@ -845,8 +833,7 @@ class GetFriendRequestView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         friendRequests = (FriendRequest.objects
                           .filter(to_user=user, status='pending')
                           .annotate(from_user_image=F('from_user__avatar_id__image_url'))
@@ -872,8 +859,7 @@ class AcceptFriendRequestView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         friend_request_user_id = request.data.get('from_id')
         try:
             friend_request = FriendRequest.objects.get(from_user=friend_request_user_id, to_user=user)
@@ -923,8 +909,7 @@ class DeclineFriendRequestView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
 
         friend_request_user_id = request.data.get('from_id')
         try:
@@ -958,8 +943,7 @@ class RemoveFriendView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         friend_id = request.data.get('from_id')
         try:
             friend = User.objects.get(id=friend_id)
@@ -1007,8 +991,7 @@ class GetFriendView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            messages.warning(request, str(e))
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         friend_list = user.friends.all()
         serialized_values = [
             {

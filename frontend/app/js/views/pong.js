@@ -812,7 +812,7 @@ export default class PongGame {
 
     // Collecting info from the game logic in the back
     display(data) {
-        console.log(data);
+        // console.log(data);
         const   ball = this.scene.getObjectByName("ball");
 
 

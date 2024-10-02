@@ -23,6 +23,59 @@ export default class Dashboard {
 		this.props = newProps;
 	}
 
+	handleTournamentCreation = () => {
+		console.log("Tournament creation handled");
+		const nbPlayers = this.gameNbPlayers;
+		console.log("Number of players: ", nbPlayers);
+		const csrfToken = getCookie('csrftoken');
+		fetch(`https://${window.location.hostname}:8443/tournament/create/`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': csrfToken
+			},
+			credentials: 'include',
+			body: JSON.stringify({
+				'nb_players': nbPlayers
+			})
+		})
+		.then(response => response.json().then(data => ({ok: response.ok, data})))
+		.then(({ok, data}) => {
+			if (!ok) {
+				console.log("Tournament creation error: ", data);
+				const toastComponent = new ToastComponent();
+				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+			} else {
+				console.log("Tournament creation success: ", data);
+				const params = new URLSearchParams(data).toString();
+				const createTournamentModal = bootstrap.Modal.getInstance(document.getElementById('create-tournament-modal'));
+				if (createTournamentModal) {
+					createTournamentModal.hide();
+					const backdrops = document.querySelectorAll('.modal-backdrop');
+					backdrops.forEach(backdrop => backdrop.remove());
+					console.log("Params: ", params);
+					// fetch(`https://${window.location.hostname}:8443/tournament/join/${tournament_id}`, {
+					// 	method: 'POST',
+					// 	headers: {
+					// 		'Content-Type': 'application/json',
+					// 		'X-CSRFToken': csrfToken
+					// 	},
+					// 	credentials: 'include',
+					// 	body: JSON.stringify({
+					// 		'tournament_id': tournament_id,
+					// 	})
+					// })
+					appRouter.navigate(`/tournament?${params}`);
+				}
+			}
+		})
+		.catch(error => {
+			console.error("Error fetching tournament creation: ", error);
+			const toastComponent = new ToastComponent();
+			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+		});
+	}
+
 	handleGameRequest = () => {
 		console.log("Game request handled for game type: ", this.gameType);
 		console.log("Game connectivity: ", this.gameConnectivity);
@@ -59,34 +112,38 @@ export default class Dashboard {
 			},
 			credentials: 'include'
 		})
-			.then(response => response.json().then(data => ({ok: response.ok, data})))
-			.then(({ok, data}) => {
-				if (!ok) {
-					const toastComponent = new ToastComponent();
-					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
-				} else {
-					console.log("Game request success: ", data);
-					data.code = code;
-					const params = new URLSearchParams(data).toString();
-					// Close modal
-					const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-match-modal'));
-					if (createMatchModal)
-						createMatchModal.hide();
-						const backdrops = document.querySelectorAll('.modal-backdrop');
-						backdrops.forEach(backdrop => backdrop.remove());
-					appRouter.navigate(`/${game_type}?${params}`);
-					const socket = window.mySocket;
-					socket.send(JSON.stringify({
-						'type': 'join_match',
-						'user_id': this.user.id
-					}));
-				}
-			})
-			.catch(error => {
-				console.error("Error fetching friend requests: ", error);
+		.then(response => response.json().then(data => ({ok: response.ok, data})))
+		.then(({ok, data}) => {
+			if (!ok) {
 				const toastComponent = new ToastComponent();
-				toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
-			});
+				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+			} else {
+				console.log("Game request success: ", data);
+				data.code = code;
+				const params = new URLSearchParams(data).toString();
+				const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-match-modal'));
+				if (createMatchModal)
+					createMatchModal.hide();
+					const backdrops = document.querySelectorAll('.modal-backdrop');
+					backdrops.forEach(backdrop => backdrop.remove());
+				console.log("Navigating to game: ", `${game_type}?${params}`);
+				appRouter.navigate(`/${game_type}?${params}`);
+				const socket = window.mySocket;
+				socket.send(JSON.stringify({
+					'type': 'join_match',
+					'user_id': this.user.id
+				}));
+			}
+		})
+		.catch(error => {
+			console.error("Error fetching friend requests: ", error);
+			const toastComponent = new ToastComponent();
+			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+		});
+	}
+
+	load_tournaments() {
+		fetch(`https://${window.location.hostname}:8443/`)
 	}
 
 	setupEventListeners() {
@@ -138,7 +195,7 @@ export default class Dashboard {
 										<i class="bi bi-keyboard"></i>
 										<p>1v1 on the same keyboard</p>
 									</label>
-								   `;
+							   `;
 								const nbPlayersRadios = document.querySelectorAll('input[name="nb-players"]');
 								nbPlayersRadios.forEach(radio => {
 									radio.addEventListener('change', (event) => {
@@ -160,7 +217,7 @@ export default class Dashboard {
 										<i class="bi bi-people"></i>
 										<p>2v2</p>
 									</label>
-								   `;
+							   `;
 								const nbPlayersRadios = document.querySelectorAll('input[name="nb-players"]');
 								nbPlayersRadios.forEach(radio => {
 									radio.addEventListener('change', (event) => {
@@ -172,15 +229,25 @@ export default class Dashboard {
 						}
 					});
 				});
-
 			});
 		}
-//		const   startPongGame = document.getElementById("game-request-btn");
-//		if (startPongGame) {
-//		    startPongGame.addEventListener("click", () => { // Add verification of the data selected on the modal by the player
-//		        initializePongWebSocket();
-//		    })
-//		}
+		const tournamentModal = document.getElementById('create-tournament-modal');
+		if (tournamentModal) {
+			tournamentModal.addEventListener('show.bs.modal', (event) => {
+				const nbPlayersContainer = document.querySelectorAll('input[name="players"]');
+				nbPlayersContainer.forEach(radio => {
+					radio.addEventListener('change', (event) => {
+						console.log("Number of players changed: ", event.target.value);
+						this.gameNbPlayers = event.target.value;
+					});
+				});
+				const tournamentCreationBtn = document.getElementById('tournament-creation-btn');
+				if (tournamentCreationBtn) {
+					tournamentCreationBtn.addEventListener('click', this.handleTournamentCreation);
+				}
+			});
+		}
+		this.load_tournaments();
 	}
 
     render() {
@@ -217,14 +284,16 @@ export default class Dashboard {
             	<div class="w-3-4 bg-white d-flex flex-column align-items-center py-4 px-4 rounded" style="--bs-bg-opacity: .5;">
             		<p class="play-bold fs-2">Pong tournament 🏆</p>
             		<div class="d-flex">
-            			<div class="d-flex flex-column justify-content-center px-5">
-            				<label for="tournament-id">Join a tournament</label>
-            				<div class="input-group mb-3">
-								<input type="text" class="form-control" id="tournament-id" placeholder="XXX-XXX-XXX" aria-label="Tournament ID">
-								<div class="input-group-append">
-									<button class="btn btn-primary" type="button">Join</button>
-								</div>
-							</div>
+<!--            			<div class="d-flex flex-column justify-content-center px-5">-->
+<!--            				<label for="tournament-id">Join a tournament</label>-->
+<!--            				<div class="input-group mb-3">-->
+<!--								<input type="text" class="form-control" id="tournament-id" placeholder="XXX-XXX-XXX" aria-label="Tournament ID">-->
+<!--								<div class="input-group-append">-->
+<!--									<button class="btn btn-primary" type="button">Join</button>-->
+<!--								</div>-->
+<!--							</div>-->
+<!--						</div>-->
+						<div id="carouselTournament" class="carousel slide d-flex flex-column justify-content-center px-5" data-bs-ride="carousel">
 						</div>
 						<div class="d-flex flex-column justify-content-center align-items-center p-3">
 							<button type="button" class="btn d-flex justify-content-center align-items-center w-fit py-1 play-btn" data-bs-toggle="modal" data-bs-target="#create-tournament-modal" style="background-color: #3b82f6">
@@ -244,9 +313,7 @@ export default class Dashboard {
 								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 							</div>
 							
-							
 							<div class="modal-body">
-							
 								<p class="mb-3">Choose a game type</p>
 								<div class="btn-group" role="group" aria-label="Game connectivity selection">
 									<input type="radio" class="btn-check" name="connectivity" id="radio-btn-offline" value="offline" autocomplete="off" checked>
@@ -296,7 +363,7 @@ export default class Dashboard {
 							<div class="modal-body">								
 								<p class="mb-3">Choose the number of players</p>
 								<div id="radio-btn-players-container" class="btn-group" role="group" aria-label="Game connectivity selection">
-									<input type="radio" class="btn-check" name="nb-players" id="radio-btn-3p" value="3p" autocomplete="off" checked>
+									<input type="radio" class="btn-check" name="players" id="radio-btn-3p" value="3p" autocomplete="off" checked>
 									<label class="btn btn-outline-primary" for="radio-btn-3p">
 										<i class="bi bi-person-fill"></i>
 										<i class="bi bi-person-fill"></i>
@@ -304,7 +371,7 @@ export default class Dashboard {
 										<p class="m-2">3 players</p>
 									</label>
 									
-									<input type="radio" class="btn-check" name="nb-players" id="radio-btn-4p" value="4p" autocomplete="off">
+									<input type="radio" class="btn-check" name="players" id="radio-btn-4p" value="4p" autocomplete="off">
 									<label class="btn btn-outline-primary" for="radio-btn-4p">
 										<i class="bi bi-person-fill"></i>
 										<i class="bi bi-person-fill"></i>
@@ -321,7 +388,7 @@ export default class Dashboard {
 							
 							<div class="modal-footer">
 								<button type="button" class="btn text-danger" data-bs-dismiss="modal">Close</button>
-								<button id="game-request-btn" type="button" class="btn btn-primary">Start tournament! 🚀</button>
+								<button id="tournament-creation-btn" type="button" class="btn btn-primary">Start tournament! 🚀</button>
 							</div>
 						</div>
 					</div>

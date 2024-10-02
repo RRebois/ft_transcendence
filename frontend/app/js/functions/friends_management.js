@@ -65,7 +65,7 @@ export function create_friend_request_sent_div(request, size) {
 		statusDot = "bg-success";
 	else
 		statusDot = "bg-danger";
-	friendRequestItem.classList.add("friend-req-sent", "d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
+	friendRequestItem.classList.add("friend-req-sent", "d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-3", "rounded");
 	friendRequestItem.id = `friend-request-item-${request?.to_user_id}`;
 	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendRequestItem.innerHTML = `
@@ -96,7 +96,7 @@ export function create_friend_request_div(request, size) {
 		statusDot = "bg-success";
 	else
 		statusDot = "bg-danger";
-	friendRequestItem.classList.add("friend-req-received", "d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
+	friendRequestItem.classList.add("friend-req-received", "d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-3", "rounded");
 	friendRequestItem.id = `friend-request-item-${request?.from_user_id}`;
 	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendRequestItem.innerHTML = `

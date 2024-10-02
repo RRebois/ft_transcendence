@@ -51,13 +51,24 @@ class MatchScoreView(APIView):
         return JsonResponse(game.serialize())
 
 @method_decorator(csrf_protect, name='dispatch')
-class TournamentDisplayAllView(APIView):
+class TournamentDisplayAllUserView(APIView):
     def get(self, request, username):
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
             return JsonResponse({"error": "User does not exist."}, status=404)
         tournaments = user.tournaments.all()
+
+        return JsonResponse([tournament.serialize() for tournament in tournaments] if tournaments else [], safe=False, status=200)
+
+@method_decorator(csrf_protect, name='dispatch')
+class TournamentDisplayAllView(APIView):
+    def get(self, request):
+        try:
+            authenticate_user(request)
+        except AuthenticationFailed as e:
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        tournaments = Tournament.objects.all()
 
         return JsonResponse([tournament.serialize() for tournament in tournaments] if tournaments else [], safe=False, status=200)
 
@@ -229,7 +240,7 @@ def add_player_to_tournament(user, tournament):
 @method_decorator(csrf_protect, name='dispatch')
 class   CreateTournamentView(APIView):
 
-    def get(self, request):
+    def post(self, request):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
@@ -242,7 +253,7 @@ class   CreateTournamentView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 class   JoinTournamentView(APIView):
 
-    def get(self, request, tournament_id):
+    def post(self, request, tournament_id):
 
         try:
             user = authenticate_user(request)
