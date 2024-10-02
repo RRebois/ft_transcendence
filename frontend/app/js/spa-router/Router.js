@@ -48,7 +48,7 @@ export default class Router {
 			this.renderNode.innerHTML = '' +
 				'<h1 class="mb-6 play-bold" style="font-size: 6rem">404</h1>' +
 				'<img src="/homer.webp" alt="homer simpson disappearing" class="rounded w-1-2 mb-4" />' +
-				'<li><a role="button" route="/" class="btn btn-primary btn-lg">Return home</a></li>';
+				'<li style="list-style-type:none;"><a role="button" route="/" class="btn btn-primary btn-lg">Return home</a></li>';
 			return;
 		}
 		if (isUserAuth) {

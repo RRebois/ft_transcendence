@@ -189,9 +189,10 @@ export default class Dashboard {
 		<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
             <div class="h-100 w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 32px;">
             	<div class="d-flex flex-row justify-content-center w-3-4" style="gap: 32px">
+
             		<!-- Pong game -->
-            		<div class="w-full bg-white d-flex flex-column align-items-center py-4 px-4 rounded gap-1" style="--bs-bg-opacity: .5;"
-            		 	data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" title="A 3D adaptation of one of the oldest video game. Play offline against a bot or a friend, or online on 1v1 or 2v2.">
+            		<div class="w-full bg-white d-flex flex-column align-items-center py-4 px-4 rounded gap-1 hideParent" style="--bs-bg-opacity: .5;"
+                        data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" title="A 3D adaptation of one of the oldest video game. Play offline against a bot or a friend, or online on 1v1 or 2v2.">
             			<p class="play-bold fs-2">Pong 🏓</p>
             			<div class="d-flex flex-column justify-content-center align-items-center gap-1 w-full">
             				<button type="button" class="btn d-flex justify-content-center align-items-center w-fit px-4 py-1 play-btn m-3" data-game-type="pong" data-bs-toggle="modal" data-bs-target="#create-match-modal" style="background-color: #3b82f6">
@@ -201,9 +202,9 @@ export default class Dashboard {
 					</div>
 					
             		<!-- Purrinha game -->
-            		<div class="w-full bg-white d-flex flex-column align-items-center py-4 px-4 rounded gap-1" style="--bs-bg-opacity: .5";
-            			data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" title="A classic bar game! You have 3 tokens at disposal. 
-            			Each player select from 0 to 3 to hide in its hand. The goal is to guess the total selected by all the players. The closest to the total wins the round.">
+            		<div class="w-full bg-white d-flex flex-column align-items-center py-4 px-4 rounded gap-1 hideParent" style="--bs-bg-opacity: .5;"
+                        data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" title="A classic bar game! You have 3 tokens at disposal.
+                            Each player select from 0 to 3 to hide in its hand. The goal is to guess the total selected by all the players. The closest to the total wins the round.">
             			<p class="play-bold fs-2">Purrinha ✋</p>
             			<div class="d-flex flex-column justify-content-center align-items-center gap-3 w-full">
             				<button type="button" class="btn d-flex justify-content-center align-items-center w-fit px-4 py-1 play-btn m-3" data-game-type="purrinha" data-bs-toggle="modal" data-bs-target="#create-match-modal" style="background-color: #3b82f6">

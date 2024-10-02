@@ -736,53 +736,26 @@ export default class PongGame {
                 modal.style.background = "#bc7575";
             modal.innerHTML = `<p>${msg}</p>`;
 
-//            if (this.props?.code === 22 || this.props?.code === 40) {
-//                if (this.winner.includes(this.user["username"])) {
-//                    modal.style.background = "#3e783e";
-//                    modal.innerHTML = `
-//                        <p>`Congratulations ${this.user["username"]}, you won!`</p>
-//                    `;
-//                }
-//                else {
-//                    modal.style.background = "#bc7575";
-//                    modal.innerHTML = `
-//                        <p>`${this.user["username"]} you are such a loser!`</p>
-//                    `;
-//                }
-//            }
-//            else if (this.props?.code === 20) {
-//                if (this.winner.includes(this.user["username"])) {
-//                    modal.style.background = "#3e783e";
-//                    modal.innerHTML = `
-//                        <p>`Congratulations ${this.user["username"]}, you won!`</p>
-//                    `;
-//                }
-//                else { console.log("lose");
-//                    modal.style.background = "#bc7575";
-//                    modal.innerHTML = `
-//                        <p>`${this.user["username"]} you are such a loser.
-//                        However, you have a very talented friend!`</p>
-//                    `;
-//                }
-//            else {
-//                if (this.winner.includes(this.user["username"])) {
-//                    modal.style.background = "#3e783e";
-//                    modal.innerHTML = `
-//                        <p>`Congratulations ${this.user["username"]}, you won!`</p>
-//                    `;
-//                }
-//
-//            }
             // Add buttons to modal + listeners
 // gameCode, this.props?.session_id, this
-            modal.innerHTML +=`
+
+            if (data.game_state["tournament"]) {
+                modal.innerHTML +=`
                 <button id="back-home-btn" route="/" class="btn btn-primary">Back to dashboard</button>
-                <button id="new-game-btn" class="btn btn-primary">Play again</button>
+                <button id="new-game-btn" route="/" class="btn btn-primary">Back to tournament view</button> // to complete
             `;
+            }
+            else {
+                modal.innerHTML +=`
+                    <button id="back-home-btn" route="/" class="btn btn-primary">Back to dashboard</button>
+                    <button id="new-game-btn" class="btn btn-primary">Play again</button>
+                `;
+            }
             const   restart = document.getElementById("new-game-btn");
             restart.addEventListener("click", () => { console.log("data sent");
                 this.gameSocket.send(JSON.stringify({"restart": true}));
             });
+            modal.style.border = "5px solid black";
 			modal.hidden = false;
         }
     }
