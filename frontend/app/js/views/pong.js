@@ -9,6 +9,7 @@ export default class PongGame {
     constructor(props) {
         this.props = props;
         this.user = props?.user;
+        this.userIndex = 0;
         this.winner = null;
         this.gameSocket = null;
         this.setUser = this.setUser.bind(this);
@@ -138,7 +139,8 @@ export default class PongGame {
         this.scene.add(stadiumGroup);
 
         // Display text from the beginning
-        const    textGroup = new THREE.Object3D();
+        const    textGroup = new THREE.Object3D();//textGroup.position.set(300, 100, 300);
+        textGroup.position.x = 300;
         textGroup.position.y = 300;
         textGroup.position.z = 300;
         textGroup.rotation.set(0, Math.PI, 0);
@@ -153,7 +155,7 @@ export default class PongGame {
     }
 
     onKeyDown(event) {
-        if (window.location.pathname === "/pong") {
+        if (window.location.pathname === "/pong") { console.log(this.userIndex);
             this.keyMap[event.key] = true;
         }
     }
@@ -165,14 +167,26 @@ export default class PongGame {
     }
 
      handleKeyEvent() {
-        if (this.keyMap['w'] === true)
-            this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": 1}}));
-        if (this.keyMap['s'] === true)
-            this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": -1}}));
-        if (this.keyMap['ArrowUp'] === true)
-            this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
-        if (this.keyMap['ArrowDown'] === true)
-            this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
+        if (this.props?.code !== "40") {
+            if (this.keyMap['w'] === true)
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": 1}}));
+            if (this.keyMap['s'] === true)
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": -1}}));
+            if (this.keyMap['ArrowUp'] === true)
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
+            if (this.keyMap['ArrowDown'] === true)
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
+        }
+        else { //if(this.user.username === "superuser"){
+            if (this.keyMap['w'] === true)
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": 1}}));
+            if (this.keyMap['s'] === true)
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": -1}}));
+            if (this.keyMap['ArrowUp'] === true)
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": 1}}));
+            if (this.keyMap['ArrowDown'] === true)
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": -1}}));
+        }//}
     }
 
     createLightFloor() {
@@ -303,12 +317,24 @@ export default class PongGame {
 
         // Set players nick
         this.players_nick = []; //p2, p1, p4, p3
-        this.players_nick.push(data.game_state.players.player2["name"]);
-        this.players_nick.push(data.game_state.players.player1["name"]);
+        this.players_nick.push({
+            "username": data.game_state.players.player2["name"],
+            "truncUser": null,
+        });
+        this.players_nick.push({
+            "username": data.game_state.players.player1["name"],
+            "truncUser": null,
+        });
 
         if (Object.keys(data.players).length > 2) {
-            this.players_nick.push(data.game_state.players.player4["name"]);
-            this.players_nick.push(data.game_state.players.player3["name"]);
+            this.players_nick.push({
+                "username": data.game_state.players.player4["name"],
+                "truncUser": null,
+            });
+            this.players_nick.push({
+                "username": data.game_state.players.player3["name"],
+                "truncUser": null,
+            });
         }
 
         this.sprite = [];
@@ -331,21 +357,22 @@ export default class PongGame {
 
     printInitScores() {
         for (let i = 0; i < this.players_nick.length; i++) {
-            if (this.players_nick[i].length > 8) {
-                this.players_nick[i] = this.players_nick[i].substr(0, 7) + ".";
-            }
+            if (this.players_nick[i].username.length > 8)
+                this.players_nick[i].truncUser = this.players_nick[i].username.substr(0, 7) + ".";
+            else
+                 this.players_nick[i].truncUser = this.players_nick[i].username;
         }
 
         // Adjust this.Array for each case (2 players / 4 players)
         if (this.players_nick.length > 2) {
-            this.textArray = [`${this.players_nick[2]}` + "\n" + `${this.players_nick[3]}`,
+            this.textArray = [`${this.players_nick[2].truncUser}` + "\n" + `${this.players_nick[3].truncUser}`,
             this.score_p2.toString(), " - ", this.score_p1.toString(),
-            `${this.players_nick[0]}` + "\n" + `${this.players_nick[1]}`];
+            `${this.players_nick[0].truncUser}` + "\n" + `${this.players_nick[1].truncUser}`];
         }
         else {
-            this.textArray = [`${this.players_nick[0]}`,
+            this.textArray = [`${this.players_nick[0].truncUser}`,
             this.score_p2.toString(), " - ", this.score_p1.toString(),
-            `${this.players_nick[1]}`];
+            `${this.players_nick[1].truncUser}`];
         }
         this.newArray = [this.textArray[0],
                         this.textArray[1] + this.textArray[2] + this.textArray[3],
@@ -354,7 +381,7 @@ export default class PongGame {
         const   textGroup = this.scene.getObjectByName("textGroup");
         const   loader = new FontLoader();
 
-        this.xPosition = window.innerWidth;
+        this.xPosition = 0;
 
         loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
             this.textArray.forEach((text, index) => {
@@ -401,15 +428,18 @@ export default class PongGame {
                 else
                     this.xPosition += textWidth + 10;
                 textGroup.add(textAdd);
-                this.updateTextGroup(this.xPosition);
             });
+            this.updateTextGroup();
         });
     }
 
     updateTextGroup(value) {
         const   textGroup = this.scene.getObjectByName("textGroup");
-        if (textGroup)
-            textGroup.position.x = value - 100;
+
+        if (textGroup) {
+            const   box = new THREE.Box3().setFromObject(textGroup);
+                textGroup.position.x = 300 + (-box.min.x + box.max.x) * 0.5;
+        }
     }
 
      createPlanStadium() {
@@ -696,8 +726,17 @@ export default class PongGame {
 
     // Collecting info from the game logic in the back
     display(data) {
-        console.log(data);
-
+//        console.log(data);
+        if (this.userIndex === 0 && this.props?.code === "40") {
+            for (let i = 0; i < this.players_nick.length; i++) {
+                if (this.players_nick[i].username === this.user.username) {
+                    if (i % 2 === 0)
+                        this.userIndex = i + 2;
+                    else
+                         this.userIndex = i;
+                }
+            }
+        }
         if (data["status"] === "started") {
         const   ball = this.scene.getObjectByName("ball");
 
