@@ -65,7 +65,7 @@ export function create_friend_request_sent_div(request, size) {
 		statusDot = "bg-success";
 	else
 		statusDot = "bg-danger";
-	friendRequestItem.classList.add("friend-req-sent", "d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-3", "rounded");
+	friendRequestItem.classList.add("friend-req-sent", "d-flex", "flex-wrap", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-3", "rounded");
 	friendRequestItem.id = `friend-request-item-${request?.to_user_id}`;
 	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendRequestItem.innerHTML = `
@@ -78,7 +78,7 @@ export function create_friend_request_sent_div(request, size) {
 				</span>
 			</a>
 		</div>
-		<p class="m-2 cursor-click" route="/stats/${request?.to_user__username}">${request?.to_user || request.to_user__username}</p>
+		<p class="m-2 play-bold cursor-click" route="/stats/${request?.to_user__username}">${request?.to_user || request.to_user__username}</p>
 		<p class="m-2">Sent : ${new Date(request?.time).toLocaleString()}</p>
 		<p class="m-2">${request?.status}</p>
 	`;
@@ -96,7 +96,7 @@ export function create_friend_request_div(request, size) {
 		statusDot = "bg-success";
 	else
 		statusDot = "bg-danger";
-	friendRequestItem.classList.add("friend-req-received", "d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-3", "rounded");
+	friendRequestItem.classList.add("friend-req-received", "d-flex", "flex-wrap", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-3", "rounded");
 	friendRequestItem.id = `friend-request-item-${request?.from_user_id}`;
 	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendRequestItem.innerHTML = `
@@ -109,7 +109,7 @@ export function create_friend_request_div(request, size) {
 				</span>
 			</a>
 		</div>
-		<p class="m-2 cursor-click" route="/stats/${request?.from_user || request.from_user__username}">${request?.from_user || request.from_user__username}</p>
+		<p class="m-2 play-bold cursor-click" route="/stats/${request?.from_user || request.from_user__username}">${request?.from_user || request.from_user__username}</p>
 		<p class="m-2">Received : ${new Date(request?.time).toLocaleString()}</p>
 		<div class="d-flex flex-column m-1">
 			<button class="m-1 btn btn-success confirm-request-btn" data-id="${request?.from_user_id}">Accept</button>
@@ -136,7 +136,7 @@ export function create_friend_div_load(friend) {
 		statusDot = "bg-success";
 	else
 		statusDot = "bg-danger";
-	friendItem.classList.add("friend", "d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
+	friendItem.classList.add("friend", "d-flex", "flex-wrap", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
 	friendItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendItem.id = `friend-item-${friend?.from_user_id}`;
 	friendItem.innerHTML = `
@@ -149,7 +149,7 @@ export function create_friend_div_load(friend) {
 				</span>
 			</a>
         </div>
-        <p class="mx-2 my-1 cursor-click" route="/stats/${friend?.from_user}">${friend?.from_user}</p>
+        <p class="mx-2 my-1 play-bold cursor-click" route="/stats/${friend?.from_user}">${friend?.from_user}</p>
         <div class="status-container mx-2 my-1" data-id="${friend?.from_user_id}">
             <p class="status mx-2 my-1">Status: ${friend?.from_status}</p>
         </div>
@@ -174,7 +174,7 @@ export function create_friend_div_ws(status, id, img_url, username, size) {
 		statusDot = "bg-success";
 	else
 		statusDot = "bg-danger";
-	friendItem.classList.add("friend", "d-flex", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
+	friendItem.classList.add("friend", "d-flex", "flex-wrap", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
 	friendItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendItem.id = `friend-item-${id}`;
 	friendItem.innerHTML = `
@@ -187,7 +187,7 @@ export function create_friend_div_ws(status, id, img_url, username, size) {
 				</span>
 			</a>
         </div>
-        <p class="mx-2 my-1 cursor-click" route="/stats/${username}">${username}</p>
+        <p class="mx-2 my-1 play-bold cursor-click" route="/stats/${username}">${username}</p>
         <div class="status-container mx-2 my-1" data-id="${id}">
             <p class="status mx-2 my-1">Status: ${status}</p>
         </div>

@@ -179,7 +179,7 @@ export default class Dashboard {
 
 					if (data.length === 0) {
 						carouselInner.innerHTML = `
-							<div class="d-flex justify-content-center align-items-center text-center w-full h-full bg-tournament rounded p-3">
+							<div class="d-flex justify-content-center align-items-center text-center w-full h-full">
 								<p class="play-bold fs-4 m-0">No tournament found</p>
 							</div>
 						`;
@@ -223,7 +223,7 @@ export default class Dashboard {
 
 		return `
 			<div class="carousel-item ${isActive}">
-				<div class="tournament-slide d-flex flex-column justify-content-center align-items-center bg-tournament rounded p-3">
+				<div class="tournament-slide d-flex flex-column justify-content-center align-items-center">
 					<p class="fs-3 play-bold m-1 cursor-click" route="/tournament/${tournament.name}">${tournament.name}</p>
 					${statusHTML}
 				</div>
@@ -374,37 +374,38 @@ export default class Dashboard {
             	</div>
             	
             	<!-- Tournament -->
-            	<div class="w-3-4 bg-white d-flex flex-column align-items-center py-4 px-4 rounded" style="--bs-bg-opacity: .5;">
-            		<p class="play-bold fs-2">Pong tournament 🏆</p>
-            		<div class="d-flex">
-            			<div class="d-flex flex-column m-3 align-items-center">
-							<select class="form-select custom-select-filter-icon m-2" id="tournament-filter" aria-label="Select filter" style="width: min-content; height: min-content;">
-								<option value="all">All</option>
-								<option value="user">Yours</option>
-								<option value="open">Opened</option>
-							</select>
-							<div id="carouselTournament" class="carousel slide d-flex flex-column justify-content-center px-5" data-bs-ride="carousel">
-								<div class="carousel-indicators m-0"></div>
-								<div class="carousel-inner"></div>
-								<button class="carousel-control-prev" type="button" data-bs-target="#carouselTournament" data-bs-slide="prev">
-									<span class="carousel-control-prev-icon" aria-hidden="true"></span>
-									<span class="visually-hidden">Previous</span>
-								</button>
-								<button class="carousel-control-next" type="button" data-bs-target="#carouselTournament" data-bs-slide="next">
-									<span class="carousel-control-next-icon" aria-hidden="true"></span>
-									<span class="visually-hidden">Next</span>
+            	<div class="w-3-4 bg-white d-flex flex-column align-items-center py-4 px-4 rounded overflow-auto" style="--bs-bg-opacity: .5;"
+					<div class="w-full">
+						<p class="play-bold fs-2">Pong tournament 🏆</p>
+						<div class="d-flex flex-row flex-wrap align-items-center justify-content-evenly w-full">
+							<div class="d-flex flex-column m-3 align-items-center">
+								<div id="carouselTournament" class="carousel slide d-flex flex-column justify-content-center px-5 bg-tournament rounded p-3" data-bs-ride="carousel">
+									<div class="carousel-indicators m-0"></div>
+									<div class="carousel-inner"></div>
+									<button class="carousel-control-prev" type="button" data-bs-target="#carouselTournament" data-bs-slide="prev">
+										<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+										<span class="visually-hidden">Previous</span>
+									</button>
+									<button class="carousel-control-next" type="button" data-bs-target="#carouselTournament" data-bs-slide="next">
+										<span class="carousel-control-next-icon" aria-hidden="true"></span>
+										<span class="visually-hidden">Next</span>
+									</button>
+								</div>
+								<select class="form-select custom-select-filter-icon m-2" id="tournament-filter" aria-label="Select filter" style="width: min-content; height: min-content;">
+									<option value="all">All</option>
+									<option value="user">Yours</option>
+									<option value="open">Opened</option>
+								</select>
+							</div>
+							<div class="d-flex flex-column justify-content-center align-items-center p-3">
+								<button type="button" class="btn d-flex justify-content-center align-items-center w-fit py-1 play-btn" data-bs-toggle="modal" data-bs-target="#create-tournament-modal" style="background-color: #3b82f6">
+									<i class="bi bi-plus-circle mx-3"></i>
+									<p class="fs-4 m-1 text-white">New tournament</p>
 								</button>
 							</div>
 						</div>
-						<div class="d-flex flex-column justify-content-center align-items-center p-3">
-							<button type="button" class="btn d-flex justify-content-center align-items-center w-fit py-1 play-btn" data-bs-toggle="modal" data-bs-target="#create-tournament-modal" style="background-color: #3b82f6">
-								<i class="bi bi-plus-circle mx-3"></i>
-            					<p class="fs-4 m-1 text-white">New tournament</p>
-							</button>
-						</div>
 					</div>
-            	</div>
-				
+				</div>
 				<!--	MODAL PART		-->
 				<div class="modal fade" id="create-match-modal" tabindex="-1" aria-labelledby="create match modal" aria-hidden="true">
 					<div class="modal-dialog">
