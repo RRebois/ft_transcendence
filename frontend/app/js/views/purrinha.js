@@ -1,7 +1,7 @@
 import * as bootstrap from "bootstrap";
 import {appRouter} from "@js/spa-router/initializeRouter.js";
 import {initializePurrinhaWebSocket} from "@js/functions/websocket.js";
-import {send_player_action} from "../functions/purrinha.js";
+import PurrinhaPlayerInfo from "../components/PurrinhaPlayerInfo.js";
 
 export default class PurrinhaGame {
     constructor(props) {
@@ -63,91 +63,24 @@ export default class PurrinhaGame {
         const gameRoot = document.getElementById('game-root');
         if (gameRoot) {
             if (this.nb_players === 2) {
+                const player1 = new PurrinhaPlayerInfo(this.players[0], 1);
+                const player2 = new PurrinhaPlayerInfo(this.players[1], 2);
                 gameRoot.innerHTML = `
-					<div class="right-edge-container">
-						<div class="equal-elmt-y"></div>
-						<div>
-							<img src="/purrinha/closed_hand_right.png" style="height: 100%; width: 100%" alt="edge-image" />
-						</div>
-						<div class="equal-elmt-y d-flex justify-content-center align-items-start">
-							<div style="--bs-bg-opacity: .5; width: 100%;" class="bg-white d-flex g-4 flex-column align-items-center rounded">
-								<div class="d-flex flex-row justify-content-between">
-								    <p id="user_info-username-1" class="play-bold"></p>
-								    <div class="d-flex flex-row justify-content-center align-items-center">
-								        <i class="bi bi-trophy"></i>
-								        <p id="user_info_wins-1 m-0">0</p>
-								    </div>
-								</div>
-								<p id="user_info-status-1"></p>
-							</div>
-						</div>
-					</div>
-
-					<div class="left-edge-container">
-						<div class="equal-elmt-y d-flex justify-content-center align-items-end">
-							<div style="--bs-bg-opacity: .5; width: 100%;" class="bg-white d-flex g-4 flex-column align-items-center rounded">
-								<p id="user_info-username-2"></p>
-								<p id="user_info-status-2"></p>
-							</div>
-						</div>
-						<div>
-							<img src="/purrinha/closed_hand_left.png" style="height: 100%; width: 100%" alt="edge-image" />
-						</div>
-						<div class="equal-elmt-y"></div>
-					</div>
+                    ${player1.render()}
+                    ${player2.render()}
 				`;
 
                 // this.pick_inital_number();
             } else if (this.nb_players === 4) {
+                const player1 = new PurrinhaPlayerInfo(this.players[0], 1);
+                const player2 = new PurrinhaPlayerInfo(this.players[1], 2);
+                const player3 = new PurrinhaPlayerInfo(this.players[2], 3);
+                const player4 = new PurrinhaPlayerInfo(this.players[3], 4);
                 gameRoot.innerHTML = `
-					<div class="top-edge-container">
-						<div class="equal-elmt-x"></div>
-						<div style="height: 100%;">
-							<img src="/purrinha/closed_hand_top.png" style="max-width: 100%; max-height: 100%; width: auto; height: auto;" alt="edge-image" />
-						</div>
-
-						<div class="equal-elmt-x d-flex justify-content-start align-items-center ">
-							<div style="--bs-bg-opacity: .5" class="bg-white d-flex g-4 flex-column align-items-center rounded">
-								<p id="user_info-username-3"></p>
-							</div>
-						</div>
-					</div>
-
-					<div class="bottom-edge-container">
-						<div class="equal-elmt-x"></div>
-						<div style="height: 100%;">
-							<img src="/purrinha/closed_hand_bottom.png" style="max-width: 100%; max-height: 100%; width: auto; height: 100%;" alt="edge-image" />
-						</div>
-						<div class="equal-elmt-x d-flex justify-content-start align-items-center ">
-							<div style="--bs-bg-opacity: .5" class="bg-white d-flex g-4 flex-column align-items-center rounded">
-								<p id="user_info-username-4"></p>
-							</div>
-						</div>
-					</div>
-
-					<div class="right-edge-container">
-						<div class="equal-elmt-y"></div>
-						<div>
-							<img src="/purrinha/closed_hand_right.png" style="height: 100%; width: 100%" alt="edge-image" />
-						</div>
-						<div class="equal-elmt-y d-flex justify-content-center align-items-start">
-							<div style="--bs-bg-opacity: .5; width: 100%;" class="bg-white d-flex g-4 flex-column align-items-center rounded">
-								<p id="user_info-username-2"></p>
-							</div>
-						</div>
-					</div>
-
-					<div class="left-edge-container">
-						<div class="equal-elmt-y d-flex justify-content-center align-items-end">
-							<div style="--bs-bg-opacity: .5; width: 100%;" class="bg-white d-flex g-4 flex-column align-items-center rounded">
-								<p id="user_info-username-1"></p>
-							</div>
-						</div>
-						<div>
-							<img src="/purrinha/closed_hand_left.png" style="height: 100%; width: 100%" alt="edge-image" />
-						</div>
-						<div class="equal-elmt-y"></div>
-					</div>
+                    ${player1.render()}
+                    ${player2.render()}
+                    ${player3.render()}
+                    ${player4.render()}
 				`;
 
             }

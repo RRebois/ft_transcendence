@@ -1,4 +1,4 @@
-class PurrinhaPlayerInfo {
+export default class PurrinhaPlayerInfo {
     constructor(player, game_player_id) {
         this.player = player;
         this.game_player_id = game_player_id;
@@ -19,19 +19,64 @@ class PurrinhaPlayerInfo {
         }
     }
 
-    render() {
-        return `
-            <div class="${this.side}-edge-container\">
-                <div class="equal-elmt-y"></div>
-                <div>
-                    <img src="/purrinha/closed_hand_right.png" style="height: 100%; width: 100%" alt="edge-image" />
+    get_void_equal_elmt = (side) => {
+        if (side === 'top' || side === 'bottom') {
+            return `<div class="equal-elmt-x"></div>`;
+        } else {
+            return `<div class="equal-elmt-y"></div>`;
+        }
+    }
+
+    get_img_elmt = (side) => {
+        if (side === 'top' || side === 'bottom') {
+            return `   
+                <div style="height: 100%;">
+                    <img src="/purrinha/closed_hand_${this.side}.png" style="max-width: 100%; max-height: 100%; width: ${this.side === 'top' ? 'auto' : '100%'}; height: auto;"
+                    alt="purrinha ${this.side} hand"/>
                 </div>
-                <div class="equal-elmt-y d-flex justify-content-center align-items-start">
-                    <div style="--bs-bg-opacity: .5; width: 100%;" class="bg-white d-flex g-4 flex-column align-items-center rounded">
-                        <p id="user_info-username-1"></p>
-                        <p id="user_info-status-1"></p>
+            `;
+        } else {
+            return `
+                <div>
+                    <img src="/purrinha/closed_hand_${this.side}.png" style="height: 100%; width: 100%" alt="purrinha ${this.side} hand"/>
+                </div>
+            `;
+        }
+    }
+
+    get_user_info_elmt = (side) => {
+        if (side === 'top' || side === 'bottom') {
+            return `
+                <div class="equal-elmt-x d-flex justify-content-start align-items-center ">
+                    <div style="--bs-bg-opacity: .5" class="bg-white d-flex g-4 flex-column align-items-center rounded">
+                        <p id="user_info-username-${this.game_player_id}"></p>
+                        <p id="user_info-status-${this.game_player_id}"></p>
                     </div>
                 </div>
+            `;
+        } else {
+            return `
+                <div class="equal-elmt-y d-flex justify-content-center align-items-${this.side === 'right' ? 'start' : 'end'}">
+                    <div style="--bs-bg-opacity: .5; width: 100%;" class="bg-white d-flex g-4 flex-column align-items-center rounded">
+                        <p id="user_info-username-${this.game_player_id}"></p>
+                        <p id="user_info-status-${this.game_player_id}"></p>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+
+    render() {
+        console.log('rendering player info');
+        console.log('this.side: ', this.side);
+        console.log("this.player: ", this.player);
+        return `
+            <div class="${this.side}-edge-container\">
+                ${this.side === 'top' || this.side === 'bottom' || this.side === 'right' ? this.get_void_equal_elmt(this.side) : ''}
+                ${this.side === 'top' || this.side === 'bottom' || this.side === 'right' ? this.get_img_elmt(this.side) : this.get_user_info_elmt(this.side)}
+                ${this.side === 'top' || this.side === 'bottom' || this.side === 'right' ? this.get_user_info_elmt(this.side) : this.get_img_elmt(this.side)}
+                ${this.side === 'left' ? this.get_void_equal_elmt(this.side) : ''}
             </div>
         `;
     }
@@ -39,52 +84,3 @@ class PurrinhaPlayerInfo {
 
 // const rightEdgeComponent = new RightEdgeContainer('user_info-username-1', 'user_info-status-1', '/purrinha/closed_hand_right.png');
 // document.getElementById('some-container').innerHTML = rightEdgeComponent.render();
-
-// TOP
-//     <div className="equal-elmt-x"></div>
-//     <div style="height: 100%;">
-//         <img src="/purrinha/closed_hand_top.png" style="max-width: 100%; max-height: 100%; width: auto; height: auto;"
-//              alt="edge-image"/>
-//     </div>
-//
-//     <div className="equal-elmt-x d-flex justify-content-start align-items-center ">
-//         <div style="--bs-bg-opacity: .5" className="bg-white d-flex g-4 flex-column align-items-center rounded">
-//             <p id="user_info-username-3"></p>
-//         </div>
-//     </div>
-//
-// BOTTOM
-//     <div className="equal-elmt-x"></div>
-//     <div style="height: 100%;">
-//         <img src="/purrinha/closed_hand_bottom.png"
-//              style="max-width: 100%; max-height: 100%; width: auto; height: 100%;" alt="edge-image"/>
-//     </div>
-//     <div className="equal-elmt-x d-flex justify-content-start align-items-center ">
-//         <div style="--bs-bg-opacity: .5" className="bg-white d-flex g-4 flex-column align-items-center rounded">
-//             <p id="user_info-username-4"></p>
-//         </div>
-//     </div>
-//
-// RIGHT
-//     <div className="equal-elmt-y"></div>
-//     <div>
-//         <img src="/purrinha/closed_hand_right.png" style="height: 100%; width: 100%" alt="edge-image"/>
-//     </div>
-//     <div className="equal-elmt-y d-flex justify-content-center align-items-start">
-//         <div style="--bs-bg-opacity: .5; width: 100%;"
-//              className="bg-white d-flex g-4 flex-column align-items-center rounded">
-//             <p id="user_info-username-2"></p>
-//         </div>
-//     </div>
-//
-// LEFT
-//     <div className="equal-elmt-y d-flex justify-content-center align-items-end">
-//         <div style="--bs-bg-opacity: .5; width: 100%;"
-//              className="bg-white d-flex g-4 flex-column align-items-center rounded">
-//             <p id="user_info-username-1"></p>
-//         </div>
-//     </div>
-//     <div>
-//         <img src="/purrinha/closed_hand_left.png" style="height: 100%; width: 100%" alt="edge-image"/>
-//     </div>
-//     <div className="equal-elmt-y"></div>
