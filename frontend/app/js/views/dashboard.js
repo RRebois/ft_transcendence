@@ -13,6 +13,7 @@ export default class Dashboard {
 		this.gameType = null;
 		this.gameConnectivity = 'offline';
 		this.gameNbPlayers = 'bot';
+		this.tournamentNbPlayers = '3p';
 		this.load_tournaments= this.load_tournaments.bind(this);
 	}
 
@@ -39,7 +40,7 @@ export default class Dashboard {
 
 	handleTournamentCreation = () => {
 		console.log("Tournament creation handled");
-		const nbPlayers = this.gameNbPlayers;
+		const nbPlayers = this.tournamentNbPlayers;
 		console.log("Number of players: ", nbPlayers);
 		const csrfToken = getCookie('csrftoken');
 		const tournamentName = document.getElementById('tournament-name').value;
@@ -151,7 +152,83 @@ export default class Dashboard {
 	}
 
 	load_tournaments(type = "all") {
-		fetch(`https://${window.location.hostname}:8443/tournament/`)
+		const csrfToken = getCookie('csrftoken');
+		if (type === 'user') {
+			type = this.user.username;
+		}
+		fetch(`https://${window.location.hostname}:8443/tournament/history/${type}`, {
+			method: 'GET',
+			header: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': csrfToken
+			},
+			credentials: 'include'
+		})
+		.then(response => response.json().then(data => ({ok: response.ok, data})))
+		.then(({ok, data}) => {
+			if (!ok) {
+				const toastComponent = new ToastComponent();
+				toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+			} else {
+				const carouselInner = document.querySelector('.carousel-inner');
+				const carouselIndicators = document.querySelector('.carousel-indicators');
+
+				if (carouselInner && carouselIndicators) {
+					carouselInner.innerHTML = '';
+					carouselIndicators.innerHTML = '';
+
+					if (data.length === 0) {
+						carouselInner.innerHTML = `
+							<div class="d-flex justify-content-center align-items-center w-full h-full">
+								<p class="fs-3">No tournament found</p>
+							</div>
+						`;
+					} else {
+						data.forEach((tournament, index) => {
+							const isActive = index === 0 ? 'active' : '';
+							const slide = this.generateTournamentSlide(tournament, isActive);
+							carouselInner.insertAdjacentHTML('beforeend', slide);
+
+							carouselIndicators.insertAdjacentHTML('beforeend', `
+								<button type="button" data-bs-target="#carouselTournament" 
+									data-bs-slide-to="${index}" 
+									class="${isActive}" 
+									aria-label="Slide ${index + 1}"></button>
+							`);
+						});
+					}
+				}
+			}
+		})
+		.catch(error => {
+			console.error("Error fetching tournaments: ", error);
+			const toastComponent = new ToastComponent();
+			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+		});
+	}
+
+	generateTournamentSlide(tournament, isActive) {
+    	const status = tournament.status;
+		const playerCount = tournament.players.length;
+		const winner = tournament.winner !== 'unknown' ? `Winner: ${tournament.winner}` : '';
+
+		let statusHTML;
+		if (status === 'waiting for players') {
+			statusHTML = `<div class="status open">Open to join - ${playerCount} players registered</div>`;
+		} else if (status === 'running') {
+			statusHTML = `<div class="status closed">Closed - Tournament is ongoing</div>`;
+		} else {
+			statusHTML = `<div class="status finished">Finished ${winner}</div>`;
+		}
+
+		return `
+			<div class="carousel-item ${isActive}">
+				<div class="tournament-slide d-flex flex-column justify-content-center align-items-center">
+					<h3 class="tournament-name">${tournament.name}</h3>
+					${statusHTML}
+				</div>
+			</div>
+		`;
 	}
 
 	setupEventListeners() {
@@ -256,7 +333,13 @@ export default class Dashboard {
 				}
 			});
 		}
-		this.load_tournaments();
+		const tournamentFilter = document.getElementById('tournament-filter');
+		if (tournamentFilter) {
+			tournamentFilter.addEventListener('change', (event) => {
+				const type = event.target.value;
+				this.load_tournaments(event.target.value);
+			});
+		}
 	}
 
     render() {
@@ -293,21 +376,24 @@ export default class Dashboard {
             	<div class="w-3-4 bg-white d-flex flex-column align-items-center py-4 px-4 rounded" style="--bs-bg-opacity: .5;">
             		<p class="play-bold fs-2">Pong tournament 🏆</p>
             		<div class="d-flex">
-<!--            			<div class="d-flex flex-column justify-content-center px-5">-->
-<!--            				<label for="tournament-id">Join a tournament</label>-->
-<!--            				<div class="input-group mb-3">-->
-<!--								<input type="text" class="form-control" id="tournament-id" placeholder="XXX-XXX-XXX" aria-label="Tournament ID">-->
-<!--								<div class="input-group-append">-->
-<!--									<button class="btn btn-primary" type="button">Join</button>-->
-<!--								</div>-->
-<!--							</div>-->
-<!--						</div>-->
-						<div id="carouselTournament" class="carousel slide d-flex flex-column justify-content-center px-5" data-bs-ride="carousel">
+            			<div class="m-3">
 							<select class="form-select custom-select-filter-icon" id="tournament-filter" aria-label="Select filter" style="width: min-content; height: min-content;">
 								<option value="all">All</option>
 								<option value="user">Your tournaments</option>
-								<option value="opened">Opened</option>
+								<option value="open">Opened</option>
 							</select>
+							<div id="carouselTournament" class="carousel slide d-flex flex-column justify-content-center px-5" data-bs-ride="carousel">
+								<div class="carousel-indicators"></div>
+								<div class="carousel-inner"></div>
+								<button class="carousel-control-prev" type="button" data-bs-target="#carouselTournament" data-bs-slide="prev">
+									<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+									<span class="visually-hidden">Previous</span>
+								</button>
+								<button class="carousel-control-next" type="button" data-bs-target="#carouselTournament" data-bs-slide="next">
+									<span class="carousel-control-next-icon" aria-hidden="true"></span>
+									<span class="visually-hidden">Next</span>
+								</button>
+							</div>
 						</div>
 						<div class="d-flex flex-column justify-content-center align-items-center p-3">
 							<button type="button" class="btn d-flex justify-content-center align-items-center w-fit py-1 play-btn" data-bs-toggle="modal" data-bs-target="#create-tournament-modal" style="background-color: #3b82f6">

@@ -66,7 +66,7 @@ class TournamentDisplayOpenView(APIView):
 
 @method_decorator(csrf_protect, name='dispatch')
 class TournamentDisplayAllUserView(APIView):
-    def get(self, request):
+    def get(self, request, username):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
@@ -322,7 +322,7 @@ class   PlayTournamentView(APIView):
             return JsonResponse({"error": "This tournament is not ready to play. Wait for all players."}, status=404)
         if user not in tournament.players.all():
             return JsonResponse({"error": "You have not joined this tournament."}, status=404)
-        session_id = MatchMaking.get_tournament_match(tournament_id) # verify if it returned a json
+        session_id = MatchMaking.get_tournament_match(tournament.id) # verify if it returned a json
 
         return JsonResponse({
 			'game': 'pong',

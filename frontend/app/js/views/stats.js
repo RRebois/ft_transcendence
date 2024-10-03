@@ -130,7 +130,6 @@ export default class Stats {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
 			} else {
-				console.log('Success:', data);
 				const matchHistoryContainer = document.getElementById('match-history');
 				if (matchHistoryContainer) {
 					matchHistoryContainer.innerHTML = '';

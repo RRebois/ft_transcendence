@@ -66,10 +66,11 @@ class Tournament(models.Model):
             status = 'waiting for players'
         return {
             'id': self.id,
+            'name': self.name,
             'status': status,
-            'players': [player.username for player in self.players],
+            'players': [player.username for player in self.players.all()],
             'winner': self.winner.username if self.winner else winner_replace,
-            'matchs': {match.serialize() for match in self.tournament_matchs.all()},
+            'matchs': [match.serialize() for match in self.tournament_matchs.all()],
             }
 
     def get_id(self):
