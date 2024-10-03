@@ -47,18 +47,30 @@ export default class PurrinhaPlayerInfo {
     get_user_info_elmt = (side) => {
         if (side === 'top' || side === 'bottom') {
             return `
-                <div class="equal-elmt-x d-flex justify-content-start align-items-center ">
+                <div class="equal-elmt-x mx-3 d-flex justify-content-start align-items-center">
                     <div style="--bs-bg-opacity: .5" class="bg-white d-flex g-4 flex-column align-items-center rounded">
-                        <p id="user_info-username-${this.game_player_id}"></p>
+                        <div class="d-flex flex-row justify-content-between w-100">
+                            <p id="user_info-username-${this.game_player_id}"></p>
+                            <div class="d-flex flex-row gap-1">
+                                <i class="bi bi-trophy-fill"></i>
+                                <p id="user_info-score-${this.game_player_id}">0</p>
+                            </div>
+                        </div>
                         <p id="user_info-status-${this.game_player_id}"></p>
                     </div>
                 </div>
             `;
         } else {
             return `
-                <div class="equal-elmt-y d-flex justify-content-center align-items-${this.side === 'right' ? 'start' : 'end'}">
-                    <div style="--bs-bg-opacity: .5; width: 100%;" class="bg-white d-flex g-4 flex-column align-items-center rounded">
-                        <p id="user_info-username-${this.game_player_id}"></p>
+                <div class="equal-elmt-y my-3 d-flex justify-content-center align-items-${this.side === 'right' ? 'start' : 'end'}">
+                    <div style="--bs-bg-opacity: .5; width: 100%;" class="bg-white d-flex g-4 flex-column align-items-center px-3 py-1 rounded">
+                        <div class="d-flex flex-row justify-content-between w-100">
+                            <p id="user_info-username-${this.game_player_id}"></p>
+                            <div class="d-flex flex-row gap-1">
+                                <i class="bi bi-trophy-fill"></i>
+                                <p id="user_info-score-${this.game_player_id}">0</p>
+                            </div>
+                        </div>
                         <p id="user_info-status-${this.game_player_id}"></p>
                     </div>
                 </div>
