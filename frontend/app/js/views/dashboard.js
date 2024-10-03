@@ -75,7 +75,7 @@ export default class Dashboard {
 				console.log("Tournament creation success: ", data);
 				const params = new URLSearchParams(data).toString();
 					console.log("Params: ", params);
-					appRouter.navigate(`/tournament?${params}`);
+					appRouter.navigate(`/tournament/${data.name}`);
 			}
 		})
 		.catch(error => {
@@ -179,14 +179,14 @@ export default class Dashboard {
 
 					if (data.length === 0) {
 						carouselInner.innerHTML = `
-							<div class="d-flex justify-content-center align-items-center w-full h-full">
-								<p class="fs-3">No tournament found</p>
+							<div class="d-flex justify-content-center align-items-center text-center w-full h-full bg-tournament rounded p-3">
+								<p class="play-bold fs-4 m-0">No tournament found</p>
 							</div>
 						`;
 					} else {
 						data.forEach((tournament, index) => {
 							const isActive = index === 0 ? 'active' : '';
-							const slide = this.generateTournamentSlide(tournament, isActive);
+							const slide = this.generate_tournament_slide(tournament, isActive);
 							carouselInner.insertAdjacentHTML('beforeend', slide);
 
 							carouselIndicators.insertAdjacentHTML('beforeend', `
@@ -207,7 +207,7 @@ export default class Dashboard {
 		});
 	}
 
-	generateTournamentSlide(tournament, isActive) {
+	generate_tournament_slide(tournament, isActive) {
     	const status = tournament.status;
 		const playerCount = tournament.players.length;
 		const winner = tournament.winner !== 'unknown' ? `Winner: ${tournament.winner}` : '';
@@ -223,8 +223,8 @@ export default class Dashboard {
 
 		return `
 			<div class="carousel-item ${isActive}">
-				<div class="tournament-slide d-flex flex-column justify-content-center align-items-center">
-					<h3 class="tournament-name">${tournament.name}</h3>
+				<div class="tournament-slide d-flex flex-column justify-content-center align-items-center bg-tournament rounded p-3">
+					<p class="fs-3 play-bold m-1 cursor-click" route="/tournament/${tournament.name}">${tournament.name}</p>
 					${statusHTML}
 				</div>
 			</div>
@@ -340,6 +340,7 @@ export default class Dashboard {
 				this.load_tournaments(event.target.value);
 			});
 		}
+		this.load_tournaments("all");
 	}
 
     render() {
@@ -376,14 +377,14 @@ export default class Dashboard {
             	<div class="w-3-4 bg-white d-flex flex-column align-items-center py-4 px-4 rounded" style="--bs-bg-opacity: .5;">
             		<p class="play-bold fs-2">Pong tournament 🏆</p>
             		<div class="d-flex">
-            			<div class="m-3">
-							<select class="form-select custom-select-filter-icon" id="tournament-filter" aria-label="Select filter" style="width: min-content; height: min-content;">
+            			<div class="d-flex flex-column m-3 align-items-center">
+							<select class="form-select custom-select-filter-icon m-2" id="tournament-filter" aria-label="Select filter" style="width: min-content; height: min-content;">
 								<option value="all">All</option>
-								<option value="user">Your tournaments</option>
+								<option value="user">Yours</option>
 								<option value="open">Opened</option>
 							</select>
 							<div id="carouselTournament" class="carousel slide d-flex flex-column justify-content-center px-5" data-bs-ride="carousel">
-								<div class="carousel-indicators"></div>
+								<div class="carousel-indicators m-0"></div>
 								<div class="carousel-inner"></div>
 								<button class="carousel-control-prev" type="button" data-bs-target="#carouselTournament" data-bs-slide="prev">
 									<span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -398,7 +399,7 @@ export default class Dashboard {
 						<div class="d-flex flex-column justify-content-center align-items-center p-3">
 							<button type="button" class="btn d-flex justify-content-center align-items-center w-fit py-1 play-btn" data-bs-toggle="modal" data-bs-target="#create-tournament-modal" style="background-color: #3b82f6">
 								<i class="bi bi-plus-circle mx-3"></i>
-            					<p class="fs-4 m-1 text-white">Create a tournament</p>
+            					<p class="fs-4 m-1 text-white">New tournament</p>
 							</button>
 						</div>
 					</div>

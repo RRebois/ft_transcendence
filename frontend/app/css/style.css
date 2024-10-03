@@ -147,6 +147,16 @@ body.bg-gradient {
     background: linear-gradient(to right, #bc7575 60%, transparent);
 }
 
+.bg-tournament {
+    background: linear-gradient(
+        to bottom,
+        rgba(138, 152, 191, 0.75),
+        #8a98bf 30%,
+        #8a98bf 70%,
+        rgba(138, 152, 191, 0.75)
+    );
+}
+
 .custom-select-filter-icon {
     appearance: none;
     -webkit-appearance: none;

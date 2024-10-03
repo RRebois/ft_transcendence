@@ -24,7 +24,7 @@ const routes = [
     new Route('/stats', '/stats', statsView, null, 1),
     new Route('/set-reset-password', '/set-reset-password', resetPWView, null, 2),
     new Route('/purrinha', '/purrinha', purrinhaView),
-    new Route('/tournament', '/tournament', tournamentView),
+    new Route('/tournament', '/tournament', tournamentView, null, 1),
 ];
 
 initializeRouter(routes);

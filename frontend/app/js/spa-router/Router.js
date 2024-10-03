@@ -162,6 +162,9 @@ export default class Router {
 			if (route.path === '/stats') {
 				params.username = parameters[0];
 			}
+			else if (route.path === '/tournament') {
+				params.id = parameters[0];
+			}
 			route.setProps(params);
 			return true;
 		}

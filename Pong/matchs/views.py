@@ -59,7 +59,8 @@ class TournamentDisplayOpenView(APIView):
             user = authenticate_user(request)
         except AuthenticationFailed as e:
             return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
-        tournaments = user.tournaments.filter(is_closed=False)
+
+        tournaments = Tournament.objects.filter(is_closed=False)
 
         return JsonResponse([tournament.serialize() for tournament in tournaments] if tournaments else [], safe=False, status=200)
 
@@ -271,7 +272,7 @@ class   CreateTournamentView(APIView):
         if serializer.is_valid():
             tournament = Tournament.objects.create(name=serializer.validated_data['name'])
             add_player_to_tournament(user, tournament)
-            return JsonResponse(data={"tournament_id": tournament.get_id()}, status=status.HTTP_200_OK)
+            return JsonResponse(data={"tournament_id": tournament.get_id(), "name": tournament.name}, status=status.HTTP_200_OK)
         else:
             error_messages = []
             for field, errors in serializer.errors.items():
@@ -296,11 +297,11 @@ class   JoinTournamentView(APIView):
         except:
             return JsonResponse(data={"error": "Tournament does not exist."}, status=404)
         if tournament.winner:
-            return JsonResponse(data={"error": "Tournament is already finished."}, status=404)
+            return JsonResponse(data={"error": "Tournament is already finished."}, status=400)
         if user in tournament.players.all():
-            return JsonResponse(data={"error": "You have already joined this tournament."}, status=404)
+            return JsonResponse(data={"error": "You have already joined this tournament."}, status=400)
         if tournament.is_closed:
-            return JsonResponse(data={"error": "Tournament is already full."}, status=404)
+            return JsonResponse(data={"error": "Tournament is already full."}, status=400)
         add_player_to_tournament(user, tournament)
 
 
