@@ -11,5 +11,5 @@ urlpatterns = [
     path("tournament/history/open", TournamentDisplayOpenView.as_view(), name="tournamentOpen"),
     path("tournament/history/all", TournamentDisplayAllView.as_view(), name="tournamentHistory"),
     path("tournament/history/<str:username>", TournamentDisplayAllUserView.as_view(), name="tournamentUserHistory"),
-    path("tournament/display/<str:tournament_id>", TournamentDisplayOneView.as_view(), name="tournamentDisplay"),
+    path("tournament/display/<str:tournament_name>", TournamentDisplayOneView.as_view(), name="tournamentDisplay"),
 ]

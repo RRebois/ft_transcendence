@@ -91,9 +91,9 @@ class TournamentDisplayAllView(APIView):
 
 @method_decorator(csrf_protect, name='dispatch')
 class TournamentDisplayOneView(APIView):
-    def get(self, request, tournament_id):
+    def get(self, request, tournament_name):
         try:
-            tournament = Tournament.objects.get(id=tournament_id)
+            tournament = Tournament.objects.get(name=tournament_name)
         except:
             return JsonResponse({"error": "Tournament does not exist."}, status=404)
 
