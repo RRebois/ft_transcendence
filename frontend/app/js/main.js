@@ -12,6 +12,7 @@ import profileView from '@views/my-profile.js';
 import statsView from './views/stats.js';
 import purrinhaView from './views/purrinha.js';
 import initializeRouter from "@js/spa-router/initializeRouter.js";
+import {applyFontSize} from "./functions/display.js";
 
 const routes = [
     new Route('/home', '/', homeView),

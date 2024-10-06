@@ -1,6 +1,7 @@
 import ToastComponent from './../components/Toast.js';
 import {getCookie} from "../functions/cookie.js";
 import {validatePassword} from "../functions/validator.js";
+import {applyFontSize} from "../functions/display.js";
 
 export default class Register {
     constructor(props) {
@@ -84,7 +85,6 @@ export default class Register {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const password2 = document.getElementById('password2').value;
-        // TODO add profile picture
         const profilePicture = document.getElementById('profile-picture').files[0];
 
         const formData = new FormData();
@@ -135,6 +135,7 @@ export default class Register {
      setupEventListeners() {
         document.getElementById('register-form').addEventListener('submit', this.registerUser);
         document.getElementById('password').addEventListener('input', validatePassword);
+         applyFontSize();
     }
 
      render() {
@@ -142,7 +143,7 @@ export default class Register {
         return `
         <div class="w-100 min-h-screen d-flex flex-column justify-content-center align-items-center">
             <div class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card w-50" style="--bs-bg-opacity: .5;">
-                <p class="text-justify play-bold fs-2">Créer un compte</p>
+                <p class="text-justify play-bold title">Créer un compte</p>
                 <form id="register-form">
                     <div class="row g-3">
                         <div class="row g-2">
@@ -151,7 +152,7 @@ export default class Register {
                                 <div class="form-floating has-validation">
                                     <input type="text" id="first_name" class="form-control" required />
                                     <label for="first_name">Firstname<span class="text-danger">*</span></label>
-                                    <div class="invalid-feedback">Firstname have an invalid format</div>
+                                    <div class="invalid-feedback clue-text">Firstname have an invalid format</div>
                                 </div>
                             </div>
                             
@@ -160,7 +161,7 @@ export default class Register {
                                 <div class="form-floating has-validation">
                                     <input type="text" id="last_name" class="form-control" required />
                                     <label for="last_name">Lastname<span class="text-danger">*</span></label>
-                                    <div class="invalid-feedback">Lastname have an invalid format</div>
+                                    <div class="invalid-feedback clue-text">Lastname have an invalid format</div>
                                 </div>
                             </div>
                         </div>
@@ -171,7 +172,7 @@ export default class Register {
                                 <input type="text" id="username" class="form-control" required />
                                 <label for="username">Username<span class="text-danger">*</span></label>
                                 <div class="form-text">Username has to be 5 to 12 characters long and composed only by letters, digits and hyphens (- or _)</div>
-                                <div class="invalid-feedback">Username have an invalid format</div>
+                                <div class="invalid-feedback clue-text">Username have an invalid format</div>
                             </div>
                         </div>
                         
@@ -180,7 +181,7 @@ export default class Register {
                             <div class="form-floating has-validation">
                                 <input type="email" id="email" class="form-control" required />
                                 <label for="email">Email<span class="text-danger">*</span></label>
-                                <div class="invalid-feedback">Invalid email</div>
+                                <div class="invalid-feedback clue-text">Invalid email</div>
                             </div>
                         </div>
                         
@@ -189,7 +190,7 @@ export default class Register {
                             <div class="form-floating has-validation">
                                 <input type="password" id="password" class="form-control" required />
                                 <label for="password">Password<span class="text-danger">*</span></label>
-                                <ul class="list-unstyled ms-2 form-text">
+                                <ul class="list-unstyled ms-2 form-text clue-text">
                                     <li>
                                         <i id="minLength" class="bi bi-x text-danger"></i>
                                         Minimum 8 characters
@@ -219,7 +220,7 @@ export default class Register {
                             <div class="form-floating has-validation">
                                 <input type="password" id="password2" class="form-control" required />
                                 <label for="password2">Confirm password<span class="text-danger">*</span></label>
-                                <div class="invalid-feedback">Passwords do not match</div>
+                                <div class="invalid-feedback clue-text">Passwords do not match</div>
                             </div>
                         </div>
                         
@@ -227,8 +228,8 @@ export default class Register {
                         <div class="row g-2">
                             <label for="profile-picture" class="form-label">Profile picture</label>
                             <input type="file" id="profile-picture" accept=".png, .jpg, .jpeg" class="form-control" />
-                            <div class="form-text">Supported format: <code>png</code>, <code>jpg</code> and <code>jpeg</code></div>
-                            <div class="invalid-feedback">test</div>
+                            <div class="form-text clue-text">Supported format: <code>png</code>, <code>jpg</code> and <code>jpeg</code></div>
+                            <div class="invalid-feedback clue-text">test</div>
                         </div>
                         
                         <!-- Submit button -->
