@@ -10,13 +10,15 @@ import {
 import {remove_friend_request_div} from "./friends_management.js";
 import {getCookie} from "@js/functions/cookie.js";
 import display_users_info, {
-    display_looking_for_players_modal, guess_sum,
+    display_looking_for_players_modal,
+    guess_sum,
     hide_looking_for_players_modal,
     pick_initial_number,
+    update_score,
 } from "./purrinha.js";
 
 
-export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
+export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route, view) {
     return new Promise(async (resolve, reject) => {
         const response = await fetch(`https://${window.location.hostname}:8443/get_ws_token/`, {
             credentials: 'include',
@@ -27,80 +29,103 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
             reject(new Error("Missing game code or session id"));
         }
         if (isUserAuth) {
-            fetch(`https://${window.location.hostname}:8443/game/check/purrinha/${gameCode}/${sessionId}/`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),
-                },
-                credentials: 'include',
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        reject(new Error("Match not available"));
-                        return;
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (!data) {
-                        return;
-                    }
-                    const token = jwt.token
-                    const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
-                    const url = wsSelect + `${window.location.hostname}:8443` + data.ws_route + token + '/'
-                    const socket = new WebSocket(url);
+            // fetch(`https://${window.location.hostname}:8443/game/check/purrinha/${gameCode}/${sessionId}/`, {
+            //     method: 'GET',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //         'X-CSRFToken': getCookie('csrftoken'),
+            //     },
+            //     credentials: 'include',
+            // })
+            //     .then(response => {
+            //         if (!response.ok) {
+            //             reject(new Error("Match not available"));
+            //             return;
+            //         }
+            //         return response.json();
+            //     })
+            //     .then(data => {
+            //         if (!data) {
+            //             return;
+            //         }
+            const token = jwt.token
+            const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
+            const url = wsSelect + `${window.location.hostname}:8443` + ws_route + token + '/'
+            const socket = new WebSocket(url);
 
-                    socket.onopen = function (e) {
-                        console.log("Purrinha webSocket connection established");
-                        resolve(socket);
-                    }
+            socket.onopen = function (e) {
+                console.log("Purrinha webSocket connection established");
+                resolve(socket);
+            }
 
-                    socket.onmessage = function (event) {
-                        const data = JSON.parse(event.data);
-                        console.log("[purrinha websocket] Data is:", data);
+            socket.onmessage = function (event) {
+                const data = JSON.parse(event.data);
+                console.log("[purrinha websocket] Data is:", data);
 
-                        if (data?.status === 'waiting') {
-                            console.log("Waiting for players...");
-                            display_looking_for_players_modal();
-                        } else if (data?.status === 'started') {
-                            console.log("Game started");
-                            hide_looking_for_players_modal();
-                            display_users_info(data, view);
-                            if (data.game_state?.round === "choosing") {
-                                pick_initial_number(view);
-                            }
-                            else if (data.game_state?.round === "guessing") {
-                               console.log("player_set_id is:", view?.player_set_id);
-                                if (data.game_state?.player_turn === view?.player_set_id) {
-                                   console.log("It's your turn to guess the sum");
-                                   guess_sum(data, view);
-                               }
+                if (data?.status === 'waiting') {
+                    console.log("Waiting for players...");
+                    display_looking_for_players_modal();
+                } else {
+                    update_score(data, view);
+                    if (data?.status === 'started') {
+                        console.log("Game started");
+                        hide_looking_for_players_modal();
+                        display_users_info(data, view);
+                        if (data.game_state?.round === "choosing") {
+                            pick_initial_number(view);
+                        } else if (data.game_state?.round === "guessing") {
+                            console.log("player_set_id is:", view?.player_set_id);
+                            if (data.game_state?.player_turn === view?.player_set_id) {
+                                console.log("It's your turn to guess the sum");
+                                guess_sum(data, view);
                             }
                         }
+                    } else if (data?.status === 'finished') {
+                        console.log("Game finished");
+                    }
+                }
 
 
-                    };
+                // else
+                //     if (data?.status === 'started') {
+                //         console.log("Game started");
+                //         hide_looking_for_players_modal();
+                //         display_users_info(data, view);
+                //         if (data.game_state?.round === "choosing") {
+                //             pick_initial_number(view);
+                //         } else if (data.game_state?.round === "guessing") {
+                //             console.log("player_set_id is:", view?.player_set_id);
+                //             if (data.game_state?.player_turn === view?.player_set_id) {
+                //                 console.log("It's your turn to guess the sum");
+                //                 guess_sum(data, view);
+                //             }
+                //         }
+                //     } else if (data?.status === 'finished') {
+                //         console.log("Game finished");
+                //     }
 
-                    socket.onclose = function (event) {
-                        if (event.wasClean) {
-                            // console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
-                        } else {
-                            // console.log('Connection died');
-                        }
-                        setTimeout(initializeWebSocket, 2000);
-                    };
 
-                    socket.onerror = function (error) {
-                        console.log(`Purrinha webSocket Error: ${error.message}`);
-                        reject(error);
-                    };
-                    window.mySocket = socket; // to access as a global var
-                })
-                .catch(error => {
-                    console.error("Error:", error);
-                    reject(error);
-                });
+            };
+
+            socket.onclose = function (event) {
+                if (event.wasClean) {
+                    // console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+                } else {
+                    // console.log('Connection died');
+                }
+                setTimeout(initializeWebSocket, 2000);
+            };
+
+            socket.onerror = function (error) {
+                console.log(`Purrinha webSocket Error: ${error.message}`);
+                reject(error);
+            };
+            window.mySocket = socket; // to access as a global var
+            // })
+            // .catch(error => {
+            //     console.error("Error:", error);
+            //     reject(error);
+            // });
         }
     });
 }

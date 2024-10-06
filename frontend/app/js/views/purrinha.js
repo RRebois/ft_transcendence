@@ -45,7 +45,7 @@ export default class PurrinhaGame {
         console.log("purrihna initializeWs called");
         let ws;
         try {
-            ws = await initializePurrinhaWebSocket(gameCode, this.props?.session_id, this);
+            ws = await initializePurrinhaWebSocket(gameCode, this.props?.session_id, this.props?.ws_route, this);
         } catch (e) {
             const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
             document.getElementById('errorModalBody').innerHTML = `
@@ -70,7 +70,6 @@ export default class PurrinhaGame {
                     ${player2.render()}
 				`;
 
-                // this.pick_inital_number();
             } else if (this.nb_players === 4) {
                 const player1 = new PurrinhaPlayerInfo(this.players[0], 1);
                 const player2 = new PurrinhaPlayerInfo(this.players[1], 2);

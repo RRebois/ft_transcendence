@@ -9,19 +9,15 @@ import {remove_modal_backdrops} from "./display.js";
 // };
 
 export function send_player_action(websocket, game_code, action, value, player, player_set_id, session_id) {
-    if (game_code === '10') {
-        console.log("bot need to guess a number");
-        const bot_guess = bot_guess_number(0, 3);
-    } else {
-        websocket.send(JSON.stringify({
-            "action": action,
-            "player_id": player.id,
-            "player_username": player.name,
-            "selected_value": value,
-            "session_id": session_id,
-            "game_code": game_code,
-        }));
-    }
+    console.log(`current player ${action}: ${value}`);
+    websocket.send(JSON.stringify({
+        "action": action,
+        "player_id": player.id,
+        "player_username": player.name,
+        "selected_value": value,
+        "session_id": session_id,
+        "game_code": game_code,
+    }));
 }
 
 export function display_looking_for_players_modal() {
@@ -164,6 +160,28 @@ export const guess_sum = (data, view) => {
             }
         });
     }
+}
+
+export function update_score(data, view) {
+    const players = lst2arr(data?.game_state?.players);
+    const scores = data?.game_state?.history;
+    console.log("[score] scores: ", scores);
+    console.log("[score] players: ", players);
+
+    players.forEach(player => {
+        const username = player.name;
+        if (scores) {
+            console.log("[score] username: ", username);
+            console.log("[score] scores[username]: ", scores[username]);
+            console.log("[score] scores.username: ", scores.username);
+        }
+        if (scores && scores[username] !== undefined) {
+            const playerScore = document.getElementById(`user_info-score-${player.id}`);
+            if (playerScore) {
+                playerScore.innerText = scores[username];
+            }
+        }
+    });
 }
 
 function bot_guess_number(min, max) {
