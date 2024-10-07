@@ -17,22 +17,77 @@ export default class Tournament {
         this.props = props;
     }
 
-    load_players(tournament) {
-        console.log("LoadPlayers fct data is: ", tournament);
-        if (!tournament || !tournament.players) {
-            console.log("Invalid tournament object or players not found");
-            return;
-        }
-        const playerDiv = document.getElementById('player');
-        playerDiv.innerHTML = '';
-        tournament.players.forEach(playerName => {
-            const playerElement = document.createElement('div');
-            playerElement.className = 'player-card';
-            playerElement.innerText = playerName;
-            playerDiv.appendChild(playerElement);
+    join_tournament() {
+        const csrfToken = getCookie('csrftoken');
+        document.getElementById('join-tournament').addEventListener('click', () => {
+            fetch(`https://${window.location.hostname}:8443/tournament/join/${this.props.id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                credentials: 'include'
+            })
+            .then(response => response.json().then(data => ({ok: response.ok, data})))
+            .then(({ok, data}) => {
+                if (!ok) {
+                    this.toast.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+                } else {
+                    this.toast.throwToast("Success", data.message || "You have joined the tournament", 5000, "success");
+                    document.getElementById('join-tournament').classList.add('disabled');
+                }
+            })
+            .catch(error => {
+                console.error("Error joining tournament: ", error);
+                this.toast.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+            });
         });
     }
-    
+
+    fetch_matchs_played(tournament, player) {
+        let counter = 0;
+        tournament.matchs.forEach(match => {
+            if ((match.player1 === player.Username || match.player2 === player.Username) && match.isFinished === "True") {
+                counter++;
+            }
+        });
+        return counter;
+    }
+
+    load_players(tournament) {
+        const playerDiv = document.getElementById('players');
+        playerDiv.innerHTML = '';
+        tournament.players.forEach(player => {
+            const matchsPlayed = this.fetch_matchs_played(tournament, player);
+            const playerElement = document.createElement('div');
+            playerElement.classList.add('player-card', 'd-flex', 'flex-row', 'align-items-center', 'justify-content-between', 'bg-tournament', 'rounded', 'p-3')
+            playerElement.innerHTML = `
+                <div id="user-id" class="flex-row">
+                    <p class="mx-2 my-1 play-bold">${player?.Username}</p>
+                    <img src="${player.img}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+                </div>
+                <div class="d-flex flex-column align-items-center justify-content-center mx-4">
+                    <p class="play-bold">Elo:</p>
+                    <p class="m-0">${player?.stats.pong.elo[0].elo}</p>
+                </div>
+                <div class="d-flex flex-column align-items-center justify-content-center">
+                    <p class="play-bold">Matchs played:</p>
+                    <p class="m-0">${matchsPlayed}</p>
+                </div>
+            `;
+            playerDiv.appendChild(playerElement);
+            ;
+        });
+    }
+
+    setup_join_btn(tournament) {
+        tournament.players.forEach(player => {
+            if (player.Username === this.user.username) {
+                document.getElementById('join-tournament').classList.add('disabled');
+            }
+        });
+    }
+
     setupEventListeners() {
         const csrfToken = getCookie('csrftoken');
         fetch(`https://${window.location.hostname}:8443/tournament/display/${this.props.id}`, {
@@ -52,6 +107,7 @@ export default class Tournament {
                 console.log("data is: ", data);
                 this.tournamentObj = data;
                 this.load_players(data);
+                this.setup_join_btn(data);
             }
         })
         .catch(error => {
@@ -59,6 +115,7 @@ export default class Tournament {
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
 		});
+        this.join_tournament();
     }
 
     render() {
@@ -66,13 +123,16 @@ export default class Tournament {
         return `
             <div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
                 <div class="h-100 w-full d-flex flex-column justify-content-evenly align-items-center px-5" style="gap: 64px;">
-                    <div class="bg-white d-flex g-4 flex-column align-items-center py-2 px-3 rounded login-card w-50 h-min" style="--bs-bg-opacity: .5;">
-                        <p class="play-bold fs-1 m-0">${this.props?.id}</p>
+                    <div id="tournament_Name" class="bg-white d-flex g-4 flex-column align-items-center py-2 px-3 rounded login-card w-50 position-relative h-min" style="--bs-bg-opacity: .5;">
+                        <div class="d-flex w-100 align-items-center">
+                            <p class="play-bold fs-1 m-0 text-center flex-grow-1">${this.props?.id}</p>
+                            <button type="button" id="join-tournament" class="btn btn-primary ms-auto">Join +</button>
+                        </div>
                     </div>
                     <div class="h-full w-full d-flex flex-row justify-content-evenly align-items-center"">
                         <div class="bg-white d-flex g-4 flex-column align-items-center py-2 px-3 rounded login-card w-fit h-min" style="--bs-bg-opacity: .5;">
                             <p class="play-bold fs-2">Players 🤓</p>
-                            <div id="player">
+                            <div id="players">
                             </div>
                         </div>
                         <div class="bg-white d-flex g-4 flex-column align-items-center py-2 px-3 rounded login-card w-fit h-min" style="--bs-bg-opacity: .5;">

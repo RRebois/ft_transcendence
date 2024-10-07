@@ -3,7 +3,7 @@ import uuid
 
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
-from userManagement.models import User
+from userManagement.models import User, UserData
 
 
 # Create your models here.
@@ -15,6 +15,7 @@ class Match(models.Model):
     is_pong = models.BooleanField(default=True)
     timeMatch = models.DateTimeField(auto_now_add=True)
     count = models.IntegerField(default=2)
+    is_finished = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-timeMatch']
@@ -68,7 +69,7 @@ class Tournament(models.Model):
             'id': self.id,
             'name': self.name,
             'status': status,
-            'players': [player.username for player in self.players.all()],
+            'players': [player.serialize() for player in self.players.all()],
             'winner': self.winner.username if self.winner else winner_replace,
             'matchs': [match.serialize() for match in self.tournament_matchs.all()],
             }

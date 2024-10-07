@@ -286,22 +286,22 @@ class   CreateTournamentView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 class   JoinTournamentView(APIView):
 
-    def post(self, request, tournament_id):
+    def post(self, request, tournament_name):
 
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
             return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         try:
-            tournament = Tournament.objects.get(id=tournament_id)
+            tournament = Tournament.objects.get(name=tournament_name)
         except:
-            return JsonResponse(data={"error": "Tournament does not exist."}, status=404)
+            return JsonResponse(data={"message": "Tournament does not exist."}, status=404)
         if tournament.winner:
-            return JsonResponse(data={"error": "Tournament is already finished."}, status=400)
+            return JsonResponse(data={"message": "Tournament is already finished."}, status=400)
         if user in tournament.players.all():
-            return JsonResponse(data={"error": "You have already joined this tournament."}, status=400)
+            return JsonResponse(data={"message": "You have already joined this tournament."}, status=400)
         if tournament.is_closed:
-            return JsonResponse(data={"error": "Tournament is already full."}, status=400)
+            return JsonResponse(data={"message": "Tournament is already full."}, status=400)
         add_player_to_tournament(user, tournament)
 
 
