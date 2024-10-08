@@ -223,7 +223,7 @@ def send_to_tournament_group(tournament_id):
                 'matchs': cache_db['matchs'],
                 'message': cache_db['message'],
             }
-    )
+        )
 
 
 def add_player_to_tournament(user, tournament):
@@ -236,7 +236,6 @@ def add_player_to_tournament(user, tournament):
             'matchs': [],
             # 'live_matchs': [],
             'message': 'waiting for other players',
-
         }
     count = tournament.players.count()
     players = tournament.players.all()

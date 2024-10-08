@@ -318,7 +318,7 @@ class RegisterView(APIView):
 
                     # Check if image already uploaded
                     if not Avatars.objects.filter(image_hash_value=md5_hash).exists():
-                        profile_img = Avatars.objects.create(image=image, image_hash_value=md5_hash)
+                        profile_img = Avatars.objects.create(image=image, image_url='/media/profile_pics/'+str(image), image_hash_value=md5_hash)
                     else:
                         profile_img = Avatars.objects.get(image_hash_value=md5_hash)
                     profile_img.uploaded_from.add(user)
@@ -475,7 +475,7 @@ class UpNewAvatarView(APIView):
                             return JsonResponse(data={"redirect": True, "redirect_url": "",
                                                       "message": "You have successfully changed your avatar"}, status=200)
                     else:
-                        profile_img = Avatars.objects.create(image=image, image_hash_value=sha256_hash)
+                        profile_img = Avatars.objects.create(image=image, image_url='/media/profile_pics/'+str(image), image_hash_value=sha256_hash)
                         profile_img.uploaded_from.add(user)
                         profile_img.save()
                         user.avatar_id = profile_img
@@ -821,6 +821,7 @@ class PendingFriendRequestsView(APIView):
                 'to_user__username': request['to_user__username'],
                 'time': request['time'],
                 'status': request['status'],
+                'to_user_image': (request['to_user_image']),
                 'to_image_url': get_profile_pic_url(request['to_user_image']),
                 'to_user_id': request['to_user_id'],
                 'to_user_status': request['to_user__status'],

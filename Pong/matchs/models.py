@@ -84,18 +84,18 @@ class TournamentMatch(models.Model):
 
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='tournament_matchs')
     match = models.ForeignKey(Match, on_delete=models.SET_NULL, null=True, blank=True, related_name='tournament_match')
-    score = ArrayField(models.IntegerField(), blank=True)
+    score = ArrayField(models.IntegerField(), null=True, blank=True)
 
     def serialize(self):
         match_result = {
-            'players': {},
+            'players': [],
             'winner': ['n/a'],
         }
         if not self.match:
-            match_result['players'] = {
+            match_result['players'] = [
                 {'deleted_user': self.score[0]} if self.score else {'player1': 0},
                 {'deleted_user': self.score[1]} if self.score else {'player2': 0},
-            }
+            ]
             if self.score:
                 match_result['winner'] = ['deleted_user']
         else:
