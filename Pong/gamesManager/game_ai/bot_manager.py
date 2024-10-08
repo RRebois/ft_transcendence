@@ -18,11 +18,11 @@ async def	init_bot(game_name, game, consumer):
 		except:
 			bot_db = await sync_to_async(BotQTable.objects.create)(name=BOT_NAME)
 
-		return TrainPong(0, bot_db, game, consumer)
+		# return TrainPong(0, bot_db, game, consumer)
 		test = []
-		amount = 3
+		amount = 4
 		for i in range(amount):
-				tmp = TrainPong(i, bot_db)
+				tmp = TrainPong(i, bot_db, game, consumer)
 				await tmp.launch_train()
 				test.append(tmp)
 		while test:
@@ -46,11 +46,11 @@ class	TrainPong():
 
 	def	__init__(self, i, bot_db, game, consumer):
 		self.consumer = consumer
-		self.limit = 50
+		self.limit = 10
 		self.count = 50
 		self.i = i
 		self.finished = False
-		self.game = game #PongGame(TrainPong.players_name)
+		self.game = PongGame(TrainPong.players_name)
 		self.bot1 = TestBot(self.game, 1, bot_db, training=True)
 		self.bot2 = PongBot(self.game, 2, bot_db, training=True)
 
@@ -60,9 +60,10 @@ class	TrainPong():
 		await self.bot2.launch_bot()
 		while True:
 			await self.game.update()
-			await self.consumer.send_game_state()
+			# if not i:
+			# 	await self.consumer.send_game_state()
 			await self.try_cancel_loop()
-			await asyncio.sleep(SLEEP)
+			await asyncio.sleep(SLEEP / 4)
 
 	async def launch_train(self):
 		self.loop_task = asyncio.create_task(self.game_loop())
@@ -99,7 +100,7 @@ class TestBot():
 			ball = serialize['ball']['y']
 			action = 1 if ball > paddle_pos + PADDLE_HEIGHT_DUO / 2 else -1
 			await self.continuous_paddle_mov(action)
-			await asyncio.sleep(SLEEP * 2)
+			await asyncio.sleep(SLEEP)
 
 	async def launch_bot(self):
 		self.loop_task = asyncio.create_task(self.bot_loop())
