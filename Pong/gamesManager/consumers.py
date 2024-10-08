@@ -171,10 +171,10 @@ class PongHandler():
 		self.game = PongGame(players_name, multiplayer=(self.game_code == 40))
 		await self.send_game_state()
 		if BOT_NAME in self.message['players']:
-			self.bot = await init_bot('pong', self.game)
+			self.bot = await init_bot('pong', self.game, self)
 		if self.bot:
 			print('\n\n\nYEAH\n\n\n')
-			
+
 
 	@database_sync_to_async
 	def	tournament_database_update(self):
@@ -209,7 +209,8 @@ class PongHandler():
 	async def	reset_game(self):
 		if not hasattr(self, 'loop_task'):
 			self.game.reset_game()
-			self.loop_task = asyncio.create_task(self.game_loop())
+			await self.bot.launch_train()
+			# self.loop_task = asyncio.create_task(self.game_loop())
 
 
 	async def	receive(self, text_data):
@@ -237,7 +238,8 @@ class PongHandler():
 
 	async def	cancel_loop(self):
 		if self.bot:
-			await self.bot.cancel_loop()
+			# await self.bot.cancel_loop()
+			await self.bot.try_cancel_loop()
 			# await self.bot.update_q_table_db()
 		if hasattr(self, 'loop_task'):
 			await self.loop_task.cancel()
