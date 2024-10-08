@@ -163,6 +163,7 @@ export async function initializePongWebSocket(gameCode, sessionId, pong) { conso
                     console.log("Pong WebSocket connection established");
                     resolve(socket);
                 };
+                pong.init();
                 let test = 0;
                 socket.onmessage = function (event) {
                     // console.log("Pong websocket msg received: ", event.data);
