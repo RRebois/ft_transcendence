@@ -97,8 +97,8 @@ class TournamentMatch(models.Model):
         }
         if not self.match:
             match_result['players'] = [
-                {'deleted_user': self.score[0]} if self.score else {},
-                {'deleted_user': self.score[1]} if self.score else ,
+                {'deleted_user': self.score[0]} if self.score else {'player1': 0},
+                {'deleted_user': self.score[1]} if self.score else {'player2': 0},
             ]
             if self.score:
                 match_result['winner'] = ['deleted_user']
