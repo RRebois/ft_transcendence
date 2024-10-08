@@ -786,7 +786,7 @@ export default class PongGame {
                 if (this.winner.includes(this.user["username"]))
                     msg = `Congratulations ${this.user["username"]}, you won!`;
                 else
-                    msg = `${this.user["username"]} you are such a loser!`;
+                    msg = `${this.user["username"]} you are such a loser. Machines will soon dominate the world!`;
             }
             else {
                 if (this.winner.includes(this.user["username"]))
@@ -818,11 +818,56 @@ export default class PongGame {
                 `;
             }
             const   restart = document.getElementById("new-game-btn");
-            restart.addEventListener("click", () => {
-                this.gameSocket.send(JSON.stringify({"restart": true}));
-            });
+            if (restart) {
+                restart.addEventListener("click", () => {console.log("\n\n\n\n", this.props, "\n\n\n\n");
+
+
+                    fetch(`https://${window.location.hostname}:8443/game/${this.props?.game}/${this.props?.code}`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': csrfToken
+			},
+			credentials: 'include'
+		})
+			.then(response => response.json().then(data => ({ok: response.ok, data})))
+			.then(({ok, data}) => {
+				if (!ok) {
+					const toastComponent = new ToastComponent();
+					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+				} else {
+					console.log("Game request success: ", data);
+					data.code = code;
+					const params = new URLSearchParams(data).toString();
+					// Close modal
+					const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-match-modal'));
+					if (createMatchModal)
+						createMatchModal.hide();
+						const backdrops = document.querySelectorAll('.modal-backdrop');
+						backdrops.forEach(backdrop => backdrop.remove());
+					appRouter.navigate(`/${game_type}?${params}`);
+					const socket = window.mySocket;
+					socket.send(JSON.stringify({
+						'type': 'join_match',
+						'user_id': this.user.id
+					}));
+				}
+			})
+			.catch(error => {
+				console.error("Error fetching friend requests: ", error);
+				const toastComponent = new ToastComponent();
+				toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+			});
+
+
+                });
+            }
             modal.classList.add("rounded", "border", "border-dark", "border-3");
 			modal.hidden = false;
+
+			// close the webso
+
+            this.gameSocket.close();
         }
     }
 
