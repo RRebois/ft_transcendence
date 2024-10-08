@@ -15,6 +15,7 @@ class Match(models.Model):
     is_pong = models.BooleanField(default=True)
     timeMatch = models.DateTimeField(auto_now_add=True)
     count = models.IntegerField(default=2)
+    deconnection = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-timeMatch']
@@ -38,6 +39,7 @@ class Match(models.Model):
                         for score in self.scores.all()],
             "count": self.count,
             "winner": winners_list,
+            "deconnection": self.deconnection,
             "timestamp": self.timeMatch.strftime("%b %d %Y, %I:%M %p"),
         }
 

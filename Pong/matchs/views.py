@@ -113,8 +113,8 @@ def update_match_data(players_data, winner, is_pong=True):
         elo_lst.append({'elo': new_elo, 'timestamp': timestamp})
         data.save()
 
-def create_match(match_result, winner, is_pong=True):
-    match = Match.objects.create(is_pong=is_pong, count=len(match_result))
+def create_match(match_result, winner, deconnection, is_pong=True):
+    match = Match.objects.create(is_pong=is_pong, count=len(match_result), deconnection=deconnection)
     players_data = []
 
     for player_username in match_result.keys():
