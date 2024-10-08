@@ -554,24 +554,27 @@ export default class PongGame {
             targetPositions.push(end);
             stadium.add(cube);
         }
-
         this.moveCubes(cubes, targetPositions);
     }
 
     moveCubes(cubes, targetPositions) {
         for (let i = 0; i < cubes.length; i++) {
-            const cube = cubes[i];
-            const targetPosition = targetPositions[i];
+            const   cube = cubes[i];
+            const   targetPosition = targetPositions[i];
             this.moveObjectTrans(cube, targetPosition);
-//            await this.yieldToMain();
+            if (i === cubes.length - 1) {
+                const   check = () => {
+                    if (Math.abs(cube.position.x - targetPosition.x) < 0.1 &&
+                    Math.abs(cube.position.y - targetPosition.y) < 0.1 &&
+                    Math.abs(cube.position.z - targetPosition.z) < 0.1)
+                        this.gameSocket.send(JSON.stringify({"game_status": true}));
+                    else
+                        requestAnimationFrame(check);
+                }
+                check();
+            }
         }
     }
-
-//    yieldToMain () {
-//        return new Promise(resolve => {
-//            setTimeout(resolve, 0);
-//        });
-//    }
 
     lerp(from, to, speed) {
         const   amount = (1 - speed) * from + speed * to;
@@ -579,9 +582,11 @@ export default class PongGame {
     }
 
     moveObjectTrans(object, targetPosition) {
+        //    console.log("Anim not ended: ", this.cubeAnimationEnded[i]);
         let lt = new Date(),
         f = 0,
         fm = 300;
+
         const animate = () => {
             const   now = new Date();
             const   secs = (now - lt) / 1000;
@@ -597,6 +602,7 @@ export default class PongGame {
             lt = now;
         }
         animate();
+//console.log("Anim end: ", this.cubeAnimationEnded[i]);
     }
 
     createBlueMaterial() {

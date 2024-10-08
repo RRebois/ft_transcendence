@@ -174,9 +174,6 @@ export async function initializePongWebSocket(gameCode, sessionId, pong) { conso
                     if (data.status === "ready" && test === 0) { // Waiting for display in front
                         test = 1;
                         pong.buildGameSet(data);
-                        setTimeout(() => {
-                            socket.send(JSON.stringify({"game_status": true}));
-                        }, 5000);
                     }
                     if (data.status === "started" || data.status === "finished")
                          pong.display(data, socket);
