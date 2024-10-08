@@ -44,6 +44,30 @@ export default class Tournament {
         });
     }
 
+    load_games(tournament) {
+        const gameDiv = document.getElementById('games');
+        gameDiv.innerHTML = '';
+        tournament.matchs.forEach(match => {
+            console.log("match: ", match);
+            const gameElement = document.createElement('div');
+            gameElement.classList.add('player-card', 'd-flex', 'flex-row', 'align-items-center', 'justify-content-between', 'bg-tournament', 'rounded', 'px-3', 'py-2')
+            gameElement.innerHTML = `
+                <div id="user-1" class="d-flex flex-row align-items-center justify-content-center">
+                    <p class="mx-2 my-1 play-bold">${match?.player[1]}</p>
+                    <img src="${match.player[1].img}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+                </div>
+                <div class="d-flex flex-column align-items-center justify-content-center mx-4">
+                    <p class="play-bold">VS</p>
+                </div>
+                <div id="user-2" class="d-flex flex-row align-items-center justify-content-center">
+                    <img src="${match.player[2].img}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+                    <p class="mx-2 my-1 play-bold">${match?.player[2]}</p>
+                </div>
+            `;
+            gameDiv.appendChild(gameElement);
+        });
+    }
+
     fetch_matchs_played(tournament, player) {
         let counter = 0;
         tournament.matchs.forEach(match => {
@@ -60,9 +84,9 @@ export default class Tournament {
         tournament.players.forEach(player => {
             const matchsPlayed = this.fetch_matchs_played(tournament, player);
             const playerElement = document.createElement('div');
-            playerElement.classList.add('player-card', 'd-flex', 'flex-row', 'align-items-center', 'justify-content-between', 'bg-tournament', 'rounded', 'p-3')
+            playerElement.classList.add('player-card', 'd-flex', 'flex-row', 'align-items-center', 'justify-content-between', 'bg-tournament', 'rounded', 'px-3','py-2')
             playerElement.innerHTML = `
-                <div id="user-id" class="flex-row">
+                <div id="user-id" class="d-flex flex-column align-items-center justify-content-center">
                     <p class="mx-2 my-1 play-bold">${player?.Username}</p>
                     <img src="${player.img}" alt="user_pp" class="h-64 w-64 rounded-circle" />
                 </div>
@@ -107,6 +131,7 @@ export default class Tournament {
                 console.log("data is: ", data);
                 this.tournamentObj = data;
                 this.load_players(data);
+                this.load_games(data);
                 this.setup_join_btn(data);
             }
         })
@@ -137,6 +162,8 @@ export default class Tournament {
                         </div>
                         <div class="bg-white d-flex g-4 flex-column align-items-center py-2 px-3 rounded login-card w-fit h-min" style="--bs-bg-opacity: .5;">
                             <p class="play-bold fs-2">Games 🎮</p>
+                            <div id="games">
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -13,7 +13,7 @@ export default class Dashboard {
 		this.gameType = null;
 		this.gameConnectivity = 'offline';
 		this.gameNbPlayers = 'bot';
-		this.tournamentNbPlayers = '3p';
+		this.tournamentNbPlayers = '3';
 		this.load_tournaments= this.load_tournaments.bind(this);
 	}
 
@@ -214,7 +214,7 @@ export default class Dashboard {
 
 		let statusHTML;
 		if (status === 'waiting for players') {
-			statusHTML = `<div class="status open">Open to join - ${playerCount} players registered</div>`;
+			statusHTML = `<div class="status open">Open to join - ${playerCount} player(s) registered</div>`;
 		} else if (status === 'running') {
 			statusHTML = `<div class="status closed">Closed - Tournament is ongoing</div>`;
 		} else {
@@ -465,7 +465,7 @@ export default class Dashboard {
 							<div class="modal-body">								
 								<p class="mb-3">Choose the number of players</p>
 								<div id="radio-btn-players-container" class="btn-group" role="group" aria-label="Game connectivity selection">
-									<input type="radio" class="btn-check" name="players" id="radio-btn-3p" value="3p" autocomplete="off" checked>
+									<input type="radio" class="btn-check" name="players" id="radio-btn-3p" value="3" autocomplete="off" checked>
 									<label class="btn btn-outline-primary" for="radio-btn-3p">
 										<i class="bi bi-person-fill"></i>
 										<i class="bi bi-person-fill"></i>
@@ -473,7 +473,7 @@ export default class Dashboard {
 										<p class="m-2">3 players</p>
 									</label>
 									
-									<input type="radio" class="btn-check" name="players" id="radio-btn-4p" value="4p" autocomplete="off">
+									<input type="radio" class="btn-check" name="players" id="radio-btn-4p" value="4" autocomplete="off">
 									<label class="btn btn-outline-primary" for="radio-btn-4p">
 										<i class="bi bi-person-fill"></i>
 										<i class="bi bi-person-fill"></i>

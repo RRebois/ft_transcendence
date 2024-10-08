@@ -240,13 +240,14 @@ def add_player_to_tournament(user, tournament):
     count = tournament.players.count()
     players = tournament.players.all()
     for player in players:
-        TournamentMatch.objects.create(tournament=tournament)
+        newMatch = TournamentMatch.objects.create(tournament=tournament)
+        newMatch.players.add(user, player)
     tournament.players.add(user)
     cache_db['players'].append(user.username)
     cache_db['channels'].append(f"user_{user.id}_group")
     for player in cache_db['players']:
         cache_db['matchs'].append({user.username: 0, player: 0, 'status': 'waiting'})
-    if count + 1 == TOURNAMENT_LIMIT:
+    if count + 1 == tournament.number_players:
         cache_db['message'] = 'The tournament is ready to start, you can play now.'
         tournament.is_closed = True
     tournament.save()
@@ -269,7 +270,7 @@ class   CreateTournamentView(APIView):
         serializer = TournamentSerializer(data=request.data)
 
         if serializer.is_valid():
-            tournament = Tournament.objects.create(name=serializer.validated_data['name'])
+            tournament = Tournament.objects.create(name=serializer.validated_data['name'], number_players=request.data.get('nb_players'))
             add_player_to_tournament(user, tournament)
             return JsonResponse(data={"tournament_id": tournament.get_id(), "name": tournament.name}, status=status.HTTP_200_OK)
         else:
@@ -302,6 +303,7 @@ class   JoinTournamentView(APIView):
         if tournament.is_closed:
             return JsonResponse(data={"message": "Tournament is already full."}, status=400)
         add_player_to_tournament(user, tournament)
+        return JsonResponse(data={"message": "You have joined the tournament."}, status=200)
 
 
 @method_decorator(csrf_protect, name='dispatch')
