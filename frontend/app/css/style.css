@@ -58,6 +58,10 @@ body.bg-gradient {
     height: 50%;
 }
 
+.h-max-tournament {
+    height: 550px;
+}
+
 .w-128 {
     width: 128px;
 }
@@ -100,6 +104,10 @@ body.bg-gradient {
 
 .h-full {
     height: 100%;
+}
+
+.h-auto {
+    height: auto;
 }
 
 .min-h-full {

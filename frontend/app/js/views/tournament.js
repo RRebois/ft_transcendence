@@ -50,7 +50,7 @@ export default class Tournament {
         tournament.matchs.forEach(match => {
             console.log("match: ", match);
             const gameElement = document.createElement('div');
-            gameElement.classList.add('player-card', 'd-flex', 'flex-row', 'align-items-center', 'justify-content-between', 'bg-tournament', 'rounded', 'px-3', 'py-2')
+            gameElement.classList.add('player-card', 'd-flex', 'flex-row', 'align-items-center', 'justify-content-between', 'bg-tournament', 'rounded', 'px-3', 'py-2', 'm-1')
             gameElement.innerHTML = `
                 <div id="user-1" class="d-flex flex-row align-items-center justify-content-center">
                     <img src="${match?.players[0].img}" alt="user_pp" class="h-64 w-64 rounded-circle" />
@@ -84,7 +84,7 @@ export default class Tournament {
         tournament.players.forEach(player => {
             const matchsPlayed = this.fetch_matchs_played(tournament, player);
             const playerElement = document.createElement('div');
-            playerElement.classList.add('player-card', 'd-flex', 'flex-row', 'align-items-center', 'justify-content-between', 'bg-tournament', 'rounded', 'px-3','py-2')
+            playerElement.classList.add('player-card', 'd-flex', 'flex-row', 'align-items-center', 'justify-content-between', 'bg-tournament', 'rounded', 'px-3','py-2', 'm-1')
             playerElement.innerHTML = `
                 <div id="user-id" class="d-flex flex-column align-items-center justify-content-center">
                     <p class="mx-2 my-1 play-bold">${player?.Username}</p>
@@ -100,7 +100,6 @@ export default class Tournament {
                 </div>
             `;
             playerDiv.appendChild(playerElement);
-            ;
         });
     }
 
@@ -154,15 +153,15 @@ export default class Tournament {
                             <button type="button" id="join-tournament" class="btn btn-primary ms-auto">Join +</button>
                         </div>
                     </div>
-                    <div class="h-full w-full d-flex flex-row justify-content-evenly align-items-center"">
-                        <div class="bg-white d-flex g-4 flex-column align-items-center py-2 px-3 rounded login-card w-fit h-min" style="--bs-bg-opacity: .5;">
+                    <div class="h-full w-full d-flex flex-row flex-wrap justify-content-evenly align-items-stretch"">
+                        <div class="bg-white d-flex g-4 flex-column align-items-center py-2 px-3 rounded login-card w-fit h-max-tournament m-3" style="--bs-bg-opacity: .5;">
                             <p class="play-bold fs-2">Players 🤓</p>
                             <div id="players">
                             </div>
                         </div>
-                        <div class="bg-white d-flex g-4 flex-column align-items-center py-2 px-3 rounded login-card w-fit h-min" style="--bs-bg-opacity: .5;">
-                            <p class="play-bold fs-2">Games 🎮</p>
-                            <div id="games">
+                        <div class="bg-white d-flex g-4 flex-column align-items-center justify-content-start py-2 px-3 rounded login-card w-auto h-max-tournament m-3" style="--bs-bg-opacity: .5;">
+                            <p class="play-bold fs-2" class="ms-auto">Games 🎮</p>
+                            <div id="games" class="d-flex flex-column flex-grow-1 overflow-auto">
                             </div>
                         </div>
                     </div>

@@ -95,7 +95,6 @@ class User(AbstractUser):
             "Language": self.language,
             "stud42": self.stud42,
             "2fa": self.tfa_activated,
-            # "img": self.get_img_url(),
             "img": self.get_img_serialize(),
             "status": self.status,
             "stats": self.data.serialize() if hasattr(self, 'data') else None
