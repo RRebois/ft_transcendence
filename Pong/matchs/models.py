@@ -73,7 +73,7 @@ class Tournament(models.Model):
             'players': [player.serialize() for player in self.players.all()],
             'winner': self.winner.username if self.winner else winner_replace,
             'matchs': [match.serialize() for match in self.tournament_matchs.all()],
-            'tournament_matchs': [tournament_matchs.serialize() for tournament_matchs in self.tournament_matchs.all()],
+            # 'tournament_matchs': [tournament_matchs.serialize() for tournament_matchs in self.tournament_matchs.all()],
             }
 
     def get_id(self):
@@ -92,25 +92,28 @@ class TournamentMatch(models.Model):
 
     def serialize(self):
         match_result = {
-            'players': [player.serialize() for player in self.players.all()],
+            'players': [{**player.serialize(), 'score': 0} for player in self.players.all()],
             'winner': ['n/a'],
         }
 
         if self.match:
             serialized = self.match.serialize()
-            match_result['players'] = serialized['players']
+            for player in match_result['players']:
+                score = next((p['score'] for p in serialized['players'] if p['username'] == player['username']), 0)
+                player['score'] = score
+
             match_result['winner'] = serialized['winner']
 
         if self.score:
-            match_result['players'] = [
-                {'username': player.username, 'score': self.score[i] if i < len(self.score) else 0}
-                for i, player in enumerate(self.players.all())
-            ]
+            for i, player in enumerate(match_result['players']):
+                if i < len(self.score):
+                    player['score'] = self.score[i]
 
             if len(self.score) == len(self.players.all()) and all(isinstance(s, int) for s in self.score):
                 max_score = max(self.score)
                 winning_player = self.players.all()[self.score.index(max_score)]
                 match_result['winner'] = [winning_player.username]
+
 
         # match_result = {
         #     'players': [],

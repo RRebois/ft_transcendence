@@ -52,16 +52,19 @@ export default class Tournament {
             const gameElement = document.createElement('div');
             gameElement.classList.add('player-card', 'd-flex', 'flex-row', 'align-items-center', 'justify-content-between', 'bg-tournament', 'rounded', 'px-3', 'py-2', 'm-1')
             gameElement.innerHTML = `
-                <div id="user-1" class="d-flex flex-row align-items-center justify-content-center">
-                    <img src="${match?.players[0].img}" alt="user_pp" class="h-64 w-64 rounded-circle" />
-                    <p class="mx-2 my-1 play-bold">${match?.players[0].Username}</p>
-                </div>
-                <div class="d-flex flex-column align-items-center justify-content-center mx-4">
-                    <p class="play-bold m-0">VS</p>
-                </div>
-                <div id="user-2" class="d-flex flex-row align-items-center justify-content-center">
-                    <p class="mx-2 my-1 play-bold">${match?.players[1].Username}</p>
-                    <img src="${match?.players[1].img}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+                <div class="d-flex w-100 align-items-center">
+                    <div id="user-1" class="d-flex flex-row align-items-center justify-content-start">
+                        <img src="${match?.players[0].img}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+                        <p class="mx-2 my-1 play-bold">${match?.players[0].Username}</p>
+                    </div>
+                    <div class="d-flex flex-column align-items-center justify-content-center mx-3">
+                        <p class="play-bold m-0">Score:</p>
+                        <p class="m-0">${match?.players[0]?.score} - ${match?.players[1]?.score}</p>
+                    </div>
+                    <div id="user-2" class="d-flex flex-row align-items-center justify-content-end">
+                        <p class="mx-2 my-1 play-bold">${match?.players[1].Username}</p>
+                        <img src="${match?.players[1].img}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+                    </div>
                 </div>
             `;
             gameDiv.appendChild(gameElement);
@@ -147,7 +150,7 @@ export default class Tournament {
         return `
             <div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
                 <div class="h-100 w-full d-flex flex-column justify-content-evenly align-items-center px-5" style="gap: 64px;">
-                    <div id="tournament_Name" class="bg-white d-flex g-4 flex-column align-items-center py-2 px-3 rounded login-card w-50 position-relative h-min" style="--bs-bg-opacity: .5;">
+                    <div id="tournament_Name" class="bg-white d-flex g-4 flex-column align-items-center py-2 px-3 m-3 rounded login-card w-50 position-relative h-min" style="--bs-bg-opacity: .5;">
                         <div class="d-flex w-100 align-items-center">
                             <p class="play-bold fs-1 m-0 text-center flex-grow-1">${this.props?.id}</p>
                             <button type="button" id="join-tournament" class="btn btn-primary ms-auto">Join +</button>

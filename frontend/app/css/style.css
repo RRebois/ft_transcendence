@@ -59,7 +59,7 @@ body.bg-gradient {
 }
 
 .h-max-tournament {
-    height: 550px;
+    max-height: 550px;
 }
 
 .w-128 {
