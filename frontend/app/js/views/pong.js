@@ -4,6 +4,9 @@ import {TextGeometry} from 'three/addons/geometries/TextGeometry.js';
 import {initializePongWebSocket} from "@js/functions/websocket.js";
 import {SpotLight} from 'three';
 import * as bootstrap from "bootstrap";
+import {getCookie} from "@js/functions/cookie.js";
+import ToastComponent from "@js/components/Toast.js";
+import {appRouter} from "@js/spa-router/initializeRouter.js";
 
 export default class PongGame {
     constructor(props) {
@@ -822,6 +825,7 @@ export default class PongGame {
                 restart.addEventListener("click", () => {console.log("\n\n\n\n", this.props, "\n\n\n\n");
 
 
+                    const csrfToken = getCookie('csrftoken');
                     fetch(`https://${window.location.hostname}:8443/game/${this.props?.game}/${this.props?.code}`, {
 			method: 'GET',
 			headers: {
@@ -837,7 +841,7 @@ export default class PongGame {
 					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 				} else {
 					console.log("Game request success: ", data);
-					data.code = code;
+					data.code = `${this.props?.code}`;
 					const params = new URLSearchParams(data).toString();
 					// Close modal
 					const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-match-modal'));
@@ -845,7 +849,7 @@ export default class PongGame {
 						createMatchModal.hide();
 						const backdrops = document.querySelectorAll('.modal-backdrop');
 						backdrops.forEach(backdrop => backdrop.remove());
-					appRouter.navigate(`/${game_type}?${params}`);
+					appRouter.navigate(`/${this.props?.game}?${params}`);
 					const socket = window.mySocket;
 					socket.send(JSON.stringify({
 						'type': 'join_match',
