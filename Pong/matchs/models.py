@@ -92,21 +92,40 @@ class TournamentMatch(models.Model):
 
     def serialize(self):
         match_result = {
-            'players': [],
+            'players': [player.serialize() for player in self.players.all()],
             'winner': ['n/a'],
         }
-        if not self.match:
-            match_result['players'] = [
-                {'deleted_user': self.score[0]} if self.score else {'player1': 0},
-                {'deleted_user': self.score[1]} if self.score else {'player2': 0},
-            ]
-            if self.score:
-                match_result['winner'] = ['deleted_user']
-        else:
+
+        if self.match:
             serialized = self.match.serialize()
-            match_result['players'] = serialized.players
-            match_result['winner'] = serialized.winner
+            match_result['players'] = serialized['players']
+            match_result['winner'] = serialized['winner']
+
+        if self.score:
+            match_result['players'] = [
+                {'username': player.username, 'score': self.score[i] if i < len(self.score) else 0}
+                for i, player in enumerate(self.players.all())
+            ]
+
+            if len(self.score) == len(self.players.all()) and all(isinstance(s, int) for s in self.score):
+                max_score = max(self.score)
+                winning_player = self.players.all()[self.score.index(max_score)]
+                match_result['winner'] = [winning_player.username]
+
+        # match_result = {
+        #     'players': [],
+        #     'winner': ['n/a'],
+        # }
+        # if not self.match:
+        #     match_result['players'] = [
+        #         {'deleted_user': self.score[0]} if self.score else {'player1': 0},
+        #         {'deleted_user': self.score[1]} if self.score else {'player2': 0},
+        #     ]
+        #     if self.score:
+        #         match_result['winner'] = ['deleted_user']
+        # else:
+        #     serialized = self.match.serialize()
+        #     match_result['players'] = serialized.players
+        #     match_result['winner'] = serialized.winner
 
         return match_result
-
-

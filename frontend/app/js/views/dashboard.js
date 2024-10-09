@@ -379,7 +379,7 @@ export default class Dashboard {
 						<p class="play-bold fs-2">Pong tournament 🏆</p>
 						<div class="d-flex flex-row flex-wrap align-items-center justify-content-evenly w-full">
 							<div class="d-flex flex-column m-3 align-items-center">
-								<div id="carouselTournament" class="carousel slide d-flex flex-column justify-content-center px-5 bg-tournament rounded p-3" data-bs-ride="carousel">
+								<div id="carouselTournament" class="carousel slide w-350 d-flex flex-column justify-content-center px-5 bg-tournament rounded p-3" data-bs-ride="carousel">
 									<div class="carousel-indicators m-0"></div>
 									<div class="carousel-inner"></div>
 									<button class="carousel-control-prev" type="button" data-bs-target="#carouselTournament" data-bs-slide="prev">

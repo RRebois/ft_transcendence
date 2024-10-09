@@ -62,6 +62,10 @@ body.bg-gradient {
     width: 128px;
 }
 
+.w-350 {
+    width: 350px;
+}
+
 .w-full {
     width: 100%;
 }

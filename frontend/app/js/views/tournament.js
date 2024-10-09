@@ -53,15 +53,15 @@ export default class Tournament {
             gameElement.classList.add('player-card', 'd-flex', 'flex-row', 'align-items-center', 'justify-content-between', 'bg-tournament', 'rounded', 'px-3', 'py-2')
             gameElement.innerHTML = `
                 <div id="user-1" class="d-flex flex-row align-items-center justify-content-center">
-                    <p class="mx-2 my-1 play-bold">${match?.player[1]}</p>
-                    <img src="${match.player[1].img}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+                    <img src="${match?.players[0].img}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+                    <p class="mx-2 my-1 play-bold">${match?.players[0].Username}</p>
                 </div>
                 <div class="d-flex flex-column align-items-center justify-content-center mx-4">
-                    <p class="play-bold">VS</p>
+                    <p class="play-bold m-0">VS</p>
                 </div>
                 <div id="user-2" class="d-flex flex-row align-items-center justify-content-center">
-                    <img src="${match.player[2].img}" alt="user_pp" class="h-64 w-64 rounded-circle" />
-                    <p class="mx-2 my-1 play-bold">${match?.player[2]}</p>
+                    <p class="mx-2 my-1 play-bold">${match?.players[1].Username}</p>
+                    <img src="${match?.players[1].img}" alt="user_pp" class="h-64 w-64 rounded-circle" />
                 </div>
             `;
             gameDiv.appendChild(gameElement);

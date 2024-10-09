@@ -79,6 +79,8 @@ class User(AbstractUser):
                     return self.avatar_id.image_url
                 else:
                     return f"{os.environ.get('SERVER_URL')}{self.avatar_id.image_url}"
+            else:
+                return f"{os.environ.get('SERVER_URL')}{self.avatar_id.image.url}"
         else:
             url = os.environ.get('SERVER_URL')
             full_url = f"{url}/media/profile_pics/default_pp.jpg"
