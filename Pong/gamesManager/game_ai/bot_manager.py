@@ -14,22 +14,22 @@ async def	init_bot(game_name, game, consumer):
 	if game_name == 'pong':
 		try:
 			bot_db = await sync_to_async(BotQTable.objects.get)(name=BOT_NAME)
-			await sync_to_async(bot_db.save_table)({})
+			# await sync_to_async(bot_db.save_table)({})
 		except:
 			bot_db = await sync_to_async(BotQTable.objects.create)(name=BOT_NAME)
 
-		return TrainPong(0, bot_db, game, consumer)
-		# test = []
-		# amount = 4
-		# for i in range(amount):
-		# 		tmp = TrainPong(i, bot_db, game, consumer)
-		# 		await tmp.launch_train()
-		# 		test.append(tmp)
-		# while test:
-		# 	for t in test:
-		# 		if t.finished:
-		# 			test.remove(t)
-		# 	await asyncio.sleep(SLEEP)
+		# return TrainPong(0, bot_db, game, consumer)
+		test = []
+		amount = 4
+		for i in range(amount):
+				tmp = TrainPong(i, bot_db, game, consumer)
+				await tmp.launch_train()
+				test.append(tmp)
+		while test:
+			for t in test:
+				if t.finished:
+					test.remove(t)
+			await asyncio.sleep(SLEEP)
 
 		# test = TrainPong(1, bot_db)
 		# await test.launch_train()
@@ -46,11 +46,11 @@ class	TrainPong():
 
 	def	__init__(self, i, bot_db, game, consumer):
 		self.consumer = consumer
-		self.limit = 10
+		self.limit = 100
 		self.count = 50
 		self.i = i
 		self.finished = False
-		self.game = game #PongGame(TrainPong.players_name)
+		self.game = PongGame(TrainPong.players_name)
 		self.bot1 = TestBot(self.game, 1, bot_db, training=True)
 		self.bot2 = PongBot(self.game, 2, bot_db, training=True)
 
@@ -61,9 +61,9 @@ class	TrainPong():
 		while True:
 			await self.game.update()
 			# if not i:
-			await self.consumer.send_game_state()
+			# await self.consumer.send_game_state()
 			await self.try_cancel_loop()
-			await asyncio.sleep(SLEEP)
+			await asyncio.sleep(SLEEP / 8)
 
 	async def launch_train(self):
 		self.loop_task = asyncio.create_task(self.game_loop())
@@ -72,7 +72,7 @@ class	TrainPong():
 		gs = await self.game.serialize()
 		if gs['left_score'] >= self.count or gs['right_score'] >= self.count:
 			self.count += 50
-			print(f'\n\nTrain {self.i} => {gs['left_score']} x {gs['right_score']}\n')
+			print(f'\n\nTrain {self.i} => {gs['left_score']} x {gs['right_score']}\nq-table size => {len(PongBot.q_table)}')
 		if gs['left_score'] >= self.limit or gs['right_score'] >= self.limit:
 			await self.bot1.cancel_loop()
 			await self.bot2.cancel_loop()
@@ -100,7 +100,7 @@ class TestBot():
 			ball = serialize['ball']['y']
 			action = 1 if ball > paddle_pos + PADDLE_HEIGHT_DUO / 2 else -1
 			await self.continuous_paddle_mov(action)
-			await asyncio.sleep(SLEEP)
+			await asyncio.sleep(SLEEP / 8)
 
 	async def launch_bot(self):
 		self.loop_task = asyncio.create_task(self.bot_loop())
