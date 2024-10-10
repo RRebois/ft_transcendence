@@ -150,6 +150,27 @@ export default class Navbar {
 			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
 		});
 	}
+
+	loadNotifications() {
+		const csrfToken = getCookie('csrftoken');
+		fetch(`https://${window.location.hostname}:8443/loadNotifications`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': csrfToken
+			},
+			credentials: 'include',
+		})
+		.then(response => response.json().then(data => ({ok: response.ok, data})))
+		.then(({ok, data}) => {
+			if (!ok) {
+				const toastComponent = new ToastComponent();
+				toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+			} else {
+
+			}
+		});
+	}
 	
 
 	render() {
@@ -158,6 +179,14 @@ export default class Navbar {
 				<div class="container-fluid">
 					<a href="/dashboard" route="/dashboard" class="navbar-brand play-bold subtitle">ft_transcendence 🏓</a>
 					<div class="d-flex align-items-center">
+						<div class="dropdown">
+							<button class="btn dropdown-toggle d-flex align-items-center" type="button" id="notifBtn" data-bs-toggle="dropdown" aria-expanded="false">
+								<i class="bi bi-bell"></i>
+							</button>
+							<ul id="dropdownNotif" class="dropdown-menu dropdown-menu-end w-350" aria-labelledby="dropdownNotif">
+								<li><a class="dropdown-item text">This is an example</a></li>
+							</ul>
+						</div>
 						${(this.user?.stud42 || this.user?.username === "superuser") ?
 							`<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">` :
 							`<a role="button" data-bs-toggle="modal" data-bs-target="#update-user-picture" title="Update your profile picture !" data-bs-toggle="tooltip">
@@ -230,5 +259,6 @@ export default class Navbar {
 		}
 		this.loadPreviousAvatar();
 		applyFontSize();
+		this.loadNotifications();
 	}
 }

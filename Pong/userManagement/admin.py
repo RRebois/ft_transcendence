@@ -26,3 +26,7 @@ class FriendRequest(admin.ModelAdmin):
 class UserDataAdmin(admin.ModelAdmin):
     list_display = ("get_username", "user_wins", "user_losses",
                     "user_elo_pong", "user_elo_purrinha")
+
+@admin.register(Notifications)
+class NotificationsAdmin(admin.ModelAdmin):
+    list_display = ("user", "message", "is_read", "time")

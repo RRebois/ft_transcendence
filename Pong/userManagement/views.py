@@ -779,6 +779,7 @@ class SendFriendRequestView(APIView):
                                 status=status.HTTP_403_FORBIDDEN)
 
         friend_request = FriendRequest.objects.create(from_user=user, to_user=to_user)
+        notification = Notifications.objects.create(user=to_user, message=f'You have received a new friend request from {user.username}')
 
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
@@ -1065,3 +1066,24 @@ class DeleteAccountView(APIView):
                         error_messages.append(f"{field}: {error}")
             error_message = " | ".join(error_messages)
             return JsonResponse(data={'message': error_message}, status=400)
+
+@method_decorator(csrf_protect, name='dispatch')
+class GetNotificationsView(APIView):
+    def get(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            notifications = Notifications.objects.filter(user=user).order_by('-time')
+        except Notifications.DoesNotExist as e:
+            return JsonResponse(data={'message': str(e)}, status=404)
+
+        processed_notifications = []
+        for notification in notifications:
+            processed_notifications.append({
+                'message': notification.message,
+                'time': notification.time,
+                'is_read': notification.is_read,
+            })
+        return JsonResponse(processed_notifications, safe=False)

@@ -285,6 +285,15 @@ function handle_received_friend_request(socket, message) {
     console.log("socket is:", socket);
     console.log("message is:", message);
 
+    // const notif = document.getElementById('dropdownNotif');
+    // if (notif) {
+    //     const notifElem = document.createElement('li');
+    //     notifElem.innerHTML = `
+    //         <div class="dropdown-divider"></div>
+    //         <a class="text-wrap dropdown-item text">You have received a new friend request from ${message.from_user}</a>
+    //     `;
+    //     notif.appendChild(notifElem);
+    // }
     const toast = new ToastComponent();
     toast.throwToast('received-friend-request', `You have received a new friend request`, 5000);
     create_friend_request_div(message, message.size);
