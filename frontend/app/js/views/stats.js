@@ -26,9 +26,9 @@ export default class Stats {
 		const ctx = document.getElementById('eloChart').getContext('2d');
 
 		const getEloData = (eloArray) => {
-			const extractedElo = eloArray.map(entry => entry?.elo || 0);
+			const extractedElo = eloArray.map(entry => entry?.elo || 900).reverse();
 			while (extractedElo.length < 6) {
-				extractedElo.push(0);
+				extractedElo.push(900);
 			}
 			return extractedElo.slice(0, 6).reverse();
 		}
@@ -101,9 +101,8 @@ export default class Stats {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast('Error', data.message, 5000, 'error');
 			} else {
-				console.log('Success:', data);
-				this.animateProgressBar(data.pong.elo[0].elo, 'pong', '#f02e2d');
-				this.animateProgressBar(data.purrinha.elo[0].elo, 'purrinha', '#f0902d');
+				this.animateProgressBar(data.pong.elo[data.pong.elo.length - 1].elo, 'pong', '#f02e2d');
+				this.animateProgressBar(data.purrinha.elo[data.purrinha.elo.length - 1].elo, 'purrinha', '#f0902d');
 				this.initEloChart(data);
 			}
 		})
@@ -143,42 +142,83 @@ export default class Stats {
 						`;
 						matchHistoryContainer.appendChild(noMatchElement);
 					}
-					data.forEach(match => {
-						const date = moment(match.timestamp);
-						const matchElement = document.createElement('div');
-						const background = match?.winner[0] === username ? 'bg-victory' : 'bg-defeat';
-						matchElement.classList.add('d-flex', 'flex-row', 'justify-content-between', 'play-regular', 'align-items-center', background, 'rounded', 'p-2');
-						matchElement.innerHTML = `
-							<div class="d-flex flex-column align-items-center">
-								<p class="title m-0">${match.game === 'pong' ? '🏓' : '✋'}</p>
-								<p class="text m-0">${match.game === 'pong' ? 'Pong game' : 'Purrinha game'}</p>
-							</div>
-							<div class="d-flex flex-column">
-								<div class="d-flex flex-row">
-									<div class="d-flex flex-column">
-										<div class="d-flex flex-row align-items-center gap-1">
-											<p class="m-0"><a href="/stats/${match.players[0].username}" class="text-dark text-decoration-none">${match.players[0].username}</a></p>
-											<p class="play-bold m-0 title">${match.players[0].score}</p>
-										</div>
-									</div>
-									<p class="play-bold m-0 title">-</p>
-									<div class="d-flex flex-column">
-										<div class="d-flex flex-row align-items-center gap-1">
-											<p class="play-bold m-0 title">${match.players[1].score}</p>
-											<p class="m-0"><a href="/stats/${match.players[1].username}" class="text-dark text-decoration-none text">${match.players[1].username}</a></p>
-										</div>
-									</div>
-								</div>
-								${match?.winner[0] === username ?
-									`<div class="d-flex flex-row">
-										<i class="bi bi-trophy-fill text" style="color: #e4ca6a;"></i>
-										<p class="text">Victory</p>
-									</div>` :
-									`<p class="text">Loss</p>`
-							}
-							</div>
-							<p class="play-regular text m-0">${date.calendar()}</p>
-						`;
+          
+					data.forEach(match => { console.log("Match: ", match);
+						const   date = moment(match.timestamp);
+						const   matchElement = document.createElement('div');
+						const   background = match?.winner.includes(username) ? 'bg-victory' : 'bg-defeat';
+						const   count = match.count;
+						matchElement.classList.add('d-flex', 'my-2', 'flex-row', 'justify-content-between', 'play-regular', 'align-items-center', background, 'rounded', 'p-2');
+						if (count === 2) {
+                            matchElement.innerHTML = `
+                                <div class="d-flex flex-column align-items-center">
+                                    <p class="fs-1 m-0">${match.game === 'pong' ? '🏓' : '✋'}</p>
+                                    <p class="fs-6 m-0">${match.game === 'pong' ? 'Pong game' : 'Purrinha game'}</p>
+                                </div>
+
+                                <div class="d-flex flex-column">
+                                    <div class="d-flex flex-row">
+                                        <div class="d-flex flex-column">
+                                            <div class="d-flex flex-row align-items-center gap-1">
+                                                    <p class="m-0 cursor-click text-dark" route="/stats/${match.players[0].username}">${match.players[0].username}</p>
+                                                    <p class="play-bold m-0 fs-1">${match.players[0].score}</p>
+                                            </div>
+                                        </div>
+                                        <p class="play-bold m-0 fs-1">-</p>
+                                        <div class="d-flex flex-column">
+                                            <div class="d-flex flex-row align-items-center gap-1">
+                                                    <p class="play-bold m-0 fs-1">${match.players[1].score}</p>
+                                                    <p class="m-0 cursor-click text-dark" route="/stats/${match.players[1].username}">${match.players[1].username}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    ${match?.winner[0] === username ?
+                                        `<div class="d-flex flex-row">
+                                            <i class="bi bi-trophy-fill" style="color: #e4ca6a;"></i>
+                                            <p>Victory</p>
+                                        </div>` :
+                                        `<p>Defeat</p>`
+                                }
+                                </div>
+                                <p class="play-regular m-0">${date.calendar()}</p>
+                            `;
+                        }
+                        else {
+                            matchElement.innerHTML = `
+                                <div class="d-flex flex-column align-items-center">
+                                    <p class="fs-1 m-0">${match.game === 'pong' ? '🏓' : '✋'}</p>
+                                    <p class="fs-6 m-0">${match.game === 'pong' ? 'Pong game' : 'Purrinha game'}</p>
+                                </div>
+
+                                <div class="d-flex flex-column">
+                                    <div class="d-flex flex-row">
+                                        <div class="d-flex flex-column">
+                                            <div class="d-flex flex-row align-items-center gap-1">
+                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[0].username}">${match.players[0].username}</p>
+                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[1].username}">${match.players[1].username}</p>
+                                                <p class="play-bold m-0 fs-1">${match.players[0].score}</p>
+                                            </div>
+                                        </div>
+                                        <p class="play-bold m-0 fs-1">-</p>
+                                        <div class="d-flex flex-column">
+                                            <div class="d-flex flex-row align-items-center gap-1">
+                                                <p class="play-bold m-0 fs-1">${match.players[2].score}</p>
+                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[2].username}">${match.players[2].username}</p>
+                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[3].username}">${match.players[3].username}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    ${match?.winner[0] === username ?
+                                        `<div class="d-flex flex-row">
+                                            <i class="bi bi-trophy-fill" style="color: #e4ca6a;"></i>
+                                            <p>Victory</p>
+                                        </div>` :
+                                        `<p>Defeat</p>`
+                                }
+                                </div>
+                                <p class="play-regular m-0">${date.calendar()}</p>
+                            `;
+                        }
 						matchHistoryContainer.appendChild(matchElement);
 					});
 				}
@@ -207,7 +247,7 @@ export default class Stats {
 			InitialValue += 1;
 
 			CircularBar.style.background = `conic-gradient(${color} ${InitialValue * 3.6}deg, #e8f0f7 0deg)`;
-			PercentValue.innerHTML = Math.round((InitialValue / 100) * maxElo);
+			PercentValue.innerHTML = Math.round(elo);
 
 			if(InitialValue >= finaleValue){
 				clearInterval(timer);

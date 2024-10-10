@@ -233,10 +233,11 @@ class   CreateTournamentView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         tournament = Tournament.objects.create()
         add_player_to_tournament(user, tournament)
-        return JsonResponse({"tournament_id": tournament.get_id()}, status=200)
+        return JsonResponse(data={"tournament_id": tournament.get_id()}, status=200)
+
 
 @method_decorator(csrf_protect, name='dispatch')
 class   JoinTournamentView(APIView):
@@ -246,17 +247,17 @@ class   JoinTournamentView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         try:
             tournament = Tournament.objects.get(id=tournament_id)
         except:
-            return JsonResponse({"error": "Tournament does not exist."}, status=404)
+            return JsonResponse(data={"error": "Tournament does not exist."}, status=404)
         if tournament.winner:
-            return JsonResponse({"error": "Tournament is already finished."}, status=404)
+            return JsonResponse(data={"error": "Tournament is already finished."}, status=404)
         if user in tournament.players.all():
-            return JsonResponse({"error": "You have already joined this tournament."}, status=404)
+            return JsonResponse(data={"error": "You have already joined this tournament."}, status=404)
         if tournament.is_closed:
-            return JsonResponse({"error": "Tournament is already full."}, status=404)
+            return JsonResponse(data={"error": "Tournament is already full."}, status=404)
         add_player_to_tournament(user, tournament)
 
 
@@ -267,7 +268,7 @@ class   PlayTournamentView(APIView):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         try:
             tournament = Tournament.objects.get(id=tournament_id)
         except:

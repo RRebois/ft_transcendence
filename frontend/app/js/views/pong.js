@@ -2,18 +2,23 @@ import * as THREE from 'three';
 import {FontLoader} from 'three/addons/loaders/FontLoader.js';
 import {TextGeometry} from 'three/addons/geometries/TextGeometry.js';
 import {initializePongWebSocket} from "@js/functions/websocket.js";
-import {DirectionalLight, SpotLight, Clock, MathUtils} from 'three';
+import {SpotLight} from 'three';
+import * as bootstrap from "bootstrap";
+import {getCookie} from "@js/functions/cookie.js";
+import ToastComponent from "@js/components/Toast.js";
+import {appRouter} from "@js/spa-router/initializeRouter.js";
 
 export default class PongGame {
     constructor(props) {
         this.props = props;
         this.user = props?.user;
+        this.userIndex = 0;
+        this.winner = null;
         this.gameSocket = null;
         this.setUser = this.setUser.bind(this);
         this.sceneWidth = 600;
         this.prevWidth = window.innerWidth;
         this.prevHeight = window.innerHeight;
-        console.log("PONG Constructor, Width: ", this.prevWidth, " Height: ", this.prevHeight);
 
         document.addEventListener('DOMContentLoaded', this.setupEventListeners.bind(this));
         window.addEventListener('resize', this.onWindowResize.bind(this));
@@ -31,7 +36,7 @@ export default class PongGame {
         this.props = newProps;
     }
 
-    initializeWs = async (gameCode) => {
+     initializeWs = async (gameCode) => {
 		let ws;
 		try {
 			ws = await initializePongWebSocket(gameCode, this.props?.session_id, this);
@@ -44,40 +49,65 @@ export default class PongGame {
 //			return;
 		}
 		this.gameSocket = ws;
-		if (ws)
-		    this.init();
     }
 
-    init() { // For responsive device check the Resizer class: https://discoverthreejs.com/book/first-steps/world-app/#components-the-cube-module
+    init() {
         document.title = "ft_transcendence | Pong";
-        console.log("PONG Init");
+        modal.hidden = true;
 
         // Load all textures at once
         this.textures = {};
+        this.load_textures();
+
+        // Load all materials
+        this.materials = {};
+        this.load_materials();
+
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0x000000);
+
+        // Camera
+        this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 7000);
+        const aspectRatio = window.innerWidth / window.innerHeight;
+        const verticalFOV = this.camera.fov * (Math.PI / 180);
+        const horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
+        const distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
+        this.camera.position.set(300, ((distance * 3) * Math.tan(verticalFOV * 0.5)), -distance);
+        this.scene.fog = new THREE.Fog(0x000000, -300, 1500);
+        this.camera.lookAt(300, -100, 300);
+
+        // Renderer
+        this.renderer = new THREE.WebGLRenderer();
+        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        const   container = document.getElementById("display");
+        container.appendChild(this.renderer.domElement);
+
+        this.animate = this.animate.bind(this);
+        this.animate();
+    }
+
+    load_textures() {
         const   textureLoader = new THREE.TextureLoader();
         const   textStadium = textureLoader.load("/textures/grass/grass_BaseColor.jpg");
         const   textInitBall = textureLoader.load("/textures/football.jpg");
-//        const   redBall = textureLoader.load("/textures/blue_metallic.png");
-//        const   blueBall = textureLoader.load("/textures/ice/blue_roughness.png");
         const   textBlueCube = textureLoader.load("/textures/blue_basecolor.png");
         const   textRedCube = textureLoader.load("/textures/red_basecolor.png");
         const   textPadBlue = textureLoader.load("/textures/ice/ice_basecolor.png");
-//        const   textPadBlueRoughness = textureLoader.load("/textures/ice/ice_roughness.png");
         const   textPadRed = textureLoader.load("/textures/lava/lava_basecolor.jpg");
-
-        const   three = textureLoader.load("three.png")
 
         this.textures["textStadium"] = textStadium;
         this.textures["textInitBall"] = textInitBall;
-        this.textures["redBall"] = textInitBall;
-        this.textures["blueBall"] = textInitBall;
         this.textures["textBlueCube"] = textBlueCube;
         this.textures["textRedCube"] = textRedCube;
         this.textures["textPadBlue"] = textPadBlue;
         this.textures["textPadRed"] = textPadRed;
+    }
 
+    load_materials() {
         // Load all materials
-        this.materials = {};
         this.materials["wait"] = new THREE.MeshStandardMaterial({
             color: 0xffffff,
             flatShading: true,
@@ -109,65 +139,6 @@ export default class PongGame {
             metalness: 0.8,
             roughness: 0,
         });
-
-        this.paddles = {};
-        this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x000000);
-
-        // Camera
-        this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
-        this.camera.position.set(0, 400, 1000);
-        this.scene.fog = new THREE.Fog(0x000000, 250, 1400);
-        this.camera.lookAt(0, 250, 0);
-
-        // Renderer
-        this.renderer = new THREE.WebGLRenderer({antialias: true});
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        const   container = document.getElementById("display");
-        const returnBtn = document.getElementById("returnBtnDiv");
-        returnBtn.innerHTML = `
-            <button id='return-home-btn' route="/" class='btn btn-primary'>Give up</button>
-        `;
-
-        const   modal = document.getElementById("gameEndedModal");
-        modal.innerHTML = `
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div id="gameEndedModalBody" class="modal-body"></div>
-                    <div class="modal-footer">
-                        <button id="playAgainBtn" type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Play again</button>
-                        <button id="returnHomeBtn" type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Return home</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        `;
-
-        container.appendChild(this.renderer.domElement);
-
-        // Create stade group with all objetcs so when rotate everything follows
-        const   stadiumGroup = new THREE.Group();
-        // stadiumGroup.rotation.set(45, 0, 0);
-        const   stadium = new THREE.Object3D();
-        stadium.name = "stadium";
-        stadiumGroup.add(stadium);
-        this.scene.add(stadiumGroup);
-
-        // Display text from the beginning
-        const    textGroup = new THREE.Object3D();
-        textGroup.position.y = 300;
-        textGroup.position.z = 300;
-        textGroup.rotation.set(0, Math.PI, 0);
-        textGroup.name = "textGroup";
-        this.scene.add(textGroup);
-
-        // Controls pad
-        this.keyMap = {};
-
-        this.animate = this.animate.bind(this);
-        this.animate();
     }
 
     onKeyDown(event) {
@@ -183,14 +154,26 @@ export default class PongGame {
     }
 
      handleKeyEvent() {
-        if (this.keyMap['w'] === true)
-            this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": 1}}));
-        if (this.keyMap['s'] === true)
-            this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": -1}}));
-        if (this.keyMap['ArrowUp'] === true)
-            this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
-        if (this.keyMap['ArrowDown'] === true)
-            this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
+        if (this.props?.code !== "40") {
+            if (this.keyMap['w'] === true)
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": 1}}));
+            if (this.keyMap['s'] === true)
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": -1}}));
+            if (this.keyMap['ArrowUp'] === true)
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
+            if (this.keyMap['ArrowDown'] === true)
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
+        }
+        else {
+            if (this.keyMap['w'] === true)
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": 1}}));
+            if (this.keyMap['s'] === true)
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": -1}}));
+            if (this.keyMap['ArrowUp'] === true)
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": 1}}));
+            if (this.keyMap['ArrowDown'] === true)
+                this.gameSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": -1}}));
+        }
     }
 
     createLightFloor() {
@@ -208,7 +191,6 @@ export default class PongGame {
         const   spotLightRight = new SpotLight(0xffffff, 1000000);
         spotLightRight.position.set(920, 400, 100); //y: 300
         spotLightRight.target.position.set(550, 0, 140);
-//        spotLightRight.distance = 5000;
         spotLightRight.angle = .45; // change it for higher or lower coverage of the spot
         spotLightRight.penumbra = .8;
         spotLightRight.castShadow = true;
@@ -226,8 +208,7 @@ export default class PongGame {
         spotLightLeft.shadow.camera.near = 10;
         spotLightLeft.name = "spotL";
 
-        this.scene.add(spotLightRight, spotLightLeft, spotLightRight.target, spotLightLeft.target);//, ballLight, ballLight.target);
-//        this.scene.add(ballLight, ballLight.target);
+        this.scene.add(spotLightRight, spotLightLeft, spotLightRight.target, spotLightLeft.target);
     }
 
     waiting() {
@@ -235,20 +216,19 @@ export default class PongGame {
         if (!check) {
             // Set lights
             const   dirLight = new THREE.DirectionalLight(0xffffff, 0.4);
-            dirLight.position.set(0, 0, 1).normalize();
+            dirLight.position.set(300, 0, 1).normalize();
             dirLight.name = "light_1";
             this.scene.add(dirLight);
 
             const   pointLight = new THREE.PointLight(0xffffff, 4.5, 0, 0);
             pointLight.color.setHSL(Math.random(), 1, 0.5);
-            pointLight.position.set(0, 100, 90);
+            pointLight.position.set(300, 100, 90);
             pointLight.name = "light_2";
             this.scene.add(pointLight);
 
             const   txt = "Match will start soon!";
             const   waitText = new THREE.Object3D();
-    //        const    textGroup = new THREE.Object3D();
-            waitText.position.y = 300;
+            waitText.position.set(300, -100, 300);
             waitText.name = "waitTxt";
             this.scene.add(waitText);
 
@@ -256,8 +236,9 @@ export default class PongGame {
             const   planeGeometry = new THREE.PlaneGeometry(10000, 10000);
             const   planeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true });
             const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
-            plane.position.y = 300;
+            plane.position.set(300, 40, 0);
             plane.rotation.x = - Math.PI * 0.5;
+            plane.rotation.z = Math.PI;
             plane.name = "waitPlane";
             this.scene.add(plane);
 
@@ -266,7 +247,7 @@ export default class PongGame {
             loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
                 const   geometry = new TextGeometry(txt, {
                     font: font,
-                    size: 70,
+                    size: 85,
                     depth: 20,
                     curveSegments: 4,
                     bevelEnabled: true,
@@ -280,20 +261,19 @@ export default class PongGame {
                 const   textWidth = boundingBox.max.x - boundingBox.min.x;
 
                 const   textAdd = new THREE.Mesh(geometry, this.materials["wait"]);
-                textAdd.position.set(-0.5 * textWidth, 30, 0);
-                textAdd.rotation.set(0, 2 * Math.PI, 0);
+                textAdd.position.set(textWidth * 0.5, 150, 0);
+                textAdd.rotation.set(0, Math.PI, 0);
 
                 const   mirror = new THREE.Mesh(geometry, this.materials["mirror"]);
-                mirror.position.set(-0.5 * textWidth, -30, 20);
-                mirror.rotation.set(Math.PI, 2 * Math.PI, 0);
+                mirror.position.set(textWidth * 0.5, 90, -20);
+                mirror.rotation.set(Math.PI, - Math.PI, 0);
 
                 waitText.add(textAdd, mirror);
-
             });
         }
     }
 
-    buildGameSet(data) {console.log("buildGameSet: ", data);
+    buildGameSet(data) {
         //  remove all from wait message(if any)
         const   dirLight = this.scene.getObjectByName("light_1");
         const   pointLight = this.scene.getObjectByName("light_2");
@@ -305,20 +285,24 @@ export default class PongGame {
         if (dirLight)
             this.scene.remove(dirLight, pointLight, wait, planeWait);
 
-        const aspectRatio = window.innerWidth / window.innerHeight;
-        const verticalFOV = this.camera.fov * (Math.PI / 180);
-        const horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
-        const distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
-        this.camera.position.z = -distance;
-        this.camera.position.y = ((distance * 3) * Math.tan(verticalFOV * 0.5));
-        this.camera.position.x = 300;
-        // this.scene.fog = new THREE.Fog(0x000000, 250, 1400);
-        this.camera.lookAt(300, -100, 300);
+        // Create stade group with all objetcs so when rotate everything follows
+        const   stadiumGroup = new THREE.Group();
+        const   stadium = new THREE.Object3D();
+        stadium.name = "stadium";
+        stadiumGroup.add(stadium);
+        this.scene.add(stadiumGroup);
 
-        // initial camera setup
-       // this.camera.position.set(300, 700, 500);
-       // this.camera.lookAt(300, -100, -300);
-       // this.camera.rotation.set(0, 2 * Math.PI, 0);
+        // Display text from the beginning
+        const    textGroup = new THREE.Object3D();//textGroup.position.set(300, 100, 300);
+        textGroup.position.x = 300;
+        textGroup.position.y = 300;
+        textGroup.position.z = 300;
+        textGroup.rotation.set(0, Math.PI, 0);
+        textGroup.name = "textGroup";
+        this.scene.add(textGroup);
+
+        this.keyMap = {};
+        this.paddles = {};
 
         // Ball initial stats
         this.ball_x = 0;
@@ -339,12 +323,24 @@ export default class PongGame {
 
         // Set players nick
         this.players_nick = []; //p2, p1, p4, p3
-        this.players_nick.push(data.game_state.players.player2["name"]);
-        this.players_nick.push(data.game_state.players.player1["name"]);
+        this.players_nick.push({
+            "username": data.game_state.players.player2["name"],
+            "truncUser": null,
+        });
+        this.players_nick.push({
+            "username": data.game_state.players.player1["name"],
+            "truncUser": null,
+        });
 
         if (Object.keys(data.players).length > 2) {
-            this.players_nick.push(data.game_state.players.player4["name"]);
-            this.players_nick.push(data.game_state.players.player3["name"]);
+            this.players_nick.push({
+                "username": data.game_state.players.player4["name"],
+                "truncUser": null,
+            });
+            this.players_nick.push({
+                "username": data.game_state.players.player3["name"],
+                "truncUser": null,
+            });
         }
 
         this.sprite = [];
@@ -357,53 +353,51 @@ export default class PongGame {
     }
 
     createGameElements(data) {
-        this.createBall(data.game_state.ball, this.textures["textInitBall"]);
-        this.createLightFloor();
-        this.createPlanStadium();
+        const   ball = this.scene.getObjectByName("ball");
+        const   spot = this.scene.getObjectByName("SpotR");
+        const   field = this.scene.getObjectByName("field");
+        if (!ball)
+            this.createBall(data.game_state.ball, this.textures["textInitBall"]);
+        if (!spot)
+            this.createLightFloor();
+        if (!field)
+            this.createPlanStadium();
         for (let i = 0; i < Object.keys(data.players).length; i++)
             this.createPaddle(data.game_state, Object.values(data.game_state.players)[i], i + 1);
         this.createStadium();
     }
 
-    printInitScores() { //https://github.com/mrdoob/three.js/blob/master/examples/webgl_loader_ttf.html try it
-    //https://discourse.threejs.org/t/different-textures-on-each-face-of-cube/23700 onWResize
-    //https://github.com/Fasani/three-js-resources?tab=readme-ov-file#images
-    // bloom https://threejs.org/examples/#webgl_postprocessing_unreal_bloom
-
+    printInitScores() {
         for (let i = 0; i < this.players_nick.length; i++) {
-            if (this.players_nick[i].length > 8) {
-                this.players_nick[i] = this.players_nick[i].substr(0, 7) + ".";
-            }
+            if (this.players_nick[i].username.length > 8)
+                this.players_nick[i].truncUser = this.players_nick[i].username.substr(0, 7) + ".";
+            else
+                 this.players_nick[i].truncUser = this.players_nick[i].username;
         }
 
         // Adjust this.Array for each case (2 players / 4 players)
         if (this.players_nick.length > 2) {
-            this.textArray = [`${this.players_nick[2]} + " " + ${this.players_nick[3]}`,
-            "\n" + this.score_p2.toString(), "\n - ", "\n" + this.score_p1.toString(),
-            `${this.players_nick[0]} + " " + ${this.players_nick[1]}`];
+            this.textArray = [`${this.players_nick[2].truncUser}` + "\n" + `${this.players_nick[3].truncUser}`,
+            this.score_p2.toString(), " - ", this.score_p1.toString(),
+            `${this.players_nick[0].truncUser}` + "\n" + `${this.players_nick[1].truncUser}`];
         }
         else {
-            this.textArray = [`${this.players_nick[0]}`,
-            "\n" + this.score_p2.toString(), "\n - ", "\n" + this.score_p1.toString(),
-            `${this.players_nick[1]}`];
+            this.textArray = [`${this.players_nick[0].truncUser}`,
+            this.score_p2.toString(), " - ", this.score_p1.toString(),
+            `${this.players_nick[1].truncUser}`];
         }
-        this.newArray = ["team 1 " + this.textArray[0],
+        this.newArray = [this.textArray[0],
                         this.textArray[1] + this.textArray[2] + this.textArray[3],
-                        "team 2 " + this.textArray[4]];
+                        this.textArray[4]];
 
         const   textGroup = this.scene.getObjectByName("textGroup");
         const   loader = new FontLoader();
 
-        this.xPosition = window.innerWidth;
-//        textGroup.rotation.copy(this.camera.rotation);
+        this.xPosition = 0;
 
-        // vecto to get coords of text and center it on scene
         loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
             this.textArray.forEach((text, index) => {
-                if (index === 0)
-                    text = "Team 1\n" + text
-                else if (index === 4)
-                    text = "Team 2\n" + text
+                text = text
                 const textGeometry = new TextGeometry(text, {
                     font: font,
                     size: 45,
@@ -433,7 +427,10 @@ export default class PongGame {
                 const   boundingBox = textGeometry.boundingBox;
                 const   textWidth = boundingBox.max.x - boundingBox.min.x;
                 const   textHeight = boundingBox.max.y - boundingBox.min.y;
-                textGroup.position.y = textHeight + 50;
+                if (this.props?.code === "40")
+                    textGroup.position.y = textHeight + 25;
+                else
+                    textGroup.position.y = textHeight + 100;
 
                 textAdd.position.x = this.xPosition;
                 if (index === 0 || index === 3)
@@ -443,18 +440,21 @@ export default class PongGame {
                 else
                     this.xPosition += textWidth + 10;
                 textGroup.add(textAdd);
-                this.updateTextGroup(this.xPosition);
             });
+            this.updateTextGroup();
         });
     }
 
     updateTextGroup(value) {
         const   textGroup = this.scene.getObjectByName("textGroup");
-        if (textGroup)
-            textGroup.position.x = value - 100;
+
+        if (textGroup) {
+            const   box = new THREE.Box3().setFromObject(textGroup);
+                textGroup.position.x = 300 + (-box.min.x + box.max.x) * 0.5;
+        }
     }
 
-     createPlanStadium() { // add animation https://threejs.org/examples/#webgl_gpgpu_water
+     createPlanStadium() {
         // Create plane
         const   planeGeometry = new THREE.PlaneGeometry(640, 320, 40, 40);
         const   planeMaterial = new THREE.MeshPhongMaterial({
@@ -465,8 +465,8 @@ export default class PongGame {
         const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.rotation.x = - Math.PI * 0.5;
         plane.position.set(300, -10, 140);
-//        plane.castShadow = true;
         plane.receiveShadow = true;
+        plane.name = "field";
         const   stadium = this.scene.getObjectByName("stadium");
         stadium.add(plane);
      }
@@ -484,26 +484,7 @@ export default class PongGame {
         stadium.add(ball);
     }
 
-//    Bouncing(ball) { //https://discoverthreejs.com/book/first-steps/animation-system/
-//        const   center = new THREE.Vector3(-10, 0, 200);
-//        const   mvt = [];
-//        const   p1 = new THREE.Vector3(-10, 300, 200);
-//        const   p2 = new THREE.Vector3(-10, 150, 200);
-//        const   p3 = new THREE.Vector3(-10, 50, 200);
-//        mvt.push(p1, p2, p3);
-////        console.log("Ball init position: "); console.log( ball.position);
-////        this.moveBall(ball, center);
-//        for (let i = 0; i < mvt.length; i++) {
-////            this.moveObjectTrans(ball, mvt[i]);
-////             this.moveObjectTrans(ball, center);
-//        }
-////        this.moveObjectTrans(ball, center);
-//
-////        console.log("Ball after translation: "); console.log( ball.position);
-//    }
-
-
-    createPaddle(data, player, i) { // correct texture on paddles (long side) player.pos.y must be 140 not 110
+    createPaddle(data, player, i) {
         const geometry = new THREE.BoxGeometry(data["paddle_width"], data["paddle_width"], data["paddle_height"]);
         let material;
         if (player.pos.x < 300) {
@@ -531,7 +512,6 @@ export default class PongGame {
         stadium.add(paddle);
     }
 
-    // Create blocks all around + needs floor + animation
     createStadium() {
         // Create gem and material once
         const   geometry = new THREE.BoxGeometry(20, 20, 20);
@@ -544,66 +524,29 @@ export default class PongGame {
         const   targetPositions = [];
         let     cube;
         let     end;
-        let     x = -30; //600 -> 640center must be x:300 z:140
+        let     x = -30;
         let     y = 0;
-        let     z = -10;// 14 * 20 280
+        let     z = -10;
         let     step = 20;
         let     i = -1;
 
-
-//        cube = new THREE.Mesh(geometry, redMaterial);
-//        cube.position.set(0, 0, 0);stadium.add(cube);
-////        // Create plane
-//        const   planeGeometry = new THREE.PlaneGeometry(80, 80, 40, 40);
-//        const   planeMaterial = new THREE.MeshPhongMaterial({
-//            color: 0xff0000,
-//            side: THREE.DoubleSide
-//        });
-//        const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
-//        plane.rotation.x = Math.PI * 0.5;
-//        plane.rotation.y = Math.PI * 0.5;
-//        plane.position.set(0, 0, 0);
-//        stadium.add(plane);
-//
-//        const   plane1 = new THREE.Mesh(planeGeometry, planeMaterial);
-//        plane1.rotation.x = -Math.PI * 0.5;
-//        plane1.rotation.y = Math.PI * 0.5;//z
-//        plane1.position.set(600, 0, 0);
-//        stadium.add(plane1);
-//
-//        const   plane2 = new THREE.Mesh(planeGeometry, planeMaterial);
-//        plane2.rotation.x =  Math.PI;
-//        plane2.position.set(0, 0, 0);
-//        stadium.add(plane2);
-//
-//        const   plane3 = new THREE.Mesh(planeGeometry, planeMaterial);
-//        plane3.rotation.x =  Math.PI;
-//        plane3.position.set(0, 0, 280);
-//        stadium.add(plane3);
-
-//        const   plane2 = new THREE.Mesh(planeGeometry, planeMaterial);
-//        plane2.rotation.x =  Math.PI;
-//        plane2.position.set(0, 0, 0);
-//        stadium.add(plane2);
-
-
-        while (++i < 92) { //96
-            if (i < 32) { // 21 -> 29
+        while (++i < 92) {
+            if (i < 32) {
                 x += step;
                 cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
             }
-            else if (i >= 32 && i < 47) { // 32 -> 48
+            else if (i >= 32 && i < 47) {
                 z += step;
                 cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
             }
-            else if (i >= 47 && i < 78) { // 54 -> 64
+            else if (i >= 47 && i < 78) {
                 x -= step;
                 cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
             }
-            else { // 24
+            else {
                 z -= step;
                 cube = this.createCube(x, geometry, redMaterial, blueMaterial);
                 end = new THREE.Vector3(x, y, z);
@@ -612,39 +555,46 @@ export default class PongGame {
             targetPositions.push(end);
             stadium.add(cube);
         }
-
         this.moveCubes(cubes, targetPositions);
     }
 
     moveCubes(cubes, targetPositions) {
         for (let i = 0; i < cubes.length; i++) {
-            const cube = cubes[i];
-            const targetPosition = targetPositions[i];
+            const   cube = cubes[i];
+            const   targetPosition = targetPositions[i];
             this.moveObjectTrans(cube, targetPosition);
+            if (i === cubes.length - 1) {
+                const   check = () => {
+                    if (Math.abs(cube.position.x - targetPosition.x) < 0.1 &&
+                    Math.abs(cube.position.y - targetPosition.y) < 0.1 &&
+                    Math.abs(cube.position.z - targetPosition.z) < 0.1)
+                        this.gameSocket.send(JSON.stringify({"game_status": true}));
+                    else
+                        requestAnimationFrame(check);
+                }
+                check();
+            }
         }
     }
-
-    //            const   animate = () => { //https://dustinpfister.github.io/2022/05/17/threejs-vector3-lerp/
-//            //https://codepen.io/prisoner849/pen/qzZaye?editors=0010
-//            // https://sbcode.net/threejs/lerp/
-
 
     lerp(from, to, speed) {
         const   amount = (1 - speed) * from + speed * to;
         return (Math.abs(from - to) < 0.2 ? to : amount);
-}
+    }
 
     moveObjectTrans(object, targetPosition) {
+        //    console.log("Anim not ended: ", this.cubeAnimationEnded[i]);
         let lt = new Date(),
         f = 0,
         fm = 300;
+
         const animate = () => {
             const   now = new Date();
             const   secs = (now - lt) / 1000;
             const   p = f / fm;
 
             requestAnimationFrame(animate);
-//            object.position.lerp(targetPosition, 0.03); // positions not being exactly what expected. Check to correct it
+
             object.position.x = this.lerp(object.position.x, targetPosition.x, 0.03);
             object.position.y = this.lerp(object.position.y, targetPosition.y, 0.03);
             object.position.z = this.lerp(object.position.z, targetPosition.z, 0.03);
@@ -653,6 +603,7 @@ export default class PongGame {
             lt = now;
         }
         animate();
+//console.log("Anim end: ", this.cubeAnimationEnded[i]);
     }
 
     createBlueMaterial() {
@@ -721,22 +672,28 @@ export default class PongGame {
     }
 
     animate() {
-        requestAnimationFrame(this.animate);
-
         const   msg = this.scene.getObjectByName("waitTxt");
         if (msg) {
             this.waitMSGMove(msg);
-            this.materials["wait"].emissiveIntensity = 3 + Math.sin(Date.now() * 0.005) * 3;
+            this.materials["wait"].emissiveIntensity = 0.5 + Math.sin(Date.now() * 0.005) * 0.8;
         }
 
-        this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-        this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-        this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+        const   ball = this.scene.getObjectByName("ball")
+        if (ball) {
+            this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+            this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+            this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
 
-        this.handleKeyEvent();
+            this.handleKeyEvent();
+        }
 
         // Render scene
         this.renderer.render(this.scene, this.camera);
+        requestAnimationFrame(this.animate);
+    }
+
+    waitMSGMove(msg) {
+        msg.rotation.y += 0.001;
     }
 
      onWindowResize() {
@@ -759,10 +716,6 @@ export default class PongGame {
              this.prevHeight = newHeight;
              this.prevWidth = newWidth;
          }
-    }
-
-    waitMSGMove(msg) {
-        msg.rotation.y += 0.001;
     }
 
     updateBallPosition(gameState) {
@@ -799,30 +752,116 @@ export default class PongGame {
         ball.quaternion.multiplyQuaternions(quaternion, ball.quaternion);
     }
 
-//    newRound() {
-//        this.ball_x = 0;
-//        this.ball_y = 0;
-//        this.currentSpeed = this.baseSpeed;
-//        this.ball_velocity_x = this.currentSpeed * ((Math.random() - 0.5));
-//        this.ball_velocity_y = this.currentSpeed * ((Math.random() - 0.5));
-//
-////        const ball = this.scene.getObjectByName('ball');
-//        ball.position.set(this.ball_x, this.ball_y, 0);
-//    }
-
     // Collecting info from the game logic in the back
     display(data) {
-        console.log(data);
+//        console.log(data);
+        if (this.userIndex === 0 && this.props?.code === "40") {
+            for (let i = 0; i < this.players_nick.length; i++) {
+                if (this.players_nick[i].username === this.user.username) {
+                    if (i % 2 === 0)
+                        this.userIndex = i + 2;
+                    else
+                         this.userIndex = i;
+                }
+            }
+        }
+        if (data["status"] === "started") {
         const   ball = this.scene.getObjectByName("ball");
-
 
         this.updateBallPosition(data.game_state);
         this.updatePaddlePosition(data.game_state, Object.values(data.game_state.players));
         if (data.game_state["new_round"])
             this.updateScores(data.game_state);
-        if (this.score_p2 === data.game_state["winning_score"] || this.score_p1 === data.game_state["winning_score"]) {
-            // document.getElementById("GameEndedModal");
-            console.log("game finished");
+        }
+        else {
+            this.winner = data["winner"];
+
+            // Select modal message to display
+            const   modal = document.getElementById("modal");
+//            console.log(this.winner);
+//            console.log(this.user["username"]);
+//            console.log("code: ", this.props?.code);
+            var     msg;
+
+            if (this.props?.code === 22 || this.props?.code === 40) {
+                if (this.winner.includes(this.user["username"]))
+                    msg = `Congratulations ${this.user["username"]}, you won!`;
+                else
+                    msg = `${this.user["username"]} you are such a loser. Machines will soon dominate the world!`;
+            }
+            else {
+                if (this.winner.includes(this.user["username"]))
+                    msg = `Congratulations ${this.user["username"]}, you won!`;
+                else if (this.props?.code === "20")
+                    msg = `${this.user["username"]} you are such a loser. However, you have a very talented friend!`;
+                else
+                    msg = `${this.user["username"]} you are such a loser!`;
+            }
+            if (this.winner.includes(this.user["username"]))
+                modal.style.background = "#3e783e";
+            else
+                modal.style.background = "#bc7575";
+            modal.innerHTML = `<p>${msg}</p>`;
+
+            if (data.game_state["tournament"]) {
+                modal.innerHTML +=`
+                <button id="back-home-btn" route="/" class="btn btn-primary">Back to dashboard</button>
+                <button id="new-game-btn" route="/" class="btn btn-primary">Back to tournament view</button> // to complete
+            `;
+            }
+            else {
+                modal.innerHTML +=`
+                    <button id="back-home-btn" route="/" class="btn btn-primary">Back to dashboard</button>
+                    <button id="new-game-btn" class="btn btn-primary">Play again</button>
+                `;
+            }
+            const   restart = document.getElementById("new-game-btn");
+            if (restart) {
+                restart.addEventListener("click", () => {
+                    const csrfToken = getCookie('csrftoken');
+                    fetch(`https://${window.location.hostname}:8443/game/${this.props?.game}/${this.props?.code}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+			            credentials: 'include'
+		            })
+                    .then(response => response.json().then(data => ({ok: response.ok, data})))
+                    .then(({ok, data}) => {
+                        if (!ok) {
+                            const toastComponent = new ToastComponent();
+                            toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+                        } else {
+                            console.log("Game request success: ", data);
+                            data.code = `${this.props?.code}`;
+                            const params = new URLSearchParams(data).toString();
+                            // Close modal
+                            const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-match-modal'));
+                            if (createMatchModal)
+                                createMatchModal.hide();
+                                const backdrops = document.querySelectorAll('.modal-backdrop');
+                                backdrops.forEach(backdrop => backdrop.remove());
+                            appRouter.navigate(`/${this.props?.game}?${params}`);
+                            const socket = window.mySocket;
+                            socket.send(JSON.stringify({
+                                'type': 'join_match',
+                                'user_id': this.user.id
+					        }));
+				        }
+			        })
+                    .catch(error => {
+                        console.error("Error fetching game request: ", error);
+                        const toastComponent = new ToastComponent();
+                        toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+                    });
+                });
+            }
+            modal.classList.add("rounded", "border", "border-dark", "border-3");
+			modal.hidden = false;
+
+			// close the webso
+            this.gameSocket.close();
         }
     }
 
@@ -831,14 +870,12 @@ export default class PongGame {
         window.addEventListener("keyup", this.onKeyUp.bind(this));
     }
 
-    render() { //https://en.threejs-university.com/2021/08/03/chapter-7-sprites-and-particles-in-three-js/
+    render() {
         this.initializeWs(this.props?.code);
 
         return `
-            <div style="width: 100%; height: 100%;" id="display">
-                <div id="returnBtnDiv"></div>
-                <div class="modal fade" id="gameEndedModal" data-bs-backdrop="static"
-                    data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+            <div style="width: 100%; height: 100%; position: relative;" id="display">
+                <div id="modal" class="w-fit h-fit div-centered text-center p-3">
                 </div>
             </div>
         `;

@@ -237,35 +237,39 @@ export default class Dashboard {
 	render() {
 		document.title = "ft_transcendence";
 		return `
-		<div class="d-flex w-75 min-h-full flex-grow-1 justify-content-center align-items-center">
-            <div class="h-100 w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 16px;">
-            	<div class="d-flex flex-row justify-content-center w-full" style="gap: 16px">
+		<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
+            <div class="h-100 w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 32px;">
+            	<div class="d-flex flex-row justify-content-center w-3-4" style="gap: 32px">
+
             		<!-- Pong game -->
-            		<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded gap-3" style="--bs-bg-opacity: .5;">
-            			<p class="play-bold title">Pong 🏓</p>
-            			<div class="d-flex flex-column justify-content-center align-items-center gap-3 w-full">
-            				<button type="button" class="btn d-flex justify-content-center align-items-center w-fit px-4 py-1 play-btn" data-bs-toggle="modal" data-bs-target="#create-pong-match-modal" style="background-color: #3b82f6">
-            					<p class="play-regular cta-text m-0 play-btn-text text-white">Play</p>
+            		<div class="w-full bg-white d-flex flex-column align-items-center py-4 px-4 rounded gap-1 hideParent" style="--bs-bg-opacity: .5;"
+                        data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" title="A 3D adaptation of one of the oldest video game. Play offline against a bot or a friend, or online on 1v1 or 2v2.">
+            			<p class="play-bold fs-2">Pong 🏓</p>
+            			<div class="d-flex flex-column justify-content-center align-items-center gap-1 w-full">
+            				<button type="button" class="btn d-flex justify-content-center align-items-center w-fit px-4 py-1 play-btn m-3" data-game-type="pong" data-bs-toggle="modal" data-bs-target="#create-match-modal" style="background-color: #3b82f6">
+            					<p class="play-regular fs-4 m-0 play-btn-text text-white">Play</p>
 							</button>
             			</div>
 					</div>
 
             		<!-- Purrinha game -->
-            		<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded gap-3" style="--bs-bg-opacity: .5;">
-            			<p class="play-bold title">Purrinha ✋</p>
+            		<div class="w-full bg-white d-flex flex-column align-items-center py-4 px-4 rounded gap-1 hideParent" style="--bs-bg-opacity: .5;"
+                        data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" title="A classic bar game! You have 3 tokens at disposal.
+                            Each player select from 0 to 3 to hide in its hand. The goal is to guess the total selected by all the players. The closest to the total wins the round.">
+            			<p class="play-bold fs-2">Purrinha ✋</p>
             			<div class="d-flex flex-column justify-content-center align-items-center gap-3 w-full">
-            				<button type="button" class="btn d-flex justify-content-center align-items-center w-fit px-4 py-1 play-btn" data-bs-toggle="modal" data-bs-target="#create-purrinha-match-modal" style="background-color: #3b82f6">
-            					<p class="play-regular cta-text m-0 play-btn-text text-white">Play</p>
+            				<button type="button" class="btn d-flex justify-content-center align-items-center w-fit px-4 py-1 play-btn m-3" data-game-type="purrinha" data-bs-toggle="modal" data-bs-target="#create-match-modal" style="background-color: #3b82f6">
+            					<p class="play-regular fs-4 m-0 play-btn-text text-white">Play</p>
 							</button>
             			</div>
 					</div>
             	</div>
 
             	<!-- Tournament -->
-            	<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded" style="--bs-bg-opacity: .5;">
-            		<p class="play-bold title">Tournament</p>
+            	<div class="w-3-4 bg-white d-flex flex-column align-items-center py-4 px-4 rounded" style="--bs-bg-opacity: .5;">
+            		<p class="play-bold fs-2">Pong tournament 🏆</p>
             		<div class="d-flex">
-            			<div class="d-flex flex-column justify-content-center">
+            			<div class="d-flex flex-column justify-content-center px-5">
             				<label for="tournament-id">Join a tournament</label>
             				<div class="input-group mb-3">
 								<input type="text" class="form-control" id="tournament-id" placeholder="XXX-XXX-XXX" aria-label="Tournament ID">
@@ -274,10 +278,10 @@ export default class Dashboard {
 								</div>
 							</div>
 						</div>
-						<div class="d-flex flex-column justify-content-center align-items-center">
-							<button type="button" class="btn d-flex justify-content-center align-items-center w-fit px-4 py-1 play-btn" style="background-color: #3b82f6">
-								<i class="bi bi-plus-circle"></i>
-								<p class="play-regular text m-0 play-btn-text text-white">Create a tournament</p>
+						<div class="d-flex flex-column justify-content-center align-items-center p-3">
+							<button type="button" class="btn d-flex justify-content-center align-items-center w-fit py-1 play-btn" data-bs-toggle="modal" data-bs-target="#create-tournament-modal" style="background-color: #3b82f6">
+								<i class="bi bi-plus-circle mx-3"></i>
+            					<p class="fs-4 m-1 text-white">Create a tournament</p>
 							</button>
 						</div>
 					</div>
@@ -340,35 +344,82 @@ export default class Dashboard {
 								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 							</div>
 							<div class="modal-body">
-								<div class="mb-3">
-									<p class="text mb-1">Choose a game type</p>
-									<div class="btn-group" role="group" aria-label="Game connectivity selection">
-										<input type="radio" class="btn-check" name="purrinha-connectivity" id="purrinha-radio-btn-offline" value="offline" autocomplete="off" checked>
-										<label class="btn btn-outline-primary" for="purrinha-radio-btn-offline">
-											<i class="bi bi-wifi-off"></i>
-											<p>Local</p>
-										</label>
-										<input type="radio" class="btn-check" name="purrinha-connectivity" id="purrinha-radio-btn-online" value="online" autocomplete="off">
-										<label class="btn btn-outline-primary" for="purrinha-radio-btn-online">
-											<i class="bi bi-wifi"></i>
-											<p>Online</p>
-										</label>
-									</div>
+							
+								<p class="mb-3">Choose a game type</p>
+								<div class="btn-group" role="group" aria-label="Game connectivity selection">
+									<input type="radio" class="btn-check" name="connectivity" id="radio-btn-offline" value="offline" autocomplete="off" checked>
+									<label class="btn btn-outline-primary" for="radio-btn-offline">
+										<i class="bi bi-wifi-off"></i>
+										<p class="m-2">Local</p>
+									</label>
+									
+									<input type="radio" class="btn-check" name="connectivity" id="radio-btn-online" value="online" autocomplete="off">
+									<label class="btn btn-outline-primary" for="radio-btn-online">
+										<i class="bi bi-wifi"></i>
+										<p class="m-2">Online</p>
+									</label>
 								</div>
-								<div class="mb-3">
-									<p class="text mb-1">Choose a number of players</p>
-									<div id="purrinha-radio-btn-players-container" class="btn-group" role="group" aria-label="Game connectivity selection">
-										<input type="radio" class="btn-check" name="purrinha-nb-players" id="purrinha-radio-btn-offline-bot" value="bot" autocomplete="off" checked>
-										<label class="btn btn-outline-primary" for="purrinha-radio-btn-offline-bot">
-											<i class="bi bi-robot"></i>
-											<p>1v1 against a bot</p>
-										</label>
-									</div>
+								
+								<p class="my-3">Choose a game format</p>
+								<div id="radio-btn-players-container" class="btn-group" role="group" aria-label="Game connectivity selection">
+									<input type="radio" class="btn-check" name="nb-players" id="radio-btn-offline-bot" value="bot" autocomplete="off" checked>
+									<label class="btn btn-outline-primary" for="radio-btn-offline-bot">
+										<i class="bi bi-robot"></i>
+										<p class="m-2">1v1 against a bot</p>
+									</label>
+									
+									<input type="radio" class="btn-check" name="nb-players" id="radio-btn-offline-1v1" value="offline-1v1" autocomplete="off">
+									<label class="btn btn-outline-primary" for="radio-btn-offline-1v1">
+										<i class="bi bi-keyboard"></i>
+										<p class="m-2">1v1 on the same keyboard</p>
+									</label>
 								</div>
 							</div>
 							<div class="modal-footer">
 								<button type="button" class="btn text-danger" data-bs-dismiss="modal">Close</button>
 								<button id="purrinha-game-request-btn" type="button" class="btn btn-primary">Launch a game! 🚀</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="modal fade" id="create-tournament-modal" tabindex="-1" aria-labelledby="create tournament modal" aria-hidden="true">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h1 class="modal-title fs-5">Pong tournament settings</h1>
+								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+							</div>
+							
+							<div class="modal-body">								
+								<p class="mb-3">Choose the number of players</p>
+								<div id="radio-btn-players-container" class="btn-group" role="group" aria-label="Game connectivity selection">
+									<input type="radio" class="btn-check" name="nb-players" id="radio-btn-3p" value="3p" autocomplete="off" checked>
+									<label class="btn btn-outline-primary" for="radio-btn-3p">
+										<i class="bi bi-person-fill"></i>
+										<i class="bi bi-person-fill"></i>
+										<i class="bi bi-person-fill"></i>
+										<p class="m-2">3 players</p>
+									</label>
+									
+									<input type="radio" class="btn-check" name="nb-players" id="radio-btn-4p" value="4p" autocomplete="off">
+									<label class="btn btn-outline-primary" for="radio-btn-4p">
+										<i class="bi bi-person-fill"></i>
+										<i class="bi bi-person-fill"></i>
+										<i class="bi bi-person-fill"></i>
+										<i class="bi bi-person-fill"></i>
+										<p class="m-2">4 players</p>
+									</label>
+								</div>
+							</div>
+							
+							<div class = "modal-infos">
+							<p class="mx-3 fst-italic">The tournaments are organized on the round-robin system, which means each participant plays once against everyone</p>
+							</div>
+							
+							<div class="modal-footer">
+								<button type="button" class="btn text-danger" data-bs-dismiss="modal">Close</button>
+								<button id="game-request-btn" type="button" class="btn btn-primary">Start tournament! 🚀</button>
 							</div>
 						</div>
 					</div>
