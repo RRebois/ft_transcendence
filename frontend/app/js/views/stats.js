@@ -2,6 +2,7 @@ import {getCookie} from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
 import moment from "moment";
 import Chart from 'chart.js/auto';
+import {applyFontSize} from "../functions/display.js";
 
 export default class Stats {
 	constructor(props) {
@@ -141,6 +142,7 @@ export default class Stats {
 						`;
 						matchHistoryContainer.appendChild(noMatchElement);
 					}
+          
 					data.forEach(match => { console.log("Match: ", match);
 						const   date = moment(match.timestamp);
 						const   matchElement = document.createElement('div');
@@ -227,6 +229,7 @@ export default class Stats {
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
 		});
+		applyFontSize();
 	}
 
 	animateProgressBar(elo, game, color = '#4285f4') {
@@ -280,11 +283,11 @@ export default class Stats {
 	render() {
 		document.title = `ft_transcendence | ${this.props?.username} stats`;
 		return `
-			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center" id="statsContainer">
+			<div class="d-flex w-50 min-h-full flex-grow-1 justify-content-center align-items-center" id="statsContainer">
 				<div class="h-full w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 16px;">
 					<div class="d-flex flex-column w-full" style="gap: 16px">
 						<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded" style="--bs-bg-opacity: .5;">
-							<p class="play-bold fs-3">${this.props?.username} stats</p>
+							<p class="play-bold title">${this.props?.username} stats</p>
 							<div class="d-flex flex-row w-full gap-2">
 								<div class="d-flex flex-column w-1-4 gap-2">
 									<div class="d-flex w-full justify-content-center align-items-center">
@@ -312,7 +315,7 @@ export default class Stats {
 							</div>						
 							<div class="w-full mt-5">
 								<div class="d-flex flex-row justify-content-between align-items-center">
-									<p class="d-flex play-bold fs-3">Match history</p>	
+									<p class="d-flex play-bold title">Match history</p>	
 									<select class="form-select custom-select-filter-icon" id="game-filter" aria-label="Select a game" style="width: min-content; height: min-content;">
 										<option value="all">All</option>
 										<option value="pong">Pong</option>
@@ -332,6 +335,7 @@ export default class Stats {
 		const username = this?.props?.username;
 		const user = await this.fetchUser(username);
 
+		applyFontSize();
 		if (user) {
 			this.fetchStats(username);
 			this.fetchMatchHistory(username);

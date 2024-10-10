@@ -2,6 +2,7 @@ import ToastComponent from './../components/Toast.js';
 import {getCookie} from "../functions/cookie.js";
 import {validatePassword} from "../functions/validator.js";
 import {passwordMatching} from "../functions/validator.js";
+import {applyFontSize} from "../functions/display.js";
 
 export default class ResetPw {
     constructor(props) {
@@ -51,7 +52,7 @@ export default class ResetPw {
                         container.innerHTML = `
                         <div class="w-100 min-h-screen d-flex flex-column justify-content-center align-items-center">
                             <div class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card w-50" style="--bs-bg-opacity: .5;">
-                                <p class="text-justify play-bold fs-2">Reset password</p>
+                                <p class="text-justify play-bold title">Reset password</p>
                                 <form id="passwordResetForm">
                                     <div class="row g-3">
                                         <input id="uidb64" type="hidden" name="uidb64" value="${data.uidb64}" />
@@ -61,7 +62,7 @@ export default class ResetPw {
                                             <div class="form-floating has-validation">
                                                 <input type="password" id="password" name="new_password" class="form-control" required />
                                                 <label for="new_password">New Password<span class="text-danger">*</span></label>
-                                                <ul class="list-unstyled ms-2 form-text">
+                                                <ul class="list-unstyled ms-2 form-text clue-text">
                                                     <li>
                                                         <i id="minLength" class="bi bi-x text-danger"></i>
                                                         Minimum 8 characters
@@ -90,7 +91,7 @@ export default class ResetPw {
                                             <div class="form-floating has-validation">
                                                 <input type="password" id="confirm_password" name="confirm_password" class="form-control" required />
                                                 <label for="confirm_password">Confirm New Password<span class="text-danger">*</span></label>
-                                                <div class="invalid-feedback">Passwords do not match</div>
+                                                <div class="invalid-feedback clue-text">Passwords do not match</div>
                                             </div>
                                         </div>
                                         <button type="submit" class="btn btn-primary">Reset Password</button>
@@ -172,6 +173,7 @@ export default class ResetPw {
 
     setupEventListeners() {
         this.init_reset_form();
+        applyFontSize();
     }
 
     render() {

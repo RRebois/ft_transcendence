@@ -1,6 +1,7 @@
 import { getCookie } from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
 import {appRouter} from "@js/spa-router/initializeRouter.js";
+import {applyFontSize} from "./display.js";
 
 export function remove_friend_request_div(userId) {
 	const friendRequestItem = document.getElementById(`friend-request-item-${userId}`);
@@ -17,7 +18,7 @@ export function create_empty_request(option) {
 	friendRequestItem.classList.add("d-flex", "w-100", "mb-3", "justify-content-center", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
 	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendRequestItem.innerHTML = `
-		<span class="">Wow such emtpy ! 🐻</span>
+		<span class="text">Wow such empty ! 🐻</span>
 	`;
 	friendRequestContainer.appendChild(friendRequestItem);
 }
@@ -32,7 +33,7 @@ export function create_empty_friend() {
 	friendItem.classList.add("d-flex", "w-100", "mb-3", "justify-content-center", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
 	friendItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
 	friendItem.innerHTML = `
-		<span class="">Wow such emtpy ! 🐻</span>
+		<span class="text">Wow such empty ! 🐻</span>
 	`;
 	friendContainer.appendChild(friendItem);
 }
@@ -78,9 +79,9 @@ export function create_friend_request_sent_div(request, size) {
 				</span>
 			</a>
 		</div>
-		<p class="m-2 cursor-click" route="/stats/${request?.to_user__username}">${request?.to_user || request.to_user__username}</p>
-		<p class="m-2">Sent : ${new Date(request?.time).toLocaleString()}</p>
-		<p class="m-2">${request?.status}</p>
+		<p class="m-2 cursor-click text" route="/stats/${request?.to_user__username}">${request?.to_user || request.to_user__username}</p>
+		<p class="m-2 text">Sent : ${new Date(request?.time).toLocaleString()}</p>
+		<p class="m-2 text">${request?.status}</p>
 	`;
 	friendRequestContainer.appendChild(friendRequestItem);
 }
@@ -109,8 +110,8 @@ export function create_friend_request_div(request, size) {
 				</span>
 			</a>
 		</div>
-		<p class="m-2 cursor-click" route="/stats/${request?.from_user || request.from_user__username}">${request?.from_user || request.from_user__username}</p>
-		<p class="m-2">Received : ${new Date(request?.time).toLocaleString()}</p>
+		<p class="m-2 cursor-click text" route="/stats/${request?.from_user || request.from_user__username}">${request?.from_user || request.from_user__username}</p>
+		<p class="m-2 text">Received : ${new Date(request?.time).toLocaleString()}</p>
 		<div class="d-flex flex-column m-1">
 			<button class="m-1 btn btn-success confirm-request-btn" data-id="${request?.from_user_id}">Accept</button>
 			<button class="m-1 btn btn-danger decline-request-btn" data-id="${request?.from_user_id}">Decline</button>
@@ -149,9 +150,9 @@ export function create_friend_div_load(friend) {
 				</span>
 			</a>
         </div>
-        <p class="mx-2 my-1 cursor-click" route="/stats/${friend?.from_user}">${friend?.from_user}</p>
+        <p class="mx-2 my-1 cursor-click text" route="/stats/${friend?.from_user}">${friend?.from_user}</p>
         <div class="status-container mx-2 my-1" data-id="${friend?.from_user_id}">
-            <p class="status mx-2 my-1">Status: ${friend?.from_status}</p>
+            <p class="status mx-2 my-1 text">Status: ${friend?.from_status}</p>
         </div>
         <button class="btn btn-danger remove-friend-btn m-2" data-id="${friend?.from_user_id}">Remove</button>
     `;
@@ -187,9 +188,9 @@ export function create_friend_div_ws(status, id, img_url, username, size) {
 				</span>
 			</a>
         </div>
-        <p class="mx-2 my-1 cursor-click" route="/stats/${username}">${username}</p>
+        <p class="mx-2 my-1 cursor-click text" route="/stats/${username}">${username}</p>
         <div class="status-container mx-2 my-1" data-id="${id}">
-            <p class="status mx-2 my-1">Status: ${status}</p>
+            <p class="status mx-2 my-1 text">Status: ${status}</p>
         </div>
         <button class="btn btn-danger remove-friend-btn m-2" data-id="${id}">Remove</button>
     `;
@@ -242,6 +243,7 @@ export function accept_friend_request(event, size) {
 		toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
 		button.disabled = false;
 	});
+	applyFontSize();
 }
 
 export function decline_friend_request(event, size) {
@@ -281,6 +283,7 @@ export function decline_friend_request(event, size) {
 		toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
 		button.disabled = false;
 	});
+	applyFontSize();
 }
 
 export function remove_friend(event) {
@@ -320,4 +323,5 @@ export function remove_friend(event) {
 		toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
 		button.disabled = false;
 	});
+	applyFontSize();
 }
