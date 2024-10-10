@@ -409,7 +409,9 @@ export default class Dashboard {
             	<div class="d-flex flex-row justify-content-center w-3-4" style="gap: 32px">
 
             		<!-- Pong game -->
-            		<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded gap-3" style="--bs-bg-opacity: .5;">
+            		<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded gap-3" style="--bs-bg-opacity: .5;"
+            		data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" 
+            		title="A 3D adaptation of one of the oldest video game. Play offline against a bot or a friend, or online on 1v1 or 2v2.">
             			<p class="play-bold title">Pong 🏓</p>
             			<div class="d-flex flex-column justify-content-center align-items-center gap-3 w-full">
             				<button type="button" class="btn d-flex justify-content-center align-items-center w-fit px-4 py-1 play-btn" data-bs-toggle="modal" data-bs-target="#create-pong-match-modal" style="background-color: #3b82f6">
@@ -419,7 +421,9 @@ export default class Dashboard {
 					</div>
 
             		<!-- Purrinha game -->
-            		<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded gap-3" style="--bs-bg-opacity: .5;">
+            		<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded gap-3" style="--bs-bg-opacity: .5;"
+            		data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" title="A classic bar game! You have 3 tokens at disposal. 
+            			Each player select from 0 to 3 to hide in its hand. The goal is to guess the total selected by all the players. The closest to the total wins the round.">
             			<p class="play-bold title">Purrinha ✋</p>
             			<div class="d-flex flex-column justify-content-center align-items-center gap-3 w-full">
             				<button type="button" class="btn d-flex justify-content-center align-items-center w-fit px-4 py-1 play-btn" data-bs-toggle="modal" data-bs-target="#create-purrinha-match-modal" style="background-color: #3b82f6">
