@@ -72,6 +72,20 @@ class User(AbstractUser):
         else:
             return "/media/profile_pics/default_pp.jpg"
 
+    def get_img_serialize(self):
+        if self.avatar_id:
+            if self.avatar_id.image_url:
+                if (self.avatar_id.image_url).startswith('http'):
+                    return self.avatar_id.image_url
+                else:
+                    return f"{os.environ.get('SERVER_URL')}{self.avatar_id.image_url}"
+            else:
+                return f"{os.environ.get('SERVER_URL')}{self.avatar_id.image.url}"
+        else:
+            url = os.environ.get('SERVER_URL')
+            full_url = f"{url}/media/profile_pics/default_pp.jpg"
+            return full_url
+
     def serialize(self):
         return {
             "First name": self.first_name,
@@ -81,8 +95,9 @@ class User(AbstractUser):
             "Language": self.language,
             "stud42": self.stud42,
             "2fa": self.tfa_activated,
-            "img": self.get_img_url(),
-            # "status": self.status,
+            "img": self.get_img_serialize(),
+            "status": self.status,
+            "stats": self.data.serialize() if hasattr(self, 'data') else None
         }
 
 

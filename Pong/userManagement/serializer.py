@@ -54,7 +54,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         password2 = attrs.get('password2', '')
         logging.debug(f"Email: {email}, First name: {first_name}, Last name: {last_name}, Username: {username}, Password: {password}, Password2: {password2}")
 
-        # logging.debug(f"Email pattern: {email_pattern.match(email)}")
         if not email_pattern.match(email):
             raise serializers.ValidationError("Invalid email format")
         if not name_pattern.match(first_name):

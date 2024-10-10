@@ -3,7 +3,7 @@ import uuid
 
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
-from userManagement.models import User
+from userManagement.models import User, UserData
 
 
 # Create your models here.
@@ -15,6 +15,7 @@ class Match(models.Model):
     is_pong = models.BooleanField(default=True)
     timeMatch = models.DateTimeField(auto_now_add=True)
     count = models.IntegerField(default=2)
+    is_finished = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-timeMatch']
@@ -50,7 +51,9 @@ class Score(models.Model):
 
 class Tournament(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(unique=True, max_length=100)
     players = models.ManyToManyField('userManagement.User', related_name='tournaments', default=list)
+    number_players = models.IntegerField()
     is_closed = models.BooleanField(default=False)
     is_finished = models.BooleanField(default=False)
     winner = models.ForeignKey('userManagement.User', on_delete=models.SET_NULL, null=True, related_name='won_tournament')
@@ -65,10 +68,12 @@ class Tournament(models.Model):
             status = 'waiting for players'
         return {
             'id': self.id,
+            'name': self.name,
             'status': status,
-            'players': [player.username for player in self.players],
+            'players': [player.serialize() for player in self.players.all()],
             'winner': self.winner.username if self.winner else winner_replace,
-            'matchs': {match.serialize() for match in self.tournament_matchs.all()},
+            'matchs': [match.serialize() for match in self.tournament_matchs.all()],
+            # 'tournament_matchs': [tournament_matchs.serialize() for tournament_matchs in self.tournament_matchs.all()],
             }
 
     def get_id(self):
@@ -77,29 +82,53 @@ class Tournament(models.Model):
     def get_unfinished_matchs(self):
         return [match for match in self.tournament_matchs.all() if not match.match]
 
+
 class TournamentMatch(models.Model):
 
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='tournament_matchs')
     match = models.ForeignKey(Match, on_delete=models.SET_NULL, null=True, blank=True, related_name='tournament_match')
-    score = ArrayField(models.IntegerField(), blank=True)
+    score = ArrayField(models.IntegerField(), null=True, blank=True)
+    players = models.ManyToManyField('userManagement.User', related_name='tournament_match_player', default=list)
 
     def serialize(self):
         match_result = {
-            'players': {},
+            'players': [{**player.serialize(), 'score': 0} for player in self.players.all()],
             'winner': ['n/a'],
         }
-        if not self.match:
-            match_result['players'] = {
-                {'deleted_user': self.score[0]} if self.score else {'player1': 0},
-                {'deleted_user': self.score[1]} if self.score else {'player2': 0},
-            }
-            if self.score:
-                match_result['winner'] = ['deleted_user']
-        else:
+
+        if self.match:
             serialized = self.match.serialize()
-            match_result['players'] = serialized.players
-            match_result['winner'] = serialized.winner
+            for player in match_result['players']:
+                score = next((p['score'] for p in serialized['players'] if p['username'] == player['username']), 0)
+                player['score'] = score
+
+            match_result['winner'] = serialized['winner']
+
+        if self.score:
+            for i, player in enumerate(match_result['players']):
+                if i < len(self.score):
+                    player['score'] = self.score[i]
+
+            if len(self.score) == len(self.players.all()) and all(isinstance(s, int) for s in self.score):
+                max_score = max(self.score)
+                winning_player = self.players.all()[self.score.index(max_score)]
+                match_result['winner'] = [winning_player.username]
+
+
+        # match_result = {
+        #     'players': [],
+        #     'winner': ['n/a'],
+        # }
+        # if not self.match:
+        #     match_result['players'] = [
+        #         {'deleted_user': self.score[0]} if self.score else {'player1': 0},
+        #         {'deleted_user': self.score[1]} if self.score else {'player2': 0},
+        #     ]
+        #     if self.score:
+        #         match_result['winner'] = ['deleted_user']
+        # else:
+        #     serialized = self.match.serialize()
+        #     match_result['players'] = serialized.players
+        #     match_result['winner'] = serialized.winner
 
         return match_result
-
-

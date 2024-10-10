@@ -130,7 +130,6 @@ export default class Stats {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
 			} else {
-				console.log('Success:', data);
 				const matchHistoryContainer = document.getElementById('match-history');
 				if (matchHistoryContainer) {
 					matchHistoryContainer.innerHTML = '';
@@ -320,7 +319,7 @@ export default class Stats {
 										<option value="all">All</option>
 										<option value="pong">Pong</option>
 										<option value="purrinha">Purrinha</option>
-									</select>						
+									</select>
 								</div>
 								<div id="match-history"></div>
 							</div>
