@@ -46,6 +46,33 @@ export default class Tournament {
         });
     }
 
+    play_tournament() {
+        const csrfToken = getCookie('csrftoken');
+        document.getElementById('play-tournament').addEventListener('click', () => {
+            fetch(`https://${window.location.hostname}:8443/tournament/play/${this.props.id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                credentials: 'include'
+            })
+            .then(response => response.json().then(data => ({ok: response.ok, data})))
+            .then(({ok, data}) => {
+                if (!ok) {
+                    this.toast.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+                } else {
+                    this.toast.throwToast("Success", data.message || "You are in tournament matchmaking", 5000, "success");
+                    document.getElementById('play-tournament').classList.add('disabled');
+                }
+            })
+            .catch(error => {
+                console.error("Error joining tournament: ", error);
+                this.toast.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+            });
+        });
+    }
+
     load_games(tournament) {
         const gameDiv = document.getElementById('games');
         gameDiv.innerHTML = '';
@@ -106,12 +133,27 @@ export default class Tournament {
         });
     }
 
-    setup_join_btn(tournament) {
+    setup_join_play_btn(tournament) {
+        const joinBtn = document.getElementById('join-tournament')
         tournament.players.forEach(player => {
             if (player.Username === this.user.username) {
-                document.getElementById('join-tournament').classList.add('disabled');
+                joinBtn.classList.add('disabled');
             }
         });
+        const playBtn = document.getElementById('play-tournament');
+        if (tournament.status === "Finished") {
+            playBtn.classList.add('disabled');
+            playBtn.hidden = true;
+            joinBtn.hidden = true;
+        }
+        else if (tournament.status === "waiting for players"){
+            playBtn.hidden = true;
+            joinBtn.hidden = false;
+        }
+        else {
+            playBtn.hidden = false;
+            joinBtn.hidden = true;
+        }
     }
 
     setupEventListeners() {
@@ -134,7 +176,7 @@ export default class Tournament {
                 this.tournamentObj = data;
                 this.load_players(data);
                 this.load_games(data);
-                this.setup_join_btn(data);
+                this.setup_join_play_btn(data);
             }
         })
         .catch(error => {
@@ -143,6 +185,7 @@ export default class Tournament {
 			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
 		});
         this.join_tournament();
+        this.play_tournament();
     }
 
     render() {
@@ -153,7 +196,8 @@ export default class Tournament {
                     <div id="tournament_Name" class="bg-white min-w-fit d-flex g-4 flex-column align-items-center py-2 px-3 m-3 rounded login-card w-50 position-relative h-min" style="--bs-bg-opacity: .5;">
                         <div class="d-flex w-100 align-items-center">
                             <p class="play-bold fs-1 m-0 text-center flex-grow-1">${this.props?.id}</p>
-                            <button type="button" id="join-tournament" class="flex-wrap btn btn-primary ms-auto">Join +</button>
+                            <button type="button" id="join-tournament" class="btn btn-primary ms-auto" hidden>Join +</button>
+                            <button type="button" id="play-tournament" class="btn btn-primary ms-auto" hidden>Play</button>
                         </div>
                     </div>
                     <div class="h-full w-full d-flex flex-row flex-wrap justify-content-evenly align-items-stretch"">
