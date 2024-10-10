@@ -28,7 +28,7 @@ class MatchHistoryView(APIView):
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
-            return JsonResponse({"message": "User does not exist."}, status=404)
+            return JsonResponse({"message": "User does not exists."}, status=404)
         if word == 'all':
             matches = Match.objects.filter(players=user).order_by('-timeMatch')
         elif word == 'pong':
@@ -47,7 +47,7 @@ class MatchScoreView(APIView):
         try:
             game = Match.objects.get(pk=match_id)
         except Match.DoesNotExist:
-            raise Http404("Error: Match does not exist.")
+            raise Http404("Error: Match does not exists.")
 
         return JsonResponse(game.serialize())
 
@@ -143,8 +143,8 @@ def update_match_data(players_data, winner, is_pong=True):
         data.save()
 
 
-def create_match(match_result, winner, is_pong=True):
-    match = Match.objects.create(is_pong=is_pong, count=len(match_result))
+def create_match(match_result, winner, deconnection, is_pong=True):
+    match = Match.objects.create(is_pong=is_pong, count=len(match_result), deconnection=deconnection)
     players_data = []
 
     for player_username in match_result.keys():
@@ -162,7 +162,6 @@ def create_match(match_result, winner, is_pong=True):
     update_match_data(players_data, winner, is_pong)
     match.save()
     return match
-
 
 def find_tournament_winner(tournament):
     players = {player.username: [0, 0, player] for player in tournament.players.all()}
@@ -223,8 +222,7 @@ def send_to_tournament_group(tournament_id):
                 'matchs': cache_db['matchs'],
                 'message': cache_db['message'],
             }
-        )
-
+    )
 
 def add_player_to_tournament(user, tournament):
     tournament_id = tournament.get_id()
@@ -236,6 +234,7 @@ def add_player_to_tournament(user, tournament):
             'matchs': [],
             # 'live_matchs': [],
             'message': 'waiting for other players',
+
         }
     count = tournament.players.count()
     players = tournament.players.all()
