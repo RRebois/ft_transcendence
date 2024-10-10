@@ -176,7 +176,7 @@ export async function initializePongWebSocket(gameCode, sessionId, pong) { conso
                         pong.buildGameSet(data);
                     }
                     if (data.status === "started" || data.status === "finished")
-                         pong.display(data, socket);
+                        pong.display(data, socket);
                 };
 
                 socket.onclose = function (event) {

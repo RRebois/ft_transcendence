@@ -100,8 +100,6 @@ export default class PongGame {
 
         this.textures["textStadium"] = textStadium;
         this.textures["textInitBall"] = textInitBall;
-        this.textures["redBall"] = textInitBall;
-        this.textures["blueBall"] = textInitBall;
         this.textures["textBlueCube"] = textBlueCube;
         this.textures["textRedCube"] = textRedCube;
         this.textures["textPadBlue"] = textPadBlue;
@@ -805,9 +803,6 @@ export default class PongGame {
                 modal.style.background = "#bc7575";
             modal.innerHTML = `<p>${msg}</p>`;
 
-            // Add buttons to modal + listeners
-// gameCode, this.props?.session_id, this
-
             if (data.game_state["tournament"]) {
                 modal.innerHTML +=`
                 <button id="back-home-btn" route="/" class="btn btn-primary">Back to dashboard</button>
@@ -822,55 +817,50 @@ export default class PongGame {
             }
             const   restart = document.getElementById("new-game-btn");
             if (restart) {
-                restart.addEventListener("click", () => {console.log("\n\n\n\n", this.props, "\n\n\n\n");
-
-
+                restart.addEventListener("click", () => {
                     const csrfToken = getCookie('csrftoken');
                     fetch(`https://${window.location.hostname}:8443/game/${this.props?.game}/${this.props?.code}`, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-CSRFToken': csrfToken
-			},
-			credentials: 'include'
-		})
-			.then(response => response.json().then(data => ({ok: response.ok, data})))
-			.then(({ok, data}) => {
-				if (!ok) {
-					const toastComponent = new ToastComponent();
-					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
-				} else {
-					console.log("Game request success: ", data);
-					data.code = `${this.props?.code}`;
-					const params = new URLSearchParams(data).toString();
-					// Close modal
-					const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-match-modal'));
-					if (createMatchModal)
-						createMatchModal.hide();
-						const backdrops = document.querySelectorAll('.modal-backdrop');
-						backdrops.forEach(backdrop => backdrop.remove());
-					appRouter.navigate(`/${this.props?.game}?${params}`);
-					const socket = window.mySocket;
-					socket.send(JSON.stringify({
-						'type': 'join_match',
-						'user_id': this.user.id
-					}));
-				}
-			})
-			.catch(error => {
-				console.error("Error fetching friend requests: ", error);
-				const toastComponent = new ToastComponent();
-				toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
-			});
-
-
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+			            credentials: 'include'
+		            })
+                    .then(response => response.json().then(data => ({ok: response.ok, data})))
+                    .then(({ok, data}) => {
+                        if (!ok) {
+                            const toastComponent = new ToastComponent();
+                            toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+                        } else {
+                            console.log("Game request success: ", data);
+                            data.code = `${this.props?.code}`;
+                            const params = new URLSearchParams(data).toString();
+                            // Close modal
+                            const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-match-modal'));
+                            if (createMatchModal)
+                                createMatchModal.hide();
+                                const backdrops = document.querySelectorAll('.modal-backdrop');
+                                backdrops.forEach(backdrop => backdrop.remove());
+                            appRouter.navigate(`/${this.props?.game}?${params}`);
+                            const socket = window.mySocket;
+                            socket.send(JSON.stringify({
+                                'type': 'join_match',
+                                'user_id': this.user.id
+					        }));
+				        }
+			        })
+                    .catch(error => {
+                        console.error("Error fetching game request: ", error);
+                        const toastComponent = new ToastComponent();
+                        toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+                    });
                 });
             }
             modal.classList.add("rounded", "border", "border-dark", "border-3");
 			modal.hidden = false;
 
 			// close the webso
-
             this.gameSocket.close();
         }
     }
@@ -880,7 +870,7 @@ export default class PongGame {
         window.addEventListener("keyup", this.onKeyUp.bind(this));
     }
 
-    render() { //https://en.threejs-university.com/2021/08/03/chapter-7-sprites-and-particles-in-three-js/
+    render() {
         this.initializeWs(this.props?.code);
 
         return `
