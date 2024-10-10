@@ -58,12 +58,17 @@ export default class Tournament {
                 credentials: 'include'
             })
             .then(response => response.json().then(data => ({ok: response.ok, data})))
-            .then(({ok, data}) => {
+            .then(({ok, data}) => { console.log("\n\n\ntournament infos: ", data);
                 if (!ok) {
                     this.toast.throwToast("Error", data.message || "Something went wrong", 5000, "error");
                 } else {
                     this.toast.throwToast("Success", data.message || "You are in tournament matchmaking", 5000, "success");
                     document.getElementById('play-tournament').classList.add('disabled');
+                    const params = new URLSearchParams(data).toString();
+console.log("\n\n\nPARAMS: ", params);
+console.log("\n\n\nPARAMS 1: ", this.props);
+console.log("\n\n\nPARAMS 2: ", this.props?.code);
+                    appRouter.navigate(`/${data.game}?${params}`);
                 }
             })
             .catch(error => {
