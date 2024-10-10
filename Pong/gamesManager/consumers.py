@@ -210,8 +210,8 @@ class PongHandler():
 		if not hasattr(self, 'loop_task'):
 			# self.bot = await init_bot('pong', self.game, self)
 			self.game.reset_game()
-			# await self.bot.launch_train()
-			self.loop_task = asyncio.create_task(self.game_loop())
+			await self.bot.launch_train()
+			# self.loop_task = asyncio.create_task(self.game_loop())
 
 
 	async def	receive(self, text_data):
