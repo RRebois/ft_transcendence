@@ -5,37 +5,42 @@ import {applyFontSize} from "./display.js";
 
 export function remove_friend_request_div(userId) {
 	const friendRequestItem = document.getElementById(`friend-request-item-${userId}`);
-	friendRequestItem.remove();
+	if (friendRequestItem)
+		friendRequestItem.remove();
 }
 
 export function create_empty_request(option) {
 	const friendRequestContainer = document.getElementById(`friend-requests-${option}`);
-	const friendRequestEmpty = document.getElementById(`empty-request-${option}`)
-	if (friendRequestEmpty)
-		return ;
-	const friendRequestItem = document.createElement("div");
-	friendRequestItem.id = `empty-request-${option}`;
-	friendRequestItem.classList.add("d-flex", "w-100", "mb-3", "justify-content-center", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
-	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
-	friendRequestItem.innerHTML = `
-		<span class="text">Wow such empty ! 🐻</span>
-	`;
-	friendRequestContainer.appendChild(friendRequestItem);
+	if (friendRequestContainer) {
+		const friendRequestEmpty = document.getElementById(`empty-request-${option}`)
+		if (friendRequestEmpty)
+			return;
+		const friendRequestItem = document.createElement("div");
+		friendRequestItem.id = `empty-request-${option}`;
+		friendRequestItem.classList.add("d-flex", "w-100", "mb-3", "justify-content-center", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
+		friendRequestItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
+		friendRequestItem.innerHTML = `
+			<span class="text">Wow such empty ! 🐻</span>
+		`;
+		friendRequestContainer.appendChild(friendRequestItem);
+	}
 }
 
 export function create_empty_friend() {
 	const friendContainer = document.getElementById("user-friends");
-	const friendEmpty = document.getElementById(`empty-friend`)
-	if (friendEmpty)
-		return ;
-	const friendItem = document.createElement("div");
-	friendItem.id = `empty-friend`;
-	friendItem.classList.add("d-flex", "w-100", "mb-3", "justify-content-center", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
-	friendItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
-	friendItem.innerHTML = `
+	if (friendContainer) {
+		const friendEmpty = document.getElementById(`empty-friend`)
+		if (friendEmpty)
+			return;
+		const friendItem = document.createElement("div");
+		friendItem.id = `empty-friend`;
+		friendItem.classList.add("d-flex", "w-100", "mb-3", "justify-content-center", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
+		friendItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
+		friendItem.innerHTML = `
 		<span class="text">Wow such empty ! 🐻</span>
-	`;
-	friendContainer.appendChild(friendItem);
+		`;
+		friendContainer.appendChild(friendItem);
+	}
 }
 
 export function delete_empty_request(option) {
@@ -54,22 +59,23 @@ export function delete_empty_friend() {
 
 export function create_friend_request_sent_div(request, size) {
 	const friendRequestContainer = document.getElementById("friend-requests-sent");
-	const friendRequestExists = document.getElementById(`friend-request-item-${request?.to_user_id}`)
-	if (friendRequestExists)
-		return ;
-	const requestEmpty = document.getElementById(`empty-request`)
-	if (requestEmpty)
-		delete_empty_request("sent");
-	const friendRequestItem = document.createElement("div");
-	let statusDot;
-	if (request.to_user_status === 'online')
-		statusDot = "bg-success";
-	else
-		statusDot = "bg-danger";
-	friendRequestItem.classList.add("friend-req-sent", "d-flex", "flex-wrap", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-3", "rounded");
-	friendRequestItem.id = `friend-request-item-${request?.to_user_id}`;
-	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
-	friendRequestItem.innerHTML = `
+	if (friendRequestContainer) {
+		const friendRequestExists = document.getElementById(`friend-request-item-${request?.to_user_id}`)
+		if (friendRequestExists)
+			return;
+		const requestEmpty = document.getElementById(`empty-request`)
+		if (requestEmpty)
+			delete_empty_request("sent");
+		const friendRequestItem = document.createElement("div");
+		let statusDot;
+		if (request.to_user_status === 'online')
+			statusDot = "bg-success";
+		else
+			statusDot = "bg-danger";
+		friendRequestItem.classList.add("friend-req-sent", "d-flex", "flex-wrap", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-3", "rounded");
+		friendRequestItem.id = `friend-request-item-${request?.to_user_id}`;
+		friendRequestItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
+		friendRequestItem.innerHTML = `
 		<div class="position-relative d-inline-block m-2 cursor-click">
 			<a route="/stats/${request?.to_user__username}">
 				<img src="${request?.to_image_url}" alt="user_pp" class="h-64 w-64 rounded-circle"/>
@@ -79,68 +85,72 @@ export function create_friend_request_sent_div(request, size) {
 				</span>
 			</a>
 		</div>
-		<p class="m-2 cursor-click text" route="/stats/${request?.to_user__username}">${request?.to_user || request.to_user__username}</p>
+		<p class="m-2 cursor-click text play-bold" route="/stats/${request?.to_user__username}">${request?.to_user || request.to_user__username}</p>
 		<p class="m-2 text">Sent : ${new Date(request?.time).toLocaleString()}</p>
 		<p class="m-2 text">${request?.status}</p>
-	`;
-	friendRequestContainer.appendChild(friendRequestItem);
+		`;
+		friendRequestContainer.appendChild(friendRequestItem);
+	}
 }
 
 export function create_friend_request_div(request, size) {
 	const friendRequestContainer = document.getElementById("friend-requests-received");
-	const friendRequestItem = document.createElement("div");
-	const requestEmpty = document.getElementById(`empty-request-received`)
-	if (requestEmpty)
-		delete_empty_request("received");
-	let statusDot;
-	if (request.from_user_status === 'online')
-		statusDot = "bg-success";
-	else
-		statusDot = "bg-danger";
-	friendRequestItem.classList.add("friend-req-received", "d-flex", "flex-wrap", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-3", "rounded");
-	friendRequestItem.id = `friend-request-item-${request?.from_user_id}`;
-	friendRequestItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
-	friendRequestItem.innerHTML = `
-		<div class="position-relative d-inline-block m-2 cursor-click">
-			<a route="/stats/${request?.from_user || request.from_user__username}">
-				<img src="${request?.from_image_url}" alt="user_pp" class="h-64 w-64 rounded-circle" />
-					<span style="left: 60px; top: 5px" id="friend-status-${request?.from_user_id}"
-					 class="position-absolute translate-middle p-2 ${statusDot} border border-light rounded-circle">
-					<span id = "friend-status-text-${request?.from_user_id}" class="visually-hidden">Offline</span>
-				</span>
-			</a>
-		</div>
-		<p class="m-2 play-bold cursor-click text" route="/stats/${request?.from_user || request.from_user__username}">${request?.from_user || request.from_user__username}</p>
-		<p class="m-2 text">Received : ${new Date(request?.time).toLocaleString()}</p>
-		<div class="d-flex flex-column m-1">
-			<button class="m-1 btn btn-success confirm-request-btn" data-id="${request?.from_user_id}">Accept</button>
-			<button class="m-1 btn btn-danger decline-request-btn" data-id="${request?.from_user_id}">Decline</button>
-		</div>
-	`;
-	friendRequestContainer.appendChild(friendRequestItem);
-	document.querySelectorAll(".confirm-request-btn").forEach(button => {
-		button.addEventListener("click", (event) => accept_friend_request(event, size));
-	});
-	document.querySelectorAll(".decline-request-btn").forEach(button => {
-		button.addEventListener("click", (event) => decline_friend_request(event, size));
-	});
+	if (friendRequestContainer) {
+		const friendRequestItem = document.createElement("div");
+		const requestEmpty = document.getElementById(`empty-request-received`)
+		if (requestEmpty)
+			delete_empty_request("received");
+		let statusDot;
+		if (request.from_user_status === 'online')
+			statusDot = "bg-success";
+		else
+			statusDot = "bg-danger";
+		friendRequestItem.classList.add("friend-req-received", "d-flex", "flex-wrap", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-3", "rounded");
+		friendRequestItem.id = `friend-request-item-${request?.from_user_id}`;
+		friendRequestItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
+		friendRequestItem.innerHTML = `
+			<div class="position-relative d-inline-block m-2 cursor-click">
+				<a route="/stats/${request?.from_user || request.from_user__username}">
+					<img src="${request?.from_image_url}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+						<span style="left: 60px; top: 5px" id="friend-status-${request?.from_user_id}"
+						 class="position-absolute translate-middle p-2 ${statusDot} border border-light rounded-circle">
+						<span id = "friend-status-text-${request?.from_user_id}" class="visually-hidden">Offline</span>
+					</span>
+				</a>
+			</div>
+			<p class="m-2 play-bold cursor-click text" route="/stats/${request?.from_user || request.from_user__username}">${request?.from_user || request.from_user__username}</p>
+			<p class="m-2 text">Received : ${new Date(request?.time).toLocaleString()}</p>
+			<div class="d-flex flex-column m-1">
+				<button class="m-1 btn btn-success confirm-request-btn" data-id="${request?.from_user_id}">Accept</button>
+				<button class="m-1 btn btn-danger decline-request-btn" data-id="${request?.from_user_id}">Decline</button>
+			</div>
+		`;
+		friendRequestContainer.appendChild(friendRequestItem);
+		document.querySelectorAll(".confirm-request-btn").forEach(button => {
+			button.addEventListener("click", (event) => accept_friend_request(event, size));
+		});
+		document.querySelectorAll(".decline-request-btn").forEach(button => {
+			button.addEventListener("click", (event) => decline_friend_request(event, size));
+		});
+	}
 }
 
 export function create_friend_div_load(friend) {
 	const friendListContainer = document.getElementById("user-friends");
-	const friendItem = document.createElement("div");
-	let statusDot;
-	const friendEmpty = document.getElementById(`empty-friend`)
-	if (friendEmpty)
-		friendEmpty.remove();
-	if (friend.from_status === 'online')
-		statusDot = "bg-success";
-	else
-		statusDot = "bg-danger";
-	friendItem.classList.add("friend", "d-flex", "flex-wrap", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
-	friendItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
-	friendItem.id = `friend-item-${friend?.from_user_id}`;
-	friendItem.innerHTML = `
+	if (friendListContainer) {
+		const friendItem = document.createElement("div");
+		let statusDot;
+		const friendEmpty = document.getElementById(`empty-friend`)
+		if (friendEmpty)
+			friendEmpty.remove();
+		if (friend.from_status === 'online')
+			statusDot = "bg-success";
+		else
+			statusDot = "bg-danger";
+		friendItem.classList.add("friend", "d-flex", "flex-wrap", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
+		friendItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
+		friendItem.id = `friend-item-${friend?.from_user_id}`;
+		friendItem.innerHTML = `
         <div class="position-relative d-inline-block mx-2 my-1 cursor-click">
         	<a route="/stats/${friend?.from_user}">
 				<img src="${friend?.from_image_url}" alt="user_pp" class="h-64 w-64 rounded-circle" />
@@ -155,30 +165,32 @@ export function create_friend_div_load(friend) {
             <p class="status mx-2 my-1 text">Status: ${friend?.from_status}</p>
         </div>
         <button class="btn btn-danger remove-friend-btn m-2" data-id="${friend?.from_user_id}">Remove</button>
-    `;
-	friendListContainer.appendChild(friendItem);
-	document.querySelectorAll(".remove-friend-btn").forEach(button => {
-		button.addEventListener("click", remove_friend);
-	});
+    	`;
+		friendListContainer.appendChild(friendItem);
+		document.querySelectorAll(".remove-friend-btn").forEach(button => {
+			button.addEventListener("click", remove_friend);
+		});
+	}
 }
 
 export function create_friend_div_ws(status, id, img_url, username, size) {
 	const friendListContainer = document.getElementById("user-friends");
-	const friendItem = document.createElement("div");
-	const friendEmpty = document.getElementById(`empty-friend`)
-	if (friendEmpty)
-		friendEmpty.remove();
-	if (size === 1)
-		create_empty_request("sent");
-	let statusDot;
-	if (status === 'online')
-		statusDot = "bg-success";
-	else
-		statusDot = "bg-danger";
-	friendItem.classList.add("friend", "d-flex", "flex-wrap", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
-	friendItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
-	friendItem.id = `friend-item-${id}`;
-	friendItem.innerHTML = `
+	if (friendListContainer) {
+		const friendItem = document.createElement("div");
+		const friendEmpty = document.getElementById(`empty-friend`)
+		if (friendEmpty)
+			friendEmpty.remove();
+		if (size === 1)
+			create_empty_request("sent");
+		let statusDot;
+		if (status === 'online')
+			statusDot = "bg-success";
+		else
+			statusDot = "bg-danger";
+		friendItem.classList.add("friend", "d-flex", "flex-wrap", "w-100", "mb-3", "justify-content-between", "align-items-center", "bg-white", "login-card", "py-2", "px-2", "rounded");
+		friendItem.style.cssText = "--bs-bg-opacity: .5; width: 50%; display: block; margin-left: auto; margin-right: auto";
+		friendItem.id = `friend-item-${id}`;
+		friendItem.innerHTML = `
         <div class="position-relative d-inline-block mx-2 my-1 cursor-click">
         	<a route="/stats/${username}">
 				<img src="${img_url}" alt="user_pp" class="h-64 w-64 rounded-circle" />
@@ -193,16 +205,18 @@ export function create_friend_div_ws(status, id, img_url, username, size) {
             <p class="status mx-2 my-1 text">Status: ${status}</p>
         </div>
         <button class="btn btn-danger remove-friend-btn m-2" data-id="${id}">Remove</button>
-    `;
-	friendListContainer.appendChild(friendItem);
-	document.querySelectorAll(".remove-friend-btn").forEach(button => {
-		button.addEventListener("click", remove_friend);
-	});
+    	`;
+		friendListContainer.appendChild(friendItem);
+		document.querySelectorAll(".remove-friend-btn").forEach(button => {
+			button.addEventListener("click", remove_friend);
+		});
+	}
 }
 
 export function remove_friend_div(userId) {
 	const friendItem = document.getElementById(`friend-item-${userId}`);
-	friendItem.remove();
+	if (friendItem)
+		friendItem.remove();
 }
 
 export function accept_friend_request(event, size) {

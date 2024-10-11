@@ -6,6 +6,7 @@ import {getCookie} from "@js/functions/cookie.js";
 import * as bootstrap from 'bootstrap';
 import {remove_modal_backdrops} from "@js/functions/display.js";
 import PongGame from "@js/views/pong.js";
+import { load_new_notifications } from "../functions/navbar_utils.js";
 
 const lst2arr = (lst) => {
 	return Object.entries(lst).map(([username, details]) => ({
@@ -285,18 +286,10 @@ function handle_received_friend_request(socket, message) {
     console.log("socket is:", socket);
     console.log("message is:", message);
 
-    // const notif = document.getElementById('dropdownNotif');
-    // if (notif) {
-    //     const notifElem = document.createElement('li');
-    //     notifElem.innerHTML = `
-    //         <div class="dropdown-divider"></div>
-    //         <a class="text-wrap dropdown-item text">You have received a new friend request from ${message.from_user}</a>
-    //     `;
-    //     notif.appendChild(notifElem);
-    // }
     const toast = new ToastComponent();
-    toast.throwToast('received-friend-request', `You have received a new friend request`, 5000);
+    toast.throwToast('Notification', `You have received a new friend request from ${message.from_user}`, 5000);
     create_friend_request_div(message, message.size);
+    load_new_notifications();
 }
 
 function handle_friend_req_accept(socket, message){
@@ -304,13 +297,14 @@ function handle_friend_req_accept(socket, message){
     console.log("message is:", message);
 
     const toast = new ToastComponent();
-    toast.throwToast('friend-request', `${message.to_user} Is now your friend !`, 5000);
+    toast.throwToast('Notification', `${message.to_user} Is now your friend!`, 5000);
     create_friend_div_ws(message.to_status, message.to_user_id, message.to_image_url, message.to_user);
     remove_friend_request_div(message.to_user_id);
     const friendRequest = document.getElementsByClassName('friend-req-sent');
     if (message.size === 1 || friendRequest.length === 0) {
         create_empty_request("sent");
     }
+    load_new_notifications();
 }
 
 function handle_friend_req_decline(socket, message){
@@ -318,20 +312,19 @@ function handle_friend_req_decline(socket, message){
     console.log("message is:", message);
 
     const toast = new ToastComponent();
-    toast.throwToast('friend-request', `${message.to_user} declined your friend request...`, 5000);
+    toast.throwToast('Notification', `${message.to_user} declined your friend request...`, 5000);
     remove_friend_request_div(message.to_user_id);
     const friendRequest = document.getElementsByClassName('friend-req-sent');
     if (message.size === 1 || friendRequest.length === 0) {
         create_empty_request("sent");
     }
+    load_new_notifications();
 }
 
 function handle_friend_removed(socket, message){
     console.log("socket is:", socket);
     console.log("message is:", message);
 
-    const toast = new ToastComponent();
-    toast.throwToast('received-friend-request', `${message.from_user} Is no longer your friend !`, 5000);
     remove_friend_div(message.from_user_id);
     const friend = document.getElementsByClassName('friend');
     if (message.size === 1 || friend.length === 0) {
