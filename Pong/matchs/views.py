@@ -13,7 +13,7 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
 
-from userManagement.models import User, UserData
+from userManagement.models import User, UserData, Notifications
 from userManagement.views import authenticate_user
 from .models import *
 from .serializer import TournamentSerializer
@@ -272,6 +272,23 @@ class   CreateTournamentView(APIView):
         if serializer.is_valid():
             tournament = Tournament.objects.create(name=serializer.validated_data['name'], number_players=request.data.get('nb_players'))
             add_player_to_tournament(user, tournament)
+
+            all_users = User.objects.exclude(id=user.id)
+            for users in all_users:
+                Notifications.objects.create(user=users, message=f'A new tournament "{tournament.name}" has been created by {user.username}.')
+
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f"Connected_users_group",
+                {
+                    'type': 'tournament_created',
+                    'message': f'A new tournament "{tournament.name}" has been created by {user.username}.',
+                    'tournament_name': tournament.name,
+                    'tournament_closed': tournament.is_closed,
+                    'tournament_finished': tournament.is_finished,
+                }
+            )
+
             return JsonResponse(data={"tournament_id": tournament.get_id(), "name": tournament.name}, status=status.HTTP_200_OK)
         else:
             error_messages = []

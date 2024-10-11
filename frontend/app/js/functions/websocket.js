@@ -236,20 +236,20 @@ export async function initializeWebSocket() {
                 if (data.type === 'test_message') {
                     console.log('Received test message:', data.message);
                 }
-                if (data.type === 'friend_request') {     // received friend request
+                if (data.type === 'friend_request') {
                     console.log("Friend request received");
                     console.log("data is:", data);
                     handle_received_friend_request(socket, data);
                 }
-                if (data.type === 'friend_req_accept') {  // accept friend request
+                if (data.type === 'friend_req_accept') {
                     console.log("Friend request accepted");
                     handle_friend_req_accept(socket, data);
                 }
-                if (data.type === 'friend_req_decline') {  // accept friend request
+                if (data.type === 'friend_req_decline') {
                     console.log("Friend request declined");
                     handle_friend_req_decline(socket, data);
                 }
-                if (data.type === 'friend_remove') {      // remove friend
+                if (data.type === 'friend_remove') {
                     console.log("Friend removed");
                     handle_friend_removed(socket, data);
                 }
@@ -258,6 +258,9 @@ export async function initializeWebSocket() {
                 }
                 if (data.type === 'friend_data_edit') {
                     console.log("Friend data edit");
+                }
+                if (data.type === 'tournament_created') {
+                    handle_tournament_created(socket, data);
                 }
             };
 
@@ -363,4 +366,13 @@ function handle_friend_status(socket, message){
             }
         }
     }
+}
+
+function handle_tournament_created(socket, data){
+    console.log("Tournament created socket:", socket);
+    console.log("data is:", data);
+
+    const toast = new ToastComponent();
+    toast.throwToast('Notification', `${data.message}`, 5000);
+    load_new_notifications();
 }

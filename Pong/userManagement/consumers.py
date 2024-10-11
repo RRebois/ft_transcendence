@@ -173,3 +173,12 @@ class UserConsumer(AsyncWebsocketConsumer):
             'user_id': user.id,
             'status': 'in-game'
         }))
+
+    async def tournament_created(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'tournament_created',
+            'message': event['message'],
+            'tournament_name': event['tournament_name'],
+            'tournament_closed': event['tournament_closed'],
+            'tournament_finished': event['tournament_finished'],
+        }))
