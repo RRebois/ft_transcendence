@@ -136,7 +136,6 @@ export default class Register {
 
      setupEventListeners() {
         document.getElementById('register-form').addEventListener('submit', this.registerUser);
-        document.getElementById('register-btn').addEventListener('click', this.registerUser);
         document.getElementById('password').addEventListener('input', validatePassword);
         applyFontSize();
     }

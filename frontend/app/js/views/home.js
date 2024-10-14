@@ -25,7 +25,6 @@ export default class Home {
     }
 
     loginUser(event) {
-        console.log("CALLING LOGIN USER");
         event.preventDefault();
         const username = document.getElementById('login-username').value;
         const password = document.getElementById('login-pwd').value;
@@ -228,16 +227,9 @@ export default class Home {
     }
 
     setupEventListeners() {
-        console.log("HOME - setupEventListeners");
         const form = document.getElementById('login-form');
-        console.log("Form: ", form);
         if (form) {
             form.addEventListener('submit', this.loginUser); // Attach the event listener
-            console.log("Form event listener attached");
-        }
-        const loginBtn = document.getElementById('login-btn');
-        if (loginBtn) {
-            loginBtn.addEventListener('click', this.loginUser);
         }
         const fortyTwoLogin = document.getElementById('42login');
         if (fortyTwoLogin) {

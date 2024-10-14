@@ -11,31 +11,31 @@ export default class Router {
         this.init();
     }
 
+
     async init() {
         this.addEventListeners();
         await getCsrf();
         this.historyStack.unshift(window.location.pathname + window.location.search);
         window.history.replaceState(null, null, window.location.pathname + window.location.search);
-		await this.navigate(window.location.pathname + window.location.search);
+        await this.navigate(window.location.pathname + window.location.search);
     }
+
 
     addEventListeners() {
         document.addEventListener('click', (e) => {
-			e.preventDefault();
             const target = e.target.closest('[route]');
             if (target) {
+                e.preventDefault();
                 const path = target.getAttribute('route');
                 this.navigate(path);
             }
         });
-
         window.addEventListener('popstate', (e) => {
-			e.preventDefault();
-			console.log("POPSTATE EVENT TRIGGERED");
+            e.preventDefault();
+            console.log("POPSTATE EVENT TRIGGERED");
             this.navigate(window.location.pathname, false);
         });
     }
-
 
     render404Page(path) {
         document.title = "ft_transcendence | 404";
@@ -103,50 +103,48 @@ export default class Router {
 
 
     async navigate(path, pushState = true) {
-		console.log("======= Navigate called =======");
-		if (path !== "/") {
-			path = path.replace(/\/+$/, ''); // Remove trailing slashes
-		}
-		// find all elements with class "modal-backdrop" and remove them
-		remove_modal_backdrops();
-		const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
-		const isUserAuth = await isUserConnected();
-		const route = this.routes.find(route => this.match(route, path));
+        if (path !== "/") {
+            path = path.replace(/\/+$/, ''); // Remove trailing slashes
+        }
+        // find all elements with class "modal-backdrop" and remove them
+        remove_modal_backdrops();
+        const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
+        const isUserAuth = await isUserConnected();
+        const route = this.routes.find(route => this.match(route, path));
 
-		if (!route) {
-			this.render404Page(path);
-			return;
-		}
+        if (!route) {
+            this.render404Page(path);
+            return;
+        }
 
-		if (isUserAuth) {
-			route.setUser(isUserAuth);
-			this.navbar.setUser(isUserAuth);
-		}
+        if (isUserAuth) {
+            route.setUser(isUserAuth);
+            this.navbar.setUser(isUserAuth);
+        }
 
-		const isPublicRoute = this.isPublicRoute(publicRoutes, path);
+        const isPublicRoute = this.isPublicRoute(publicRoutes, path);
 
-		if (!isPublicRoute && !isUserAuth) {
-			this.redirectToLogin();
-			return;
-		} else if (isPublicRoute && isUserAuth) {
-			this.redirectToDashboard(isUserAuth);
-			return;
-		}
-		this.renderRoute(route, path);
+        if (!isPublicRoute && !isUserAuth) {
+            this.redirectToLogin();
+            return;
+        } else if (isPublicRoute && isUserAuth) {
+            this.redirectToDashboard(isUserAuth);
+            return;
+        }
+        this.renderRoute(route, path);
 
-		const currentPath = window.location.pathname + window.location.search;
-		if (currentPath === path || (currentPath.startsWith('/pong') && path.startsWith('/pong')) || (currentPath.startsWith('/purrinha') && path.startsWith('/purrinha'))) {
-			return;
-		} else {
-			const query = path.split('?')[1];
-			path += query ? '?' + query : '';
-			this.historyStack.unshift(path);
-			if (pushState) {
-				window.history.pushState(null, null, path);
-			}
-		}
-	}
-
+        const currentPath = window.location.pathname + window.location.search;
+        if (currentPath === path || (currentPath.startsWith('/pong') && path.startsWith('/pong')) || (currentPath.startsWith('/purrinha') && path.startsWith('/purrinha'))) {
+            return;
+        } else {
+            const query = path.split('?')[1];
+            path += query ? '?' + query : '';
+            this.historyStack.unshift(path);
+            if (pushState) {
+                window.history.pushState(null, null, path);
+            }
+        }
+    }
 
 
     getQueryParams(query) {
