@@ -142,8 +142,8 @@ def update_match_data(players_data, winner, is_pong=True):
         data.save()
 
 
-def create_match(match_result, winner, deconnection, is_pong=True):
-    match = Match.objects.create(is_pong=is_pong, count=len(match_result), deconnection=deconnection)
+def create_match(match_result, winner, deco, is_pong=True):
+    match = Match.objects.create(is_pong=is_pong, count=len(match_result), deconnection=deco)
     players_data = []
 
     for player_username in match_result.keys():
@@ -224,8 +224,8 @@ def send_to_tournament_group(tournament_id):
     )
 
 def add_player_to_tournament(user, tournament):
-    tournament_id = tournament.get_id()
-    cache_db = cache.get(tournament_id)
+    tournament_name = tournament.name
+    cache_db = cache.get(tournament_name)
     if not cache_db:
         cache_db = {
             'channels': [],
@@ -250,10 +250,10 @@ def add_player_to_tournament(user, tournament):
         tournament.is_closed = True
     tournament.save()
     cache.set(
-        tournament_id,
+        tournament_name,
         cache_db,
     )
-    send_to_tournament_group(tournament_id)
+    send_to_tournament_group(tournament_name)
 
 
 @method_decorator(csrf_protect, name='dispatch')
