@@ -165,6 +165,13 @@ class UserConsumer(AsyncWebsocketConsumer):
             'message': event['message'],
         }))
 
+    async def tournament_full(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'tournament_full',
+            'players': event['players'],
+            'message': event['message'],
+        }))
+
     async def join_match(self, event):
         user = self.scope['user']
         await self.user_in_game(user)

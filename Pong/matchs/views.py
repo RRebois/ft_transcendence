@@ -247,8 +247,23 @@ def add_player_to_tournament(user, tournament):
     for player in cache_db['players']:
         cache_db['matchs'].append({user.username: 0, player: 0, 'status': 'waiting'})
     if count + 1 == tournament.number_players:
-        cache_db['message'] = 'The tournament is ready to start, you can play now.'
+        msg = f'The "{tournament.name}" tournament is ready to start, you can play now.'
+        cache_db['message'] = msg
+        channel_layer = get_channel_layer()
+        for channel in cache_db['channels']:
+            async_to_sync(channel_layer.group_send)(
+                channel,
+                {
+                    'type': 'tournament_full',
+                    'players': cache_db['players'],
+                    'message': cache_db['message'],
+                }
+            )
         tournament.is_closed = True
+        all_players = tournament.players.all()
+        for player in all_players:
+            Notifications.objects.create(user=player, message=msg)
+
     tournament.save()
     cache.set(
         tournament_id,

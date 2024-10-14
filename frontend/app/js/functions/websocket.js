@@ -263,6 +263,9 @@ export async function initializeWebSocket() {
                 if (data.type === 'tournament_created') {
                     handle_tournament_created(socket, data);
                 }
+                if (data.type === 'tournament_full') {
+                    handle_tournament_full(socket, data);
+                }
             };
 
             socket.onclose = function (event) {
@@ -381,4 +384,13 @@ async function handle_tournament_created(socket, data){
         load_new_notifications();
         load_tournaments_ws();
     }
+}
+
+async function handle_tournament_full(socket, data){
+    console.log("Tournament full socket:", socket);
+    console.log("data is:", data);
+
+    const toast = new ToastComponent();
+    toast.throwToast('Notification', `${data.message}`, 5000);
+    load_new_notifications();
 }
