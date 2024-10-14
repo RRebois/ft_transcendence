@@ -239,8 +239,8 @@ class PongHandler():
 
 	async def	cancel_loop(self):
 		if self.bot:
-			# await self.bot.cancel_loop()
-			await self.bot.try_cancel_loop()
+			await self.bot.cancel_loop()
+			# await self.bot.try_cancel_loop()
 			# await self.bot.update_q_table_db()
 		if hasattr(self, 'loop_task'):
 			await self.loop_task.cancel()

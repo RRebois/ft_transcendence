@@ -46,7 +46,7 @@ class	TrainPong():
 
 	def	__init__(self, i, bot_db, game, consumer):
 		self.consumer = consumer
-		self.limit = 100
+		self.limit = 10
 		self.count = 50
 		self.i = i
 		self.finished = False
@@ -73,12 +73,15 @@ class	TrainPong():
 		if gs['left_score'] >= self.count or gs['right_score'] >= self.count:
 			self.count += 50
 			print(f'\n\nTrain {self.i} => {gs['left_score']} x {gs['right_score']}\nq-table size => {len(PongBot.q_table)}')
-		if gs['left_score'] >= self.limit or gs['right_score'] >= self.limit:
-			await self.bot1.cancel_loop()
-			await self.bot2.cancel_loop()
-			self.loop_task.cancel()
-			self.finished = True
-			print(f'finished train {self.i}')
+		if gs['left_score'] >= self.limit or gs['right_score'] >= self.limit or len(PongBot.q_table) > 8500:
+			await self.cancel_loop()
+
+	async def cancel_loop(self):
+		await self.bot1.cancel_loop()
+		await self.bot2.cancel_loop()
+		self.loop_task.cancel()
+		self.finished = True
+		print(f'finished train {self.i}')
 
 class TestBot():
 
