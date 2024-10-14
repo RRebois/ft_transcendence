@@ -136,6 +136,7 @@ export default class Dashboard {
 					console.log("Game request success: ", data);
 					data.code = code;
 					const params = new URLSearchParams(data).toString();
+					console.log("\n\n\nPARAMS: ", this.props);
 					// Close modal
 					const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-match-modal'));
 					if (createMatchModal)
@@ -595,7 +596,7 @@ export default class Dashboard {
 								<div class="form-floating has-validation">
 									<input type="text" id="tournament-name" class="form-control" required />
 									<label for="name">Name<span class="text-danger">*</span></label>
-									<div class="form-text">Username has to be 3 to 15 characters long and composed only by letters, digits and hyphens (- or _)</div>
+									<div class="form-text">Tournament name has to be 3 to 15 characters long and composed only by letters, digits and hyphens (- or _)</div>
 									<div class="invalid-feedback">Name have an invalid format</div>
 								</div>
 							</div>

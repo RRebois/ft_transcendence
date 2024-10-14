@@ -125,6 +125,7 @@ class	MatchMaking():
 			'winner': None,
 			'tournament_name': tournament_name,
 			'game_state': 'waiting',
+			'deconnection': False,
 			})
 			return session_id
 

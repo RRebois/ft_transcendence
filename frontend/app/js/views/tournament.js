@@ -58,12 +58,17 @@ export default class Tournament {
                 credentials: 'include'
             })
             .then(response => response.json().then(data => ({ok: response.ok, data})))
-            .then(({ok, data}) => {
+            .then(({ok, data}) => { console.log("\n\n\ntournament infos: ", data);
                 if (!ok) {
                     this.toast.throwToast("Error", data.message || "Something went wrong", 5000, "error");
                 } else {
                     this.toast.throwToast("Success", data.message || "You are in tournament matchmaking", 5000, "success");
                     document.getElementById('play-tournament').classList.add('disabled');
+                    const params = new URLSearchParams(data).toString();
+console.log("\n\n\nPARAMS: ", params);
+console.log("\n\n\nPARAMS 1: ", this.props);
+console.log("\n\n\nPARAMS 2: ", this.props?.code);
+                    appRouter.navigate(`/${data.game}?${params}`);
                 }
             })
             .catch(error => {
@@ -79,22 +84,20 @@ export default class Tournament {
         tournament.matchs.forEach(match => {
             console.log("match: ", match);
             const gameElement = document.createElement('div');
-            gameElement.classList.add('player-card', 'd-flex', 'flex-row', 'align-items-center', 'justify-content-between', 'bg-tournament', 'rounded', 'px-3', 'py-2', 'm-1')
+            gameElement.classList.add('player-card', 'd-flex', 'flex-wrap', 'flex-row', 'align-items-center', 'justify-content-evenly', 'bg-tournament', 'rounded', 'px-3', 'py-2', 'm-1')
             gameElement.innerHTML = `
-                <div class="d-flex w-100 align-items-center">
-                    <div id="user-1" class="d-flex flex-row align-items-center justify-content-start">
-                        <img src="${match?.players[0].img}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+                    <div id="user-1" class="d-flex flex-column align-items-center justify-content-center w-128">
                         <p class="mx-2 my-1 play-bold">${match?.players[0].Username}</p>
+                        <img src="${match?.players[0].img}" alt="user avatar image" class="h-64 w-64 rounded-circle" />
                     </div>
-                    <div class="d-flex flex-column align-items-center justify-content-center mx-3">
-                        <p class="play-bold m-0">Score:</p>
+                    <div class="d-flex flex-column align-items-center justify-content-center mx-4">
+                        <p class="play-bold">Score:</p>
                         <p class="m-0">${match?.players[0]?.score} - ${match?.players[1]?.score}</p>
                     </div>
-                    <div id="user-2" class="d-flex flex-row align-items-center justify-content-end">
+                    <div id="user-2" class="d-flex flex-column align-items-center justify-content-center w-128">
                         <p class="mx-2 my-1 play-bold">${match?.players[1].Username}</p>
-                        <img src="${match?.players[1].img}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+                        <img src="${match?.players[1].img}" alt="user avatar image" class="h-64 w-64 rounded-circle" />
                     </div>
-                </div>
             `;
             gameDiv.appendChild(gameElement);
         });
@@ -116,17 +119,17 @@ export default class Tournament {
         tournament.players.forEach(player => {
             const matchsPlayed = this.fetch_matchs_played(tournament, player);
             const playerElement = document.createElement('div');
-            playerElement.classList.add('player-card', 'd-flex', 'flex-row', 'align-items-center', 'justify-content-between', 'bg-tournament', 'rounded', 'px-3','py-2', 'm-1')
+            playerElement.classList.add('player-card', 'd-flex', 'flex-wrap', 'flex-row', 'align-items-center', 'justify-content-evenly', 'bg-tournament', 'rounded', 'px-3', 'py-2', 'm-1')
             playerElement.innerHTML = `
-                <div id="user-id" class="d-flex flex-column align-items-center justify-content-center">
+                <div id="user-id" class="d-flex flex-column align-items-center justify-content-center w-128">
                     <p class="mx-2 my-1 play-bold">${player?.Username}</p>
-                    <img src="${player.img}" alt="user_pp" class="h-64 w-64 rounded-circle" />
+                    <img src="${player.img}" alt="user avatar image" class="h-64 w-64 rounded-circle" />
                 </div>
                 <div class="d-flex flex-column align-items-center justify-content-center mx-4">
                     <p class="play-bold">Elo:</p>
                     <p class="m-0">${player?.stats.pong.elo[0].elo}</p>
                 </div>
-                <div class="d-flex flex-column align-items-center justify-content-center">
+                <div class="d-flex flex-column align-items-center justify-content-center w-128">
                     <p class="play-bold">Matchs played:</p>
                     <p class="m-0">${matchsPlayed}</p>
                 </div>
@@ -195,7 +198,7 @@ export default class Tournament {
         return `
             <div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
                 <div class="h-100 w-full d-flex flex-column justify-content-evenly align-items-center px-5" style="gap: 64px;">
-                    <div id="tournament_Name" class="bg-white d-flex g-4 flex-column align-items-center py-2 px-3 m-3 rounded login-card w-50 position-relative h-min" style="--bs-bg-opacity: .5;">
+                    <div id="tournament_Name" class="bg-white min-w-fit d-flex g-4 flex-column align-items-center py-2 px-3 m-3 rounded login-card w-50 position-relative h-min" style="--bs-bg-opacity: .5;">
                         <div class="d-flex w-100 align-items-center">
                             <p class="play-bold fs-1 m-0 text-center flex-grow-1">${this.props?.id}</p>
                             <button type="button" id="join-tournament" class="btn btn-primary ms-auto" hidden>Join +</button>
@@ -205,12 +208,12 @@ export default class Tournament {
                     <div class="h-full w-full d-flex flex-row flex-wrap justify-content-evenly align-items-stretch"">
                         <div class="bg-white d-flex g-4 flex-column align-items-center py-2 px-3 rounded login-card w-fit h-max-tournament m-3" style="--bs-bg-opacity: .5;">
                             <p class="play-bold fs-2">Players 🤓</p>
-                            <div id="players">
+                            <div id="players" class="overflow-auto">
                             </div>
                         </div>
-                        <div class="bg-white d-flex g-4 flex-column align-items-center justify-content-start py-2 px-3 rounded login-card w-auto h-max-tournament m-3" style="--bs-bg-opacity: .5;">
-                            <p class="play-bold fs-2" class="ms-auto">Games 🎮</p>
-                            <div id="games" class="d-flex flex-column flex-grow-1 overflow-auto">
+                        <div class="bg-white d-flex g-4 flex-column align-items-center py-2 px-3 rounded login-card w-fit h-max-tournament m-3" style="--bs-bg-opacity: .5;">
+                            <p class="play-bold fs-2">Games 🎮</p>
+                            <div id="games" class="overflow-auto">
                             </div>
                         </div>
                     </div>

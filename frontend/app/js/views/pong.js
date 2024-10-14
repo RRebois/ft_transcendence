@@ -77,7 +77,7 @@ export default class PongGame {
         this.camera.lookAt(300, -100, 300);
 
         // Renderer
-        this.renderer = new THREE.WebGLRenderer();
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
@@ -754,7 +754,7 @@ export default class PongGame {
 
     // Collecting info from the game logic in the back
     display(data) {
-//        console.log(data);
+        console.log(data);
         if (this.userIndex === 0 && this.props?.code === "40") {
             for (let i = 0; i < this.players_nick.length; i++) {
                 if (this.players_nick[i].username === this.user.username) {
