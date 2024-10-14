@@ -136,7 +136,6 @@ export default class Dashboard {
 					console.log("Game request success: ", data);
 					data.code = code;
 					const params = new URLSearchParams(data).toString();
-					console.log("\n\n\nPARAMS: ", this.props);
 					// Close modal
 					const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-match-modal'));
 					if (createMatchModal)

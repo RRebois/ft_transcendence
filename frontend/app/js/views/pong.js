@@ -36,10 +36,10 @@ export default class PongGame {
         this.props = newProps;
     }
 
-     initializeWs = async (gameCode) => {
+     initializeWs = async (data) => { console.log(data);
 		let ws;
 		try {
-			ws = await initializePongWebSocket(gameCode, this.props?.session_id, this);
+			ws = await initializePongWebSocket(data, this);
 		} catch (e) { return ;
 //			const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
 //			document.getElementById('errorModalBody').innerHTML = `
@@ -754,7 +754,7 @@ export default class PongGame {
 
     // Collecting info from the game logic in the back
     display(data) {
-        console.log(data);
+//        console.log(data);
         if (this.userIndex === 0 && this.props?.code === "40") {
             for (let i = 0; i < this.players_nick.length; i++) {
                 if (this.players_nick[i].username === this.user.username) {
@@ -803,7 +803,7 @@ export default class PongGame {
                 modal.style.background = "#bc7575";
             modal.innerHTML = `<p>${msg}</p>`;
 
-            if (data.game_state["tournament"]) {
+            if (data.game_state["tournament_name"]) {
                 modal.innerHTML +=`
                 <button id="back-home-btn" route="/" class="btn btn-primary">Back to dashboard</button>
                 <button id="new-game-btn" route="/" class="btn btn-primary">Back to tournament view</button> // to complete
@@ -871,7 +871,7 @@ export default class PongGame {
     }
 
     render() {
-        this.initializeWs(this.props?.code);
+        this.initializeWs(this.props);
 
         return `
             <div style="width: 100%; height: 100%; position: relative;" id="display">

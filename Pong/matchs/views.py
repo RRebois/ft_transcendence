@@ -96,7 +96,6 @@ class TournamentDisplayOneView(APIView):
             tournament = Tournament.objects.get(name=tournament_name)
         except:
             return JsonResponse({"error": "Tournament does not exist."}, status=404)
-
         return JsonResponse(tournament.serialize(), safe=False, status=200)
 
 
@@ -324,10 +323,9 @@ class   PlayTournamentView(APIView):
         if user not in tournament.players.all():
             return JsonResponse({"error": "You have not joined this tournament."}, status=404)
         session_id = MatchMaking.get_tournament_match(user.username, tournament_name) # verify if it returned a json
-
         return JsonResponse({
 			'game': 'pong',
 			'session_id': session_id,
 			'ws_route': f'/ws/game/pong/23/{session_id}/',
-            'code': '23'
+            'code': '23',
 		}, status=status.HTTP_200_OK)
