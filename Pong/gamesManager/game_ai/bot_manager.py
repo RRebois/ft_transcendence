@@ -1,4 +1,5 @@
 import asyncio
+import pickle
 from asgiref.sync import sync_to_async
 
 from .bot_pong import PongBot
@@ -14,13 +15,15 @@ async def	init_bot(game_name, game, consumer):
 	if game_name == 'pong':
 		try:
 			bot_db = await sync_to_async(BotQTable.objects.get)(name=BOT_NAME)
-			# await sync_to_async(bot_db.save_table)({})
+			# with open('ai_q_table.pickle', 'wb') as file:
+			# 	pickle.dump(bot_db.q_table, file)
+			await sync_to_async(bot_db.save_table)({})
 		except:
 			bot_db = await sync_to_async(BotQTable.objects.create)(name=BOT_NAME)
 
 		# return TrainPong(0, bot_db, game, consumer)
 		test = []
-		amount = 4
+		amount = 0
 		for i in range(amount):
 				tmp = TrainPong(i, bot_db, game, consumer)
 				await tmp.launch_train()
@@ -46,7 +49,7 @@ class	TrainPong():
 
 	def	__init__(self, i, bot_db, game, consumer):
 		self.consumer = consumer
-		self.limit = 10
+		self.limit = 2000
 		self.count = 50
 		self.i = i
 		self.finished = False
@@ -63,7 +66,7 @@ class	TrainPong():
 			# if not i:
 			# await self.consumer.send_game_state()
 			await self.try_cancel_loop()
-			await asyncio.sleep(SLEEP / 8)
+			await asyncio.sleep(SLEEP / 2)
 
 	async def launch_train(self):
 		self.loop_task = asyncio.create_task(self.game_loop())
@@ -73,7 +76,7 @@ class	TrainPong():
 		if gs['left_score'] >= self.count or gs['right_score'] >= self.count:
 			self.count += 50
 			print(f'\n\nTrain {self.i} => {gs['left_score']} x {gs['right_score']}\nq-table size => {len(PongBot.q_table)}')
-		if gs['left_score'] >= self.limit or gs['right_score'] >= self.limit or len(PongBot.q_table) > 8500:
+		if gs['left_score'] >= self.limit or gs['right_score'] >= self.limit or len(PongBot.q_table) > 4500:
 			await self.cancel_loop()
 
 	async def cancel_loop(self):
@@ -103,7 +106,7 @@ class TestBot():
 			ball = serialize['ball']['y']
 			action = 1 if ball > paddle_pos + PADDLE_HEIGHT_DUO / 2 else -1
 			await self.continuous_paddle_mov(action)
-			await asyncio.sleep(SLEEP / 8)
+			await asyncio.sleep(SLEEP / 2)
 
 	async def launch_bot(self):
 		self.loop_task = asyncio.create_task(self.bot_loop())
