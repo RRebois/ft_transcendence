@@ -113,7 +113,7 @@ export default class Router {
 
 		// Update the browser history
 		const currentPath = window.location.pathname + window.location.search;
-		if (currentPath === path) {
+		if (currentPath === path || (currentPath.startsWith('/pong') && path.startsWith('/pong')) || (currentPath.startsWith('/purrinha') && path.startsWith('/purrinha'))) {
 			window.history.replaceState(null, null, path);
 		} else {
 			const query = path.split('?')[1];
@@ -184,3 +184,7 @@ export default class Router {
 		return false;
 	}
 }
+
+// dashboard
+// pong?game_id=1
+// pong?game_id=2
