@@ -168,25 +168,27 @@ export default class Navbar {
 				toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
 			} else {
 				const dropdownNotif = document.getElementById('dropdownNotif');
-				let notifChanged = false;
-				data.forEach(notification => {
-					console.log("Notif is: ", notification);
-					const notifElem = document.createElement('li');
-					notifElem.classList.add('bg-notif', 'dropdown-item');
-					notifElem.innerHTML = `
-						<p class="fw-light fst-italic notif-time text-end m-0 me-2">${new Date(notification?.time).toLocaleString()}</p>
-						<a class="text-wrap dropdown-item text">${notification?.message}</a>
-						<div class="dropdown-divider p-0 m-0"></div>
-					`;
-					dropdownNotif.appendChild(notifElem);
-					if (notification.is_read === false && notifChanged === false) {
-						const notifDot = document.getElementById('new-notif');
-						if (notifDot) {
-							notifDot.hidden = false;
-							notifChanged = true;
+				if (dropdownNotif) {
+					let notifChanged = false;
+					data.forEach(notification => {
+						console.log("Notif is: ", notification);
+						const notifElem = document.createElement('li');
+						notifElem.classList.add('bg-notif', 'dropdown-item');
+						notifElem.innerHTML = `
+							<p class="fw-light fst-italic notif-time text-end m-0 me-2">${new Date(notification?.time).toLocaleString()}</p>
+							<a class="text-wrap dropdown-item text">${notification?.message}</a>
+							<div class="dropdown-divider p-0 m-0"></div>
+						`;
+						dropdownNotif.appendChild(notifElem);
+						if (notification.is_read === false && notifChanged === false) {
+							const notifDot = document.getElementById('new-notif');
+							if (notifDot) {
+								notifDot.hidden = false;
+								notifChanged = true;
+							}
 						}
-					}
-				});
+					});
+				}
 			}
 		})
 		.catch(error => {
