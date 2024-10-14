@@ -283,6 +283,7 @@ class   CreateTournamentView(APIView):
                 {
                     'type': 'tournament_created',
                     'message': f'A new tournament "{tournament.name}" has been created by {user.username}.',
+                    'creator': user.id,
                     'tournament_name': tournament.name,
                     'tournament_closed': tournament.is_closed,
                     'tournament_finished': tournament.is_finished,

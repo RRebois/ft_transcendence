@@ -1,6 +1,7 @@
 import {isUserConnected} from "./user_auth.js";
 import ToastComponent from "@js/components/Toast.js";
 import { create_friend_div_ws, create_friend_request_div, remove_friend_div, create_empty_request, create_empty_friend } from "@js/functions/friends_management.js";
+import { load_tournaments_ws } from "@js/functions/tournament_management.js";
 import {remove_friend_request_div} from "./friends_management.js";
 import {getCookie} from "@js/functions/cookie.js";
 import * as bootstrap from 'bootstrap';
@@ -368,11 +369,16 @@ function handle_friend_status(socket, message){
     }
 }
 
-function handle_tournament_created(socket, data){
+async function handle_tournament_created(socket, data){
     console.log("Tournament created socket:", socket);
     console.log("data is:", data);
 
-    const toast = new ToastComponent();
-    toast.throwToast('Notification', `${data.message}`, 5000);
-    load_new_notifications();
+    const user = await isUserConnected();
+    console.log("User is:", user);
+    if (user.id !== data.creator) {
+        const toast = new ToastComponent();
+        toast.throwToast('Notification', `${data.message}`, 5000);
+        load_new_notifications();
+        load_tournaments_ws();
+    }
 }
