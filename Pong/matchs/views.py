@@ -36,7 +36,7 @@ class MatchHistoryView(APIView):
         elif word == 'purrinha':
             matches = Match.objects.filter(players=user, is_pong=False).order_by('-timeMatch')
         else:
-            return JsonResponse({"error": "Invalid word."}, status=400)
+            return JsonResponse({"message": "Invalid word."}, status=400)
         return JsonResponse([match.serialize() for match in matches] if matches else [], safe=False, status=200)
 
 
@@ -197,7 +197,7 @@ def add_match_to_tournament(tournament_id, match):
     try:
         tournament = Tournament.objects.get(id=tournament_id)
     except:
-        return JsonResponse({"error": "Tournament does not exist."}, status=404)
+        return JsonResponse({"message": "Tournament does not exist."}, status=404)
     unfinished_matchs = tournament.get_unfinished_matchs()
     for unfinished_match in unfinished_matchs:
         unfinished_match.match = match

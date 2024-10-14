@@ -261,7 +261,7 @@ class Login42RedirectView(APIView):
         response.status_code = 302
         if Notifications.objects.filter(user=user).count() == 0:
             Notifications.objects.create(user=user, message="Welcome to ft_transcendence! You can play Pong with friends, "
-                                                            "train with the ai and participate in tournaments! You can also play Purrinha, a simple bar game."
+                                                            "train with the AI and participate in tournaments! You can also play Purrinha, a simple bar game."
                                                             " Add some friends and have fun!")
         return response
 
@@ -365,7 +365,7 @@ class RegisterView(APIView):
                                 path='/')
             response.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True, path='/')
             Notifications.objects.create(user=user, message="Welcome to ft_transcendence! You can play Pong with friends, "
-                                                            "train with the ai and participate in tournaments! You can also play Purrinha, a simple bar game."
+                                                            "train with the AI and participate in tournaments! You can also play Purrinha, a simple bar game."
                                                             " Add some friends and have fun!")
 
             return response

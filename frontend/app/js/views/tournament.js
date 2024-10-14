@@ -174,6 +174,7 @@ console.log("\n\n\nPARAMS 2: ", this.props?.code);
 		.then(response => response.json().then(data => ({ok: response.ok, data})))
 		.then(({ok, data}) => {
 			if (!ok) {
+                // if tournament does not exist, put 404 function
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 			} else {
