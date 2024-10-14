@@ -18,6 +18,7 @@ Pong/media/profile_pics/*
 
 Pong/userManagement/migrations/*_initial.py
 Pong/matchs/migrations/*_initial.py
+Pong/gamesManager/migrations/*initial.py
 frontend/app/node_modules/
 frontend/app/dist/
 

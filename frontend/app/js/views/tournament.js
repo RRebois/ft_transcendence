@@ -148,7 +148,7 @@ export default class Tournament {
     }
 
     render() {
-        document.title = `ft_transcendence | Tournament ${this.props?.id}`;
+        // document.title = `ft_transcendence | Tournament ${this.props?.id}`;
         return `
             <div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
                 <div class="h-100 w-full d-flex flex-column justify-content-evenly align-items-center px-5" style="gap: 64px;">

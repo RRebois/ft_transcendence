@@ -16,16 +16,16 @@ import initializeRouter from "@js/spa-router/initializeRouter.js";
 import {applyFontSize} from "./functions/display.js";
 
 const routes = [
-    new Route('/home', '/', homeView),
-    new Route('/register', '/register', registerView),
-    new Route('/pong', '/pong', matchView),
-    new Route('/dashboard', '/dashboard', dashboardView),
-    new Route('/my-profile', '/my-profile', profileView),
-    new Route('/friends', '/friends', friendsView),
-    new Route('/stats', '/stats', statsView, null, 1),
-    new Route('/set-reset-password', '/set-reset-password', resetPWView, null, 2),
-    new Route('/purrinha', '/purrinha', purrinhaView),
-    new Route('/tournament', '/tournament', tournamentView, null, 1),
+    new Route('Login', '/', homeView),
+    new Route('Register', '/register', registerView),
+    new Route('Pong', '/pong', matchView),
+    new Route('', '/dashboard', dashboardView),
+    new Route('Profile', '/my-profile', profileView),
+    new Route('Friends', '/friends', friendsView),
+    new Route('Stats', '/stats', statsView, null, 1),
+    new Route('Reset password', '/set-reset-password', resetPWView, null, 2),
+    new Route('Purrinha', '/purrinha', purrinhaView),
+    new Route('Tournois', '/tournament', tournamentView, null, 1),
 ];
 
 initializeRouter(routes);

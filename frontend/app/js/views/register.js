@@ -2,6 +2,7 @@ import ToastComponent from './../components/Toast.js';
 import {getCookie} from "../functions/cookie.js";
 import {validatePassword} from "../functions/validator.js";
 import {applyFontSize} from "../functions/display.js";
+import {appRouter} from "../spa-router/initializeRouter.js";
 
 export default class Register {
     constructor(props) {
@@ -122,7 +123,8 @@ export default class Register {
                 registerBtn.disabled = false;
             } else {
                 registerBtn.disabled = false;
-                window.location.href = '/dashboard';
+                // window.location.href = '/dashboard';
+                appRouter.navigate('/dashboard');
             }
         })
         .catch(error => {
@@ -134,12 +136,13 @@ export default class Register {
 
      setupEventListeners() {
         document.getElementById('register-form').addEventListener('submit', this.registerUser);
+        document.getElementById('register-btn').addEventListener('click', this.registerUser);
         document.getElementById('password').addEventListener('input', validatePassword);
-         applyFontSize();
+        applyFontSize();
     }
 
      render() {
-        document.title = 'ft_transcendence | Register';
+        // document.title = 'ft_transcendence | Register';
         return `
         <div class="w-100 min-h-screen d-flex flex-column justify-content-center align-items-center">
             <div class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card w-50" style="--bs-bg-opacity: .5;">
