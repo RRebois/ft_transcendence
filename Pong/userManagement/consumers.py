@@ -190,3 +190,19 @@ class UserConsumer(AsyncWebsocketConsumer):
             'tournament_closed': event['tournament_closed'],
             'tournament_finished': event['tournament_finished'],
         }))
+
+    async def tournament_new_player(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'tournament_new_player',
+            'tournament_name': event['tournament_name'],
+            'players': event['players'],
+            'matchs': event['matchs'],
+        }))
+
+    async def tournament_play(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'tournament_play',
+            'message': event['message'],
+            'player': event['player'],
+        }))
+

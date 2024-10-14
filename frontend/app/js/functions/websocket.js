@@ -1,7 +1,7 @@
 import {isUserConnected} from "./user_auth.js";
 import ToastComponent from "@js/components/Toast.js";
 import { create_friend_div_ws, create_friend_request_div, remove_friend_div, create_empty_request, create_empty_friend } from "@js/functions/friends_management.js";
-import { load_tournaments_ws } from "@js/functions/tournament_management.js";
+import { load_tournaments_ws, reload_new_players,load_players_ws } from "@js/functions/tournament_management.js";
 import {remove_friend_request_div} from "./friends_management.js";
 import {getCookie} from "@js/functions/cookie.js";
 import * as bootstrap from 'bootstrap';
@@ -266,8 +266,13 @@ export async function initializeWebSocket() {
                 if (data.type === 'tournament_full') {
                     handle_tournament_full(socket, data);
                 }
-            };
-
+                if (data.type === 'tournament_new_player') {
+                    handle_tournament_new_player(socket, data);
+                }
+                if (data.type === 'tournament_play') {
+                    handle_tournament_play(socket, data);
+                }
+            }
             socket.onclose = function (event) {
                 if (event.wasClean) {
                     console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
@@ -386,11 +391,27 @@ async function handle_tournament_created(socket, data){
     }
 }
 
-async function handle_tournament_full(socket, data){
+function handle_tournament_full(socket, data){
     console.log("Tournament full socket:", socket);
     console.log("data is:", data);
 
     const toast = new ToastComponent();
     toast.throwToast('Notification', `${data.message}`, 5000);
     load_new_notifications();
+}
+
+function handle_tournament_new_player(socket, data){
+    console.log("Tournament new player socket:", socket);
+    console.log("data is:", data);
+
+    reload_new_players(data.tournament_name);
+}
+
+async function handle_tournament_play(socket, data) {
+    const user = await isUserConnected();
+    if (user.id !== data.creator) {
+        const toast = new ToastComponent();
+        toast.throwToast('Notification', `${data.message}`, 5000);
+        load_new_notifications();
+    }
 }

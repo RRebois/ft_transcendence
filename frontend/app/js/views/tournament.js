@@ -36,7 +36,7 @@ export default class Tournament {
                 } else {
                     this.toast.throwToast("Success", data.message || "You have joined the tournament", 5000, "success");
                     document.getElementById('join-tournament').classList.add('disabled');
-                    appRouter.navigate(window.location.pathname, false);
+                    // appRouter.navigate(window.location.pathname, false);
                 }
             })
             .catch(error => {

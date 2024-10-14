@@ -95,7 +95,7 @@ class TournamentDisplayOneView(APIView):
         try:
             tournament = Tournament.objects.get(name=tournament_name)
         except:
-            return JsonResponse({"error": "Tournament does not exist."}, status=404)
+            return JsonResponse({"message": "Tournament does not exist."}, status=404)
 
         return JsonResponse(tournament.serialize(), safe=False, status=200)
 
@@ -224,6 +224,23 @@ def send_to_tournament_group(tournament_id):
             }
     )
 
+def reload_players_tournament_page(tournament_id, tournament):
+    cache_db = cache.get(tournament_id)
+    if not cache_db:
+        return
+    channel_layer = get_channel_layer()
+    for channel in cache_db['channels']:
+        async_to_sync(channel_layer.group_send)(
+            channel,
+            {
+                'type': 'tournament_new_player',
+                'tournament_name': tournament.name,
+                'players': cache_db['players'],
+                'matchs': cache_db['matchs'],
+            }
+        )
+
+
 def add_player_to_tournament(user, tournament):
     tournament_id = tournament.get_id()
     cache_db = cache.get(tournament_id)
@@ -269,6 +286,7 @@ def add_player_to_tournament(user, tournament):
         tournament_id,
         cache_db,
     )
+    reload_players_tournament_page(tournament_id, tournament)
     send_to_tournament_group(tournament_id)
 
 
@@ -349,14 +367,28 @@ class   PlayTournamentView(APIView):
         try:
             tournament = Tournament.objects.get(name=tournament_name)
         except:
-            return JsonResponse({"error": "Tournament does not exist."}, status=404)
+            return JsonResponse({"message": "Tournament does not exist."}, status=404)
         if tournament.is_finished:
-            return JsonResponse({"error": "This tournament is already finished."}, status=404)
+            return JsonResponse({"message": "This tournament is already finished."}, status=404)
         if not tournament.is_closed:
-            return JsonResponse({"error": "This tournament is not ready to play. Wait for all players."}, status=404)
+            return JsonResponse({"message": "This tournament is not ready to play. Wait for all players."}, status=404)
         if user not in tournament.players.all():
-            return JsonResponse({"error": "You have not joined this tournament."}, status=404)
+            return JsonResponse({"message": "You have not joined this tournament."}, status=404)
         session_id = MatchMaking.get_tournament_match(user.username, tournament_name) # verify if it returned a json
+
+        cache_db = cache.get(tournament.id)
+        if not cache_db:
+            return
+        channel_layer = get_channel_layer()
+        for channel in cache_db['channels']:
+            async_to_sync(channel_layer.group_send)(
+                channel,
+                {
+                    'type': 'tournament_play',
+                    'message': f'"{tournament.name}" tournament: {user.username} is searching for an opponent.',
+                    'player': user.id,
+                }
+            )
 
         return JsonResponse({
 			'game': 'pong',
