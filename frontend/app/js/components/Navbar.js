@@ -28,7 +28,7 @@ export default class Navbar {
 			credentials: 'include'
 		}).then(response => {
 			console.log('Logout response:', response);
-			appRouter.navigate('/');
+			appRouter.navigate('/', false);
 			if (window.mySocket && window.mySocket.readyState === WebSocket.OPEN) {
 				window.mySocket.close();
 				console.log('WebSocket connection closed');
@@ -141,7 +141,7 @@ export default class Navbar {
 					const backdrops = document.querySelectorAll('.modal-backdrop');
 					backdrops.forEach(backdrop => backdrop.remove());
 				}
-				appRouter.navigate(window.location.pathname, false);
+				appRouter.navigate(window.location.pathname);
 			}
 		})
 		.catch(error => {
@@ -249,13 +249,13 @@ export default class Navbar {
 								<p class="d-none d-md-block mb-0 me-2 text">${this.user?.username}</p>
 							</button>
 							<ul class="dropdown-menu dropdown-menu-end">
-								<li><a class="dropdown-item text" route="/my-profile" href="/my-profile">My profile</a></li>
+								<li><a class="dropdown-item cursor-click text" route="/my-profile">My profile</a></li>
 								<li><a class="dropdown-item cursor-click text" route="/stats/${this.user?.username}">My stats</a></li>
-								<li><a class="dropdown-item text text" route="/friends" href="/friends">Friends</a></li>
+								<li><a class="dropdown-item cursor-click text" route="/friends">Friends</a></li>
 								<li><hr class="dropdown-divider"></li>
 								<li><a role="button" id="logout-btn" class="dropdown-item text-danger text">Logout</a></li>
 							</ul>
-						</div>
+						</div>	
 					</div>
 				</div>
 				<!--	MODAL PART		-->

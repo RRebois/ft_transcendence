@@ -218,7 +218,7 @@ export default class PurrinhaGame {
 	render() {
 		console.log("purrinha render called");
 		this.initializeWs(this.props?.code);
-		document.title = "ft_transcendence | Purrinha";
+		// document.title = "ft_transcendence | Purrinha";
 		return `
 			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center overflow-hidden" id="game-root">
 				

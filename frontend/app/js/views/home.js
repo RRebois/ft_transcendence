@@ -3,6 +3,7 @@ import {getCookie} from "../functions/cookie.js";
 import {initializeWebSocket} from "../functions/websocket.js";
 import * as bootstrap from 'bootstrap'
 import {applyFontSize} from "../functions/display.js";
+import {appRouter} from "../spa-router/initializeRouter.js";
 
 export default class Home {
     constructor(props) {
@@ -31,6 +32,9 @@ export default class Home {
         console.log("CALLING LOGIN USER");
         console.log("CSRF Token: ", csrfToken);
         console.log(username, password);
+        if (!username || !password) {
+            return;
+        }
         const loginBtn = document.getElementById('login-btn');
         if (loginBtn)
             loginBtn.disabled = true;
@@ -57,7 +61,8 @@ export default class Home {
                         otpModal.show();
                     } else {
                         initializeWebSocket();
-                        window.location.href = '/dashboard';
+                        // window.location.href = '/dashboard';
+                        appRouter.navigate('/dashboard');
                     }
                 }
             })
@@ -86,12 +91,14 @@ export default class Home {
                     const toastComponent = new ToastComponent();
                     toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
                     OauthBtn.disabled = false;
+                    // appRouter.navigate(data.redirect_url);
                     window.location.href = data.redirect_url;
                 } else {
                     initializeWebSocket();
                     console.log('Success:', data);
                     OauthBtn.disabled = false;
                     window.location.href = data.redirect_url;
+                    // appRouter.navigate(data.redirect_url);
                 }
             })
             .catch(error => {
@@ -142,7 +149,8 @@ export default class Home {
                     initializeWebSocket();
                     console.log('Success:', data);
                     document.getElementById('otp').classList.remove('is-invalid');
-                    window.location.href = '/dashboard';
+                    // window.location.href = '/dashboard';
+                    appRouter.navigate('/dashboard');
                 }
             })
             .catch(error => {
@@ -219,7 +227,6 @@ export default class Home {
     }
 
     setupEventListeners() {
-        console.log("HOME - setupEventListeners");
         const form = document.getElementById('login-form');
         if (form) {
             form.addEventListener('submit', this.loginUser); // Attach the event listener
@@ -254,7 +261,7 @@ export default class Home {
 
 // TODO: check form action link
     render() {
-        document.title = 'ft_transcendence | Login';
+        // document.title = 'ft_transcendence | Login';
         return `
 		 <div class="w-100 min-h-full d-flex flex-column justify-content-center align-items-center">
 			<div class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card" style="--bs-bg-opacity: .5;">

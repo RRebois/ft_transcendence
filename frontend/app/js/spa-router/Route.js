@@ -21,11 +21,11 @@ export default class Route {
         this.view.setUser(user);
     }
 
-    renderView(path) {
+    renderView() {
         return this.view.render();
     }
 
-    setupEventListeners(path) {
+    setupEventListeners() {
         this.view.setupEventListeners();
     }
 }

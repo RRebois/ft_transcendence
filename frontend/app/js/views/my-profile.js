@@ -2,6 +2,7 @@ import {getCookie} from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
 import {validatePassword} from "../functions/validator.js";
 import {applyFontSize, changeFontSize} from "../functions/display.js";
+import {appRouter} from "../spa-router/initializeRouter.js";
 
 export default class MyProfile {
     constructor(props) {
@@ -121,7 +122,8 @@ export default class MyProfile {
                         type: 'success'
                     }));
                     updateBtn.disabled = false;
-                    window.location.href = '/my-profile';
+                    // window.location.href = '/my-profile';
+                    appRouter.navigate('/my-profile');
                 }
             })
             .catch(error => {
@@ -274,9 +276,6 @@ export default class MyProfile {
     }
 
     render() {
-        console.log('Rendering my profile');
-        console.log('user in render: ', this.user);
-        document.title = 'ft_transcendence | Profile';
         return `
 			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
 				<div class="h-full w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 16px;">
