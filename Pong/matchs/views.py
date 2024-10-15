@@ -143,8 +143,8 @@ def update_match_data(players_data, winner, is_pong=True):
         data.save()
 
 
-def create_match(match_result, winner, deconnection, is_pong=True):
-    match = Match.objects.create(is_pong=is_pong, count=len(match_result), deconnection=deconnection)
+def create_match(match_result, winner, deco, is_pong=True):
+    match = Match.objects.create(is_pong=is_pong, count=len(match_result), deconnection=deco)
     players_data = []
 
     for player_username in match_result.keys():
@@ -242,8 +242,8 @@ def reload_players_tournament_page(tournament_id, tournament):
 
 
 def add_player_to_tournament(user, tournament):
-    tournament_id = tournament.get_id()
-    cache_db = cache.get(tournament_id)
+    tournament_name = tournament.name
+    cache_db = cache.get(tournament_name)
     if not cache_db:
         cache_db = {
             'channels': [],
@@ -283,11 +283,11 @@ def add_player_to_tournament(user, tournament):
 
     tournament.save()
     cache.set(
-        tournament_id,
+        tournament_name,
         cache_db,
     )
-    reload_players_tournament_page(tournament_id, tournament)
-    send_to_tournament_group(tournament_id)
+    reload_players_tournament_page(tournament_name, tournament)
+    send_to_tournament_group(tournament_name)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -376,7 +376,7 @@ class   PlayTournamentView(APIView):
             return JsonResponse({"message": "You have not joined this tournament."}, status=404)
         session_id = MatchMaking.get_tournament_match(user.username, tournament_name) # verify if it returned a json
 
-        cache_db = cache.get(tournament.id)
+        cache_db = cache.get(tournament.name)
         if not cache_db:
             return
         channel_layer = get_channel_layer()
