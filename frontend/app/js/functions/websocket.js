@@ -56,7 +56,7 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 //					console.log("Socket is:", socket);
 
 					socket.onopen = function (e) {
-						console.log("Purrinha webSocket connection established");
+//						console.log("Purrinha webSocket connection established");
 						resolve(socket);
 					}
 
@@ -124,34 +124,34 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
     });
 }
 
-export async function initializePongWebSocket(gameCode, sessionId, pong) { console.log(pong);
+export async function initializePongWebSocket(data, pong) { console.log("DATA received webso: ", data); // test si code = 33
     return new Promise(async (resolve, reject) => {
         const response = await fetch(`https://${window.location.hostname}:8443/get_ws_token/`, {
             credentials: 'include',
         });
         const jwt = await response.json();
         const isUserAuth = await isUserConnected();
-        if (!gameCode || !sessionId) {
+        if (!data.code || !data.session_id) {
 			reject(new Error("Missing game code or session id"));
 		}
-        if (isUserAuth) {
-            fetch(`https://${window.location.hostname}:8443/game/pong/${gameCode}/`, {
-                method: "GET",
-                headers: {
-					'Content-Type': 'application/json',
-					'X-CSRFToken': getCookie('csrftoken'),
-				},
-                credentials: 'include',
-            })
-            .then(gameResponse => {
-                if (!gameResponse.ok) {
-                    reject(new Error("Match not available"));
-                    return ;
-                }
-                return gameResponse.json();
-            })
-            .then(data => {
-                if (!data) {
+        if (isUserAuth) { console.log("\n\n\n\n\nuser is auth\n\n\n\n\n");
+//            fetch(`https://${window.location.hostname}:8443/game/pong/${gameCode}/`, {
+//                method: "GET",
+//                headers: {
+//					'Content-Type': 'application/json',
+//					'X-CSRFToken': getCookie('csrftoken'),
+//				},
+//                credentials: 'include',
+//            })
+//            .then(gameResponse => {
+//                if (!gameResponse.ok) {
+//                    reject(new Error("Match not available"));
+//                    return ;
+//                }
+//                return gameResponse.json();
+//            })
+//            .then(data => { console.log("DATA WEBSO: ", data);
+                if (!data) { //data["session_id"] = sessionId;
                     return ;
                 }
                 const token = jwt.token
@@ -168,7 +168,7 @@ export async function initializePongWebSocket(gameCode, sessionId, pong) { conso
                 pong.init();
                 let test = 0;
                 socket.onmessage = function (event) {
-                    // console.log("Pong websocket msg received: ", event.data);
+                    console.log("Pong websocket msg received: ", event.data);
                     const data = JSON.parse(event.data);
 
                     if (data.status === "waiting") // Waiting for opponent(s)
@@ -195,11 +195,11 @@ export async function initializePongWebSocket(gameCode, sessionId, pong) { conso
                     reject(error);
                 };
                 window.myPongSocket = socket; // to access as a global var
-            })
-            .catch(error => {
-					console.error("Error:", error);
-					reject(error);
-            });
+//            })
+//            .catch(error => {
+//                    console.error("Error:", error);
+//                    reject(error);
+//            });
         }
          else {
             reject(new Error("User not authenticated"));
@@ -295,8 +295,8 @@ export async function initializeWebSocket() {
 }
 
 function handle_received_friend_request(socket, message) {
-    console.log("socket is:", socket);
-    console.log("message is:", message);
+//    console.log("socket is:", socket);
+//    console.log("message is:", message);
 
     const toast = new ToastComponent();
     toast.throwToast('Notification', `You have received a new friend request from ${message.from_user}`, 5000);
@@ -305,8 +305,8 @@ function handle_received_friend_request(socket, message) {
 }
 
 function handle_friend_req_accept(socket, message){
-    console.log("socket is:", socket);
-    console.log("message is:", message);
+//    console.log("socket is:", socket);
+//    console.log("message is:", message);
 
     const toast = new ToastComponent();
     toast.throwToast('Notification', `${message.to_user} Is now your friend!`, 5000);
@@ -320,8 +320,8 @@ function handle_friend_req_accept(socket, message){
 }
 
 function handle_friend_req_decline(socket, message){
-    console.log("socket is:", socket);
-    console.log("message is:", message);
+//    console.log("socket is:", socket);
+//    console.log("message is:", message);
 
     const toast = new ToastComponent();
     toast.throwToast('Notification', `${message.to_user} declined your friend request...`, 5000);
@@ -334,8 +334,8 @@ function handle_friend_req_decline(socket, message){
 }
 
 function handle_friend_removed(socket, message){
-    console.log("socket is:", socket);
-    console.log("message is:", message);
+//    console.log("socket is:", socket);
+//    console.log("message is:", message);
 
     remove_friend_div(message.from_user_id);
     const friend = document.getElementsByClassName('friend');
@@ -345,8 +345,8 @@ function handle_friend_removed(socket, message){
 }
 
 function handle_friend_status(socket, message){
-    console.log("socket is:", socket);
-    console.log("message is:", message);
+//    console.log("socket is:", socket);
+//    console.log("message is:", message);
     console.log("status change detected for user:", message.user_id, "new status is:", message.status);
 
     const friendItem = document.querySelector(`[data-id="${message.user_id}"]`)

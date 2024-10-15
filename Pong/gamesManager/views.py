@@ -92,30 +92,29 @@ class	MatchMaking():
 
 	@staticmethod
 	def	create_session(game_name, game_code, tournament_name=None):
-			awaited_connections = 2
-			if game_code == 40:
-				awaited_connections = 4
+		awaited_connections = 2
+		if game_code == 40:
+			awaited_connections = 4
+		print("\n\n\nTournament Name in createSess: ", tournament_name)
+		players = {}
+		session_id = f"{game_name}_{str(uuid.uuid4().hex)}"
 
-			players = {}
-			session_id = f"{game_name}_{str(uuid.uuid4().hex)}"
+		if game_code not in [10, 20]:
+			MatchMaking.matchs[session_id] = {
+				'game_name': game_name,
+				'game_code': game_code,
+				'awaited_players': awaited_connections,
+				'tournament_name': tournament_name,
+				'status': 'open',
+				'players': [],
+				'elos': [],
+			}
 
-			if game_code not in [10, 20]:
-				MatchMaking.matchs[session_id] = {
-					'game_name': game_name,
-					'game_code': game_code,
-					'awaited_players': awaited_connections,
-					'tournament_name': tournament_name,
-					'status': 'open',
-					'players': [],
-					'elos': [],
-				}
+		# if usernames:
+		# 	for i, username in enumerate(usernames):
+		# 		players[username] = {'id': i + 1, 'connected': False}
 
-			# if usernames:
-			# 	for i, username in enumerate(usernames):
-			# 		players[username] = {'id': i + 1, 'connected': False}
-
-			cache.set(session_id, {
-
+		cache.set(session_id, {
 			'players': players,
 			'game': game_name,
 			'awaited_players': awaited_connections,
@@ -126,12 +125,13 @@ class	MatchMaking():
 			'tournament_name': tournament_name,
 			'game_state': 'waiting',
 			'deconnection': False,
-			})
-			return session_id
+		})
+		return session_id
 
 	@staticmethod
 	def	create_tournament_session(tournament_name):
 			tournament = Tournament.objects.get(name=tournament_name)
+			print("\n\n\nTournament Name create tournament sess: ", tournament_name)
 			# matchs = [match.get_players() for match in tournament.tournament_matchs.all()]
 			MatchMaking.tournament[tournament_name] = {
 				# 'status': 'open',
@@ -148,6 +148,8 @@ class	MatchMaking():
 		tournament = MatchMaking.tournament.get(tournament_name)
 		if not tournament:
 			tournament = MatchMaking.create_tournament_session(tournament_name)
+		else:
+			print("\n\n\nTournament match found")
 		if len(tournament['players'][username]) >= tournament['number_players'] - 1:
 			return JsonResponse({"message": "You have already played all matchs for this tournament."}, status=404)
 		for match in tournament['matchs']:

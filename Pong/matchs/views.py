@@ -394,5 +394,5 @@ class   PlayTournamentView(APIView):
 			'game': 'pong',
 			'session_id': session_id,
 			'ws_route': f'/ws/game/pong/23/{session_id}/',
-            'code': '23'
+            'code': '23',
 		}, status=status.HTTP_200_OK)

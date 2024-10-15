@@ -42,6 +42,7 @@ class Match(models.Model):
             "winner": winners_list,
             "deconnection": self.deconnection,
             "timestamp": self.timeMatch.strftime("%b %d %Y, %I:%M %p"),
+            "is_finished": self.is_finished,
         }
 
 
@@ -95,6 +96,7 @@ class TournamentMatch(models.Model):
         match_result = {
             'players': [{**player.serialize(), 'score': 0} for player in self.players.all()],
             'winner': ['n/a'],
+            'is_finished': self.match.is_finished if self.match else False
         }
 
         if self.match:

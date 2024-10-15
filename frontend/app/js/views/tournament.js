@@ -67,7 +67,7 @@ export default class Tournament {
                     const params = new URLSearchParams(data).toString();
 console.log("\n\n\nPARAMS: ", params);
 console.log("\n\n\nPARAMS 1: ", this.props);
-console.log("\n\n\nPARAMS 2: ", this.props?.code);
+console.log("\n\n\nPARAMS 2: ", data.code);
                     appRouter.navigate(`/${data.game}?${params}`);
                 }
             })
@@ -106,7 +106,7 @@ console.log("\n\n\nPARAMS 2: ", this.props?.code);
     fetch_matchs_played(tournament, player) {
         let counter = 0;
         tournament.matchs.forEach(match => {
-            if ((match.player1 === player.Username || match.player2 === player.Username) && match.isFinished === "True") {
+            if ((match.player1 === player.Username || match.player2 === player.Username) && match.is_finished === "True") {
                 counter++;
             }
         });
@@ -139,10 +139,12 @@ console.log("\n\n\nPARAMS 2: ", this.props?.code);
     }
 
     setup_join_play_btn(tournament) {
-        const joinBtn = document.getElementById('join-tournament')
+        const   joinBtn = document.getElementById('join-tournament');
+        var     participant = false;
         tournament.players.forEach(player => {
             if (player.Username === this.user.username) {
                 joinBtn.classList.add('disabled');
+                participant = true;
             }
         });
         const playBtn = document.getElementById('play-tournament');
@@ -156,8 +158,14 @@ console.log("\n\n\nPARAMS 2: ", this.props?.code);
             joinBtn.hidden = false;
         }
         else {
-            playBtn.hidden = false;
-            joinBtn.hidden = true;
+            if (participant) {
+                playBtn.hidden = false;
+                joinBtn.hidden = true;
+            }
+            else {
+                playBtn.hidden = true;
+                joinBtn.hidden = true;
+            }
         }
     }
 
