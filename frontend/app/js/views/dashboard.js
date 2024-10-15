@@ -18,13 +18,13 @@ export default class Dashboard {
 		this.load_tournaments= this.load_tournaments.bind(this);
 	}
 
-	setUser(user) {
-		this.user = user;
-	}
+    setUser(user) {
+        this.user = user;
+    }
 
-	setProps(newProps) {
-		this.props = newProps;
-	}
+    setProps(newProps) {
+        this.props = newProps;
+    }
 
     validateInput(name) {
 		const nameRegex = new RegExp("^[a-zA-Z0-9-_]{3,15}$");
@@ -422,6 +422,7 @@ export default class Dashboard {
             			</div>
 					</div>
 
+
             		<!-- Purrinha game -->
             		<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded gap-3" style="--bs-bg-opacity: .5;"
             		data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" title="A classic bar game! You have 3 tokens at disposal. 
@@ -434,6 +435,7 @@ export default class Dashboard {
             			</div>
 					</div>
             	</div>
+
 
             	<!-- Tournament -->
             	<div class="w-3-4 bg-white d-flex flex-column align-items-center py-4 px-4 rounded overflow-auto" style="--bs-bg-opacity: .5;"
@@ -613,5 +615,5 @@ export default class Dashboard {
 				</div>
             </div>
         `;
-	}
+    }
 }

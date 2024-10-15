@@ -14,10 +14,10 @@ from .game_ai.bot_manager import init_bot
 from configFiles.globals import *
 
 
-class	GameManagerConsumer(AsyncWebsocketConsumer):
+class GameManagerConsumer(AsyncWebsocketConsumer):
 	matchs = {}
 
-	async def	connect(self):
+	async def connect(self):
 		self.game_name = self.scope['url_route']['kwargs']['game_name']
 		self.game_code = int(self.scope['url_route']['kwargs']['game_code'])
 		self.session_id = self.scope['url_route']['kwargs']['session_id']
@@ -61,10 +61,11 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 				await self.update_cache_db(self.session_data)
 		else:
 			self.loop_task = asyncio.create_task(self.fetch_session_data_loop())
-		print(f'\n\n\nusername => |{self.username}|\nuser => |{self.user}|\ncode => |{self.game_code}|\n data => |{self.session_data}|\nscope => |{self.scope}| \n\n')
+		print(
+			f'\n\n\nusername => |{self.username}|\nuser => |{self.user}|\ncode => |{self.game_code}|\n data => |{self.session_data}|\nscope => |{self.scope}| \n\n')
 		await self.send_to_group(self.session_data)
 
-	async def	receive(self, text_data):
+	async def receive(self, text_data):
 		data = json.loads(text_data)
 		msg = data.get('game_status')
 		if self.game_name == 'pong' and msg:
@@ -80,21 +81,21 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 					data['player_move'] = player_move
 			await self.game_handler.receive(data)
 
-	async def	send_to_group(self, message):
+	async def send_to_group(self, message):
 		await self.channel_layer.group_send(self.session_id, {"type": "session.msg", "message": message})
 
-	async def	session_msg(self, event):
+	async def session_msg(self, event):
 		message = event["message"]
 		await self.send(text_data=json.dumps(message))
 
-	async def	disconnect(self, close_code):
+	async def disconnect(self, close_code):
 		await self.decrement_connection_count()
 		await self.channel_layer.group_discard(
 			self.session_id,
 			self.channel_name
 		)
 
-	async def	fetch_session_data_loop(self):
+	async def fetch_session_data_loop(self):
 		while True:
 			await self.fetch_session_data()
 			await asyncio.sleep(0.4)
@@ -106,7 +107,6 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 			self.game_handler = GameManagerConsumer.matchs.get(self.session_id)
 			await self.game_handler.add_consumer(self)
 			await self.loop_task.cancel()
-
 
 	@database_sync_to_async
 	def update_cache_db(self, session_data):
@@ -128,7 +128,8 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		if player:
 			self.session_data['players'][self.username]['connected'] = True
 		else:
-			self.session_data['players'] = {self.username: {'connected': True, 'id': self.session_data['connected_players']}}
+			self.session_data['players'] = {
+				self.username: {'connected': True, 'id': self.session_data['connected_players']}}
 		if self.session_data['connected_players'] == self.session_data['awaited_players']:
 			self.session_data['status'] = 'ready'
 		cache.set(self.session_id, self.session_data)
@@ -157,6 +158,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 			GameManagerConsumer.matchs.pop(self.session_id)
 		else:
 			await database_sync_to_async(cache.set)(self.session_id, session_data)
+
 
 class PongHandler():
 
@@ -196,22 +198,21 @@ class PongHandler():
 			await self.tournament_database_update()
 			await sync_to_async(send_to_tournament_group)(self.message['tournament_name'])
 
-	async def	add_consumer(self, consumer):
+	async def add_consumer(self, consumer):
 		self.consumer.append(consumer)
 
-	async def	remove_consumer(self, consumer=None):
+	async def remove_consumer(self, consumer=None):
 		if consumer:
 			self.consumer.remove(consumer)
 		for client in self.consumer:
 			client.close()
 
-	async def	reset_game(self):
+	async def reset_game(self):
 		if not hasattr(self, 'loop_task'):
 			self.game.reset_game()
 			self.loop_task = asyncio.create_task(self.game_loop())
 
-
-	async def	receive(self, text_data):
+	async def receive(self, text_data):
 		player_move = text_data.get('player_move')
 		if player_move:
 			await self.game.move_player_paddle(player_move)
@@ -223,13 +224,13 @@ class PongHandler():
 			await self.update_game_state()
 			await asyncio.sleep(SLEEP)
 
-	async def	update_game_state(self):
+	async def update_game_state(self):
 		await self.game.update()
 		await self.send_game_state()
 		await self.tournament_update()
 		await self.end_game()
 
-	async def	send_game_state(self):
+	async def send_game_state(self):
 		game_state = await self.game.serialize()
 		self.message['game_state'] = game_state
 		await self.consumer[0].send_to_group(self.message)
@@ -241,7 +242,7 @@ class PongHandler():
 		if hasattr(self, 'loop_task'):
 			await self.loop_task.cancel()
 
-	async def	end_game(self, winner=None):
+	async def end_game(self, winner=None):
 
 		gs = self.message['game_state']
 		deconnection = False
@@ -277,17 +278,16 @@ class PongHandler():
 		await self.remove_consumer()
 			# pass
 
-		# send notification + restart the game
-
+	# send notification + restart the game
 
 
 class PurrinhaHandler():
 
-	def	__init__(self, consumer):
+	def __init__(self, consumer):
 		self.consumer = [consumer]
 		self.game_code = consumer.game_code
 
-	async def	launch_game(self, players_name):
+	async def launch_game(self, players_name):
 		self.message = self.consumer[0].session_data
 		self.player_nb = len(players_name)
 		self.turns_id = [i + 1 for i in range(0, self.player_nb)]
@@ -297,21 +297,25 @@ class PurrinhaHandler():
 			# init_bot()
 			pass
 
-	async def	add_consumer(self, consumer):
+	async def add_consumer(self, consumer):
 		self.consumer.append(consumer)
 
-	async def	remove_consumer(self, consumer=None):
+	async def remove_consumer(self, consumer=None):
 		if consumer:
 			self.consumer.remove(consumer)
 		for client in self.consumer:
 			client.close()
 
-	async def	get_new_turn(self):
-		if self.turns_id:
-			self.curr_turn = choice(self.turns_id)
-			self.turns_id.remove(self.curr_turn)
+	async def get_new_turn(self):
+		print(f"\n\n\n(turns_id) => {self.turns_id}\n\n\n")
+		print(f"\n\n\n(game_code) => {self.game_code}\n\n\n")
 
-	async def	reset_game(self):
+		if self.game_code == '10':
+			self.turns_id = [1]
+		self.curr_turn = choice(self.turns_id)
+		self.turns_id.remove(self.curr_turn)
+
+	async def reset_game(self):
 		if len(self.turns_id) == self.player_nb:
 			await self.get_new_turn()
 			self.message['game_state'] = await self.game.get_status()
@@ -319,7 +323,7 @@ class PurrinhaHandler():
 			self.message['game_state']['history'] = self.wins
 			await self.consumer[0].send_to_group(self.message)
 
-	async def	parse_quantity(self, quantity, id):
+	async def parse_quantity(self, quantity, id):
 		if not quantity:
 			return False
 		if self.message['game_state']['players'][f'player{id}']['quantity']:
@@ -331,7 +335,7 @@ class PurrinhaHandler():
 			return False
 		return True
 
-	async def	parse_guess(self, guess, id):
+	async def parse_guess(self, guess, id):
 		if not guess:
 			return False
 		message = ''
@@ -351,21 +355,24 @@ class PurrinhaHandler():
 			return False
 		return True
 
-	async def	receive(self, text_data):
+	async def receive(self, text_data):
 		action = text_data.get('action')
 		value = text_data.get('selected_value')
 		player_id = text_data.get('player_id')
+		game_code = text_data.get('game_code')
+		print(f"\n\n\n(text_data) => {text_data}\n\n\n")
 		ret = None
 		if action == "pick_initial_number":
 			ret = await self.parse_quantity(value, player_id)
+			print(f"\n\n\n(pick_initial_number) ret => {ret}\n\n\n")
 			if ret:
-				await self.game.set_player_quantity(player_id, value)
+				await self.game.set_player_quantity(player_id, value, game_code)
 		if action == "sum_guessed":
 			ret = await self.parse_guess(value, player_id)
 			if ret:
-				await self.game.set_player_guess(player_id, value)
+				await self.game.set_player_guess(player_id, value, game_code)
+				await self.get_new_turn()  # Fix by @fbelfort
 		if ret:
-			await self.get_new_turn()
 			self.message['game_state'] = await self.game.get_status()
 			self.message['game_state']['player_turn'] = self.curr_turn
 			self.message['game_state']['history'] = self.wins

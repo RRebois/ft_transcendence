@@ -1,18 +1,22 @@
 import {isUserConnected} from "./user_auth.js";
 import ToastComponent from "@js/components/Toast.js";
-import { create_friend_div_ws, create_friend_request_div, remove_friend_div, create_empty_request, create_empty_friend } from "@js/functions/friends_management.js";
+import {
+    create_empty_friend,
+    create_empty_request,
+    create_friend_div_ws,
+    create_friend_request_div,
+    remove_friend_div
+} from "@js/functions/friends_management.js";
 import {remove_friend_request_div} from "./friends_management.js";
 import {getCookie} from "@js/functions/cookie.js";
-import * as bootstrap from 'bootstrap';
-import {remove_modal_backdrops} from "@js/functions/display.js";
-import PongGame from "@js/views/pong.js";
+import display_users_info, {
+    display_looking_for_players_modal,
+    guess_sum,
+    hide_looking_for_players_modal,
+    pick_initial_number,
+    update_score,
+} from "./purrinha.js";
 
-const lst2arr = (lst) => {
-	return Object.entries(lst).map(([username, details]) => ({
-		username,
-		...details
-	}));
-};
 
 export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 	return new Promise(async (resolve, reject) => {
@@ -179,14 +183,14 @@ export async function initializePongWebSocket(data, pong) { console.log("DATA re
                         pong.display(data, socket);
                 };
 
-                socket.onclose = function (event) {
-                    if (event.wasClean) {
-                        // console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
-                    } else {
-                        // console.log('Connection died');
-                    }
-                    setTimeout(initializeWebSocket, 2000);
-                };
+                    socket.onclose = function (event) {
+                        if (event.wasClean) {
+                            // console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+                        } else {
+                            // console.log('Connection died');
+                        }
+                        setTimeout(initializeWebSocket, 2000);
+                    };
 
                 socket.onerror = function (error) {
                     // console.log(`WebSocket Error: ${error.message}`);
@@ -274,8 +278,7 @@ export async function initializeWebSocket() {
                 reject(error);
             };
             window.mySocket = socket; // to access as a global var
-        }
-         else {
+        } else {
             reject(new Error("User not authenticated"));
         }
     });

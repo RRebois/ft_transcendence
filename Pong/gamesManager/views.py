@@ -20,26 +20,27 @@ import asyncio
 import uuid
 
 
-class	MatchMaking():
+class MatchMaking():
 	matchs = {}
 	tournament = {}
 
 	@staticmethod
-	def	delete_session(session_id):
+	def delete_session(session_id):
 		if MatchMaking.matchs.get(session_id):
 			MatchMaking.matchs.pop(session_id)
 
 	@staticmethod
-	def	change_session_status(session_id, open=True):
+	def change_session_status(session_id, open=True):
 		if MatchMaking.matchs.get(session_id):
 			MatchMaking.matchs[session_id]['status'] = 'open' if open else 'closed'
 
 	@staticmethod
-	def	add_player(session_id, username):
+	def add_player(session_id, username):
 		if MatchMaking.matchs.get(session_id):
 			if username not in ['guest', BOT_NAME]:
 				user_data = UserData.objects.get(user_id=User.objects.get(username=username))
-				elo = user_data.user_elo_pong[-1]['elo'] if MatchMaking.matchs[session_id]['game_name'] == 'pong' else user_data.user_elo_purrinha[-1]['elo']
+				elo = user_data.user_elo_pong[-1]['elo'] if MatchMaking.matchs[session_id]['game_name'] == 'pong' else \
+				user_data.user_elo_purrinha[-1]['elo']
 				MatchMaking.matchs[session_id]['elos'].append(elo)
 				MatchMaking.matchs[session_id]['players'].append(username)
 				if MatchMaking.matchs[session_id]['awaited_players'] == len(MatchMaking.matchs[session_id]['players']):
@@ -50,7 +51,7 @@ class	MatchMaking():
 				cache.set(session_id, session_data)
 
 	@staticmethod
-	def	get_session(game_name, game_code, user):
+	def get_session(game_name, game_code, user):
 		if game_code in [10, 20]:
 			other_player = BOT_NAME if game_code == 10 else 'guest'
 			session_id = MatchMaking.create_session(game_name, game_code)
@@ -176,7 +177,7 @@ class	MatchMaking():
 @method_decorator(csrf_protect, name='dispatch')
 class GameManagerView(APIView):
 
-	def	check_data(self, game_name, game_code):
+	def check_data(self, game_name, game_code):
 		if game_name not in ['pong', 'purrinha']:
 			return "This game does not exist."
 		# 10 => alone vs bot
@@ -217,19 +218,25 @@ class GameManagerView(APIView):
 			'ws_route': f'/ws/game/{game_name}/{game_code}/{session_id}/'
 		}, status=status.HTTP_200_OK)
 
+
 @method_decorator(csrf_protect, name='dispatch')
 class CheckProvidedGame(APIView):
-    def get(self, request, game_name, game_code, session_id):
-        if game_name not in ['pong', 'purrinha']:
-            return JsonResponse({"message": "This game does not exist."}, status=404)
-        if game_code not in [10, 20, 22, 23, 40]:
-            return JsonResponse({"message": "This code does not exist."}, status=404)
-        if not MatchMaking.matchs.get(session_id):
-            return JsonResponse({"message": "This session does not exist."}, status=404)
-        if MatchMaking.matchs[session_id]['game_name'] != game_name:
-            return JsonResponse({"message": "This game does not exist."}, status=404)
-        return JsonResponse({
-            'game': game_name,
-            'session_id': session_id,
-            'ws_route': f'/ws/game/{game_name}/{game_code}/{session_id}/'
-        }, status=status.HTTP_200_OK)
+	def get(self, request, game_name, game_code, session_id):
+		print(f"\n\n\nsearching for => {session_id}\n\n\n")
+		if game_name not in ['pong', 'purrinha']:
+			return JsonResponse({"message": "This game does not exist."}, status=404)
+		if game_code not in [10, 20, 22, 23, 40]:
+			return JsonResponse({"message": "This code does not exist."}, status=404)
+		print(f"\n\n\nsession id search result : {MatchMaking.matchs.get(session_id)}\n\n\n")
+		if not MatchMaking.matchs.get(session_id):
+			print("\n\n\nerror case 1\n\n\n")
+			return JsonResponse({"message": "This session does not exist."}, status=404)
+		if MatchMaking.matchs[session_id]['game_name'] != game_name:
+			print("\n\n\nerror case 2\n\n\n")
+			return JsonResponse({"message": "This game does not exist."}, status=404)
+		return JsonResponse({
+			'game': game_name,
+			'session_id': session_id,
+			'ws_route': f'/ws/game/{game_name}/{game_code}/{session_id}/'
+		}, status=status.HTTP_200_OK)
+

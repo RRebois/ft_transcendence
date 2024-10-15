@@ -3,35 +3,35 @@ import Navbar from "@js/components/Navbar.js";
 import {remove_modal_backdrops} from "@js/functions/display.js";
 
 export default class Router {
-	constructor(routes = [], renderNode) {
-		this.routes = routes;
-		this.renderNode = renderNode;
-		this.navbar = new Navbar();
-		this.historyStack = [];
-		this.init();
-	}
+    constructor(routes = [], renderNode) {
+        this.routes = routes;
+        this.renderNode = renderNode;
+        this.navbar = new Navbar();
+        this.historyStack = [];
+        this.init();
+    }
 
-	async init() {
-		this.addEventListeners();
-		await getCsrf();
-		this.historyStack.unshift(window.location.pathname + window.location.search)
-		await this.navigate(window.location.pathname + window.location.search);
-	}
+    async init() {
+        this.addEventListeners();
+        await getCsrf();
+        this.historyStack.unshift(window.location.pathname + window.location.search)
+        await this.navigate(window.location.pathname + window.location.search);
+    }
 
-	addEventListeners() {
-		document.addEventListener('click', (e) => {
-			const target = e.target.closest('[route]');
-			if (target) {
-				e.preventDefault();
-				const path = target.getAttribute('route');
-				this.navigate(path);
-			}
-		});
+    addEventListeners() {
+        document.addEventListener('click', (e) => {
+            const target = e.target.closest('[route]');
+            if (target) {
+                e.preventDefault();
+                const path = target.getAttribute('route');
+                this.navigate(path);
+            }
+        });
 
-		window.addEventListener('popstate', (e) => {
-			this.navigate(window.location.pathname, false);
-		});
-	}
+        window.addEventListener('popstate', (e) => {
+            this.navigate(window.location.pathname, false);
+        });
+    }
 
 	async navigate(path, pushState = true) {
 		if (path !== "/") {
@@ -111,34 +111,34 @@ export default class Router {
 		}
 		route.setupEventListeners(path);
 
-		// Update the browser history
-		const currentPath = window.location.pathname + window.location.search;
-		if (currentPath === path) {
-			window.history.replaceState(null, null, path);
-		} else {
-			const query = path.split('?')[1];
-			path += query ? '?' + query : '';
-			this.historyStack.unshift(path);
-			window.history.pushState(null, null, path);
-		}
-	}
+        // Update the browser history
+        const currentPath = window.location.pathname + window.location.search;
+        if (currentPath === path) {
+            window.history.replaceState(null, null, path);
+        } else {
+            const query = path.split('?')[1];
+            path += query ? '?' + query : '';
+            this.historyStack.unshift(path);
+            window.history.pushState(null, null, path);
+        }
+    }
 
-	getQueryParams(query) {
-		return Object.fromEntries(new URLSearchParams(query).entries());
-	}
+    getQueryParams(query) {
+        return Object.fromEntries(new URLSearchParams(query).entries());
+    }
 
-	getURLParameters(path) {
-		if (path.startsWith('/')) {
-			path = path.slice(1);
-		}
-		const splited = path.split('/');
-		const parameters = [];
-		for (let i = 1; i < splited.length; i++) {
-			const part = splited[i];
-			parameters.push(part);
-		}
-		return parameters;
-	}
+    getURLParameters(path) {
+        if (path.startsWith('/')) {
+            path = path.slice(1);
+        }
+        const splited = path.split('/');
+        const parameters = [];
+        for (let i = 1; i < splited.length; i++) {
+            const part = splited[i];
+            parameters.push(part);
+        }
+        return parameters;
+    }
 
 	// Match the route path to the current location path
 	match(route, requestPath) {
@@ -171,16 +171,16 @@ export default class Router {
 		return false;
 	}
 
-	isPublicRoute(publicRoutes, path) {
-		for (const route of publicRoutes) {
-			const regexPath = route.replace(/([:*])(\w+)/g, (full, colon, name) => {
-				return '([^\/]+)';
-			}) + '(?:\/|$)';
-			const routeMatch = path.match(new RegExp(regexPath));
-			if (routeMatch !== null) {
-				return true;
-			}
-		}
-		return false;
-	}
+    isPublicRoute(publicRoutes, path) {
+        for (const route of publicRoutes) {
+            const regexPath = route.replace(/([:*])(\w+)/g, (full, colon, name) => {
+                return '([^\/]+)';
+            }) + '(?:\/|$)';
+            const routeMatch = path.match(new RegExp(regexPath));
+            if (routeMatch !== null) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
