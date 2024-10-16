@@ -151,7 +151,7 @@ class	MatchMaking():
 		else:
 			print("\n\n\nTournament match found")
 		if len(tournament['players'][username]) >= tournament['number_players'] - 1:
-			return JsonResponse({"error": "You have already played all matchs for this tournament."}, status=404)
+			return JsonResponse({"message": "You have already played all matchs for this tournament."}, status=404)
 		for match in tournament['matchs']:
 			if MatchMaking.matchs[match]['status'] == 'open':
 				players_list = MatchMaking.matchs[match]['players']
@@ -161,7 +161,7 @@ class	MatchMaking():
 						tournament['players'][players_list[0]].append(username)
 					MatchMaking.add_player(match, username)
 					return match
-		return JsonResponse({"error": "This tournament is already finished."}, status=404)
+		return JsonResponse({"message": "This tournament is already finished."}, status=404)
 
 
 	@staticmethod

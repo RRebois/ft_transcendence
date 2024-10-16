@@ -158,6 +158,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		else:
 			await database_sync_to_async(cache.set)(self.session_id, session_data)
 
+
 class PongHandler():
 
 	def	__init__(self, consumer):

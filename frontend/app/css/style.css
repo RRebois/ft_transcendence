@@ -62,6 +62,10 @@ body.bg-gradient {
     max-height: 550px;
 }
 
+.h-max-notif {
+    max-height: 300px;
+}
+
 .w-128 {
     width: 128px;
 }
@@ -171,6 +175,10 @@ body.bg-gradient {
         #8a98bf 70%,
         rgba(138, 152, 191, 0.75)
     );
+}
+
+.bg-notif {
+    background : #eeeeee;
 }
 
 .custom-select-filter-icon {
@@ -360,4 +368,8 @@ body.bg-gradient {
     border-width: 0.5rem 1rem 0 1rem;
     border-top-color: rgb(255, 255, 255) !important;
     margin: 1px;
+}
+
+.notif-time {
+    font-size: 14px;
 }

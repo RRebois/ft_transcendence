@@ -52,7 +52,7 @@ export default class PongGame {
     }
 
     init() {
-        document.title = "ft_transcendence | Pong";
+        // document.title = "ft_transcendence | Pong";
         modal.hidden = true;
 
         // Load all textures at once

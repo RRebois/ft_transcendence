@@ -154,3 +154,17 @@ class UserData(models.Model):
 
     def get_username(self):
         return self.user_id.username
+
+
+class Notifications(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    message = models.TextField()
+    time = models.DateTimeField(auto_now=True)
+    is_read = models.BooleanField(default=False)
+
+    def serialize(self):
+        return {
+            "message": self.message,
+            "time": self.time,
+            "is_read": self.is_read
+        }

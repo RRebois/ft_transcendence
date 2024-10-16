@@ -36,7 +36,7 @@ export default class Tournament {
                 } else {
                     this.toast.throwToast("Success", data.message || "You have joined the tournament", 5000, "success");
                     document.getElementById('join-tournament').classList.add('disabled');
-                    appRouter.navigate(window.location.pathname, false);
+                    // appRouter.navigate(window.location.pathname, false);
                 }
             })
             .catch(error => {
@@ -182,6 +182,9 @@ console.log("\n\n\nPARAMS 2: ", data.code);
 		.then(response => response.json().then(data => ({ok: response.ok, data})))
 		.then(({ok, data}) => {
 			if (!ok) {
+                // if tournament does not exist, put 404 function
+                if (data.message === "Tournament does not exist.")
+                    appRouter.render404Page(window.location.pathname);
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 			} else {
@@ -202,7 +205,7 @@ console.log("\n\n\nPARAMS 2: ", data.code);
     }
 
     render() {
-        document.title = `ft_transcendence | Tournament ${this.props?.id}`;
+        // document.title = `ft_transcendence | Tournament ${this.props?.id}`;
         return `
             <div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
                 <div class="h-100 w-full d-flex flex-column justify-content-evenly align-items-center px-5" style="gap: 64px;">

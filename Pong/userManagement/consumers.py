@@ -165,6 +165,13 @@ class UserConsumer(AsyncWebsocketConsumer):
             'message': event['message'],
         }))
 
+    async def tournament_full(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'tournament_full',
+            'players': event['players'],
+            'message': event['message'],
+        }))
+
     async def join_match(self, event):
         user = self.scope['user']
         await self.user_in_game(user)
@@ -173,3 +180,29 @@ class UserConsumer(AsyncWebsocketConsumer):
             'user_id': user.id,
             'status': 'in-game'
         }))
+
+    async def tournament_created(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'tournament_created',
+            'message': event['message'],
+            'creator': event['creator'],
+            'tournament_name': event['tournament_name'],
+            'tournament_closed': event['tournament_closed'],
+            'tournament_finished': event['tournament_finished'],
+        }))
+
+    async def tournament_new_player(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'tournament_new_player',
+            'tournament_name': event['tournament_name'],
+            'players': event['players'],
+            'matchs': event['matchs'],
+        }))
+
+    async def tournament_play(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'tournament_play',
+            'message': event['message'],
+            'player': event['player'],
+        }))
+

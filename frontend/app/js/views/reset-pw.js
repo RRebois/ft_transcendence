@@ -3,6 +3,7 @@ import {getCookie} from "../functions/cookie.js";
 import {validatePassword} from "../functions/validator.js";
 import {passwordMatching} from "../functions/validator.js";
 import {applyFontSize} from "../functions/display.js";
+import {appRouter} from "../spa-router/initializeRouter.js";
 
 export default class ResetPw {
     constructor(props) {
@@ -43,7 +44,8 @@ export default class ResetPw {
                         duration: 5000,
                         type: 'error'
                     }));
-                    window.location.href = '/';
+                    // window.location.href = '/';
+                    appRouter.navigate('/');
                 } else {
 					console.log("RESET PW FETCH OK")
                     const container = document.getElementById('password-reset-container');
@@ -156,7 +158,8 @@ export default class ResetPw {
                     duration: 5000,
                     type: 'success'
                 }));
-                window.location.href = "/";
+                // window.location.href = "/";
+                appRouter.navigate('/');
             }
         })
         .catch(error => {
@@ -176,7 +179,7 @@ export default class ResetPw {
     }
 
     render() {
-        document.title = 'ft_transcendence | Reset password';
+        // document.title = 'ft_transcendence | Reset password';
         return `
         <div id="password-reset-container">
         </div>`;

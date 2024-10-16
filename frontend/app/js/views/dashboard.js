@@ -383,7 +383,8 @@ export default class Dashboard {
 				nbPlayersContainer.forEach(radio => {
 					radio.addEventListener('change', (event) => {
 						console.log("Number of players changed: ", event.target.value);
-						this.tournamentNbPlayers = event.target.value;
+						// this.tournamentNbPlayers = event.target.value;
+						this.tournamentNbPlayers = 2; // FOR TESTS
 					});
 				});
 
@@ -404,7 +405,7 @@ export default class Dashboard {
 	}
 
 	render() {
-		document.title = "ft_transcendence";
+		// document.title = "ft_transcendence";
 		return `
 		<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
             <div class="h-100 w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 32px;">
