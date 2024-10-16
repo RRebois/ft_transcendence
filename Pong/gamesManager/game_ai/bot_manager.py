@@ -21,17 +21,32 @@ async def	init_bot(game_name, game, consumer):
 		except:
 			bot_db = await sync_to_async(BotQTable.objects.create)(name=BOT_NAME)
 
-		# return TrainPong(0, bot_db, game, consumer)
-		test = []
-		amount = 0
-		for i in range(amount):
-				tmp = TrainPong(i, bot_db, game, consumer)
-				await tmp.launch_train()
-				test.append(tmp)
-		while test:
-			for t in test:
-				if t.finished:
-					test.remove(t)
+		return TrainPong(0, bot_db, game, consumer)
+		# test = []
+		# amount = 4
+		# for i in range(amount):
+		# 		tmp = TrainPong(i, bot_db, game, consumer)
+		# 		await tmp.launch_train()
+		# 		test.append(tmp)
+		# while test:
+		# 	for t in test:
+		# 		if t.finished:
+		# 			test.remove(t)
+		# 	await asyncio.sleep(SLEEP)
+
+		# """
+		# against Trainbot
+		# """
+		# tmp = TrainPong(0, bot_db, game, consumer)
+		# await tmp.launch_train()
+		# while not tmp.finished:
+		# 	await asyncio.sleep(SLEEP)
+		"""
+		against himself
+		"""
+		tmp = TrainPong(1, bot_db, game, consumer)
+		await tmp.launch_train()
+		while not tmp.finished:
 			await asyncio.sleep(SLEEP)
 
 		# test = TrainPong(1, bot_db)
@@ -50,11 +65,11 @@ class	TrainPong():
 	def	__init__(self, i, bot_db, game, consumer):
 		self.consumer = consumer
 		self.limit = 2000
-		self.count = 50
+		self.count = self.step = 10
 		self.i = i
 		self.finished = False
-		self.game = PongGame(TrainPong.players_name)
-		self.bot1 = TestBot(self.game, 1, bot_db, training=True)
+		self.game = game#PongGame(TrainPong.players_name)
+		self.bot1 = TestBot(self.game, 1, bot_db, training=True) if not i else PongBot(self.game, 1, bot_db, training=True)
 		self.bot2 = PongBot(self.game, 2, bot_db, training=True)
 
 	async def	game_loop(self):
@@ -64,7 +79,7 @@ class	TrainPong():
 		while True:
 			await self.game.update()
 			# if not i:
-			# await self.consumer.send_game_state()
+			await self.consumer.send_game_state()
 			await self.try_cancel_loop()
 			await asyncio.sleep(SLEEP / 2)
 
@@ -74,9 +89,9 @@ class	TrainPong():
 	async def try_cancel_loop(self):
 		gs = await self.game.serialize()
 		if gs['left_score'] >= self.count or gs['right_score'] >= self.count:
-			self.count += 50
+			self.count += self.step
 			print(f'\n\nTrain {self.i} => {gs['left_score']} x {gs['right_score']}\nq-table size => {len(PongBot.q_table)}')
-		if gs['left_score'] >= self.limit or gs['right_score'] >= self.limit or len(PongBot.q_table) > 4500:
+		if gs['left_score'] >= self.limit or gs['right_score'] >= self.limit or len(PongBot.q_table) > 18500:
 			await self.cancel_loop()
 
 	async def cancel_loop(self):
