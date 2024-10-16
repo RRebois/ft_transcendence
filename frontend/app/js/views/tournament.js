@@ -182,7 +182,6 @@ console.log("\n\n\nPARAMS 2: ", data.code);
 		.then(response => response.json().then(data => ({ok: response.ok, data})))
 		.then(({ok, data}) => {
 			if (!ok) {
-                // if tournament does not exist, put 404 function
                 if (data.message === "Tournament does not exist.")
                     appRouter.render404Page(window.location.pathname);
 				const toastComponent = new ToastComponent();

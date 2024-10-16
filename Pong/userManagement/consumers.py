@@ -56,7 +56,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                 {
                     "type": "status_change",
                     "user_id": user.id,
-                    "status": "in-game"
+                    "status": "in-game",
                 }
             )
         else:
@@ -64,7 +64,6 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
         user = self.scope["user"]
-        logging.debug(f"WS User is {str(self.scope['user'])}")
         if user.is_anonymous:
             await self.accept()
             await self.close()
@@ -72,6 +71,10 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.accept()
             await self.channel_layer.group_add(f"user_{user.id}_group", self.channel_name)
             await self.channel_layer.group_add("Connected_users_group", self.channel_name)
+            # currentPath = window.location.pathname
+            # if currentPath.startsWith('/set-reset-password'):
+            #     await self.user_ingame(user)
+            # else:
             await self.user_online(user)
 
     async def disconnect(self, close_code):

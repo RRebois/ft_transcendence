@@ -383,8 +383,8 @@ export default class Dashboard {
 				nbPlayersContainer.forEach(radio => {
 					radio.addEventListener('change', (event) => {
 						console.log("Number of players changed: ", event.target.value);
-						// this.tournamentNbPlayers = event.target.value;
-						this.tournamentNbPlayers = 2; // FOR TESTS
+						this.tournamentNbPlayers = event.target.value;
+						// this.tournamentNbPlayers = 2; // FOR TESTS
 					});
 				});
 

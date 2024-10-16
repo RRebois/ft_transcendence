@@ -1,7 +1,7 @@
 import {isUserConnected} from "./user_auth.js";
 import ToastComponent from "@js/components/Toast.js";
 import { create_friend_div_ws, create_friend_request_div, remove_friend_div, create_empty_request, create_empty_friend } from "@js/functions/friends_management.js";
-import { load_tournaments_ws, reload_new_players,load_players_ws } from "@js/functions/tournament_management.js";
+import { load_tournaments_ws, reload_new_players, load_players_ws } from "@js/functions/tournament_management.js";
 import {remove_friend_request_div} from "./friends_management.js";
 import {getCookie} from "@js/functions/cookie.js";
 import * as bootstrap from 'bootstrap';
@@ -221,7 +221,7 @@ export async function initializeWebSocket() {
             const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
             const url = wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/'
             console.log("url is:", url);
-            const socket = new WebSocket(wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/');
+            let socket = new WebSocket(wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/');
 
             socket.onopen = function (e) {
                 console.log("WebSocket connection established");
@@ -279,6 +279,7 @@ export async function initializeWebSocket() {
                 } else {
                     console.log('Connection died');
                 }
+                socket = null;
                 setTimeout(initializeWebSocket, 2000);
             };
 
