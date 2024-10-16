@@ -1,5 +1,4 @@
 export function isUserConnected() {
-    console.log("isUserConnected called");
     return new Promise((resolve, reject) => {
         fetch(`https://${window.location.hostname}:8443/check_jwt`, {
             method: 'GET',

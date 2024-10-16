@@ -806,7 +806,7 @@ export default class PongGame {
             if (data["tournament_name"]) {
                 modal.innerHTML +=`
                 <button id="back-home-btn" route="/" class="btn btn-primary">Back to dashboard</button>
-                <button id="new-game-btn" route="tournament/${data['tournament_name']}" class="btn btn-primary">Back to tournament view</button>
+                <button id="back-tournament-btn" class="btn btn-primary">Back to tournament view</button>
             `;
             }
             else {
@@ -814,6 +814,12 @@ export default class PongGame {
                     <button id="back-home-btn" route="/" class="btn btn-primary">Back to dashboard</button>
                     <button id="new-game-btn" class="btn btn-primary">Play again</button>
                 `;
+            }
+            const   backTournamentView = document.getElementById("back-tournament-btn");
+            if (backTournamentView) {
+                backTournamentView.addEventListener("click", () => {
+                    appRouter.navigate(`/tournament/${data['tournament_name']}`);
+                });
             }
             const   restart = document.getElementById("new-game-btn");
             if (restart) {
@@ -836,12 +842,6 @@ export default class PongGame {
                             console.log("Game request success: ", data);
                             data.code = `${this.props?.code}`;
                             const params = new URLSearchParams(data).toString();
-                            // Close modal
-                            const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-match-modal'));
-                            if (createMatchModal)
-                                createMatchModal.hide();
-                                const backdrops = document.querySelectorAll('.modal-backdrop');
-                                backdrops.forEach(backdrop => backdrop.remove());
                             appRouter.navigate(`/${this.props?.game}?${params}`);
                             const socket = window.mySocket;
                             socket.send(JSON.stringify({
