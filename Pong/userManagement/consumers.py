@@ -8,6 +8,7 @@ import json
 
 
 class UserConsumer(AsyncWebsocketConsumer):
+
     @database_sync_to_async
     def update_user_status(self, user, status):
         try:
@@ -15,7 +16,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             user_connected.status = status
             user_connected.save(update_fields=['status'])
             logging.debug(f"User {str(self.scope['user'])} is now {user_connected.status}")
-            print(f"User {str(self.scope['user'])} is now {user_connected.status}")
+            # print(f"User {str(self.scope['user'])} is now {user_connected.status}")
             return True
         except:
             return False
@@ -177,11 +178,11 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def join_match(self, event):
         user = self.scope['user']
-        await self.user_in_game(user)
+        await self.user_offline(user)
         await self.send(text_data=json.dumps({
             'type': 'join_match',
             'user_id': user.id,
-            'status': 'in-game'
+            'status': 'offline'
         }))
 
     async def tournament_created(self, event):

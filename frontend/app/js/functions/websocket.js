@@ -107,7 +107,6 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 						} else {
 							console.log('Connection died');
 						}
-						setTimeout(initializeWebSocket, 2000);
 					};
 
 					socket.onerror = function (error) {
@@ -168,7 +167,7 @@ export async function initializePongWebSocket(data, pong) { console.log("DATA re
                 pong.init();
                 let test = 0;
                 socket.onmessage = function (event) {
-                    console.log("Pong websocket msg received: ", event.data);
+                    // console.log("Pong websocket msg received: ", event.data);
                     const data = JSON.parse(event.data);
 
                     if (data.status === "waiting") // Waiting for opponent(s)
@@ -187,7 +186,6 @@ export async function initializePongWebSocket(data, pong) { console.log("DATA re
                     } else {
                         // console.log('Connection died');
                     }
-                    setTimeout(initializeWebSocket, 2000);
                 };
 
                 socket.onerror = function (error) {
@@ -209,6 +207,11 @@ export async function initializePongWebSocket(data, pong) { console.log("DATA re
 
 export async function initializeWebSocket() {
     return new Promise(async (resolve, reject) => {
+        if (window.mySocket) {
+            console.log("Socket already initialized");
+            resolve(window.mySocket);
+            return;
+        }
         console.log("In Init WS FRONT")
         const response = await fetch(`https://${window.location.hostname}:8443/get_ws_token/`, {
             credentials: 'include',
@@ -285,6 +288,7 @@ export async function initializeWebSocket() {
 
             socket.onerror = function (error) {
                 console.log(`WebSocket Error: ${error.message}`);
+                socket = null;
                 reject(error);
             };
             window.mySocket = socket; // to access as a global var
@@ -397,7 +401,7 @@ function handle_tournament_full(socket, data){
     console.log("data is:", data);
 
     const toast = new ToastComponent();
-    toast.throwToast('Notification', `${data.message}`, 5000);
+    toast.throwToast('Notification', `${data.message}`, 3000);
     load_new_notifications();
 }
 
@@ -412,7 +416,7 @@ async function handle_tournament_play(socket, data) {
     const user = await isUserConnected();
     if (user.id !== data.creator) {
         const toast = new ToastComponent();
-        toast.throwToast('Notification', `${data.message}`, 5000);
+        toast.throwToast('Notification', `${data.message}`, 3000);
         load_new_notifications();
     }
 }

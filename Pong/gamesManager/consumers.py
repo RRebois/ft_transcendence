@@ -12,10 +12,31 @@ from matchs.views import create_match, add_match_to_tournament, send_to_tourname
 from .views import MatchMaking
 from .game_ai.bot_manager import init_bot
 from configFiles.globals import *
+from userManagement.models import User
 
 
 class	GameManagerConsumer(AsyncWebsocketConsumer):
 	matchs = {}
+
+	@database_sync_to_async
+	def update_user_status(self, user, status):
+		try:
+			user_connected = User.objects.get(id=user.id)
+			print(f"User is {str(user_connected)}")
+			user_connected.status = status
+			user_connected.save(update_fields=['status'])
+			print(f"User {str(self.scope['user'])} is now {user_connected.status}")
+			return True
+		except:
+			return False
+
+	async def user_online(self, user):
+		await self.update_user_status(user, "online")
+		return
+
+	async def user_in_game(self, user):
+		await self.update_user_status(user, "in-game")
+		return
 
 	async def	connect(self):
 		self.game_name = self.scope['url_route']['kwargs']['game_name']
@@ -61,6 +82,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 				await self.update_cache_db(self.session_data)
 		else:
 			self.loop_task = asyncio.create_task(self.fetch_session_data_loop())
+		await self.user_in_game(self.user)
 		print(f'\n\n\nusername => |{self.username}|\nuser => |{self.user}|\ncode => |{self.game_code}|\n data => |{self.session_data}|\nscope => |{self.scope}| \n\n')
 		await self.send_to_group(self.session_data)
 
@@ -89,6 +111,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 
 	async def	disconnect(self, close_code):
 		await self.decrement_connection_count()
+		await self.user_online(self.user)
 		await self.channel_layer.group_discard(
 			self.session_id,
 			self.channel_name
@@ -106,7 +129,6 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 			self.game_handler = GameManagerConsumer.matchs.get(self.session_id)
 			await self.game_handler.add_consumer(self)
 			await self.loop_task.cancel()
-
 
 	@database_sync_to_async
 	def update_cache_db(self, session_data):

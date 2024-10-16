@@ -222,7 +222,7 @@ def send_to_tournament_group(tournament_id):
                 'matchs': cache_db['matchs'],
                 'message': cache_db['message'],
             }
-    )
+        )
 
 def reload_players_tournament_page(tournament_id, tournament):
     cache_db = cache.get(tournament_id)

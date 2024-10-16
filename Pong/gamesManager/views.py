@@ -211,6 +211,8 @@ class GameManagerView(APIView):
 				"status": "in-game"
 			}
 		)
+		# user.status = "in-game"
+		# user.save()
 		return JsonResponse({
 			'game': game_name,
 			'session_id': session_id,

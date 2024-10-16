@@ -68,7 +68,7 @@ export function create_friend_request_sent_div(request, size) {
 			delete_empty_request("sent");
 		const friendRequestItem = document.createElement("div");
 		let statusDot;
-		if (request.to_user_status === 'online')
+		if (request.to_user_status === 'online' || request.to_user_status === 'in-game')
 			statusDot = "bg-success";
 		else
 			statusDot = "bg-danger";
@@ -101,7 +101,7 @@ export function create_friend_request_div(request, size) {
 		if (requestEmpty)
 			delete_empty_request("received");
 		let statusDot;
-		if (request.from_user_status === 'online')
+		if (request.from_user_status === 'online' || request.from_user_status === 'in-game')
 			statusDot = "bg-success";
 		else
 			statusDot = "bg-danger";
@@ -143,7 +143,7 @@ export function create_friend_div_load(friend) {
 		const friendEmpty = document.getElementById(`empty-friend`)
 		if (friendEmpty)
 			friendEmpty.remove();
-		if (friend.from_status === 'online')
+		if (friend.from_status === 'online' || friend.from_status === 'in-game')
 			statusDot = "bg-success";
 		else
 			statusDot = "bg-danger";
@@ -183,7 +183,7 @@ export function create_friend_div_ws(status, id, img_url, username, size) {
 		if (size === 1)
 			create_empty_request("sent");
 		let statusDot;
-		if (status === 'online')
+		if (status === 'online' || status === 'in-game')
 			statusDot = "bg-success";
 		else
 			statusDot = "bg-danger";
