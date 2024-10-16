@@ -78,13 +78,26 @@ console.log("\n\n\nPARAMS 2: ", data.code);
         });
     }
 
-    load_games(tournament) {
+    checkUserParticipate(tournament) {
+        for (let i = 0; i < tournament.players.length; i++)
+            if (tournament.players[i].Username === this.user.username)
+                return (true);
+        return (false);
+    }
+
+    load_games(tournament) {console.log("\n\n\n\n\n",tournament,"\n\n\n\n\n");
         const gameDiv = document.getElementById('games');
         gameDiv.innerHTML = '';
         tournament.matchs.forEach(match => {
+            var isParticipant = this.checkUserParticipate(tournament);
+            var background;
+            if (match.is_finished && isParticipant)
+                background = match?.winner.includes(this.user.username) ? 'bg-victory' : 'bg-defeat';
+            else
+                background = 'bg-tournament';
             console.log("match: ", match);
-            const gameElement = document.createElement('div');
-            gameElement.classList.add('player-card', 'd-flex', 'flex-wrap', 'flex-row', 'align-items-center', 'justify-content-evenly', 'bg-tournament', 'rounded', 'px-3', 'py-2', 'm-1')
+            const   gameElement = document.createElement('div');
+            gameElement.classList.add(background, 'player-card', 'd-flex', 'flex-wrap', 'flex-row', 'align-items-center', 'justify-content-evenly', 'rounded', 'px-3', 'py-2', 'm-1')
             gameElement.innerHTML = `
                     <div id="user-1" class="d-flex flex-column align-items-center justify-content-center w-128">
                         <p class="mx-2 my-1 play-bold">${match?.players[0].Username}</p>
@@ -114,11 +127,12 @@ console.log("\n\n\nPARAMS 2: ", data.code);
     }
 
     load_players(tournament) {
-        const playerDiv = document.getElementById('players');
+        const   playerDiv = document.getElementById('players');
+        const   gamesToPlay = tournament.players.length - 1;
         playerDiv.innerHTML = '';
         tournament.players.forEach(player => {
-            const matchsPlayed = this.fetch_matchs_played(tournament, player);
-            const playerElement = document.createElement('div');
+            const   matchsPlayed = this.fetch_matchs_played(tournament, player);
+            const   playerElement = document.createElement('div');
             playerElement.classList.add('player-card', 'd-flex', 'flex-wrap', 'flex-row', 'align-items-center', 'justify-content-evenly', 'bg-tournament', 'rounded', 'px-3', 'py-2', 'm-1')
             playerElement.innerHTML = `
                 <div id="user-id" class="d-flex flex-column align-items-center justify-content-center w-128">
@@ -131,7 +145,7 @@ console.log("\n\n\nPARAMS 2: ", data.code);
                 </div>
                 <div class="d-flex flex-column align-items-center justify-content-center w-128">
                     <p class="play-bold">Matchs played:</p>
-                    <p class="m-0">${matchsPlayed}</p>
+                    <p class="m-0">${matchsPlayed}/${gamesToPlay}</p>
                 </div>
             `;
             playerDiv.appendChild(playerElement);
@@ -147,7 +161,7 @@ console.log("\n\n\nPARAMS 2: ", data.code);
                 participant = true;
             }
         });
-        const playBtn = document.getElementById('play-tournament');
+        const   playBtn = document.getElementById('play-tournament');
         if (tournament.status === "Finished") {
             playBtn.classList.add('disabled');
             playBtn.hidden = true;
@@ -204,7 +218,7 @@ console.log("\n\n\nPARAMS 2: ", data.code);
         this.play_tournament();
     }
 
-    render() {
+    render() { console.log("\n\n\n\n\n\nTEST: ", this.props);
         // document.title = `ft_transcendence | Tournament ${this.props?.id}`;
         return `
             <div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
