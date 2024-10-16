@@ -133,71 +133,47 @@ export async function initializePongWebSocket(data, pong) { console.log("DATA re
 			reject(new Error("Missing game code or session id"));
 		}
         if (isUserAuth) { console.log("\n\n\n\n\nuser is auth\n\n\n\n\n");
-//            fetch(`https://${window.location.hostname}:8443/game/pong/${gameCode}/`, {
-//                method: "GET",
-//                headers: {
-//					'Content-Type': 'application/json',
-//					'X-CSRFToken': getCookie('csrftoken'),
-//				},
-//                credentials: 'include',
-//            })
-//            .then(gameResponse => {
-//                if (!gameResponse.ok) {
-//                    reject(new Error("Match not available"));
-//                    return ;
-//                }
-//                return gameResponse.json();
-//            })
-//            .then(data => { console.log("DATA WEBSO: ", data);
-                if (!data) { //data["session_id"] = sessionId;
-                    return ;
+            if (!data)
+                return ;
+            const token = jwt.token
+            const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
+            const url = wsSelect + `${window.location.hostname}:8443` + data.ws_route + token + '/'
+            const   socket = new WebSocket(url);
+
+            socket.onopen = function (e) {
+                console.log("Pong WebSocket connection established");
+                resolve(socket);
+            };
+            pong.init();
+            let test = 0;
+            socket.onmessage = function (event) {
+                console.log("Pong websocket msg received: ", event.data);
+                const data = JSON.parse(event.data);
+
+                if (data.status === "waiting") // Waiting for opponent(s)
+                    pong.waiting();
+                if (data.status === "ready" && test === 0) { // Waiting for display in front
+                    test = 1;
+                    pong.buildGameSet(data);
                 }
-                const token = jwt.token
-                // console.log("In Init WS FRONT, USER AUTHENTICATED")
-                const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
-                const url = wsSelect + `${window.location.hostname}:8443` + data.ws_route + token + '/'
-                // console.log("url is:", url);
-                const   socket = new WebSocket(url);
+                if (data.status === "started" || data.status === "finished")
+                    pong.display(data, socket);
+            };
 
-                socket.onopen = function (e) {
-                    console.log("Pong WebSocket connection established");
-                    resolve(socket);
-                };
-                pong.init();
-                let test = 0;
-                socket.onmessage = function (event) {
-                    console.log("Pong websocket msg received: ", event.data);
-                    const data = JSON.parse(event.data);
+            socket.onclose = function (event) {
+                if (event.wasClean) {
+                    // console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+                } else {
+                    // console.log('Connection died');
+                }
+                setTimeout(initializeWebSocket, 2000);
+            };
 
-                    if (data.status === "waiting") // Waiting for opponent(s)
-                        pong.waiting();
-                    if (data.status === "ready" && test === 0) { // Waiting for display in front
-                        test = 1;
-                        pong.buildGameSet(data);
-                    }
-                    if (data.status === "started" || data.status === "finished")
-                        pong.display(data, socket);
-                };
-
-                socket.onclose = function (event) {
-                    if (event.wasClean) {
-                        // console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
-                    } else {
-                        // console.log('Connection died');
-                    }
-                    setTimeout(initializeWebSocket, 2000);
-                };
-
-                socket.onerror = function (error) {
-                    // console.log(`WebSocket Error: ${error.message}`);
-                    reject(error);
-                };
-                window.myPongSocket = socket; // to access as a global var
-//            })
-//            .catch(error => {
-//                    console.error("Error:", error);
-//                    reject(error);
-//            });
+            socket.onerror = function (error) {
+                // console.log(`WebSocket Error: ${error.message}`);
+                reject(error);
+            };
+            window.myPongSocket = socket; // to access as a global var
         }
          else {
             reject(new Error("User not authenticated"));

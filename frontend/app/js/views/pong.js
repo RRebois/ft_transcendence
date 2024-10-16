@@ -803,10 +803,10 @@ export default class PongGame {
                 modal.style.background = "#bc7575";
             modal.innerHTML = `<p>${msg}</p>`;
 
-            if (data.game_state["tournament_name"]) {
+            if (data["tournament_name"]) {
                 modal.innerHTML +=`
                 <button id="back-home-btn" route="/" class="btn btn-primary">Back to dashboard</button>
-                <button id="new-game-btn" route="/" class="btn btn-primary">Back to tournament view</button> // to complete
+                <button id="new-game-btn" route="tournament/${data['tournament_name']}" class="btn btn-primary">Back to tournament view</button>
             `;
             }
             else {
@@ -861,6 +861,7 @@ export default class PongGame {
 			modal.hidden = false;
 
 			// close the webso
+			console.log("\n\n\n\n\ngame webso closed!\n\n\n\n\n");
             this.gameSocket.close();
         }
     }
