@@ -142,13 +142,13 @@ export default class Stats {
 						matchHistoryContainer.appendChild(noMatchElement);
 					}
           
-					data.forEach(match => { console.log("Match: ", match);
+					data.forEach(match => {
 						const   date = moment(match.timestamp);
 						const   matchElement = document.createElement('div');
 						const   background = match?.winner.includes(username) ? 'bg-victory' : 'bg-defeat';
 						const   count = match.count;
-						const   victoryMsg = match.deconnection ? "Victory by forfeit" : "Victory";
-						const   defeatMsg = match.deconnection ? "Forfeit" : "Defeat"
+						const   victoryMsg = match?.deconnection ? " Victory by forfeit" : " Victory";
+						const   defeatMsg = match?.deconnection ? "Forfeit" : "Defeat"
 						matchElement.classList.add('d-flex', 'my-2', 'flex-row', 'overflow-hidden', 'justify-content-between', 'play-regular', 'align-items-center', background, 'rounded', 'p-2');
 
 						if (count === 2) {
@@ -162,7 +162,7 @@ export default class Stats {
                                     <div class="d-flex flex-row">
                                         <div class="d-flex flex-column">
                                             <div class="d-flex flex-row align-items-center gap-1">
-                                                    <p class="m-0 cursor-click text-dark" route="/stats/${match.players[0].username}">${match.players[0].username}</p>
+                                                    <p class="m-0 cursor-click text-dark" route="/stats/${match.players[0].username}">${match?.players[0].username}</p>
                                                     <p class="play-bold m-0 fs-1">${match.players[0].score}</p>
                                             </div>
                                         </div>
@@ -170,7 +170,7 @@ export default class Stats {
                                         <div class="d-flex flex-column">
                                             <div class="d-flex flex-row align-items-center gap-1">
                                                     <p class="play-bold m-0 fs-1">${match.players[1].score}</p>
-                                                    <p class="m-0 cursor-click text-dark" route="/stats/${match.players[1].username}">${match.players[1].username}</p>
+                                                    <p class="m-0 cursor-click text-dark" route="/stats/${match.players[1].username}">${match?.players[1].username}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -196,8 +196,8 @@ export default class Stats {
                                     <div class="d-flex flex-row">
                                         <div class="d-flex flex-column">
                                             <div class="d-flex flex-row align-items-center gap-1">
-                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[0].username}">${match.players[0].username}</p>
-                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[1].username}">${match.players[1].username}</p>
+                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[0].username}">${match?.players[0].username}</p>
+                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[1].username}">${match?.players[1].username}</p>
                                                 <p class="play-bold m-0 fs-1">${match.players[0].score}</p>
                                             </div>
                                         </div>
@@ -205,8 +205,8 @@ export default class Stats {
                                         <div class="d-flex flex-column">
                                             <div class="d-flex flex-row align-items-center gap-1">
                                                 <p class="play-bold m-0 fs-1">${match.players[2].score}</p>
-                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[2].username}">${match.players[2].username}</p>
-                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[3].username}">${match.players[3].username}</p>
+                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[2].username}">${match?.players[2].username}</p>
+                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[3].username}">${match?.players[3].username}</p>
                                             </div>
                                         </div>
                                     </div>

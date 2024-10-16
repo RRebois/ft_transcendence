@@ -106,9 +106,9 @@ console.log("\n\n\nPARAMS 2: ", data.code);
     fetch_matchs_played(tournament, player) {
         let counter = 0;
         tournament.matchs.forEach(match => {
-            if ((match.player1 === player.Username || match.player2 === player.Username) && match.is_finished === "True") {
-                counter++;
-            }
+            if ((match.players[0].Username === player.Username || match.players[1].Username === player.Username)
+                && match.is_finished)
+                    counter++;
         });
         return counter;
     }
@@ -127,7 +127,7 @@ console.log("\n\n\nPARAMS 2: ", data.code);
                 </div>
                 <div class="d-flex flex-column align-items-center justify-content-center mx-4">
                     <p class="play-bold">Elo:</p>
-                    <p class="m-0">${player?.stats.pong.elo[0].elo}</p>
+                    <p class="m-0">${Math.round(player?.stats.pong.elo[player?.stats.pong.elo.length - 1].elo)}</p>
                 </div>
                 <div class="d-flex flex-column align-items-center justify-content-center w-128">
                     <p class="play-bold">Matchs played:</p>

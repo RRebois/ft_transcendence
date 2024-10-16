@@ -861,7 +861,6 @@ export default class PongGame {
 			modal.hidden = false;
 
 			// close the webso
-			console.log("\n\n\n\n\ngame webso closed!\n\n\n\n\n");
             this.gameSocket.close();
         }
     }

@@ -54,7 +54,7 @@ class Score(models.Model):
 
 class Tournament(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(unique=True, max_length=100)
+    name = models.CharField(unique=True, max_length=15)
     players = models.ManyToManyField('userManagement.User', related_name='tournaments', default=list)
     number_players = models.IntegerField()
     is_closed = models.BooleanField(default=False)
@@ -102,7 +102,7 @@ class TournamentMatch(models.Model):
         if self.match:
             serialized = self.match.serialize()
             for player in match_result['players']:
-                score = next((p['score'] for p in serialized['players'] if p['username'] == player['username']), 0)
+                score = next((p['score'] for p in serialized['players'] if p['username'] == player['Username']), 0)
                 player['score'] = score
 
             match_result['winner'] = serialized['winner']
