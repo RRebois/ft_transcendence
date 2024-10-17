@@ -17,11 +17,11 @@ async def	init_bot(game_name, game, consumer):
 			bot_db = await sync_to_async(BotQTable.objects.get)(name=BOT_NAME)
 			# with open('ai_q_table.pickle', 'wb') as file:
 			# 	pickle.dump(bot_db.q_table, file)
-			await sync_to_async(bot_db.save_table)({})
+			# await sync_to_async(bot_db.save_table)({})
 		except:
 			bot_db = await sync_to_async(BotQTable.objects.create)(name=BOT_NAME)
 
-		return TrainPong(0, bot_db, game, consumer)
+		# return TrainPong(0, bot_db, game, consumer)
 		# test = []
 		# amount = 4
 		# for i in range(amount):
@@ -34,11 +34,11 @@ async def	init_bot(game_name, game, consumer):
 		# 			test.remove(t)
 		# 	await asyncio.sleep(SLEEP)
 
-		# """
-		# against Trainbot
-		# """
-		# tmp = TrainPong(0, bot_db, game, consumer)
-		# await tmp.launch_train()
+		"""
+		against Trainbot
+		"""
+		tmp = TrainPong(0, bot_db, game, consumer)
+		await tmp.launch_train()
 		# while not tmp.finished:
 		# 	await asyncio.sleep(SLEEP)
 		"""
@@ -46,8 +46,8 @@ async def	init_bot(game_name, game, consumer):
 		"""
 		tmp = TrainPong(1, bot_db, game, consumer)
 		await tmp.launch_train()
-		while not tmp.finished:
-			await asyncio.sleep(SLEEP)
+		# while not tmp.finished:
+		# 	await asyncio.sleep(SLEEP)
 
 		# test = TrainPong(1, bot_db)
 		# await test.launch_train()
@@ -64,11 +64,11 @@ class	TrainPong():
 
 	def	__init__(self, i, bot_db, game, consumer):
 		self.consumer = consumer
-		self.limit = 2000
+		self.limit = 250
 		self.count = self.step = 10
 		self.i = i
 		self.finished = False
-		self.game = game#PongGame(TrainPong.players_name)
+		self.game = PongGame(TrainPong.players_name)
 		self.bot1 = TestBot(self.game, 1, bot_db, training=True) if not i else PongBot(self.game, 1, bot_db, training=True)
 		self.bot2 = PongBot(self.game, 2, bot_db, training=True)
 
@@ -79,7 +79,7 @@ class	TrainPong():
 		while True:
 			await self.game.update()
 			# if not i:
-			await self.consumer.send_game_state()
+			# await self.consumer.send_game_state()
 			await self.try_cancel_loop()
 			await asyncio.sleep(SLEEP / 2)
 

@@ -16,10 +16,11 @@ logger = logging.getLogger(__name__)
 class PongBot():
 	instances = 0
 	q_table = {}
-	REDUCTION = 5
-	ALPHA = 0.4 #learning rate
-	GAMMA = 0.9 #discount factor
-	EPSILON = 0.03 #exploration rate
+	REDUCTION = 10
+	ALPHA = 0.55 #learning rate
+	GAMMA = 0.7 #discount factor
+	EPSILON = 0.05 #exploration rate
+	EPSILON_TRAIN = 0.35 #exploration rate
 	actions = [-1, 0, 1] #moves [up, nothing, down]
 
 
@@ -32,22 +33,46 @@ class PongBot():
 		self.raw_pos = None
 		self.losses = 0
 		self.defeat = False
-
-# v2
+		self.epsilon = PongBot.EPSILON_TRAIN if self.training else PongBot.EPSILON
+		self.farest = int((GAME_WIDTH / 4 ) * 3)#13 26 40 (max = 60) 15 30 45 | 11 22 45
+		self.mid = int(self.farest / 2)
+		self.closest = int(self.mid / 2)
+# 000000000001111111111122222222222222222222222333333333333333
+# 000000000000000111111111111111222222222222222333333333333333
+# 000000000000011111111111112222222222222233333333333333333333
+# v3
 	async def update_q_table_n_steps(self):
 		if not len(self.history):
 			return
 		g_reward = 0
+		first_node = len(self.history) - 1
 		for state, action, reward, new_state in reversed(self.history):
 			g_reward = reward + PongBot.GAMMA * g_reward
-			if state not in PongBot.q_table:
-				PongBot.q_table[state] = {a: 0 for a in PongBot.actions}
+			if state[0] != new_state[0]:
+				if state not in PongBot.q_table:
+					PongBot.q_table[state] = {a: 0 for a in PongBot.actions}
 
-			old_value = PongBot.q_table[state][action]
-			future_max = max(PongBot.q_table.get(new_state, {a: 0 for a in PongBot.actions}).values())
-			new_value = (1 - PongBot.ALPHA) * old_value + PongBot.ALPHA * (g_reward + PongBot.GAMMA * future_max)
-			PongBot.q_table[state][action] = new_value
+				old_value = PongBot.q_table[state][action]
+				future_max = max(PongBot.q_table.get(new_state, {a: 0 for a in PongBot.actions}).values())
+				new_value = (1 - PongBot.ALPHA) * old_value + PongBot.ALPHA * (g_reward + PongBot.GAMMA * future_max)
+				PongBot.q_table[state][action] = new_value
 		self.history = []
+
+# # v2
+# 	async def update_q_table_n_steps(self):
+# 		if not len(self.history):
+# 			return
+# 		g_reward = 0
+# 		for state, action, reward, new_state in reversed(self.history):
+# 			g_reward = reward + PongBot.GAMMA * g_reward
+# 			if state not in PongBot.q_table:
+# 				PongBot.q_table[state] = {a: 0 for a in PongBot.actions}
+
+# 			old_value = PongBot.q_table[state][action]
+# 			future_max = max(PongBot.q_table.get(new_state, {a: 0 for a in PongBot.actions}).values())
+# 			new_value = (1 - PongBot.ALPHA) * old_value + PongBot.ALPHA * (g_reward + PongBot.GAMMA * future_max)
+# 			PongBot.q_table[state][action] = new_value
+# 		self.history = []
 
 # v1
 # 	async def update_q_table_n_steps(self):
@@ -93,15 +118,16 @@ class PongBot():
 			return paddle_y
 		if (self.player == 2 and ball_v_x < 0) or (self.player == 1 and ball_v_x > 0):
 			return GAME_HEIGHT // 2
-		pos_x = int(paddle_x / PongBot.REDUCTION)
-		while (self.player == 2 and int(ball_x / PongBot.REDUCTION) < pos_x) or (self.player == 1 and int(ball_x / PongBot.REDUCTION) > pos_x):
+		pos_x = paddle_x
+		while (self.player == 2 and ball_x < pos_x) or (self.player == 1 and ball_x > pos_x):
 			ball_x += ball_v_x
 			ball_y += ball_v_y
 			if ball_y <= 0 or ball_y >= GAME_HEIGHT:
 				ball_v_y *= -1
 				ball_y = max(0, min(ball_y, GAME_HEIGHT))
 
-		return int(ball_y / PongBot.REDUCTION)
+		# return int(ball_y / PongBot.REDUCTION)
+		return ball_y
 
 	async def get_reward(self, state, new_state):
 		old_ball_x, old_ball_y, old_ball_v_x, old_ball_v_y = state[0]
@@ -112,29 +138,29 @@ class PongBot():
 		old_predicted_y = await self.predict_ball_position(state)
 		new_predicted_y = await self.predict_ball_position(new_state)
 
-		old_distance_to_predict = abs(old_predicted_y - int(old_paddle_y / PongBot.REDUCTION))
-		new_distance_to_predict = abs(new_predicted_y - int(new_paddle_y / PongBot.REDUCTION))
+		old_distance_to_predict = abs(old_predicted_y - old_paddle_y)
+		new_distance_to_predict = abs(new_predicted_y - new_paddle_y)
 
 		reward = old_distance_to_predict - new_distance_to_predict
 		is_closer = (self.player == 2 and new_ball_x > old_ball_x) or (self.player == 1 and new_ball_x < old_ball_x)
 
 		if self.defeat:
 			self.defeat = False
-			return reward - 100 - (old_distance_to_predict * 0.5) # Penalidade alta por perder um ponto
+			return reward - 200 - (old_distance_to_predict * 0.5) # Penalidade alta por perder um ponto
 		
 		if (self.player == 2 and old_ball_v_x > 0 and new_ball_v_x < 0) or (self.player == 1 and old_ball_v_x < 0 and new_ball_v_x > 0):
 			return reward + 100  # Recompensa alta por rebater a bola
 		
-		if new_distance_to_predict < int(PADDLE_HEIGHT_DUO / PongBot.REDUCTION):
+		if new_distance_to_predict < PADDLE_HEIGHT_DUO:
 			reward += 50 - new_distance_to_predict  # Recompensa por estar próximo à posição prevista
 		
 		# Small reward for moving towards the ball when it's approaching
 		if is_closer and new_distance_to_predict < old_distance_to_predict:
-			reward += 5
+			reward += 10
 
 		# Penalty for moving away from the predicted position when the ball is approaching
 		if is_closer and new_distance_to_predict > old_distance_to_predict:
-			reward -= 5
+			reward -= 10
 
 		# Adjust reward based on ball speed (higher speed = higher stakes)
 		reward *= (1 + abs(new_ball_v_x) / 10)
@@ -146,9 +172,14 @@ class PongBot():
 		paddle_x, paddle_y = state[1]
 		# direction = 1 if ball_v_x > 0 else -1
 		direction = 1 if self.player == 2 else -1
-		distance_x = int(((paddle_x - ball_x) * direction) / PongBot.REDUCTION)
-		distance_y = int((paddle_y - ball_y) / PongBot.REDUCTION)
+		distance_x = int(paddle_x - ball_x) * direction
+		distance_y = int(paddle_y - ball_y)
+		distance_y = -1 if distance_y > 0 else 1 if distance_y < -PADDLE_HEIGHT_DUO else 0
+		distance_x = 0 if distance_x < self.closest else 1 if distance_x < self.mid else 2 if distance_x < self.farest else 3
+		# distance_x = int(((paddle_x - ball_x) * direction) / PongBot.REDUCTION)
+		# distance_y = int((paddle_y - ball_y) / PongBot.REDUCTION)
 		ball_speed = int((ball_v_x ** 2 + ball_v_y ** 2) ** 0.5)
+		ball_speed = 0 if ball_speed <= 2 else 1 if ball_speed < 5 else 2
 
 		return (distance_x, distance_y, ball_speed, int(paddle_y / PongBot.REDUCTION))
 
@@ -165,14 +196,16 @@ class PongBot():
 		return state
 
 	async def choose_action(self, state):
-		exploration_limit = 0.1 if self.training else PongBot.EPSILON
-		if random.uniform(0, 1) < exploration_limit:
+		# exploration_limit = PongBot.EPSILON_TRAIN if self.training else PongBot.EPSILON
+		self.epsilon = self.epsilon if not self.training else max(PongBot.EPSILON, self.epsilon * 0.99)
+		if random.uniform(0, 1) < self.epsilon:
 			return random.choice(PongBot.actions)
-		state_key = await self.calculate_state(state)
-		if random.uniform(0, 1) < exploration_limit:
-		# if state_key not in PongBot.q_table:
+		if random.uniform(0, 1) < self.epsilon:
 			predicted_y = await self.predict_ball_position(state)
-			return -1 if predicted_y < int(state[-1][-1] / PongBot.REDUCTION) else 1 if predicted_y > int((state[-1][-1] + PADDLE_HEIGHT_DUO) / PongBot.REDUCTION) else 0
+			return -1 if predicted_y < state[-1][-1] else 1 if predicted_y > (state[-1][-1] + PADDLE_HEIGHT_DUO) else 0
+		state_key = await self.calculate_state(state)
+		if state_key not in PongBot.q_table:
+			return 0
 		return max(PongBot.q_table.get(state_key, {a: 0 for a in PongBot.actions}),
 			  key=PongBot.q_table.get(state_key, {a: 0 for a in PongBot.actions}).get)
 
@@ -236,6 +269,7 @@ class PongBot():
 			PongBot.instances -= 1
 		if not PongBot.instances:
 			await self.update_table_to_db()
+			print(f'\ntable => {PongBot.q_table}')
 
 	@sync_to_async
 	def	update_table_to_db(self):
