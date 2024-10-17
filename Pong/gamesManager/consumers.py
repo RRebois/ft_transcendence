@@ -101,7 +101,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 			await asyncio.sleep(0.4)
 
 	async def	fetch_session_data(self):
-		if self.session_data['status'] != 'started':
+		if self.session_data['status'] == 'waiting':
 			self.session_data = await self.get_session_data()
 		else:
 			self.game_handler = GameManagerConsumer.matchs.get(self.session_id)
@@ -165,6 +165,7 @@ class PongHandler():
 		self.consumer = [consumer]
 		self.game_code = consumer.game_code
 		self.bot = None
+		self.loop_task = None
 
 	async def	launch_game(self, players_name):
 		self.message = self.consumer[0].session_data
@@ -207,7 +208,7 @@ class PongHandler():
 			client.close()
 
 	async def	reset_game(self):
-		if not hasattr(self, 'loop_task'):
+		if self.loop_task is None:
 			# self.bot = await init_bot('pong', self.game, self)
 			self.game.reset_game()
 			# await self.bot.launch_train()
@@ -240,10 +241,9 @@ class PongHandler():
 	async def	cancel_loop(self):
 		if self.bot:
 			await self.bot.cancel_loop()
-			# await self.bot.try_cancel_loop()
-			# await self.bot.update_q_table_db()
-		if hasattr(self, 'loop_task'):
+		if self.loop_task is not None:
 			await self.loop_task.cancel()
+			self.loop_task = None
 
 	async def	end_game(self, winner=None):
 
