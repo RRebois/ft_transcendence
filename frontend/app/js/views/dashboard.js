@@ -132,12 +132,29 @@ export default class Dashboard {
 				if (!ok) {
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+					let createMatchModal = null;
+					if (game_type === 'pong') {
+						createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-pong-match-modal'));
+					}
+					else{
+						createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-purrinha-match-modal'));
+					}
+					if (createMatchModal)
+						createMatchModal.hide();
+						const backdrops = document.querySelectorAll('.modal-backdrop');
+						backdrops.forEach(backdrop => backdrop.remove());
 				} else {
 					console.log("Game request success: ", data);
 					data.code = code;
 					const params = new URLSearchParams(data).toString();
 					// Close modal
-					const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-match-modal'));
+					let createMatchModal = null;
+					if (game_type === 'pong') {
+						createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-pong-match-modal'));
+					}
+					else {
+						createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-purrinha-match-modal'));
+					}
 					if (createMatchModal)
 						createMatchModal.hide();
 						const backdrops = document.querySelectorAll('.modal-backdrop');
