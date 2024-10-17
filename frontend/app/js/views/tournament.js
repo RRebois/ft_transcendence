@@ -129,35 +129,55 @@ export default class Tournament {
             const   matchsPlayed = this.fetch_matchs_played(tournament, player);
             const   playerElement = document.createElement('div');
             playerElement.classList.add('player-card', 'd-flex', 'flex-wrap', 'flex-row', 'align-items-center', 'justify-content-evenly', 'bg-tournament', 'rounded', 'px-3', 'py-2', 'm-1')
-            playerElement.innerHTML = `
-                <div id="user-id" class="d-flex flex-column align-items-center justify-content-center w-128">
-                    <p class="mx-2 my-1 play-bold">${player?.Username}</p>
-                    <img src="${player.img}" alt="user avatar image" class="h-64 w-64 rounded-circle" />
-                </div>
-                <div class="d-flex flex-column align-items-center justify-content-center mx-4">
-                    <p class="play-bold">Elo:</p>
-                    <p class="m-0">${Math.round(player?.stats.pong.elo[player?.stats.pong.elo.length - 1].elo)}</p>
-                </div>
-                <div class="d-flex flex-column align-items-center justify-content-center w-128">
-                    <p class="play-bold">Matchs played:</p>
-                    <p class="m-0">${matchsPlayed}/${tournament.nb_players - 1}</p>
-                </div>
-            `;
+            player['Username'] === tournament.winner ?
+                playerElement.innerHTML = `
+                    <div id="user-id" class="d-flex flex-column align-items-center justify-content-center w-128">
+                        <p class="mx-2 my-1 play-bold">${player?.Username} <i class="bi bi-trophy-fill" style="color: #e4ca6a;"></i></p>
+                        <img src="${player.img}" alt="user avatar image" class="h-64 w-64 rounded-circle" />
+                    </div>
+                    <div class="d-flex flex-column align-items-center justify-content-center mx-4">
+                        <p class="play-bold">Elo:</p>
+                        <p class="m-0">${Math.round(player?.stats.pong.elo[player?.stats.pong.elo.length - 1].elo)}</p>
+                    </div>
+                    <div class="d-flex flex-column align-items-center justify-content-center w-128">
+                        <p class="play-bold">Matchs played:</p>
+                        <p class="m-0">${matchsPlayed}/${tournament.nb_players - 1}</p>
+                    </div>
+                ` :
+                playerElement.innerHTML = `
+                    <div id="user-id" class="d-flex flex-column align-items-center justify-content-center w-128">
+                        <p class="mx-2 my-1 play-bold">${player?.Username}</p>
+                        <img src="${player.img}" alt="user avatar image" class="h-64 w-64 rounded-circle" />
+                    </div>
+                    <div class="d-flex flex-column align-items-center justify-content-center mx-4">
+                        <p class="play-bold">Elo:</p>
+                        <p class="m-0">${Math.round(player?.stats.pong.elo[player?.stats.pong.elo.length - 1].elo)}</p>
+                    </div>
+                    <div class="d-flex flex-column align-items-center justify-content-center w-128">
+                        <p class="play-bold">Matchs played:</p>
+                        <p class="m-0">${matchsPlayed}/${tournament.nb_players - 1}</p>
+                    </div>
+                `;
             playerDiv.appendChild(playerElement);
         });
     }
 
     setup_join_play_btn(tournament) {
         const   joinBtn = document.getElementById('join-tournament');
+        const   playBtn = document.getElementById('play-tournament');
         var     participant = false;
         tournament.players.forEach(player => {
             if (player.Username === this.user.username) {
                 joinBtn.classList.add('disabled');
                 participant = true;
+                const   matchsPlayed = this.fetch_matchs_played(tournament, player);
+                if (matchsPlayed === tournament.nb_players - 1) {
+                    playBtn.hidden = true;
+                    joinBtn.hidden = true;
+                }
             }
         });
-        const   playBtn = document.getElementById('play-tournament');
-        if (tournament.status === "Finished") {
+        if (tournament.status === "finished") {
             playBtn.classList.add('disabled');
             playBtn.hidden = true;
             joinBtn.hidden = true;
