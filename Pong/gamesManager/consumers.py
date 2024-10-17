@@ -112,6 +112,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 	async def	disconnect(self, close_code):
 		await self.decrement_connection_count()
 		await self.user_online(self.user)
+		print(f"\n\n\n{self.username} PONG WS disconnected\n\n\n")
 		await self.channel_layer.group_discard(
 			self.session_id,
 			self.channel_name
@@ -123,7 +124,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 			await asyncio.sleep(0.4)
 
 	async def	fetch_session_data(self):
-		if self.session_data['status'] != 'started':
+		if self.session_data['status'] == 'waiting':
 			self.session_data = await self.get_session_data()
 		else:
 			self.game_handler = GameManagerConsumer.matchs.get(self.session_id)
@@ -187,6 +188,7 @@ class PongHandler():
 		self.consumer = [consumer]
 		self.game_code = consumer.game_code
 		self.bot = None
+		self.loop_task = None
 
 	async def	launch_game(self, players_name):
 		self.message = self.consumer[0].session_data
@@ -229,7 +231,7 @@ class PongHandler():
 			client.close()
 
 	async def	reset_game(self):
-		if not hasattr(self, 'loop_task'):
+		if self.loop_task is None:
 			self.game.reset_game()
 			self.loop_task = asyncio.create_task(self.game_loop())
 
@@ -261,8 +263,9 @@ class PongHandler():
 		if self.bot:
 			await self.bot.cancel_loop()
 			# await self.bot.update_q_table_db()
-		if hasattr(self, 'loop_task'):
+		if self.loop_task is not None:
 			await self.loop_task.cancel()
+			self.loop_task = None
 
 	async def	end_game(self, winner=None):
 
