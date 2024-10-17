@@ -73,6 +73,7 @@ class Tournament(models.Model):
             'id': self.id,
             'name': self.name,
             'status': status,
+            'nb_players': self.number_players,
             'players': [player.serialize() for player in self.players.all()],
             'winner': self.winner.username if self.winner else winner_replace,
             'matchs': [match.serialize() for match in self.tournament_matchs.all()],
@@ -108,16 +109,38 @@ class TournamentMatch(models.Model):
             match_result['winner'] = serialized['winner']
 
         if self.score:
-            # for i, player in enumerate(match_result['players']):
-            #     if i < len(self.score):
-            #         print("\n\n\n\n\n",i ,player,"\n\n\n\n\n")
-            #         print("\n\n\n\n\n", self.score[i], "\n\n\n\n\n")
-            #         player['score'] = player['score']
-
             if len(self.score) == len(self.players.all()) and all(isinstance(s, int) for s in self.score):
                 max_score = max(self.score)
-                winning_player = self.players.all()[self.score.index(max_score)]
-                match_result['winner'] = [winning_player.username]
+                for player in match_result['players']:
+                    if player['score'] == max_score:
+                        match_result['winner'] = player
+
+    # def serialize(self):
+    #     match_result = {
+    #         'players': [{**player.serialize(), 'score': 0} for player in self.players.all()],
+    #         'winner': ['n/a'],
+    #         'is_finished': self.match.is_finished if self.match else False
+    #     }
+    #
+    #     if self.match:
+    #         serialized = self.match.serialize()
+    #         for player in match_result['players']:
+    #             score = next((p['score'] for p in serialized['players'] if p['username'] == player['Username']), 0)
+    #             player['score'] = score
+    #
+    #         match_result['winner'] = serialized['winner']
+    #
+    #     if self.score:
+    #         for i, player in enumerate(match_result['players']):
+    #             if i < len(self.score):
+    #                 print("\n\n\n\n\n",i ,player,"\n\n\n\n\n")
+    #                 print("\n\n\n\n\n", self.score[i], "\n\n\n\n\n")
+    #                 player['score'] = player['score']
+    #
+    #         if len(self.score) == len(self.players.all()) and all(isinstance(s, int) for s in self.score):
+    #             max_score = max(self.score)
+    #             winning_player = self.players.all()[self.score.index(max_score)]
+    #             match_result['winner'] = [winning_player.username]
 
 
         # match_result = {

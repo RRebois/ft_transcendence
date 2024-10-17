@@ -100,7 +100,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 			await asyncio.sleep(0.4)
 
 	async def	fetch_session_data(self):
-		if self.session_data['status'] != 'started':
+		if self.session_data['status'] != 'waiting':
 			self.session_data = await self.get_session_data()
 		else:
 			self.game_handler = GameManagerConsumer.matchs.get(self.session_id)

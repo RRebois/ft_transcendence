@@ -167,7 +167,7 @@ def find_tournament_winner(tournament):
     players = {player.username: [0, 0, player] for player in tournament.players.all()}
     matchs = tournament.tournament_matchs.all()
     for match in matchs:
-        winner = match.winner.username
+        winner = match.winner
         if winner in players:
             players[winner][0] += 1
             players[winner][1] += match.get_winner_score()

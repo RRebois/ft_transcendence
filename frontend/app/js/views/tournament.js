@@ -58,16 +58,13 @@ export default class Tournament {
                 credentials: 'include'
             })
             .then(response => response.json().then(data => ({ok: response.ok, data})))
-            .then(({ok, data}) => { console.log("\n\n\ntournament infos: ", data);
+            .then(({ok, data}) => {
                 if (!ok) {
                     this.toast.throwToast("Error", data.message || "Something went wrong", 5000, "error");
                 } else {
                     this.toast.throwToast("Success", data.message || "You are in tournament matchmaking", 5000, "success");
                     document.getElementById('play-tournament').classList.add('disabled');
                     const params = new URLSearchParams(data).toString();
-console.log("\n\n\nPARAMS: ", params);
-console.log("\n\n\nPARAMS 1: ", this.props);
-console.log("\n\n\nPARAMS 2: ", data.code);
                     appRouter.navigate(`/${data.game}?${params}`);
                 }
             })
@@ -85,17 +82,16 @@ console.log("\n\n\nPARAMS 2: ", data.code);
         return (false);
     }
 
-    load_games(tournament) {console.log("\n\n\n\n\n",tournament,"\n\n\n\n\n");
+    load_games(tournament) { console.log("Tournament info: ", tournament);
         const gameDiv = document.getElementById('games');
         gameDiv.innerHTML = '';
         tournament.matchs.forEach(match => {
             var isParticipant = this.checkUserParticipate(tournament);
             var background;
             if (match.is_finished && isParticipant)
-                background = match?.winner.includes(this.user.username) ? 'bg-victory' : 'bg-defeat';
+                background = match?.winner.Username.includes(this.user.username) ? 'bg-victory' : 'bg-defeat';
             else
                 background = 'bg-tournament';
-            console.log("match: ", match);
             const   gameElement = document.createElement('div');
             gameElement.classList.add(background, 'player-card', 'd-flex', 'flex-wrap', 'flex-row', 'align-items-center', 'justify-content-evenly', 'rounded', 'px-3', 'py-2', 'm-1')
             gameElement.innerHTML = `
@@ -128,7 +124,6 @@ console.log("\n\n\nPARAMS 2: ", data.code);
 
     load_players(tournament) {
         const   playerDiv = document.getElementById('players');
-        const   gamesToPlay = tournament.players.length - 1;
         playerDiv.innerHTML = '';
         tournament.players.forEach(player => {
             const   matchsPlayed = this.fetch_matchs_played(tournament, player);
@@ -145,7 +140,7 @@ console.log("\n\n\nPARAMS 2: ", data.code);
                 </div>
                 <div class="d-flex flex-column align-items-center justify-content-center w-128">
                     <p class="play-bold">Matchs played:</p>
-                    <p class="m-0">${matchsPlayed}/${gamesToPlay}</p>
+                    <p class="m-0">${matchsPlayed}/${tournament.nb_players - 1}</p>
                 </div>
             `;
             playerDiv.appendChild(playerElement);
@@ -202,7 +197,6 @@ console.log("\n\n\nPARAMS 2: ", data.code);
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 			} else {
-                console.log("data is: ", data);
                 this.tournamentObj = data;
                 this.load_players(data);
                 this.load_games(data);
@@ -218,7 +212,7 @@ console.log("\n\n\nPARAMS 2: ", data.code);
         this.play_tournament();
     }
 
-    render() { console.log("\n\n\n\n\n\nTEST: ", this.props);
+    render() {
         // document.title = `ft_transcendence | Tournament ${this.props?.id}`;
         return `
             <div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
