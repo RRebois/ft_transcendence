@@ -197,6 +197,8 @@ class GameManagerView(APIView):
 			user = authenticate_user(request)
 		except AuthenticationFailed as e:
 			return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+		if user.status == "in-game":
+			return JsonResponse({"message": "You are already in a game."}, status=403)
 		error_message = self.check_data(game_name, game_code)
 		if error_message is not None:
 			return JsonResponse({"success": False, "errors": error_message})
