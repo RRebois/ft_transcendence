@@ -5,6 +5,8 @@ import {appRouter} from "@js/spa-router/initializeRouter.js";
 export default class Tournament {
     constructor(props) {
         this.props = props;
+        this.participant = false;
+        this.playerFinished = false;
         this.user = props?.user;
         this.setUser = this.setUser.bind(this);
         this.toast = new ToastComponent();
@@ -165,19 +167,19 @@ export default class Tournament {
     setup_join_play_btn(tournament) {
         const   joinBtn = document.getElementById('join-tournament');
         const   playBtn = document.getElementById('play-tournament');
-        var     participant = false;
         tournament.players.forEach(player => {
             if (player.Username === this.user.username) {
                 joinBtn.classList.add('disabled');
-                participant = true;
+                this.participant = true;
                 const   matchsPlayed = this.fetch_matchs_played(tournament, player);
                 if (matchsPlayed === tournament.nb_players - 1) {
                     playBtn.hidden = true;
                     joinBtn.hidden = true;
+                    this.playerFinished = true;
                 }
             }
         });
-        if (tournament.status === "finished") {
+        if (tournament.status === "finished" || this.playerFinished) {
             playBtn.classList.add('disabled');
             playBtn.hidden = true;
             joinBtn.hidden = true;
