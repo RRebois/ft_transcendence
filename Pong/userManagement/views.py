@@ -271,11 +271,13 @@ class LogoutView(APIView):
     def get(self, request):
         user = authenticate_user(request)
         if user is not None:
-            response = JsonResponse({"redirect": True, "redirect_url": "/"}, status=status.HTTP_200_OK)
+            user.status = "offline"
+            user.save()
+            response = JsonResponse(data={}, status=status.HTTP_200_OK)
             response.delete_cookie('jwt_access')
             response.delete_cookie('jwt_refresh')
         else:
-            response = JsonResponse({"redirect": True, "redirect_url": "/"}, status=status.HTTP_401_UNAUTHORIZED)
+            response = JsonResponse(data={}, status=status.HTTP_401_UNAUTHORIZED)
         return response
 
 

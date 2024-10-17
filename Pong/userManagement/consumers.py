@@ -15,8 +15,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             user_connected = User.objects.get(id=user.id)
             user_connected.status = status
             user_connected.save(update_fields=['status'])
-            logging.debug(f"User {str(self.scope['user'])} is now {user_connected.status}")
-            # print(f"User {str(self.scope['user'])} is now {user_connected.status}")
+            # logging.debug(f"User {str(self.scope['user'])} is now {user_connected.status}")
+            print(f"User {str(self.scope['user'])} is now {user_connected.status}")
             return True
         except:
             return False
@@ -63,26 +63,48 @@ class UserConsumer(AsyncWebsocketConsumer):
         else:
             return
 
+    @database_sync_to_async
+    def ws_count(self, user, nb):
+        user.active_ws += nb
+        user.save(update_fields=['active_ws'])
+        return
+
+    async def connect_active_ws(self, user):
+        await self.ws_count(user, 1)
+        if user.active_ws == 1:
+            print(f"CONNECT: User {user} is in ONLINE STATUS: {user.active_ws} active ws")
+            await self.user_online(user)
+        self.scope['user'] = user
+        return
+
+    async def disconnect_active_ws(self, user):
+        await self.ws_count(user, -1)
+        if user.active_ws == 0:
+            print(f"DISCONNECT: User {user} is in OFFLINE STATUS: {user.active_ws} active ws")
+            await self.user_offline(user)
+        self.scope['user'] = user
+        return
+
     async def connect(self):
         user = self.scope["user"]
         if user.is_anonymous:
             await self.accept()
             await self.close()
         else:
+            print(f"CONNECT START: User {user} has {user.active_ws} active ws")
             await self.accept()
             await self.channel_layer.group_add(f"user_{user.id}_group", self.channel_name)
             await self.channel_layer.group_add("Connected_users_group", self.channel_name)
-            # currentPath = window.location.pathname
-            # if currentPath.startsWith('/set-reset-password'):
-            #     await self.user_ingame(user)
-            # else:
-            await self.user_online(user)
+            await self.connect_active_ws(user)
+            print(f"CONNECT END: User {user} has {user.active_ws} active ws")
 
     async def disconnect(self, close_code):
         user = self.scope['user']
-        await self.user_offline(user)
+        print(f"DISCONNECT START: User {user} has {user.active_ws} active ws")
+        await self.disconnect_active_ws(user)
         await self.channel_layer.group_discard(f"user_{user.id}_group", self.channel_name)
         await self.channel_layer.group_discard("Connected_users_group", self.channel_name)
+        print(f"DISCONNECT END: User {user} has {user.active_ws} active ws")
 
     async def receive(self, text_data):
         print(f"Received message: {text_data}")
@@ -178,7 +200,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def join_match(self, event):
         user = self.scope['user']
-        await self.user_offline(user)
+        # await self.user_offline(user)
         await self.send(text_data=json.dumps({
             'type': 'join_match',
             'user_id': user.id,
