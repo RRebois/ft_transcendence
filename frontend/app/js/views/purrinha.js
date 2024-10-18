@@ -198,10 +198,12 @@ export default class PurrinhaGame {
 		console.log("this.props: ", this.props);
 		if (!this.props?.game || !this.props?.ws_route || !this.props?.session_id || !this?.props.code) {
 			const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
-			document.getElementById('errorModalBody').innerHTML = `
-				<p>This match is not available. Please try again later.</p>
-			`
-			errorModal.show();
+			if (errorModal) {
+				document.getElementById('errorModalBody').innerHTML = `
+					<p>This match is not available. Please try again later.</p>
+				`
+				errorModal.show();
+			}
 		}
 
 		document.getElementById('returnHomeBtn').addEventListener('click', () => {

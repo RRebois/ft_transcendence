@@ -15,6 +15,7 @@ class Match(models.Model):
     is_pong = models.BooleanField(default=True)
     timeMatch = models.DateTimeField(auto_now_add=True)
     count = models.IntegerField(default=2)
+    deconnection = models.BooleanField(default=False)
     is_finished = models.BooleanField(default=False)
 
     class Meta:
@@ -39,7 +40,9 @@ class Match(models.Model):
                         for score in self.scores.all()],
             "count": self.count,
             "winner": winners_list,
+            "deconnection": self.deconnection,
             "timestamp": self.timeMatch.strftime("%b %d %Y, %I:%M %p"),
+            "is_finished": self.is_finished,
         }
 
 
@@ -82,7 +85,6 @@ class Tournament(models.Model):
     def get_unfinished_matchs(self):
         return [match for match in self.tournament_matchs.all() if not match.match]
 
-
 class TournamentMatch(models.Model):
 
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='tournament_matchs')
@@ -94,6 +96,7 @@ class TournamentMatch(models.Model):
         match_result = {
             'players': [{**player.serialize(), 'score': 0} for player in self.players.all()],
             'winner': ['n/a'],
+            'is_finished': self.match.is_finished if self.match else False
         }
 
         if self.match:

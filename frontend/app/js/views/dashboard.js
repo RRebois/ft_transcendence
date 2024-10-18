@@ -132,12 +132,28 @@ export default class Dashboard {
 				if (!ok) {
 					const toastComponent = new ToastComponent();
 					toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+					let createMatchModal = null;
+					if (game_type === 'pong') {
+						createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-pong-match-modal'));
+					}
+					else{
+						createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-purrinha-match-modal'));
+					}
+					if (createMatchModal)
+						createMatchModal.hide();
+						const backdrops = document.querySelectorAll('.modal-backdrop');
+						backdrops.forEach(backdrop => backdrop.remove());
 				} else {
 					console.log("Game request success: ", data);
 					data.code = code;
 					const params = new URLSearchParams(data).toString();
-					// Close modal
-					const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-match-modal'));
+					let createMatchModal = null;
+					if (game_type === 'pong') {
+						createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-pong-match-modal'));
+					}
+					else {
+						createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-purrinha-match-modal'));
+					}
 					if (createMatchModal)
 						createMatchModal.hide();
 						const backdrops = document.querySelectorAll('.modal-backdrop');
@@ -384,6 +400,7 @@ export default class Dashboard {
 					radio.addEventListener('change', (event) => {
 						console.log("Number of players changed: ", event.target.value);
 						this.tournamentNbPlayers = event.target.value;
+						// this.tournamentNbPlayers = 2; // FOR TESTS
 					});
 				});
 
@@ -595,7 +612,7 @@ export default class Dashboard {
 								<div class="form-floating has-validation">
 									<input type="text" id="tournament-name" class="form-control" required />
 									<label for="name">Name<span class="text-danger">*</span></label>
-									<div class="form-text">Username has to be 3 to 15 characters long and composed only by letters, digits and hyphens (- or _)</div>
+									<div class="form-text">Tournament name has to be 3 to 15 characters long and composed only by letters, digits and hyphens (- or _)</div>
 									<div class="invalid-feedback">Name have an invalid format</div>
 								</div>
 							</div>

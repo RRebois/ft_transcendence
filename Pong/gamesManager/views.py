@@ -77,7 +77,7 @@ class	MatchMaking():
 		elo_diff = None
 		matchs_open = 0
 		for k, v in MatchMaking.matchs.items():
-			if v['status'] == 'open' and v['elos'] and not v['tournament_id'] and username not in v['players']\
+			if v['status'] == 'open' and v['elos'] and not v['tournament_name'] and username not in v['players']\
 						and v['game_name'] == game_name and v['game_code'] == game_code:
 				matchs_open += 1
 				elo_diff = [abs(elo - user_elo) for elo in v['elos'] if abs(elo - user_elo) <= diff]
@@ -91,31 +91,30 @@ class	MatchMaking():
 
 
 	@staticmethod
-	def	create_session(game_name, game_code, tournament_id=None):
-			awaited_connections = 2
-			if game_code == 40:
-				awaited_connections = 4
+	def	create_session(game_name, game_code, tournament_name=None):
+		awaited_connections = 2
+		if game_code == 40:
+			awaited_connections = 4
+		print("\n\n\nTournament Name in createSess: ", tournament_name)
+		players = {}
+		session_id = f"{game_name}_{str(uuid.uuid4().hex)}"
 
-			players = {}
-			session_id = f"{game_name}_{str(uuid.uuid4().hex)}"
+		if game_code not in [10, 20]:
+			MatchMaking.matchs[session_id] = {
+				'game_name': game_name,
+				'game_code': game_code,
+				'awaited_players': awaited_connections,
+				'tournament_name': tournament_name,
+				'status': 'open',
+				'players': [],
+				'elos': [],
+			}
 
-			if game_code not in [10, 20]:
-				MatchMaking.matchs[session_id] = {
-					'game_name': game_name,
-					'game_code': game_code,
-					'awaited_players': awaited_connections,
-					'tournament_id': tournament_id,
-					'status': 'open',
-					'players': [],
-					'elos': [],
-				}
+		# if usernames:
+		# 	for i, username in enumerate(usernames):
+		# 		players[username] = {'id': i + 1, 'connected': False}
 
-			# if usernames:
-			# 	for i, username in enumerate(usernames):
-			# 		players[username] = {'id': i + 1, 'connected': False}
-
-			cache.set(session_id, {
-
+		cache.set(session_id, {
 			'players': players,
 			'game': game_name,
 			'awaited_players': awaited_connections,
@@ -123,31 +122,36 @@ class	MatchMaking():
 			'session_id': session_id,
 			'status': 'waiting',
 			'winner': None,
-			'tournament_id': tournament_id,
+			'tournament_name': tournament_name,
 			'game_state': 'waiting',
-			})
-			return session_id
+			'deconnection': False,
+		})
+		return session_id
 
 	@staticmethod
-	def	create_tournament_session(tournament_id):
-			tournament = Tournament.objects.get(id=tournament_id)
+	def	create_tournament_session(tournament_name):
+			tournament = Tournament.objects.get(name=tournament_name)
+			print("\n\n\nTournament Name create tournament sess: ", tournament_name)
 			# matchs = [match.get_players() for match in tournament.tournament_matchs.all()]
-			MatchMaking.tournament[tournament_id] = {
+			MatchMaking.tournament[tournament_name] = {
 				# 'status': 'open',
-				'players': {player: [] for player in tournament.players.all()},
+				'number_players': tournament.number_players,
+				'players': {player.username: [] for player in tournament.players.all()},
 				'matchs': [
-					MatchMaking.create_session('pong', 23, tournament_id) for match in tournament.tournament_matchs.all()
+					MatchMaking.create_session('pong', 23, tournament_name) for match in tournament.tournament_matchs.all()
 				],
 			}
-			return MatchMaking.tournament[tournament_id]
+			return MatchMaking.tournament[tournament_name]
 
 	@staticmethod
-	def	get_tournament_match(username, tournament_id):
-		tournament = MatchMaking.tournament.get(tournament_id)
+	def	get_tournament_match(username, tournament_name):
+		tournament = MatchMaking.tournament.get(tournament_name)
 		if not tournament:
-			tournament = MatchMaking.create_tournament_session(tournament_id)
-		if len(tournament['players'][username]) >= TOURNAMENT_LIMIT - 1:
-			return JsonResponse({"error": "You have already played all matchs for this tournament."}, status=404)
+			tournament = MatchMaking.create_tournament_session(tournament_name)
+		else:
+			print("\n\n\nTournament match found")
+		if len(tournament['players'][username]) >= tournament['number_players'] - 1:
+			return JsonResponse({"message": "You have already played all matchs for this tournament."}, status=404)
 		for match in tournament['matchs']:
 			if MatchMaking.matchs[match]['status'] == 'open':
 				players_list = MatchMaking.matchs[match]['players']
@@ -157,16 +161,16 @@ class	MatchMaking():
 						tournament['players'][players_list[0]].append(username)
 					MatchMaking.add_player(match, username)
 					return match
-		return JsonResponse({"error": "This tournament is already finished."}, status=404)
+		return JsonResponse({"message": "This tournament is already finished."}, status=404)
 
 
 	@staticmethod
-	def	delete_tournament_session(tournament_id):
-		tournament = MatchMaking.tournament.get(tournament_id)
+	def	delete_tournament_session(tournament_name):
+		tournament = MatchMaking.tournament.get(tournament_name)
 		if tournament:
 			for session in tournament['matchs']:
 				MatchMaking.delete_session(session)
-			MatchMaking.tournament.pop(tournament_id)
+			MatchMaking.tournament.pop(tournament_name)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -193,6 +197,8 @@ class GameManagerView(APIView):
 			user = authenticate_user(request)
 		except AuthenticationFailed as e:
 			return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+		if user.status == "in-game":
+			return JsonResponse({"message": "You are already in a game."}, status=403)
 		error_message = self.check_data(game_name, game_code)
 		if error_message is not None:
 			return JsonResponse({"success": False, "errors": error_message})
@@ -207,6 +213,8 @@ class GameManagerView(APIView):
 				"status": "in-game"
 			}
 		)
+		# user.status = "in-game"
+		# user.save()
 		return JsonResponse({
 			'game': game_name,
 			'session_id': session_id,

@@ -23,7 +23,6 @@ export default class ResetPw {
 
     init_reset_form(){
         const currentPath = window.location.pathname;
-        console.log("current path: ", currentPath);
         const eachpath = currentPath.split('/');
         if (currentPath.startsWith('/set-reset-password')) {
             console.log("IN RESET PASSWORD ")

@@ -44,7 +44,7 @@ class TournamentMatchInline(admin.TabularInline):
     readonly_fields = ('match', 'score')
 
 class TournamentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'is_closed', 'is_finished', 'winner')
+    list_display = ('id', 'name', 'is_closed', 'is_finished', 'winner')
     list_filter = ('is_closed', 'is_finished', 'winner')
     search_fields = ('id', 'players__username', 'winner__username')
     readonly_fields = ('id',)
