@@ -196,9 +196,7 @@ class PongHandler():
 		self.game = PongGame(players_name, multiplayer=(self.game_code == 40))
 		await self.send_game_state()
 		if BOT_NAME in self.message['players']:
-			self.bot = await init_bot('pong', self.game)
-		if self.bot:
-			print('\n\n\nYEAH\n\n\n')
+			self.bot = await init_bot('pong', self.game, self)
 
 
 	@database_sync_to_async
@@ -234,6 +232,7 @@ class PongHandler():
 	async def	reset_game(self):
 		if self.loop_task is None:
 			self.game.reset_game()
+			# await self.bot.launch_train()
 			self.loop_task = asyncio.create_task(self.game_loop())
 
 
@@ -263,7 +262,6 @@ class PongHandler():
 	async def	cancel_loop(self):
 		if self.bot:
 			await self.bot.cancel_loop()
-			# await self.bot.update_q_table_db()
 		if self.loop_task is not None:
 			await self.loop_task.cancel()
 			self.loop_task = None
@@ -313,6 +311,7 @@ class PurrinhaHandler():
 	def	__init__(self, consumer):
 		self.consumer = [consumer]
 		self.game_code = consumer.game_code
+		self.bot = None
 
 	async def	launch_game(self, players_name):
 		self.message = self.consumer[0].session_data
@@ -321,8 +320,7 @@ class PurrinhaHandler():
 		self.wins = {player: 0 for player in players_name.keys()}
 		self.game = PurrinhaGame(players_name)
 		if BOT_NAME in self.message['players']:
-			# init_bot()
-			pass
+			self.bot = await init_bot('purrinha', self)
 
 	async def	add_consumer(self, consumer):
 		self.consumer.append(consumer)
@@ -340,6 +338,8 @@ class PurrinhaHandler():
 
 	async def	reset_game(self):
 		if len(self.turns_id) == self.player_nb:
+			if self.bot:
+				await self.bot.launch_bot()
 			await self.get_new_turn()
 			self.message['game_state'] = await self.game.get_status()
 			self.message['game_state']['player_turn'] = self.curr_turn
@@ -391,8 +391,8 @@ class PurrinhaHandler():
 			ret = await self.parse_guess(value, player_id)
 			if ret:
 				await self.game.set_player_guess(player_id, value)
+				await self.get_new_turn()
 		if ret:
-			await self.get_new_turn()
 			self.message['game_state'] = await self.game.get_status()
 			self.message['game_state']['player_turn'] = self.curr_turn
 			self.message['game_state']['history'] = self.wins
@@ -422,6 +422,8 @@ class PurrinhaHandler():
 				self.message['deconnection'] = deconnection
 				await self.consumer[0].update_cache_db(self.message)
 				await sync_to_async(create_match)(self.wins, [winner], deco=deconnection, is_pong=False)
+				if self.bot:
+					await self.bot.cancel_loop()
 		await self.consumer[0].send_to_group(self.message)
 		if not self.message['winner']:
 			self.game.play_again()

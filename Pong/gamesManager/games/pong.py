@@ -39,18 +39,21 @@ class Ball:
         self.x = self.original_x = x
         self.y = self.original_y = y
         self.radius = radius
-        self.y_vel = randrange(15) * choice([0.1, -0.1])
-        self.x_vel = BALL_START_VEL * choice([1, -1])
+        self.y_vel = self.x_vel = 0
 
     async def move(self):
+        if not self.x_vel:
+            self.x_vel = BALL_START_VEL * choice([1, -1])
+        if not self.y_vel:
+            self.y_vel = randrange(15) * choice([0.1, -0.1])
         self.x += self.x_vel
         self.y += self.y_vel
 
     async def reset(self):
         self.x = self.original_x
         self.y = self.original_y
-        self.y_vel = randrange(15) * choice([0.1, -0.1])
-        self.x_vel = BALL_START_VEL * choice([1, -1])
+        self.y_vel = self.x_vel = 0
+
 
     async def accelerate(self):
         if abs(self.x_vel) >= MAX_VEL:
