@@ -143,7 +143,6 @@ class PurrinhaGame:
         status = 'guessing'
         guesses = 0
         for player in players:
-            print(f'\n\n\ninside get status => {player}\n\n\n')
             if not players[player]['quantity']:
                 status = 'choosing'
                 break
@@ -155,9 +154,7 @@ class PurrinhaGame:
             result = await self.match.get_final_result()
             players = await self.match.get_round_result()
             winner = 'tie'
-            print(f'\n\n\ninside get status => {players}\n\n\n')
             for player in players.values():
-                print(f'\n\n\ninside get status => {player}\n\n\n')
                 if player['guess'] == result:
                     winner = player['name']
                     break
@@ -182,7 +179,6 @@ class PurrinhaGame:
 
     async def set_player_quantity(self, id, quantity):
         player = await self.match.get_player_data(id)
-        print(f'\n\n\ninside set_player_quantity => {player}\n\n\n')
         if not player['quantity']:
             await self.match.set_player_quantity(id, quantity)
 

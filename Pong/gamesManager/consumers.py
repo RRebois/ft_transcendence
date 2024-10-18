@@ -12,10 +12,32 @@ from matchs.views import create_match, add_match_to_tournament, send_to_tourname
 from .views import MatchMaking
 from .game_ai.bot_manager import init_bot
 from configFiles.globals import *
+from userManagement.models import User
 
 
 class GameManagerConsumer(AsyncWebsocketConsumer):
     matchs = {}
+
+    @database_sync_to_async
+    def update_user_status(self, user, status):
+        try:
+            user_connected = User.objects.get(id=user.id)
+            print(f"GAME: User is {str(user_connected)}")
+            user_connected.status = status
+            user_connected.save(update_fields=['status'])
+            # self.scope['user'] = user_connected
+            print(f"GAME: User {str(self.scope['user'])} is now {user_connected.status}")
+            return
+        except:
+            return
+
+    async def user_online(self):
+        user = self.scope['user']
+        await self.update_user_status(user, "online")
+
+    async def user_in_game(self):
+        user = self.scope['user']
+        await self.update_user_status(user, "in-game")
 
     async def connect(self):
         self.game_name = self.scope['url_route']['kwargs']['game_name']
@@ -61,6 +83,7 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
                 await self.update_cache_db(self.session_data)
         else:
             self.loop_task = asyncio.create_task(self.fetch_session_data_loop())
+        await self.user_in_game()
         print(
             f'\n\n\nusername => |{self.username}|\nuser => |{self.user}|\ncode => |{self.game_code}|\n data => |{self.session_data}|\nscope => |{self.scope}| \n\n')
         await self.send_to_group(self.session_data)
@@ -89,7 +112,9 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(message))
 
     async def disconnect(self, close_code):
+        await self.user_online()
         await self.decrement_connection_count()
+        print(f"\n\n\n{self.username} PONG WS disconnected\n\n\n")
         await self.channel_layer.group_discard(
             self.session_id,
             self.channel_name
@@ -101,7 +126,7 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
             await asyncio.sleep(0.4)
 
     async def fetch_session_data(self):
-        if self.session_data['status'] != 'started':
+        if self.session_data['status'] == 'waiting':
             self.session_data = await self.get_session_data()
         else:
             self.game_handler = GameManagerConsumer.matchs.get(self.session_id)
@@ -130,6 +155,7 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
         else:
             self.session_data['players'] = {
                 self.username: {'connected': True, 'id': self.session_data['connected_players']}}
+
         if self.session_data['connected_players'] == self.session_data['awaited_players']:
             self.session_data['status'] = 'ready'
         cache.set(self.session_id, self.session_data)
@@ -166,6 +192,7 @@ class PongHandler():
         self.consumer = [consumer]
         self.game_code = consumer.game_code
         self.bot = None
+        self.loop_task = None
 
     async def launch_game(self, players_name):
         self.message = self.consumer[0].session_data
@@ -207,7 +234,7 @@ class PongHandler():
             client.close()
 
     async def reset_game(self):
-        if not hasattr(self, 'loop_task'):
+        if self.loop_task is None:
             self.game.reset_game()
             self.loop_task = asyncio.create_task(self.game_loop())
 
@@ -238,8 +265,9 @@ class PongHandler():
         if self.bot:
             await self.bot.cancel_loop()
         # await self.bot.update_q_table_db()
-        if hasattr(self, 'loop_task'):
+        if self.loop_task is not None:
             await self.loop_task.cancel()
+            self.loop_task = None
 
     async def end_game(self, winner=None):
 
@@ -355,8 +383,6 @@ class PurrinhaHandler():
         value = text_data.get('selected_value')
         player_id = text_data.get('player_id')
         ret = None
-        print(f"\n\n\ntext_data => {text_data}\n\n\n")
-        print(f"\n\n\nplayer_id => {player_id}\n\n\n")
         if action == "pick_initial_number":
             ret = await self.parse_quantity(value, player_id)
             if ret:
@@ -366,7 +392,6 @@ class PurrinhaHandler():
             if ret:
                 await self.game.set_player_guess(player_id, value)
                 await self.get_new_turn()
-
         if ret:
             self.message['game_state'] = await self.game.get_status()
             self.message['game_state']['player_turn'] = self.curr_turn
@@ -388,7 +413,6 @@ class PurrinhaHandler():
             win = choice([i for i in enumerate(winner)])[0]
             winner = winner[win]
             deconnection = True
-        print(f'\n\n\nwinner => {winner}\nwins => {self.wins}\n\n\n')
         if winner != 'tie':
             self.wins[winner[0]] += 1
             self.message['game_state']['history'] = self.wins
