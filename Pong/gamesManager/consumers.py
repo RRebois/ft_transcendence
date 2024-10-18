@@ -22,21 +22,22 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 	def update_user_status(self, user, status):
 		try:
 			user_connected = User.objects.get(id=user.id)
-			print(f"User is {str(user_connected)}")
+			print(f"GAME: User is {str(user_connected)}")
 			user_connected.status = status
 			user_connected.save(update_fields=['status'])
-			print(f"User {str(self.scope['user'])} is now {user_connected.status}")
-			return True
+			# self.scope['user'] = user_connected
+			print(f"GAME: User {str(self.scope['user'])} is now {user_connected.status}")
+			return
 		except:
-			return False
+			return
 
-	async def user_online(self, user):
+	async def user_online(self):
+		user = self.scope['user']
 		await self.update_user_status(user, "online")
-		return
 
-	async def user_in_game(self, user):
+	async def user_in_game(self):
+		user = self.scope['user']
 		await self.update_user_status(user, "in-game")
-		return
 
 	async def	connect(self):
 		self.game_name = self.scope['url_route']['kwargs']['game_name']
@@ -82,7 +83,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 				await self.update_cache_db(self.session_data)
 		else:
 			self.loop_task = asyncio.create_task(self.fetch_session_data_loop())
-		await self.user_in_game(self.user)
+		await self.user_in_game()
 		print(f'\n\n\nusername => |{self.username}|\nuser => |{self.user}|\ncode => |{self.game_code}|\n data => |{self.session_data}|\nscope => |{self.scope}| \n\n')
 		await self.send_to_group(self.session_data)
 
@@ -110,8 +111,8 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		await self.send(text_data=json.dumps(message))
 
 	async def	disconnect(self, close_code):
+		await self.user_online()
 		await self.decrement_connection_count()
-		await self.user_online(self.user)
 		print(f"\n\n\n{self.username} PONG WS disconnected\n\n\n")
 		await self.channel_layer.group_discard(
 			self.session_id,
