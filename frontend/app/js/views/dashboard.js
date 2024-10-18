@@ -2,7 +2,7 @@ import {getCookie} from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
 import {appRouter} from "@js/spa-router/initializeRouter.js";
 import * as bootstrap from "bootstrap";
-import {applyFontSize} from "../functions/display.js";
+import {applyFontSize, remove_modal_backdrops} from "../functions/display.js";
 
 export default class Dashboard {
 	constructor(props) {
@@ -51,8 +51,7 @@ export default class Dashboard {
 		const createTournamentModal = bootstrap.Modal.getInstance(document.getElementById('create-tournament-modal'));
 		if (createTournamentModal) {
 			createTournamentModal.hide();
-			const backdrops = document.querySelectorAll('.modal-backdrop');
-			backdrops.forEach(backdrop => backdrop.remove());
+			remove_modal_backdrops();
 		}
 		fetch(`https://${window.location.hostname}:8443/tournament/create`, {
 			method: 'POST',
@@ -141,8 +140,7 @@ export default class Dashboard {
 					}
 					if (createMatchModal)
 						createMatchModal.hide();
-						const backdrops = document.querySelectorAll('.modal-backdrop');
-						backdrops.forEach(backdrop => backdrop.remove());
+						remove_modal_backdrops();
 				} else {
 					console.log("Game request success: ", data);
 					data.code = code;
@@ -156,8 +154,7 @@ export default class Dashboard {
 					}
 					if (createMatchModal)
 						createMatchModal.hide();
-						const backdrops = document.querySelectorAll('.modal-backdrop');
-						backdrops.forEach(backdrop => backdrop.remove());
+						remove_modal_backdrops();
 					appRouter.navigate(`/${game_type}?${params}`);
 				}
 			})

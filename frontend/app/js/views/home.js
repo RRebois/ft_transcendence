@@ -2,7 +2,7 @@ import ToastComponent from "../components/Toast.js";
 import {getCookie} from "../functions/cookie.js";
 import {initializeWebSocket} from "../functions/websocket.js";
 import * as bootstrap from 'bootstrap'
-import {applyFontSize} from "../functions/display.js";
+import {applyFontSize, remove_modal_backdrops} from "../functions/display.js";
 import {appRouter} from "../spa-router/initializeRouter.js";
 
 export default class Home {
@@ -208,8 +208,7 @@ export default class Home {
                     const passwordModal = bootstrap.Modal.getInstance(document.getElementById('forgotPWModal'));
                     if (passwordModal)
                         passwordModal.hide();
-                    const backdrops = document.querySelectorAll('.modal-backdrop');
-                    backdrops.forEach(backdrop => backdrop.remove());
+                    remove_modal_backdrops();
                     submitBtn.disabled = false;
                     const toastComponent = new ToastComponent();
                     toastComponent.throwToast('Success', data.message, 5000, 'success');

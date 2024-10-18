@@ -68,8 +68,7 @@ export default class Navbar {
 				const modal = bootstrap.Modal.getInstance(document.getElementById("update-user-picture"));
 				if (modal) {
 					modal.hide();
-					const backdrops = document.querySelectorAll('.modal-backdrop');
-					backdrops.forEach(backdrop => backdrop.remove());
+					remove_modal_backdrops();
 				}
 				appRouter.navigate(window.location.pathname, false);
 			}
@@ -136,8 +135,7 @@ export default class Navbar {
 				const modal = bootstrap.Modal.getInstance(document.getElementById("update-user-picture"));
 				if (modal) {
 					modal.hide();
-					const backdrops = document.querySelectorAll('.modal-backdrop');
-					backdrops.forEach(backdrop => backdrop.remove());
+					remove_modal_backdrops();
 				}
 				appRouter.navigate(window.location.pathname);
 			}

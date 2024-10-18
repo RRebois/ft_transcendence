@@ -7,6 +7,7 @@ import * as bootstrap from "bootstrap";
 import {getCookie} from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
 import {appRouter} from "@js/spa-router/initializeRouter.js";
+import {remove_modal_backdrops} from "../functions/display.js";
 
 export default class PongGame {
     constructor(props) {
@@ -840,8 +841,7 @@ export default class PongGame {
                             const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-pong-match-modal'));
                             if (createMatchModal)
                                 createMatchModal.hide();
-                                const backdrops = document.querySelectorAll('.modal-backdrop');
-                                backdrops.forEach(backdrop => backdrop.remove());
+                                remove_modal_backdrops();
                             appRouter.navigate(`/${this.props?.game}?${params}`);
                             const socket = window.mySocket;
                             socket.send(JSON.stringify({

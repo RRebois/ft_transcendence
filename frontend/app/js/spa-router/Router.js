@@ -109,8 +109,6 @@ export default class Router {
         }
         // find all elements with class "modal-backdrop" and remove them
         remove_modal_backdrops();
-        const backdrops = document.querySelectorAll('.modal-backdrop');
-        backdrops.forEach(backdrop => backdrop.remove());
         const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
         const isUserAuth = await isUserConnected();
         const route = this.routes.find(route => this.match(route, path));
