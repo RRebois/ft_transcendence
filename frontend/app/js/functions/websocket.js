@@ -7,8 +7,9 @@ import {
     create_empty_request,
     create_empty_friend,
 } from "@js/functions/friends_management.js";
+import {load_tournaments_ws, reload_new_players} from "@js/functions/tournament_management.js";
 import {remove_friend_request_div} from "./friends_management.js";
-import {getCookie} from "@js/functions/cookie.js";
+import {load_new_notifications} from "../functions/navbar_utils.js";
 import {
     display_users_info,
     display_looking_for_players_modal,
@@ -110,11 +111,10 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
 
             socket.onclose = function (event) {
                 if (event.wasClean) {
-                    // console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+                    console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
                 } else {
-                    // console.log('Connection died');
+                    console.log('Connection died');
                 }
-                setTimeout(initializeWebSocket, 2000);
             };
 
             socket.onerror = function (error) {
@@ -177,7 +177,7 @@ export async function initializePongWebSocket(data, pong) {
             pong.init();
             let test = 0;
             socket.onmessage = function (event) {
-                console.log("Pong websocket msg received: ", event.data);
+                // console.log("Pong websocket msg received: ", event.data);
                 const data = JSON.parse(event.data);
 
                 if (data.status === "waiting") // Waiting for opponent(s)
@@ -196,7 +196,6 @@ export async function initializePongWebSocket(data, pong) {
                 } else {
                     // console.log('Connection died');
                 }
-                setTimeout(initializeWebSocket, 2000);
             };
 
             socket.onerror = function (error) {
@@ -217,6 +216,11 @@ export async function initializePongWebSocket(data, pong) {
 
 export async function initializeWebSocket() {
     return new Promise(async (resolve, reject) => {
+        if (window.mySocket) {
+            console.log("Socket already initialized");
+            resolve(window.mySocket);
+            return;
+        }
         console.log("In Init WS FRONT")
         const response = await fetch(`https://${window.location.hostname}:8443/get_ws_token/`, {
             credentials: 'include',
@@ -229,7 +233,7 @@ export async function initializeWebSocket() {
             const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
             const url = wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/'
             console.log("url is:", url);
-            const socket = new WebSocket(wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/');
+            let socket = new WebSocket(wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/');
 
             socket.onopen = function (e) {
                 console.log("WebSocket connection established");
@@ -245,20 +249,20 @@ export async function initializeWebSocket() {
                 if (data.type === 'test_message') {
                     console.log('Received test message:', data.message);
                 }
-                if (data.type === 'friend_request') {     // received friend request
+                if (data.type === 'friend_request') {
                     console.log("Friend request received");
                     console.log("data is:", data);
                     handle_received_friend_request(socket, data);
                 }
-                if (data.type === 'friend_req_accept') {  // accept friend request
+                if (data.type === 'friend_req_accept') {
                     console.log("Friend request accepted");
                     handle_friend_req_accept(socket, data);
                 }
-                if (data.type === 'friend_req_decline') {  // accept friend request
+                if (data.type === 'friend_req_decline') {
                     console.log("Friend request declined");
                     handle_friend_req_decline(socket, data);
                 }
-                if (data.type === 'friend_remove') {      // remove friend
+                if (data.type === 'friend_remove') {
                     console.log("Friend removed");
                     handle_friend_removed(socket, data);
                 }
@@ -268,19 +272,32 @@ export async function initializeWebSocket() {
                 if (data.type === 'friend_data_edit') {
                     console.log("Friend data edit");
                 }
-            };
-
+                if (data.type === 'tournament_created') {
+                    handle_tournament_created(socket, data);
+                }
+                if (data.type === 'tournament_full') {
+                    handle_tournament_full(socket, data);
+                }
+                if (data.type === 'tournament_new_player') {
+                    handle_tournament_new_player(socket, data);
+                }
+                if (data.type === 'tournament_play') {
+                    handle_tournament_play(socket, data);
+                }
+            }
             socket.onclose = function (event) {
                 if (event.wasClean) {
                     console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
                 } else {
                     console.log('Connection died');
                 }
+                socket = null;
                 setTimeout(initializeWebSocket, 2000);
             };
 
             socket.onerror = function (error) {
                 console.log(`WebSocket Error: ${error.message}`);
+                socket = null;
                 reject(error);
             };
             window.mySocket = socket; // to access as a global var
@@ -295,8 +312,9 @@ function handle_received_friend_request(socket, message) {
 //    console.log("message is:", message);
 
     const toast = new ToastComponent();
-    toast.throwToast('received-friend-request', `You have received a new friend request`, 5000);
+    toast.throwToast('Notification', `You have received a new friend request from ${message.from_user}`, 5000);
     create_friend_request_div(message, message.size);
+    load_new_notifications();
 }
 
 function handle_friend_req_accept(socket, message) {
@@ -304,13 +322,14 @@ function handle_friend_req_accept(socket, message) {
 //    console.log("message is:", message);
 
     const toast = new ToastComponent();
-    toast.throwToast('friend-request', `${message.to_user} Is now your friend !`, 5000);
+    toast.throwToast('Notification', `${message.to_user} Is now your friend!`, 5000);
     create_friend_div_ws(message.to_status, message.to_user_id, message.to_image_url, message.to_user);
     remove_friend_request_div(message.to_user_id);
     const friendRequest = document.getElementsByClassName('friend-req-sent');
     if (message.size === 1 || friendRequest.length === 0) {
         create_empty_request("sent");
     }
+    load_new_notifications();
 }
 
 function handle_friend_req_decline(socket, message) {
@@ -318,20 +337,19 @@ function handle_friend_req_decline(socket, message) {
 //    console.log("message is:", message);
 
     const toast = new ToastComponent();
-    toast.throwToast('friend-request', `${message.to_user} declined your friend request...`, 5000);
+    toast.throwToast('Notification', `${message.to_user} declined your friend request...`, 5000);
     remove_friend_request_div(message.to_user_id);
     const friendRequest = document.getElementsByClassName('friend-req-sent');
     if (message.size === 1 || friendRequest.length === 0) {
         create_empty_request("sent");
     }
+    load_new_notifications();
 }
 
 function handle_friend_removed(socket, message) {
 //    console.log("socket is:", socket);
 //    console.log("message is:", message);
 
-    const toast = new ToastComponent();
-    toast.throwToast('received-friend-request', `${message.from_user} Is no longer your friend !`, 5000);
     remove_friend_div(message.from_user_id);
     const friend = document.getElementsByClassName('friend');
     if (message.size === 1 || friend.length === 0) {
@@ -369,5 +387,44 @@ function handle_friend_status(socket, message) {
                 friendStatus.classList.add('bg-danger');
             }
         }
+    }
+}
+
+async function handle_tournament_created(socket, data) {
+    console.log("Tournament created socket:", socket);
+    console.log("data is:", data);
+
+    const user = await isUserConnected();
+    console.log("User is:", user);
+    if (user.id !== data.creator) {
+        const toast = new ToastComponent();
+        toast.throwToast('Notification', `${data.message}`, 5000);
+        load_new_notifications();
+        load_tournaments_ws();
+    }
+}
+
+function handle_tournament_full(socket, data) {
+    console.log("Tournament full socket:", socket);
+    console.log("data is:", data);
+
+    const toast = new ToastComponent();
+    toast.throwToast('Notification', `${data.message}`, 3000);
+    load_new_notifications();
+}
+
+function handle_tournament_new_player(socket, data) {
+    console.log("Tournament new player socket:", socket);
+    console.log("data is:", data);
+
+    reload_new_players(data.tournament_name);
+}
+
+async function handle_tournament_play(socket, data) {
+    const user = await isUserConnected();
+    if (user.id !== data.creator) {
+        const toast = new ToastComponent();
+        toast.throwToast('Notification', `${data.message}`, 3000);
+        load_new_notifications();
     }
 }

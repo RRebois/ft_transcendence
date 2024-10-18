@@ -13,7 +13,7 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
 
-from userManagement.models import User, UserData
+from userManagement.models import User, UserData, Notifications
 from userManagement.views import authenticate_user
 from .models import *
 from .serializer import TournamentSerializer
@@ -36,7 +36,7 @@ class MatchHistoryView(APIView):
         elif word == 'purrinha':
             matches = Match.objects.filter(players=user, is_pong=False).order_by('-timeMatch')
         else:
-            return JsonResponse({"error": "Invalid word."}, status=400)
+            return JsonResponse({"message": "Invalid word."}, status=400)
         return JsonResponse([match.serialize() for match in matches] if matches else [], safe=False, status=200)
 
 
@@ -95,7 +95,8 @@ class TournamentDisplayOneView(APIView):
         try:
             tournament = Tournament.objects.get(name=tournament_name)
         except:
-            return JsonResponse({"error": "Tournament does not exist."}, status=404)
+            return JsonResponse({"message": "Tournament does not exist."}, status=404)
+
         return JsonResponse(tournament.serialize(), safe=False, status=200)
 
 
@@ -196,7 +197,7 @@ def add_match_to_tournament(tournament_id, match):
     try:
         tournament = Tournament.objects.get(id=tournament_id)
     except:
-        return JsonResponse({"error": "Tournament does not exist."}, status=404)
+        return JsonResponse({"message": "Tournament does not exist."}, status=404)
     unfinished_matchs = tournament.get_unfinished_matchs()
     for unfinished_match in unfinished_matchs:
         unfinished_match.match = match
@@ -221,7 +222,24 @@ def send_to_tournament_group(tournament_id):
                 'matchs': cache_db['matchs'],
                 'message': cache_db['message'],
             }
-    )
+        )
+
+def reload_players_tournament_page(tournament_id, tournament):
+    cache_db = cache.get(tournament_id)
+    if not cache_db:
+        return
+    channel_layer = get_channel_layer()
+    for channel in cache_db['channels']:
+        async_to_sync(channel_layer.group_send)(
+            channel,
+            {
+                'type': 'tournament_new_player',
+                'tournament_name': tournament.name,
+                'players': cache_db['players'],
+                'matchs': cache_db['matchs'],
+            }
+        )
+
 
 def add_player_to_tournament(user, tournament):
     tournament_name = tournament.name
@@ -246,13 +264,29 @@ def add_player_to_tournament(user, tournament):
     for player in cache_db['players']:
         cache_db['matchs'].append({user.username: 0, player: 0, 'status': 'waiting'})
     if count + 1 == tournament.number_players:
-        cache_db['message'] = 'The tournament is ready to start, you can play now.'
+        msg = f'The "{tournament.name}" tournament is ready to start, you can play now.'
+        cache_db['message'] = msg
+        channel_layer = get_channel_layer()
+        for channel in cache_db['channels']:
+            async_to_sync(channel_layer.group_send)(
+                channel,
+                {
+                    'type': 'tournament_full',
+                    'players': cache_db['players'],
+                    'message': cache_db['message'],
+                }
+            )
         tournament.is_closed = True
+        all_players = tournament.players.all()
+        for player in all_players:
+            Notifications.objects.create(user=player, message=msg)
+
     tournament.save()
     cache.set(
         tournament_name,
         cache_db,
     )
+    reload_players_tournament_page(tournament_name, tournament)
     send_to_tournament_group(tournament_name)
 
 
@@ -270,6 +304,24 @@ class   CreateTournamentView(APIView):
         if serializer.is_valid():
             tournament = Tournament.objects.create(name=serializer.validated_data['name'], number_players=request.data.get('nb_players'))
             add_player_to_tournament(user, tournament)
+
+            all_users = User.objects.exclude(id=user.id)
+            for users in all_users:
+                Notifications.objects.create(user=users, message=f'A new tournament "{tournament.name}" has been created by {user.username}.')
+
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f"Connected_users_group",
+                {
+                    'type': 'tournament_created',
+                    'message': f'A new tournament "{tournament.name}" has been created by {user.username}.',
+                    'creator': user.id,
+                    'tournament_name': tournament.name,
+                    'tournament_closed': tournament.is_closed,
+                    'tournament_finished': tournament.is_finished,
+                }
+            )
+
             return JsonResponse(data={"tournament_id": tournament.get_id(), "name": tournament.name}, status=status.HTTP_200_OK)
         else:
             error_messages = []
@@ -315,14 +367,29 @@ class   PlayTournamentView(APIView):
         try:
             tournament = Tournament.objects.get(name=tournament_name)
         except:
-            return JsonResponse({"error": "Tournament does not exist."}, status=404)
+            return JsonResponse({"message": "Tournament does not exist."}, status=404)
         if tournament.is_finished:
-            return JsonResponse({"error": "This tournament is already finished."}, status=404)
+            return JsonResponse({"message": "This tournament is already finished."}, status=404)
         if not tournament.is_closed:
-            return JsonResponse({"error": "This tournament is not ready to play. Wait for all players."}, status=404)
+            return JsonResponse({"message": "This tournament is not ready to play. Wait for all players."}, status=404)
         if user not in tournament.players.all():
-            return JsonResponse({"error": "You have not joined this tournament."}, status=404)
+            return JsonResponse({"message": "You have not joined this tournament."}, status=404)
         session_id = MatchMaking.get_tournament_match(user.username, tournament_name) # verify if it returned a json
+
+        cache_db = cache.get(tournament.name)
+        if not cache_db:
+            return
+        channel_layer = get_channel_layer()
+        for channel in cache_db['channels']:
+            async_to_sync(channel_layer.group_send)(
+                channel,
+                {
+                    'type': 'tournament_play',
+                    'message': f'"{tournament.name}" tournament: {user.username} is searching for an opponent.',
+                    'player': user.id,
+                }
+            )
+
         return JsonResponse({
 			'game': 'pong',
 			'session_id': session_id,

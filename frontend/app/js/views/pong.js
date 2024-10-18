@@ -837,7 +837,7 @@ export default class PongGame {
                             data.code = `${this.props?.code}`;
                             const params = new URLSearchParams(data).toString();
                             // Close modal
-                            const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-match-modal'));
+                            const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-pong-match-modal'));
                             if (createMatchModal)
                                 createMatchModal.hide();
                                 const backdrops = document.querySelectorAll('.modal-backdrop');

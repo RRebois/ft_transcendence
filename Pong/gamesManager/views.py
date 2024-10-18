@@ -149,7 +149,7 @@ class MatchMaking():
         else:
             print("\n\n\nTournament match found")
         if len(tournament['players'][username]) >= tournament['number_players'] - 1:
-            return JsonResponse({"error": "You have already played all matchs for this tournament."}, status=404)
+            return JsonResponse({"message": "You have already played all matchs for this tournament."}, status=404)
         for match in tournament['matchs']:
             if MatchMaking.matchs[match]['status'] == 'open':
                 players_list = MatchMaking.matchs[match]['players']
@@ -159,7 +159,7 @@ class MatchMaking():
                         tournament['players'][players_list[0]].append(username)
                     MatchMaking.add_player(match, username)
                     return match
-        return JsonResponse({"error": "This tournament is already finished."}, status=404)
+        return JsonResponse({"message": "This tournament is already finished."}, status=404)
 
     @staticmethod
     def delete_tournament_session(tournament_name):
@@ -193,6 +193,8 @@ class GameManagerView(APIView):
             user = authenticate_user(request)
         except AuthenticationFailed as e:
             return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+        if user.status == "in-game":
+            return JsonResponse({"message": "You are already in a game."}, status=403)
         error_message = self.check_data(game_name, game_code)
         if error_message is not None:
             return JsonResponse({"success": False, "errors": error_message})
@@ -207,6 +209,8 @@ class GameManagerView(APIView):
                 "status": "in-game"
             }
         )
+        # user.status = "in-game"
+        # user.save()
         return JsonResponse({
             'game': game_name,
             'session_id': session_id,

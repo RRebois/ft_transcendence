@@ -1,6 +1,7 @@
 import {getCsrf, isUserConnected} from "@js/functions/user_auth.js";
 import Navbar from "@js/components/Navbar.js";
 import {remove_modal_backdrops} from "@js/functions/display.js";
+import {getCookie} from "@js/functions/cookie.js";
 
 export default class Router {
     constructor(routes = [], renderNode) {
@@ -115,7 +116,6 @@ export default class Router {
             this.render404Page(path);
             return;
         }
-
         if (isUserAuth) {
             route.setUser(isUserAuth);
             this.navbar.setUser(isUserAuth);
@@ -186,7 +186,8 @@ export default class Router {
             params = this.getQueryParams(query);
             if (route.path === '/stats') {
                 params.username = parameters[0];
-            } else if (route.path === '/tournament') {
+            }
+            else if (route.path === '/tournament') {
                 params.id = parameters[0];
             }
             route.setProps(params);

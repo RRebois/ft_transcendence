@@ -40,5 +40,7 @@ urlpatterns = [
     path('verifyotp', VerifyOTPView.as_view(), name='verify_otp'),
     path("delete_account", DeleteAccountView.as_view(), name="delete"),
     path('get_ws_token/', views.get_ws_token, name='get_ws_token'),
+    path('get_notifications', GetNotificationsView.as_view(), name='get_notifications'),
+    path('notifications_read', NotificationsReadView.as_view(), name='notifications_read'),
 ]
 

@@ -34,9 +34,9 @@ export default class Tournament {
                 if (!ok) {
                     this.toast.throwToast("Error", data.message || "Something went wrong", 5000, "error");
                 } else {
-                    this.toast.throwToast("Success", data.message || "You have joined the tournament", 5000, "success");
+                    // this.toast.throwToast("Success", data.message || "You have joined the tournament", 5000, "success");
                     document.getElementById('join-tournament').classList.add('disabled');
-                    appRouter.navigate(window.location.pathname, false);
+                    // appRouter.navigate(window.location.pathname, false);
                 }
             })
             .catch(error => {
@@ -62,7 +62,7 @@ export default class Tournament {
                 if (!ok) {
                     this.toast.throwToast("Error", data.message || "Something went wrong", 5000, "error");
                 } else {
-                    this.toast.throwToast("Success", data.message || "You are in tournament matchmaking", 5000, "success");
+                    // this.toast.throwToast("Success", data.message || "You are in tournament matchmaking", 5000, "success");
                     document.getElementById('play-tournament').classList.add('disabled');
                     const params = new URLSearchParams(data).toString();
 console.log("\n\n\nPARAMS: ", params);
@@ -182,6 +182,8 @@ console.log("\n\n\nPARAMS 2: ", data.code);
 		.then(response => response.json().then(data => ({ok: response.ok, data})))
 		.then(({ok, data}) => {
 			if (!ok) {
+                if (data.message === "Tournament does not exist.")
+                    appRouter.render404Page(window.location.pathname);
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 			} else {

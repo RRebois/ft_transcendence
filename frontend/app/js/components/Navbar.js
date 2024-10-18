@@ -1,6 +1,6 @@
 import { getCookie } from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
-import {create_previous_avatar_div} from "../functions/create.js";
+import {create_previous_avatar_div} from "../functions/navbar_utils.js";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import {appRouter} from "@js/spa-router/initializeRouter.js";
 import * as bootstrap from "bootstrap";
@@ -28,11 +28,11 @@ export default class Navbar {
 			credentials: 'include'
 		}).then(response => {
 			console.log('Logout response:', response);
-			appRouter.navigate('/', false);
 			if (window.mySocket && window.mySocket.readyState === WebSocket.OPEN) {
 				window.mySocket.close();
 				console.log('WebSocket connection closed');
 			}
+			appRouter.navigate('/', false);
 		}).catch(error => {
 			console.error('Logout error:', error);
 			const toastComponent = new ToastComponent();
@@ -94,8 +94,6 @@ export default class Navbar {
 				if (data.message === "superuser") {
 					return;
 				}
-				const toastComponent = new ToastComponent();
-				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 			} else {
 				data.map(avatar => {
 					create_previous_avatar_div(avatar, this.change_previous_avatar.bind(this));
@@ -150,7 +148,77 @@ export default class Navbar {
 			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
 		});
 	}
+
+	loadNotifications() {
+		const csrfToken = getCookie('csrftoken');
+		fetch(`https://${window.location.hostname}:8443/get_notifications`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': csrfToken
+			},
+			credentials: 'include',
+		})
+		.then(response => response.json().then(data => ({ok: response.ok, data})))
+		.then(({ok, data}) => {
+			if (!ok) {
+				const toastComponent = new ToastComponent();
+				toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+			} else {
+				const dropdownNotif = document.getElementById('dropdownNotif');
+				if (dropdownNotif) {
+					let notifChanged = false;
+					data.forEach(notification => {
+						console.log("Notif is: ", notification);
+						const notifElem = document.createElement('li');
+						notifElem.classList.add('bg-notif', 'dropdown-item');
+						notifElem.innerHTML = `
+							<p class="fw-light fst-italic notif-time text-end m-0 me-2">${new Date(notification?.time).toLocaleString()}</p>
+							<a class="text-wrap dropdown-item text">${notification?.message}</a>
+							<div class="dropdown-divider p-0 m-0"></div>
+						`;
+						dropdownNotif.appendChild(notifElem);
+						if (notification.is_read === false && notifChanged === false) {
+							const notifDot = document.getElementById('new-notif');
+							if (notifDot) {
+								notifDot.hidden = false;
+								notifChanged = true;
+							}
+						}
+					});
+				}
+			}
+		})
+		.catch(error => {
+			console.error('Error:', error);
+			const toastComponent = new ToastComponent();
+			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
+		});
+	}
 	
+	notificationsRead() {
+		const csrfToken = getCookie('csrftoken');
+		fetch(`https://${window.location.hostname}:8443/notifications_read`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': csrfToken
+			},
+			credentials: 'include',
+		})
+		.then(response => response.json().then(data => ({ok: response.ok, data})))
+		.then(({ok, data}) => {
+			if (!ok) {
+				const toastComponent = new ToastComponent();
+				toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
+			} else {
+				const notifDot = document.getElementById('new-notif');
+				if (notifDot) {
+					notifDot.hidden = true;
+				}
+			}
+		})
+	}
 
 	render() {
 		return `
@@ -158,6 +226,16 @@ export default class Navbar {
 				<div class="container-fluid">
 					<a href="/dashboard" route="/dashboard" class="navbar-brand play-bold subtitle">ft_transcendence 🏓</a>
 					<div class="d-flex align-items-center">
+						<div class="dropdown me-2">
+							<button class="btn dropdown-toggle d-flex align-items-center" type="button" id="notifBtn" data-bs-toggle="dropdown" aria-expanded="false">
+								<i class="bi bi-bell"></i>
+								<span style="top: 10px" id="new-notif" hidden
+									class="position-absolute translate-middle p-2 bg-danger rounded-circle">
+								</span>
+							</button>
+							<ul id="dropdownNotif" class="dropdown-menu dropdown-menu-end w-350 h-max-notif overflow-auto p-0" aria-labelledby="dropdownNotif">
+							</ul>
+						</div>
 						${(this.user?.stud42 || this.user?.username === "superuser") ?
 							`<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">` :
 							`<a role="button" data-bs-toggle="modal" data-bs-target="#update-user-picture" title="Update your profile picture !" data-bs-toggle="tooltip">
@@ -230,5 +308,10 @@ export default class Navbar {
 		}
 		this.loadPreviousAvatar();
 		applyFontSize();
+		this.loadNotifications();
+		const notifBtn = document.getElementById("notifBtn");
+		if (notifBtn) {
+			notifBtn.addEventListener("click", this.notificationsRead);
+		}
 	}
 }

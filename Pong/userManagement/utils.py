@@ -140,7 +140,7 @@ def get_ws_token(request):
         user = authenticate_user(request)
     except AuthenticationFailed:
         logger.warning("In get_ws_token: auth failed")
-        return JsonResponse({'error': 'Not authenticated'}, status=401)
+        return JsonResponse({'message': 'Not authenticated'}, status=401)
 
     logging.debug(user)
     token = generate_short_lived_JWT(user)
