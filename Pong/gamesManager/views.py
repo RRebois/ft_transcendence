@@ -10,6 +10,8 @@ from django.utils.decorators import method_decorator
 from userManagement.views import authenticate_user
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import status
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 from userManagement.models import User, UserData
 from matchs.models import *
 from configFiles.globals import *
@@ -38,7 +40,7 @@ class MatchMaking():
             if username not in ['guest', BOT_NAME]:
                 user_data = UserData.objects.get(user_id=User.objects.get(username=username))
                 elo = user_data.user_elo_pong[-1]['elo'] if MatchMaking.matchs[session_id]['game_name'] == 'pong' else \
-                user_data.user_elo_purrinha[-1]['elo']
+                    user_data.user_elo_purrinha[-1]['elo']
                 MatchMaking.matchs[session_id]['elos'].append(elo)
                 MatchMaking.matchs[session_id]['players'].append(username)
                 if MatchMaking.matchs[session_id]['awaited_players'] == len(MatchMaking.matchs[session_id]['players']):
@@ -191,7 +193,15 @@ class GameManagerView(APIView):
             return JsonResponse({"success": False, "errors": error_message})
         # username = user.username
         session_id = MatchMaking.get_session(game_name, game_code, user)
-        print(f"\n\n\ncreated session_id => {session_id}\n\n\n")
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"user_{user.id}_group",
+            {
+                "type": "status_change",
+                "user_id": user.id,
+                "status": "in-game"
+            }
+        )
         return JsonResponse({
             'game': game_name,
             'session_id': session_id,

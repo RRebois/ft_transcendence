@@ -1,7 +1,8 @@
 import random
 from configFiles.globals import *
 
-class   PurrinhaMatch:
+
+class PurrinhaMatch:
 
     def __init__(self, players):
         self.players = []
@@ -78,14 +79,12 @@ class   PurrinhaMatch:
                     print(f"bot guess sum => {choose}")
                     await bot.set_guess(choose)
 
-
     async def reset_match(self):
         for player in self.players:
             await player.reset_player()
 
 
-
-class   PurrinhaPlayer:
+class PurrinhaPlayer:
 
     def __init__(self, username, id):
         self.id = id
@@ -138,7 +137,8 @@ class   PurrinhaPlayer:
         self.guess = -1
         self.quantity = -1
 
-class   PurrinhaGame:
+
+class PurrinhaGame:
 
     def __init__(self, players):
         self.match = PurrinhaMatch(players)
@@ -146,10 +146,10 @@ class   PurrinhaGame:
         self.numbers_to_guess = [i for i in range(self.players_nb * MAX_QUANTITY + 1)]
         self.numbers_to_guess_init = self.numbers_to_guess
 
-    async def   get_number_to_guess(self):
+    async def get_number_to_guess(self):
         return self.numbers_to_guess
 
-    async def   get_status(self):
+    async def get_status(self):
         players = await self.match.get_players_data()
         status = 'guessing'
         guesses = 0

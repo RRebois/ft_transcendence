@@ -1,13 +1,6 @@
 import * as bootstrap from "bootstrap";
 import {remove_modal_backdrops} from "./display.js";
 
-// const lst2arr = (lst) => {
-//     return Object.entries(lst).map(([username, details]) => ({
-//         username,
-//         ...details
-//     }));
-// };
-
 export function send_player_action(websocket, game_code, action, value, player, player_set_id, session_id) {
     console.log(`current player ${action}: ${value}`);
     websocket.send(JSON.stringify({
@@ -63,7 +56,7 @@ const get_player_description = (player, game_state) => {
     return "Waiting...";
 }
 
-export default function display_users_info(data, view) {
+export const display_users_info = (data, view) => {
     const players = lst2arr(data?.game_state?.players);
     players.forEach(player => {
         if (player.name === view.user.username) {

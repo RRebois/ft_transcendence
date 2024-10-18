@@ -54,8 +54,20 @@ body.bg-gradient {
     height: 128px;
 }
 
+.h-1-2 {
+    height: 50%;
+}
+
+.h-max-tournament {
+    max-height: 550px;
+}
+
 .w-128 {
     width: 128px;
+}
+
+.w-350 {
+    width: 350px;
 }
 
 .w-full {
@@ -92,6 +104,10 @@ body.bg-gradient {
 
 .h-full {
     height: 100%;
+}
+
+.h-auto {
+    height: auto;
 }
 
 .min-h-full {
@@ -141,6 +157,16 @@ body.bg-gradient {
 
 .bg-defeat {
     background: linear-gradient(to right, #bc7575 60%, transparent);
+}
+
+.bg-tournament {
+    background: linear-gradient(
+        to bottom,
+        rgba(138, 152, 191, 0.75),
+        #8a98bf 30%,
+        #8a98bf 70%,
+        rgba(138, 152, 191, 0.75)
+    );
 }
 
 .custom-select-filter-icon {
@@ -299,4 +325,35 @@ body.bg-gradient {
 .equal-elmt-y {
     height: 50vh;
     width: 100%;
+}
+
+.div-centered {
+    font-family: sans-serif;
+    font-weight: bold;
+    font-size: 30px;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    top: 50%;
+    left: 50%;
+}
+
+.custom-tooltip .tooltip-inner {
+    background-color: rgb(255, 255, 255);
+    color: #000000;
+    font-size: 16px;
+    margin: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 300px;
+}
+
+.custom-tooltip .tooltip-arrow {
+    width: 1rem;
+    height: 1rem;
+}
+
+.custom-tooltip .tooltip-arrow::before {
+    border-width: 0.5rem 1rem 0 1rem;
+    border-top-color: rgb(255, 255, 255) !important;
+    margin: 1px;
 }

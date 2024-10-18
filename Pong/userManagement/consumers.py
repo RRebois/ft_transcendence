@@ -15,6 +15,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             user_connected.status = status
             user_connected.save(update_fields=['status'])
             logging.debug(f"User {str(self.scope['user'])} is now {user_connected.status}")
+            print(f"User {str(self.scope['user'])} is now {user_connected.status}")
             return True
         except:
             return False
@@ -42,6 +43,20 @@ class UserConsumer(AsyncWebsocketConsumer):
                     "type": "status_change",
                     "user_id": user.id,
                     "status": "offline"
+                }
+            )
+        else:
+            return
+
+    async def user_in_game(self, user):
+        update = await self.update_user_status(user, "in-game")
+        if update:
+            await self.channel_layer.group_send(
+                "Connected_users_group",
+                {
+                    "type": "status_change",
+                    "user_id": user.id,
+                    "status": "in-game"
                 }
             )
         else:
@@ -132,9 +147,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             'type': 'friend_delete_acc',
             'from_user': event['from_user'],
             'from_user_id': event['from_user_id'],
-            # 'from_image_url': event['from_image_url'],
-            # 'to_image_url': event['to_image_url'],
-            # 'to_user': event['to_user'],
         }))
 
     async def friend_data_edit(self, event):
@@ -151,4 +163,13 @@ class UserConsumer(AsyncWebsocketConsumer):
             'players': event['players'],
             'matchs': event['matchs'],
             'message': event['message'],
+        }))
+
+    async def join_match(self, event):
+        user = self.scope['user']
+        await self.user_in_game(user)
+        await self.send(text_data=json.dumps({
+            'type': 'join_match',
+            'user_id': user.id,
+            'status': 'in-game'
         }))

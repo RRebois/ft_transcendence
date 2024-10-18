@@ -4,7 +4,7 @@ import {create_previous_avatar_div} from "../functions/create.js";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import {appRouter} from "@js/spa-router/initializeRouter.js";
 import * as bootstrap from "bootstrap";
-import {remove_modal_backdrops} from "../functions/display.js";
+import {applyFontSize, remove_modal_backdrops} from "../functions/display.js";
 
 export default class Navbar {
 	constructor(user = null) {
@@ -28,7 +28,7 @@ export default class Navbar {
 			credentials: 'include'
 		}).then(response => {
 			console.log('Logout response:', response);
-			appRouter.navigate('/');
+			appRouter.navigate('/', false);
 			if (window.mySocket && window.mySocket.readyState === WebSocket.OPEN) {
 				window.mySocket.close();
 				console.log('WebSocket connection closed');
@@ -141,7 +141,7 @@ export default class Navbar {
 					const backdrops = document.querySelectorAll('.modal-backdrop');
 					backdrops.forEach(backdrop => backdrop.remove());
 				}
-				appRouter.navigate(window.location.pathname, false);
+				appRouter.navigate(window.location.pathname);
 			}
 		})
 		.catch(error => {
@@ -156,7 +156,7 @@ export default class Navbar {
 		return `
 			<nav class="navbar navbar-expand-lg w-full bg-light">
 				<div class="container-fluid">
-					<a href="/dashboard" route="/dashboard" class="navbar-brand play-bold">ft_transcendence 🏓</a>
+					<a href="/dashboard" route="/dashboard" class="navbar-brand play-bold subtitle">ft_transcendence 🏓</a>
 					<div class="d-flex align-items-center">
 						${(this.user?.stud42 || this.user?.username === "superuser") ?
 							`<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">` :
@@ -166,16 +166,16 @@ export default class Navbar {
 						}
 						<div class="dropdown">
 							<button class="btn dropdown-toggle d-flex align-items-center" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-								<p class="d-none d-md-block mb-0 me-2">${this.user?.username}</p>
+								<p class="d-none d-md-block mb-0 me-2 text">${this.user?.username}</p>
 							</button>
 							<ul class="dropdown-menu dropdown-menu-end">
-								<li><a class="dropdown-item" route="/my-profile" href="/my-profile">My profile</a></li>
-								<li><a class="dropdown-item cursor-click" route="/stats/${this.user?.username}">My stats</a></li>
-								<li><a class="dropdown-item" route="/friends" href="/friends">Friends</a></li>
+								<li><a class="dropdown-item cursor-click text" route="/my-profile">My profile</a></li>
+								<li><a class="dropdown-item cursor-click text" route="/stats/${this.user?.username}">My stats</a></li>
+								<li><a class="dropdown-item cursor-click text" route="/friends">Friends</a></li>
 								<li><hr class="dropdown-divider"></li>
-								<li><a role="button" id="logout-btn" class="dropdown-item text-danger">Logout</a></li>
+								<li><a role="button" id="logout-btn" class="dropdown-item text-danger text">Logout</a></li>
 							</ul>
-						</div>
+						</div>	
 					</div>
 				</div>
 				<!--	MODAL PART		-->
@@ -183,14 +183,14 @@ export default class Navbar {
 					<div class="modal-dialog">
 						<div class="modal-content">
 							<div class="modal-header">
-								<h1 class="modal-title fs-5">Update your profile picture</h1>
+								<p class="modal-title title">Update your profile picture</p>
 								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 							</div>
 							<div class="modal-body">
-								<p class="play-bold">Your current avatar</p>
+								<p class="play-bold text">Your current avatar</p>
 								<img src="${this.user?.image_url}" class="rounded-circle h-128 w-128" alt="avatar">
 								<div>
-									<p class="play-bold mt-1">Select one of your previous avatars</p>
+									<p class="play-bold mt-1 text">Select one of your previous avatars</p>
 									<!-- Previous profile pictures to load here -->
 									<div class="d-flex" id="previous-pp-list">
 									</div>
@@ -199,8 +199,8 @@ export default class Navbar {
 								<div class="row g-2">
 									<label for="profile-picture" class="form-label play-bold">Or upload a new one</label>
 									<input type="file" id="profile-picture" accept=".png, .jpg, .jpeg" class="form-control" />
-									<div class="form-text">Supported format: <code>png</code>, <code>jpg</code> and <code>jpeg</code></div>
-								<div class="invalid-feedback">test</div>
+									<div class="form-text clue-text">Supported format: <code>png</code>, <code>jpg</code> and <code>jpeg</code></div>
+								<div class="invalid-feedback clue-text">test</div>
 							</div>
 						</div>
 							<div class="modal-footer">
@@ -229,5 +229,6 @@ export default class Navbar {
 			saveAvatarBtn.addEventListener("click", this.changeAvatar);
 		}
 		this.loadPreviousAvatar();
+		applyFontSize();
 	}
 }

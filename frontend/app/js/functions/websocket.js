@@ -1,15 +1,17 @@
 import {isUserConnected} from "./user_auth.js";
 import ToastComponent from "@js/components/Toast.js";
 import {
-    create_empty_friend,
-    create_empty_request,
     create_friend_div_ws,
     create_friend_request_div,
-    remove_friend_div
+    remove_friend_div,
+    create_empty_request,
+    create_empty_friend,
 } from "@js/functions/friends_management.js";
 import {remove_friend_request_div} from "./friends_management.js";
 import {getCookie} from "@js/functions/cookie.js";
-import display_users_info, {
+
+import {
+    display_users_info,
     display_looking_for_players_modal,
     guess_sum,
     hide_looking_for_players_modal,
@@ -131,7 +133,6 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
 }
 
 export async function initializePongWebSocket(gameCode, sessionId, pong) {
-    console.log(pong);
     return new Promise(async (resolve, reject) => {
         const response = await fetch(`https://${window.location.hostname}:8443/get_ws_token/`, {
             credentials: 'include',
@@ -141,7 +142,7 @@ export async function initializePongWebSocket(gameCode, sessionId, pong) {
         if (!gameCode || !sessionId) {
             reject(new Error("Missing game code or session id"));
         }
-        if (isUserAuth) { // replace  `https://localhost:8443/game/check/pong/${gameCode}/${sessionId}/`  `https://localhost:8443/game/pong/${gameCode}/`
+        if (isUserAuth) {
             fetch(`https://${window.location.hostname}:8443/game/pong/${gameCode}/`, {
                 method: "GET",
                 headers: {
@@ -172,22 +173,19 @@ export async function initializePongWebSocket(gameCode, sessionId, pong) {
                         console.log("Pong WebSocket connection established");
                         resolve(socket);
                     };
+                    pong.init();
                     let test = 0;
                     socket.onmessage = function (event) {
-                        console.log("WebSocket connection established: ", event.data);
+                        // console.log("Pong websocket msg received: ", event.data);
                         const data = JSON.parse(event.data);
-
 
                         if (data.status === "waiting") // Waiting for opponent(s)
                             pong.waiting();
                         if (data.status === "ready" && test === 0) { // Waiting for display in front
                             test = 1;
                             pong.buildGameSet(data);
-                            setTimeout(() => {
-                                socket.send(JSON.stringify({"game_status": true}));
-                            }, 5000);
                         }
-                        if (data.status === "started")
+                        if (data.status === "started" || data.status === "finished")
                             pong.display(data, socket);
                     };
 
@@ -204,7 +202,7 @@ export async function initializePongWebSocket(gameCode, sessionId, pong) {
                         // console.log(`WebSocket Error: ${error.message}`);
                         reject(error);
                     };
-                    window.mySocket = socket; // to access as a global var
+                    window.myPongSocket = socket; // to access as a global var
                 })
                 .catch(error => {
                     console.error("Error:", error);

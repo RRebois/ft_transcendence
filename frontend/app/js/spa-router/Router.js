@@ -11,12 +11,15 @@ export default class Router {
         this.init();
     }
 
+
     async init() {
         this.addEventListeners();
         await getCsrf();
-        this.historyStack.unshift(window.location.pathname + window.location.search)
+        this.historyStack.unshift(window.location.pathname + window.location.search);
+        window.history.replaceState(null, null, window.location.pathname + window.location.search);
         await this.navigate(window.location.pathname + window.location.search);
     }
+
 
     addEventListeners() {
         document.addEventListener('click', (e) => {
@@ -27,11 +30,76 @@ export default class Router {
                 this.navigate(path);
             }
         });
-
         window.addEventListener('popstate', (e) => {
+            e.preventDefault();
             this.navigate(window.location.pathname, false);
         });
     }
+
+    render404Page(path) {
+        document.title = "ft_transcendence | 404";
+        this.historyStack.unshift(path);
+        window.history.pushState(null, null, path);
+        this.renderNode.innerHTML = '' +
+            '<h1 class="mb-6 play-bold" style="font-size: 6rem">404</h1>' +
+            '<img src="/homer.webp" alt="homer simpson disappearing" class="rounded w-1-2 mb-4" />' +
+            '<li style="list-style-type:none;"><a role="button" route="/" class="btn btn-primary btn-lg">Return home</a></li>';
+    }
+
+
+    redirectToLogin() {
+        document.title = "ft_transcendence | Login";
+        this.historyStack.unshift("/");
+        window.history.pushState(null, null, '/');
+        const home = this.routes.find(route => this.match(route, "/"));
+        this.renderNode.innerHTML = home.renderView();
+        home.setupEventListeners();
+        if (window.mySocket && window.mySocket.readyState === WebSocket.OPEN) {
+            window.mySocket.close();
+            console.log('WebSocket connection closed');
+        }
+    }
+
+
+    redirectToDashboard(user) {
+        document.title = "ft_transcendence";
+        this.historyStack.unshift("/dashboard");
+        window.history.pushState(null, null, '/dashboard');
+        const dashboard = this.routes.find(route => this.match(route, "/dashboard"));
+        this.closeGamesWebSockets();
+        this.renderNode.innerHTML = this.navbar.render() + dashboard.renderView();
+        this.navbar.setupEventListeners();
+        dashboard.setupEventListeners();
+    }
+
+
+    closeGamesWebSockets() {
+        if (window.myPongSocket && window.myPongSocket.readyState === WebSocket.OPEN) {
+            window.myPongSocket.close();
+            console.log('Pong websocket connection closed');
+        } else if (window.myPurrinhaSocket && window.myPurrinhaSocket.readyState === WebSocket.OPEN) {
+            window.myPurrinhaSocket.close();
+            console.log('Purrinha websocket connection closed');
+        }
+    }
+
+
+    renderRoute(route, path) {
+        document.title = `ft_transcendence${route.name.length > 0 ? ' | ' + route.name : ''}`;
+        if (route.user) {
+            if (path.startsWith('/purrinha') || path.startsWith('/pong')) {
+                this.renderNode.innerHTML = route.renderView();
+            } else {
+                this.closeGamesWebSockets();
+                this.renderNode.innerHTML = this.navbar.render() + route.renderView();
+                this.navbar.setupEventListeners();
+            }
+        } else {
+            this.renderNode.innerHTML = route.renderView();
+        }
+        route.setupEventListeners();
+    }
+
 
     async navigate(path, pushState = true) {
         if (path !== "/") {
@@ -42,90 +110,46 @@ export default class Router {
         const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
         const isUserAuth = await isUserConnected();
         const route = this.routes.find(route => this.match(route, path));
+
         if (!route) {
-            this.historyStack.unshift(path);
-            window.history.pushState(null, null, path);
-            this.renderNode.innerHTML = '' +
-                '<h1 class="mb-6 play-bold" style="font-size: 6rem">404</h1>' +
-                '<img src="/homer.webp" alt="homer simpson disappearing" class="rounded w-1-2 mb-4" />' +
-                '<li><a role="button" route="/" class="btn btn-primary btn-lg">Return home</a></li>';
+            this.render404Page(path);
             return;
         }
+
         if (isUserAuth) {
             route.setUser(isUserAuth);
-        }
-        const isPublicRoute = this.isPublicRoute(publicRoutes, path);
-        if (!isPublicRoute && !isUserAuth) {
-            this.historyStack.unshift("/");
-            window.history.pushState(null, null, '/'); // Redirect to home
-            const home = this.routes.find(route => this.match(route, "/"));
-            this.renderNode.innerHTML = home.renderView();
-            home.setupEventListeners();
-            if (window.mySocket && window.mySocket.readyState === WebSocket.OPEN) {
-                window.mySocket.close();
-                console.log('WebSocket connection closed');
-            }
-            return ;
-        } else if (isPublicRoute && isUserAuth) {
-            this.historyStack.unshift("/dashboard");
-            window.history.pushState(null, null, '/dashboard'); // Redirect to dashboard
-            const dashboard = this.routes.find(route => this.match(route, "/dashboard"));
             this.navbar.setUser(isUserAuth);
-            if (window.myPongSocket && window.myPongSocket.readyState === WebSocket.OPEN) {
-                window.myPongSocket.close();
-                console.log('Pong websocket connection closed');
-            }
-            else if (window.myPurrinhaSocket && window.myPurrinhaSocket.readyState === WebSocket.OPEN) {
-                window.myPurrinhaSocket.close();
-                console.log('Purrinha websocket connection closed');
-            }
-            console.log("Destination path is: ", path);
-            this.renderNode.innerHTML = this.navbar.render() + dashboard.renderView();
-            this.navbar.setupEventListeners();
-            dashboard.setupEventListeners();
-            return ;
         }
 
-        // If route is valid, render the view
-        if (route.user) {
-            this.navbar.setUser(route.user);
-            if (route.path === "/purrinha" || route.path === "/pong") {
-                this.renderNode.innerHTML = route.renderView(path);
-            } else {
-                console.log("Current path is: ", window.location.pathname);
-                if (window.myPongSocket && window.myPongSocket.readyState === WebSocket.OPEN) {
-                    window.myPongSocket.close();
-                    console.log('Pong websocket connection closed');
-                }
-                else if (window.myPurrinhaSocket && window.myPurrinhaSocket.readyState === WebSocket.OPEN) {
-                    window.myPurrinhaSocket.close();
-                    console.log('Purrinha websocket connection closed');
-                }
-                console.log("Destination path is: ", path);
-                this.renderNode.innerHTML = this.navbar.render() + route.renderView(path);
-            }
-            this.navbar.setupEventListeners();
-        }
-        else {
-            this.renderNode.innerHTML = route.renderView(path);
-        }
-        route.setupEventListeners(path);
+        const isPublicRoute = this.isPublicRoute(publicRoutes, path);
 
-        // Update the browser history
+        if (!isPublicRoute && !isUserAuth) {
+            this.redirectToLogin();
+            return;
+        } else if (isPublicRoute && isUserAuth) {
+            this.redirectToDashboard(isUserAuth);
+            return;
+        }
+        this.renderRoute(route, path);
+
         const currentPath = window.location.pathname + window.location.search;
-        if (currentPath === path) {
-            window.history.replaceState(null, null, path);
+        if (currentPath === path || (currentPath.startsWith('/pong') && path.startsWith('/pong')) || (currentPath.startsWith('/purrinha') && path.startsWith('/purrinha'))) {
+            return;
         } else {
             const query = path.split('?')[1];
             path += query ? '?' + query : '';
             this.historyStack.unshift(path);
-            window.history.pushState(null, null, path);
+            if (pushState) {
+                window.history.pushState(null, null, path);
+            }
         }
     }
+
 
     getQueryParams(query) {
         return Object.fromEntries(new URLSearchParams(query).entries());
     }
+
 
     getURLParameters(path) {
         if (path.startsWith('/')) {
@@ -139,6 +163,7 @@ export default class Router {
         }
         return parameters;
     }
+
 
     // Match the route path to the current location path
     match(route, requestPath) {
@@ -161,12 +186,15 @@ export default class Router {
             params = this.getQueryParams(query);
             if (route.path === '/stats') {
                 params.username = parameters[0];
+            } else if (route.path === '/tournament') {
+                params.id = parameters[0];
             }
             route.setProps(params);
             return true;
         }
         return false;
     }
+
 
     isPublicRoute(publicRoutes, path) {
         for (const route of publicRoutes) {
