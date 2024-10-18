@@ -15,11 +15,27 @@ async def	init_bot(game_name, game, consumer):
 	if game_name == 'pong':
 		try:
 			bot_db = await sync_to_async(BotQTable.objects.get)(name=BOT_NAME)
-			with open('ai_q_table.pickle', 'wb') as file:
-				pickle.dump(bot_db.q_table, file)
+			# with open('ai_q_table.pickle', 'wb') as file:
+			# 	pickle.dump(bot_db.q_table, file)
 			# await sync_to_async(bot_db.save_table)({})
 		except:
 			bot_db = await sync_to_async(BotQTable.objects.create)(name=BOT_NAME)
+			try:
+				with open('ai_q_table.pickle', 'rb') as file:
+					q_table = pickle.load(file)
+					await sync_to_async(bot_db.save_table)(q_table)
+			except:
+				"""
+				against Trainbot
+				"""
+				train1 = TrainPong(0, bot_db, game, consumer)
+				await train1.launch_train()
+				"""
+				against himself
+				"""
+				train2 = TrainPong(1, bot_db, game, consumer)
+				await train2.launch_train()
+
 
 		# return TrainPong(0, bot_db, game, consumer)
 		# test = []
@@ -34,20 +50,20 @@ async def	init_bot(game_name, game, consumer):
 		# 			test.remove(t)
 		# 	await asyncio.sleep(SLEEP)
 
-		"""
-		against Trainbot
-		"""
-		tmp = TrainPong(0, bot_db, game, consumer)
-		await tmp.launch_train()
-		while not tmp.finished:
-			await asyncio.sleep(SLEEP)
-		"""
-		against himself
-		"""
-		tmp = TrainPong(1, bot_db, game, consumer)
-		await tmp.launch_train()
-		while not tmp.finished:
-			await asyncio.sleep(SLEEP)
+		# """
+		# against Trainbot
+		# """
+		# tmp = TrainPong(0, bot_db, game, consumer)
+		# await tmp.launch_train()
+		# while not tmp.finished:
+		# 	await asyncio.sleep(SLEEP)
+		# """
+		# against himself
+		# """
+		# tmp = TrainPong(1, bot_db, game, consumer)
+		# await tmp.launch_train()
+		# while not tmp.finished:
+		# 	await asyncio.sleep(SLEEP)
 
 		# test = TrainPong(1, bot_db)
 		# await test.launch_train()
@@ -64,7 +80,7 @@ class	TrainPong():
 
 	def	__init__(self, i, bot_db, game, consumer):
 		self.consumer = consumer
-		self.limit = 2
+		self.limit = 1000
 		self.count = self.step = 50
 		self.i = i
 		self.finished = False
@@ -91,8 +107,11 @@ class	TrainPong():
 		if gs['left_score'] >= self.count or gs['right_score'] >= self.count:
 			self.count += self.step
 			print(f'\n\nTrain {self.i} => {gs['left_score']} x {gs['right_score']}\nq-table size => {len(PongBot.q_table)}')
-		if gs['left_score'] >= self.limit or gs['right_score'] >= self.limit or len(PongBot.q_table) > 18500:
+		if gs['left_score'] >= self.limit or gs['right_score'] >= self.limit or len(PongBot.q_table) > 10500:
 			await self.cancel_loop()
+			if self.i:
+				with open('ai_q_table.pickle', 'wb') as file:
+					pickle.dump(PongBot.q_table, file)
 
 	async def cancel_loop(self):
 		await self.bot1.cancel_loop()
@@ -129,8 +148,3 @@ class TestBot():
 	async def cancel_loop(self):
 		if hasattr(self, 'loop_task'):
 			self.loop_task.cancel()
-
-
-"""
-	verifier le temps de vie des cookies par rapport au login
-"""

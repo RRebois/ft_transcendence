@@ -24,8 +24,7 @@ class PurrinhaBot():
 					self.nb_guess = choice([nb for nb in gs['available_to_guess'] if nb > self.nb_pick])
 					self.game.receive({'action': 'sum_guessed', 'selected_value': self.nb_guess, 'player_id': 2})
 			if gs['round'] == 'finished':
-				self.nb_pick = None
-				self.nb_guess = None
+				await self.reset_nbs()
 
 	async def reset_nbs(self):
 		self.nb_guess = None
