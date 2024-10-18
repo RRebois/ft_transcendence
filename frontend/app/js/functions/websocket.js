@@ -16,7 +16,7 @@ import {
     guess_sum,
     hide_looking_for_players_modal,
     pick_initial_number,
-    update_score,
+    update_score, display_hourglass,
 } from "./purrinha.js";
 
 
@@ -80,6 +80,8 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
                             if (data.game_state?.player_turn === view?.player_set_id) {
                                 console.log("It's your turn to guess the sum");
                                 guess_sum(data, view);
+                            } else {
+                                display_hourglass();
                             }
                         }
                     } else if (data?.status === 'finished') {

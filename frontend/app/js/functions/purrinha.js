@@ -1,8 +1,33 @@
 import * as bootstrap from "bootstrap";
 import {remove_modal_backdrops} from "./display.js";
 
+export function display_hourglass() {
+    const pickInitialNumberContainer = document.getElementById('pick-initial-number');
+    if (pickInitialNumberContainer) {
+        pickInitialNumberContainer.remove();
+    }
+    const guessSumContainer = document.getElementById('guess-sum');
+    if (guessSumContainer) {
+        guessSumContainer.remove();
+    }
+    const hourglassSpinner = document.getElementById('hourglass-spinner');
+    if (hourglassSpinner) {
+        return;
+    }
+    const root = document.getElementById('game-root');
+    if (root) {
+        root.innerHTML += `
+            <div id="hourglass-spinner" class="d-flex flex-column gap-2 align-items-center justify-content-center">
+                <i class="bi bi-hourglass-split spinner" style="font-size: 2rem;"></i>
+                <p>Waiting for other players...</p>
+            </div>
+        `;
+    }
+}
+
 export function send_player_action(websocket, game_code, action, value, player, player_set_id, session_id) {
     console.log(`current player ${action}: ${value}`);
+    console.log("player: ", player);
     websocket.send(JSON.stringify({
         "action": action,
         "player_id": player.id,
@@ -11,6 +36,7 @@ export function send_player_action(websocket, game_code, action, value, player, 
         "session_id": session_id,
         "game_code": game_code,
     }));
+    display_hourglass();
 }
 
 export function display_looking_for_players_modal() {
@@ -79,6 +105,10 @@ export const display_users_info = (data, view) => {
 }
 
 export const pick_initial_number = (view) => {
+    const hourglassSpinner = document.getElementById('hourglass-spinner');
+    if (hourglassSpinner) {
+        return;
+    }
     const pickInitialNumberContainer = document.getElementById('pick-initial-number');
     if (pickInitialNumberContainer) {
         return;
@@ -121,6 +151,10 @@ export const guess_sum = (data, view) => {
     const pick_init_nb_container = document.getElementById('pick-initial-number');
     if (pick_init_nb_container) {
         pick_init_nb_container.remove();
+    }
+    const hourglassSpinner = document.getElementById('hourglass-spinner');
+    if (hourglassSpinner) {
+        hourglassSpinner.remove();
     }
     const gameRoot = document.getElementById('game-root');
     if (gameRoot) {

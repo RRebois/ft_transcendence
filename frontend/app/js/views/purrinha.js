@@ -58,7 +58,6 @@ export default class PurrinhaGame {
         console.log("ws: ", ws);
         this.gameSocket = ws;
         this.nb_players = this.getNumberOfPlayers(this.props?.code);
-        this.max_value = this.getMaxAvailableValue(this.nb_players);
 
         const gameRoot = document.getElementById('game-root');
         if (gameRoot) {
