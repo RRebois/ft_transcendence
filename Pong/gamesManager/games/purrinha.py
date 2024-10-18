@@ -95,6 +95,7 @@ class PurrinhaPlayer:
         }
 
     async def get_data(self):
+        print(f"\nplayer{self.username} == {self.quantity}\n")
         return {
             f"player{self.id}": {
                 "name": self.username,
