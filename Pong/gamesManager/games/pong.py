@@ -43,9 +43,9 @@ class Ball:
 
     async def move(self):
         if not self.x_vel:
-            self.x_vel = BALL_START_VEL * choice([1, -1])
+            self.x_vel = BALL_START_VEL #* choice([1, -1])
         if not self.y_vel:
-            self.y_vel = randrange(15) * choice([0.1, -0.1])
+            self.y_vel = 0#randrange(15) * choice([0.1, -0.1])
         self.x += self.x_vel
         self.y += self.y_vel
 
@@ -74,23 +74,24 @@ class Ball:
 
 async def find_new_direction(ball, paddle):
 
+    await ball.accelerate()
     ball.x_vel *= -1
+    min_x = paddle.x + ball.radius + PADDLE_WIDTH if paddle.x < GAME_WIDTH * 0.5 else paddle.x - ball.radius + ball.x_vel
+    ball.x = min_x
     middle_paddle = paddle.height / 2
     middle_y = paddle.y + middle_paddle
     difference_in_y = middle_y - ball.y
     reduction_factor = middle_paddle / -abs(ball.x_vel)
     y_vel = difference_in_y / reduction_factor
     if abs(y_vel) < 0.1:
-        y_vel = 0.1 if y_vel >= 0 else -0.1
+        y_vel = -0.1 if y_vel >= 0 else 0.1
     ball.y_vel = y_vel
-    await ball.move()
-    # new_x = -ball.radius if paddle.x > GAME_WIDTH // 2 else ball.radius
-    # ball.x = paddle.x + new_x
-    await ball.accelerate()
+    # await ball.move()
 
 async def handle_collision(ball, paddles):
     if ball.y + ball.radius >= GAME_HEIGHT or ball.y - ball.radius <= 0:
         ball.y_vel *= -1
+        ball.y = max(ball.radius, min(GAME_HEIGHT - ball.radius, ball.y))
         await ball.accelerate()
 
     for paddle in paddles:
