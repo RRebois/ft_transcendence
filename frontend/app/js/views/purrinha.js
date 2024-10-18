@@ -12,8 +12,6 @@ export default class PurrinhaGame {
 		this.gameSocket = null;
 		this.nb_players = 0;
 		this.max_value = 0;
-
-
 		this.players = [];
 
 		document.addEventListener('DOMContentLoaded', this.setupEventListeners.bind(this));
@@ -200,10 +198,12 @@ export default class PurrinhaGame {
 		console.log("this.props: ", this.props);
 		if (!this.props?.game || !this.props?.ws_route || !this.props?.session_id || !this?.props.code) {
 			const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
-			document.getElementById('errorModalBody').innerHTML = `
-				<p>This match is not available. Please try again later.</p>
-			`
-			errorModal.show();
+			if (errorModal) {
+				document.getElementById('errorModalBody').innerHTML = `
+					<p>This match is not available. Please try again later.</p>
+				`
+				errorModal.show();
+			}
 		}
 
 		document.getElementById('returnHomeBtn').addEventListener('click', () => {
@@ -220,7 +220,7 @@ export default class PurrinhaGame {
 	render() {
 		console.log("purrinha render called");
 		this.initializeWs(this.props?.code);
-		document.title = "ft_transcendence | Purrinha";
+		// document.title = "ft_transcendence | Purrinha";
 		return `
 			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center overflow-hidden" id="game-root">
 				

@@ -42,7 +42,7 @@ body.bg-gradient {
     width: 64px;
 }
 
-.w-80{
+.w-80 {
     width: 80px;
 }
 
@@ -54,8 +54,24 @@ body.bg-gradient {
     height: 128px;
 }
 
+.h-1-2 {
+    height: 50%;
+}
+
+.h-max-tournament {
+    max-height: 550px;
+}
+
+.h-max-notif {
+    max-height: 300px;
+}
+
 .w-128 {
     width: 128px;
+}
+
+.w-350 {
+    width: 350px;
 }
 
 .w-full {
@@ -78,6 +94,10 @@ body.bg-gradient {
     width: min-content;
 }
 
+.min-w-fit {
+    min-width: fit-content;
+}
+
 .w-fit {
     width: fit-content;
 }
@@ -92,6 +112,10 @@ body.bg-gradient {
 
 .h-full {
     height: 100%;
+}
+
+.h-auto {
+    height: auto;
 }
 
 .min-h-full {
@@ -141,6 +165,20 @@ body.bg-gradient {
 
 .bg-defeat {
     background: linear-gradient(to right, #bc7575 60%, transparent);
+}
+
+.bg-tournament {
+    background: linear-gradient(
+        to bottom,
+        rgba(138, 152, 191, 0.75),
+        #8a98bf 30%,
+        #8a98bf 70%,
+        rgba(138, 152, 191, 0.75)
+    );
+}
+
+.bg-notif {
+    background : #eeeeee;
 }
 
 .custom-select-filter-icon {
@@ -241,3 +279,97 @@ body.bg-gradient {
     cursor: pointer;
 }
 
+.top-edge-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 25vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.bottom-edge-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 25vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.right-edge-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 25vh;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Ensure content does not overflow */
+}
+
+.left-edge-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 25vh;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Ensure content does not overflow */
+}
+
+.equal-elmt-x {
+    width: 50vw;
+    height: 100%;
+}
+
+.equal-elmt-y {
+    height: 50vh;
+    width: 100%;
+}
+
+.div-centered {
+    font-family: sans-serif;
+    font-weight: bold;
+    font-size: 30px;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    top: 50%;
+    left: 50%;
+}
+
+.custom-tooltip .tooltip-inner {
+    background-color: rgb(255, 255, 255);
+    color: #000000;
+    font-size: 16px;
+    margin: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 300px;
+}
+
+.custom-tooltip .tooltip-arrow {
+    width: 1rem;
+    height: 1rem;
+}
+
+.custom-tooltip .tooltip-arrow::before {
+    border-width: 0.5rem 1rem 0 1rem;
+    border-top-color: rgb(255, 255, 255) !important;
+    margin: 1px;
+}
+
+.notif-time {
+    font-size: 14px;
+}

@@ -75,9 +75,10 @@ class Ball:
 async def find_new_direction(ball, paddle):
 
     ball.x_vel *= -1
-    middle_y = paddle.y + paddle.height / 2
+    middle_paddle = paddle.height / 2
+    middle_y = paddle.y + middle_paddle
     difference_in_y = middle_y - ball.y
-    reduction_factor = (paddle.height / 2) / ball.x_vel
+    reduction_factor = middle_paddle / -abs(ball.x_vel)
     y_vel = difference_in_y / reduction_factor
     if abs(y_vel) < 0.1:
         y_vel = 0.1 if y_vel >= 0 else -0.1

@@ -13,9 +13,10 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
 
-from userManagement.models import User, UserData
+from userManagement.models import User, UserData, Notifications
 from userManagement.views import authenticate_user
 from .models import *
+from .serializer import TournamentSerializer
 from gamesManager.views import MatchMaking
 from configFiles.globals import *
 from userManagement.utils import gen_timestamp
@@ -35,7 +36,7 @@ class MatchHistoryView(APIView):
         elif word == 'purrinha':
             matches = Match.objects.filter(players=user, is_pong=False).order_by('-timeMatch')
         else:
-            return JsonResponse({"error": "Invalid word."}, status=400)
+            return JsonResponse({"message": "Invalid word."}, status=400)
         return JsonResponse([match.serialize() for match in matches] if matches else [], safe=False, status=200)
 
 
@@ -50,26 +51,54 @@ class MatchScoreView(APIView):
 
         return JsonResponse(game.serialize())
 
+
 @method_decorator(csrf_protect, name='dispatch')
-class TournamentDisplayAllView(APIView):
+class TournamentDisplayOpenView(APIView):
+    def get(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        tournaments = Tournament.objects.filter(is_closed=False)
+
+        return JsonResponse([tournament.serialize() for tournament in tournaments] if tournaments else [], safe=False, status=200)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class TournamentDisplayAllUserView(APIView):
     def get(self, request, username):
         try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            return JsonResponse({"error": "User does not exist."}, status=404)
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         tournaments = user.tournaments.all()
 
         return JsonResponse([tournament.serialize() for tournament in tournaments] if tournaments else [], safe=False, status=200)
 
+
+@method_decorator(csrf_protect, name='dispatch')
+class TournamentDisplayAllView(APIView):
+    def get(self, request):
+        try:
+            authenticate_user(request)
+        except AuthenticationFailed as e:
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        tournaments = Tournament.objects.all()
+
+        return JsonResponse([tournament.serialize() for tournament in tournaments] if tournaments else [], safe=False, status=200)
+
+
 @method_decorator(csrf_protect, name='dispatch')
 class TournamentDisplayOneView(APIView):
-    def get(self, request, tournament_id):
+    def get(self, request, tournament_name):
         try:
-            tournament = Tournament.objects.get(id=tournament_id)
+            tournament = Tournament.objects.get(name=tournament_name)
         except:
-            return JsonResponse({"error": "Tournament does not exist."}, status=404)
+            return JsonResponse({"message": "Tournament does not exist."}, status=404)
 
         return JsonResponse(tournament.serialize(), safe=False, status=200)
+
 
 def get_new_elo(player_elo, opponent_elo, win):
 
@@ -113,8 +142,9 @@ def update_match_data(players_data, winner, is_pong=True):
         elo_lst.append({'elo': new_elo, 'timestamp': timestamp})
         data.save()
 
-def create_match(match_result, winner, is_pong=True):
-    match = Match.objects.create(is_pong=is_pong, count=len(match_result))
+
+def create_match(match_result, winner, deco, is_pong=True):
+    match = Match.objects.create(is_pong=is_pong, count=len(match_result), deconnection=deco)
     players_data = []
 
     for player_username in match_result.keys():
@@ -167,7 +197,7 @@ def add_match_to_tournament(tournament_id, match):
     try:
         tournament = Tournament.objects.get(id=tournament_id)
     except:
-        return JsonResponse({"error": "Tournament does not exist."}, status=404)
+        return JsonResponse({"message": "Tournament does not exist."}, status=404)
     unfinished_matchs = tournament.get_unfinished_matchs()
     for unfinished_match in unfinished_matchs:
         unfinished_match.match = match
@@ -192,11 +222,28 @@ def send_to_tournament_group(tournament_id):
                 'matchs': cache_db['matchs'],
                 'message': cache_db['message'],
             }
-    )
+        )
+
+def reload_players_tournament_page(tournament_id, tournament):
+    cache_db = cache.get(tournament_id)
+    if not cache_db:
+        return
+    channel_layer = get_channel_layer()
+    for channel in cache_db['channels']:
+        async_to_sync(channel_layer.group_send)(
+            channel,
+            {
+                'type': 'tournament_new_player',
+                'tournament_name': tournament.name,
+                'players': cache_db['players'],
+                'matchs': cache_db['matchs'],
+            }
+        )
+
 
 def add_player_to_tournament(user, tournament):
-    tournament_id = tournament.get_id()
-    cache_db = cache.get(tournament_id)
+    tournament_name = tournament.name
+    cache_db = cache.get(tournament_name)
     if not cache_db:
         cache_db = {
             'channels': [],
@@ -209,79 +256,143 @@ def add_player_to_tournament(user, tournament):
     count = tournament.players.count()
     players = tournament.players.all()
     for player in players:
-        TournamentMatch.objects.create(tournament=tournament)
+        newMatch = TournamentMatch.objects.create(tournament=tournament)
+        newMatch.players.add(user, player)
     tournament.players.add(user)
     cache_db['players'].append(user.username)
     cache_db['channels'].append(f"user_{user.id}_group")
     for player in cache_db['players']:
         cache_db['matchs'].append({user.username: 0, player: 0, 'status': 'waiting'})
-    if count + 1 == TOURNAMENT_LIMIT:
-        cache_db['message'] = 'The tournament is ready to start, you can play now.'
+    if count + 1 == tournament.number_players:
+        msg = f'The "{tournament.name}" tournament is ready to start, you can play now.'
+        cache_db['message'] = msg
+        channel_layer = get_channel_layer()
+        for channel in cache_db['channels']:
+            async_to_sync(channel_layer.group_send)(
+                channel,
+                {
+                    'type': 'tournament_full',
+                    'players': cache_db['players'],
+                    'message': cache_db['message'],
+                }
+            )
         tournament.is_closed = True
+        all_players = tournament.players.all()
+        for player in all_players:
+            Notifications.objects.create(user=player, message=msg)
+
     tournament.save()
     cache.set(
-        tournament_id,
+        tournament_name,
         cache_db,
     )
-    send_to_tournament_group(tournament_id)
+    reload_players_tournament_page(tournament_name, tournament)
+    send_to_tournament_group(tournament_name)
 
 
 @method_decorator(csrf_protect, name='dispatch')
 class   CreateTournamentView(APIView):
 
-    def get(self, request):
+    def post(self, request):
         try:
             user = authenticate_user(request)
-        except AuthenticationFailed as e:
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
-        tournament = Tournament.objects.create()
-        add_player_to_tournament(user, tournament)
-        return JsonResponse({"tournament_id": tournament.get_id()}, status=200)
+        except AuthenticationFailed:
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TournamentSerializer(data=request.data)
+
+        if serializer.is_valid():
+            tournament = Tournament.objects.create(name=serializer.validated_data['name'], number_players=request.data.get('nb_players'))
+            add_player_to_tournament(user, tournament)
+
+            all_users = User.objects.exclude(id=user.id)
+            for users in all_users:
+                Notifications.objects.create(user=users, message=f'A new tournament "{tournament.name}" has been created by {user.username}.')
+
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f"Connected_users_group",
+                {
+                    'type': 'tournament_created',
+                    'message': f'A new tournament "{tournament.name}" has been created by {user.username}.',
+                    'creator': user.id,
+                    'tournament_name': tournament.name,
+                    'tournament_closed': tournament.is_closed,
+                    'tournament_finished': tournament.is_finished,
+                }
+            )
+
+            return JsonResponse(data={"tournament_id": tournament.get_id(), "name": tournament.name}, status=status.HTTP_200_OK)
+        else:
+            error_messages = []
+            for field, errors in serializer.errors.items():
+                for error in errors:
+                    error_messages.append(error)
+
+            formatted_errors = " ".join(error_messages)
+            return JsonResponse(data={"message": formatted_errors}, status=status.HTTP_400_BAD_REQUEST)
+
 
 @method_decorator(csrf_protect, name='dispatch')
 class   JoinTournamentView(APIView):
 
-    def get(self, request, tournament_id):
+    def post(self, request, tournament_name):
 
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         try:
-            tournament = Tournament.objects.get(id=tournament_id)
+            tournament = Tournament.objects.get(name=tournament_name)
         except:
-            return JsonResponse({"error": "Tournament does not exist."}, status=404)
+            return JsonResponse(data={"message": "Tournament does not exist."}, status=404)
         if tournament.winner:
-            return JsonResponse({"error": "Tournament is already finished."}, status=404)
+            return JsonResponse(data={"message": "Tournament is already finished."}, status=400)
         if user in tournament.players.all():
-            return JsonResponse({"error": "You have already joined this tournament."}, status=404)
+            return JsonResponse(data={"message": "You have already joined this tournament."}, status=400)
         if tournament.is_closed:
-            return JsonResponse({"error": "Tournament is already full."}, status=404)
+            return JsonResponse(data={"message": "Tournament is already full."}, status=400)
         add_player_to_tournament(user, tournament)
+        return JsonResponse(data={"message": "You have joined the tournament."}, status=200)
 
 
 @method_decorator(csrf_protect, name='dispatch')
 class   PlayTournamentView(APIView):
 
-    def get(self, request, tournament_id):
+    def get(self, request, tournament_name):
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
-            return JsonResponse({"redirect": True, "redirect_url": ""}, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         try:
-            tournament = Tournament.objects.get(id=tournament_id)
+            tournament = Tournament.objects.get(name=tournament_name)
         except:
-            return JsonResponse({"error": "Tournament does not exist."}, status=404)
+            return JsonResponse({"message": "Tournament does not exist."}, status=404)
         if tournament.is_finished:
-            return JsonResponse({"error": "This tournament is already finished."}, status=404)
+            return JsonResponse({"message": "This tournament is already finished."}, status=404)
         if not tournament.is_closed:
-            return JsonResponse({"error": "This tournament is not ready to play. Wait for all players."}, status=404)
+            return JsonResponse({"message": "This tournament is not ready to play. Wait for all players."}, status=404)
         if user not in tournament.players.all():
-            return JsonResponse({"error": "You have not joined this tournament."}, status=404)
-        session_id = MatchMaking.get_tournament_match(tournament_id) # verify if it returned a json
+            return JsonResponse({"message": "You have not joined this tournament."}, status=404)
+        session_id = MatchMaking.get_tournament_match(user.username, tournament_name) # verify if it returned a json
+
+        cache_db = cache.get(tournament.name)
+        if not cache_db:
+            return
+        channel_layer = get_channel_layer()
+        for channel in cache_db['channels']:
+            async_to_sync(channel_layer.group_send)(
+                channel,
+                {
+                    'type': 'tournament_play',
+                    'message': f'"{tournament.name}" tournament: {user.username} is searching for an opponent.',
+                    'player': user.id,
+                }
+            )
 
         return JsonResponse({
 			'game': 'pong',
 			'session_id': session_id,
-			'ws_route': f'/ws/game/pong/23/{session_id}/'
+			'ws_route': f'/ws/game/pong/23/{session_id}/',
+            'code': '23',
 		}, status=status.HTTP_200_OK)

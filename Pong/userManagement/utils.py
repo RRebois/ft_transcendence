@@ -1,6 +1,7 @@
 from django.core.mail import EmailMessage
 from django.conf import settings
 from django.http import JsonResponse
+from django.middleware.csrf import get_token
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import AccessToken
@@ -139,7 +140,7 @@ def get_ws_token(request):
         user = authenticate_user(request)
     except AuthenticationFailed:
         logger.warning("In get_ws_token: auth failed")
-        return JsonResponse({'error': 'Not authenticated'}, status=401)
+        return JsonResponse({'message': 'Not authenticated'}, status=401)
 
     logging.debug(user)
     token = generate_short_lived_JWT(user)
@@ -147,3 +148,11 @@ def get_ws_token(request):
 
 def gen_timestamp():
     return datetime.timestamp(datetime.now())
+
+def login_42_error(request, msg):
+    error42 = JsonResponse(data={'message': msg}, status=302)
+    error42.set_cookie(key='csrftoken', value=get_token(request), samesite='Lax', secure=True)
+    url = os.environ.get('SERVER')
+    error42['Location'] = f"{url}:4242/?message={msg}" if os.environ.get(
+        'FRONT_DEV') == '1' else f"{url}:3000/?message={msg}"
+    return error42

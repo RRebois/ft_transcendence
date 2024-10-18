@@ -8,18 +8,21 @@ import json
 
 
 class UserConsumer(AsyncWebsocketConsumer):
+
     @database_sync_to_async
     def update_user_status(self, user, status):
         try:
             user_connected = User.objects.get(id=user.id)
             user_connected.status = status
             user_connected.save(update_fields=['status'])
-            logging.debug(f"User {str(self.scope['user'])} is now {user_connected.status}")
+            self.scope['user'] = user_connected
+            print(f"User {str(self.scope['user'])} is now {user_connected.status}")
             return True
         except:
             return False
 
-    async def user_online(self, user):
+    async def user_online(self):
+        user = self.scope['user']
         update = await self.update_user_status(user, "online")
         if update:
             await self.channel_layer.group_send(
@@ -33,7 +36,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         else:
             return
 
-    async def user_offline(self, user):
+    async def user_offline(self):
+        user = self.scope['user']
         update = await self.update_user_status(user, "offline")
         if update:
             await self.channel_layer.group_send(
@@ -47,23 +51,66 @@ class UserConsumer(AsyncWebsocketConsumer):
         else:
             return
 
+    async def user_in_game(self):
+        user = self.scope['user']
+        update = await self.update_user_status(user, "in-game")
+        if update:
+            await self.channel_layer.group_send(
+                "Connected_users_group",
+                {
+                    "type": "status_change",
+                    "user_id": user.id,
+                    "status": "in-game",
+                }
+            )
+        else:
+            return
+
+    @database_sync_to_async
+    def ws_count(self, nb):
+        try:
+            user = User.objects.get(id=self.scope['user'].id)
+            user.active_ws += nb
+            user.save(update_fields=['active_ws'])
+            self.scope['user'] = user
+        except:
+            return
+        return
+
+    async def connect_active_ws(self, user):
+        await self.ws_count(1)
+        if self.scope['user'].active_ws == 1:
+            print(f"CONNECT: Scope User {self.scope['user']} is in ONLINE STATUS: {self.scope['user'].active_ws} active ws")
+            await self.user_online()
+        return
+
+    async def disconnect_active_ws(self, user):
+        await self.ws_count(-1)
+        if self.scope['user'].active_ws == 0:
+            print(f"DISCONNECT: Scope User {self.scope['user']} is in OFFLINE STATUS: {self.scope['user'].active_ws} active ws")
+            await self.user_offline()
+        return
+
     async def connect(self):
-        user = self.scope["user"]
-        logging.debug(f"WS User is {str(self.scope['user'])}")
+        user = self.scope['user']
         if user.is_anonymous:
             await self.accept()
             await self.close()
         else:
+            print(f"CONNECT START: SCOPE User {self.scope['user']} has {self.scope['user'].active_ws} active ws")
             await self.accept()
             await self.channel_layer.group_add(f"user_{user.id}_group", self.channel_name)
             await self.channel_layer.group_add("Connected_users_group", self.channel_name)
-            await self.user_online(user)
+            await self.connect_active_ws(user)
+            print(f"CONNECT END: SCOPE User {self.scope['user']} has {self.scope['user'].active_ws} active ws")
 
     async def disconnect(self, close_code):
         user = self.scope['user']
-        await self.user_offline(user)
+        print(f"DISCONNECT START: SCOPE User {self.scope['user']} has {self.scope['user'].active_ws} active ws")
+        await self.disconnect_active_ws(user)
         await self.channel_layer.group_discard(f"user_{user.id}_group", self.channel_name)
         await self.channel_layer.group_discard("Connected_users_group", self.channel_name)
+        print(f"DISCONNECT END: SCOPE User {self.scope['user']} has {self.scope['user'].active_ws} active ws")
 
     async def receive(self, text_data):
         print(f"Received message: {text_data}")
@@ -132,9 +179,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             'type': 'friend_delete_acc',
             'from_user': event['from_user'],
             'from_user_id': event['from_user_id'],
-            # 'from_image_url': event['from_image_url'],
-            # 'to_image_url': event['to_image_url'],
-            # 'to_user': event['to_user'],
         }))
 
     async def friend_data_edit(self, event):
@@ -152,3 +196,45 @@ class UserConsumer(AsyncWebsocketConsumer):
             'matchs': event['matchs'],
             'message': event['message'],
         }))
+
+    async def tournament_full(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'tournament_full',
+            'players': event['players'],
+            'message': event['message'],
+        }))
+
+    async def join_match(self, event):
+        user = self.scope['user']
+        # await self.user_offline(user)
+        await self.send(text_data=json.dumps({
+            'type': 'join_match',
+            'user_id': user.id,
+            'status': 'offline'
+        }))
+
+    async def tournament_created(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'tournament_created',
+            'message': event['message'],
+            'creator': event['creator'],
+            'tournament_name': event['tournament_name'],
+            'tournament_closed': event['tournament_closed'],
+            'tournament_finished': event['tournament_finished'],
+        }))
+
+    async def tournament_new_player(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'tournament_new_player',
+            'tournament_name': event['tournament_name'],
+            'players': event['players'],
+            'matchs': event['matchs'],
+        }))
+
+    async def tournament_play(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'tournament_play',
+            'message': event['message'],
+            'player': event['player'],
+        }))
+
