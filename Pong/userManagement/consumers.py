@@ -86,7 +86,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def disconnect_active_ws(self, user):
         await self.ws_count(-1)
-        if user.active_ws == 0:
+        if self.scope['user'].active_ws == 0:
             print(f"DISCONNECT: Scope User {self.scope['user']} is in OFFLINE STATUS: {self.scope['user'].active_ws} active ws")
             await self.user_offline()
         return

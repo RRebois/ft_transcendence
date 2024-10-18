@@ -147,7 +147,6 @@ export default class Dashboard {
 					console.log("Game request success: ", data);
 					data.code = code;
 					const params = new URLSearchParams(data).toString();
-					// Close modal
 					let createMatchModal = null;
 					if (game_type === 'pong') {
 						createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-pong-match-modal'));
