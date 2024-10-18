@@ -3,7 +3,6 @@ from . import views
 from .views import *
 
 urlpatterns = [
-    path("", views.index, name="index"),
     path("isUserExisting/<str:username>", UserExistsView.as_view(), name="isUserExisting"),
     path("login", LoginView.as_view(), name="login"),
     path("login42", Login42View.as_view(), name="login42"),

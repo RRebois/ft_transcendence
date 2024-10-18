@@ -91,15 +91,6 @@ def authenticate_user(request):
     return user
 
 
-def index(request):
-    if request.user.is_authenticated:
-        user = request.user
-        return render(request, "pages/index.html", {
-            "user": user,
-        })
-    return render(request, "pages/index.html")
-
-
 class TestView(APIView):
     def get(self, request):
         response = JsonResponse(data={'message': 'healthy'}, status=200)
@@ -166,7 +157,7 @@ class LoginView(APIView):
 
             access_token = serializer.validated_data['jwt_access']
             refresh_token = serializer.validated_data['jwt_refresh']
-            user_dict = model_to_dict(user, exclude=['friends'])
+            user_dict = model_to_dict(user, exclude=['friends', "password"])
             image_url = user.get_img_url()
             user_dict['image_url'] = get_profile_pic_url(image_url)
             logging.debug("image in logging : " + user_dict['image_url'])
