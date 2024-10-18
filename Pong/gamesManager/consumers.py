@@ -138,7 +138,8 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
         session_data = await self.get_session_data()
         session_data['connected_players'] -= 1
         session_data['players'][self.username]['connected'] = False
-        if session_data['status'] == 'started':
+        if session_data['status'] != 'waiting' and not session_data['deconnection'] and session_data[
+            'connected_players'] == self.session_data['awaited_players'] - 1:
             other_player = []
             winner_group = [1, 2] if session_data['players'][self.username]['id'] > 2 else [3, 4]
             for player in session_data['players']:
@@ -177,7 +178,7 @@ class PongHandler():
 
     @database_sync_to_async
     def tournament_database_update(self):
-        cache_db = cache.get(self.message['tournament_id'])
+        cache_db = cache.get(self.message['tournament_name'])
         gs = self.message['game_state']
         player1 = gs['players']['player1']['name']
         player2 = gs['players']['player2']['name']
@@ -188,13 +189,13 @@ class PongHandler():
                 match[player1] = gs['left_score']
                 match[player2] = gs['right_score']
                 match['status'] = status
-                cache.set(self.message['tournament_id'], cache_db)
+                cache.set(self.message['tournament_name'], cache_db)
                 break
 
     async def tournament_update(self):
         if self.game_code == 23 and self.message['game_state']['new_round']:
             await self.tournament_database_update()
-            await sync_to_async(send_to_tournament_group)(self.message['tournament_id'])
+            await sync_to_async(send_to_tournament_group)(self.message['tournament_name'])
 
     async def add_consumer(self, consumer):
         self.consumer.append(consumer)
@@ -233,18 +234,24 @@ class PongHandler():
         self.message['game_state'] = game_state
         await self.consumer[0].send_to_group(self.message)
 
-        async def cancel_loop(self):
-            if self.bot:
-                await self.bot.cancel_loop()
+    async def cancel_loop(self):
+        if self.bot:
+            await self.bot.cancel_loop()
             # await self.bot.update_q_table_db()
-            if hasattr(self, 'loop_task'):
-                await self.loop_task.cancel()
+        if hasattr(self, 'loop_task'):
+            await self.loop_task.cancel()
 
     async def end_game(self, winner=None):
         gs = self.message['game_state']
+        deconnection = False
         if winner is None and gs['left_score'] != gs['winning_score'] and gs['right_score'] != gs['winning_score']:
             return
         middle = 1 if self.game_code != 40 else 2
+        self.message = await self.consumer[0].get_session_data()
+        if self.message['deconnection'] or self.message['status'] == 'finished':
+            return
+        if winner:
+            deconnection = True
         if not winner:
             winner = []
             left = (gs['right_score'] < gs['left_score'])
@@ -257,19 +264,17 @@ class PongHandler():
             for i in range(0, middle * 2):
                 key = f"player{i + 1}"
                 match_result[gs['players'][key]['name']] = gs['left_score'] if i < middle else gs['right_score']
-            # print(f'\n\n\n match result => {match_result}\n\n')
-            match = await sync_to_async(create_match)(match_result, winner)
-        # print(f'\n\n\n match => {match}\n\n')
+            match = await sync_to_async(create_match)(match_result, winner, deco=deconnection)
+        self.message['deconnection'] = deconnection
         self.message['winner'] = winner
         self.message['status'] = 'finished'
         await self.consumer[0].update_cache_db(self.message)
         await self.consumer[0].send_to_group(self.message)
-        if self.message['tournament_id']:
-            await sync_to_async(add_match_to_tournament)(self.message['tournament_id'], match)
+        if self.message['tournament_name']:
+            await sync_to_async(add_match_to_tournament)(self.message['tournament_name'], match)
         await self.cancel_loop()
-
+        await self.remove_consumer()
     # pass
-    # await self.remove_consumer()
 
     # send notification + restart the game
 
@@ -303,7 +308,7 @@ class PurrinhaHandler():
         print(f"\n\n\n(turns_id) => {self.turns_id}\n\n\n")
         print(f"\n\n\n(game_code) => {self.game_code}\n\n\n")
 
-        if self.game_code == '10':
+        if self.game_code == '10':  # Added for bot
             self.turns_id = [1]
         self.curr_turn = choice(self.turns_id)
         self.turns_id.remove(self.curr_turn)
@@ -375,24 +380,31 @@ class PurrinhaHandler():
                 await self.consumer[0].send_to_group(self.message)
 
     async def end_game(self, winner=None):
+        deconnection = False
+        self.message = await self.consumer[0].get_session_data()
+        if self.message['deconnection'] or self.message['status'] == 'finished':
+            return
         if not winner:
             winner = [self.message['game_state']['winner']]
-            print(f"\n\n\nwinner => {winner}\n\n\n")
-        winner = winner[0]
+        else:
+            win = choice([i for i in enumerate(winner)])[0]
+            winner = winner[win]
+            deconnection = True
         if winner != 'tie':
-            print(f"wins => {self.wins}")
             self.wins[winner] += 1
             self.message['game_state']['history'] = self.wins
-            if self.wins[winner] == MAX_ROUND_WINS:
+            if self.wins[winner] == MAX_ROUND_WINS or deconnection:
                 self.message['winner'] = winner
                 self.message['status'] = 'finished'
+                self.message['deconnection'] = deconnection
                 await self.consumer[0].update_cache_db(self.message)
-                await sync_to_async(create_match)(self.wins, [winner])
+                await sync_to_async(create_match)(self.wins, [winner], deco=deconnection, is_pong=False)
         await self.consumer[0].send_to_group(self.message)
         if not self.message['winner']:
             self.game.play_again()
             self.turns_id = [i + 1 for i in range(0, self.player_nb)]
             self.reset_game()
-    # await self.remove_consumer()
+        else:
+            await self.remove_consumer()
 
     # send notification + restart the game

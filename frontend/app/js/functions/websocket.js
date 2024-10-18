@@ -9,7 +9,6 @@ import {
 } from "@js/functions/friends_management.js";
 import {remove_friend_request_div} from "./friends_management.js";
 import {getCookie} from "@js/functions/cookie.js";
-
 import {
     display_users_info,
     display_looking_for_players_modal,
@@ -132,82 +131,84 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
     });
 }
 
-export async function initializePongWebSocket(gameCode, sessionId, pong) {
+export async function initializePongWebSocket(data, pong) {
+    console.log("DATA received webso: ", data); // test si code = 33
     return new Promise(async (resolve, reject) => {
         const response = await fetch(`https://${window.location.hostname}:8443/get_ws_token/`, {
             credentials: 'include',
         });
         const jwt = await response.json();
         const isUserAuth = await isUserConnected();
-        if (!gameCode || !sessionId) {
+        if (!data.code || !data.session_id) {
             reject(new Error("Missing game code or session id"));
         }
         if (isUserAuth) {
-            fetch(`https://${window.location.hostname}:8443/game/pong/${gameCode}/`, {
-                method: "GET",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),
-                },
-                credentials: 'include',
-            })
-                .then(gameResponse => {
-                    if (!gameResponse.ok) {
-                        reject(new Error("Match not available"));
-                        return;
-                    }
-                    return gameResponse.json();
-                })
-                .then(data => {
-                    if (!data) {
-                        return;
-                    }
-                    const token = jwt.token
-                    // console.log("In Init WS FRONT, USER AUTHENTICATED")
-                    const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
-                    const url = wsSelect + `${window.location.hostname}:8443` + data.ws_route + token + '/'
-                    // console.log("url is:", url);
-                    const socket = new WebSocket(url);
+            console.log("\n\n\n\n\nuser is auth\n\n\n\n\n");
+//            fetch(`https://${window.location.hostname}:8443/game/pong/${gameCode}/`, {
+//                method: "GET",
+//                headers: {
+//					'Content-Type': 'application/json',
+//					'X-CSRFToken': getCookie('csrftoken'),
+//				},
+//                credentials: 'include',
+//            })
+//            .then(gameResponse => {
+//                if (!gameResponse.ok) {
+//                    reject(new Error("Match not available"));
+//                    return ;
+//                }
+//                return gameResponse.json();
+//            })
+//            .then(data => { console.log("DATA WEBSO: ", data);
+            if (!data) { //data["session_id"] = sessionId;
+                return;
+            }
+            const token = jwt.token
+            // console.log("In Init WS FRONT, USER AUTHENTICATED")
+            const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
+            const url = wsSelect + `${window.location.hostname}:8443` + data.ws_route + token + '/'
+            // console.log("url is:", url);
+            const socket = new WebSocket(url);
 
-                    socket.onopen = function (e) {
-                        console.log("Pong WebSocket connection established");
-                        resolve(socket);
-                    };
-                    pong.init();
-                    let test = 0;
-                    socket.onmessage = function (event) {
-                        // console.log("Pong websocket msg received: ", event.data);
-                        const data = JSON.parse(event.data);
+            socket.onopen = function (e) {
+                console.log("Pong WebSocket connection established");
+                resolve(socket);
+            };
+            pong.init();
+            let test = 0;
+            socket.onmessage = function (event) {
+                console.log("Pong websocket msg received: ", event.data);
+                const data = JSON.parse(event.data);
 
-                        if (data.status === "waiting") // Waiting for opponent(s)
-                            pong.waiting();
-                        if (data.status === "ready" && test === 0) { // Waiting for display in front
-                            test = 1;
-                            pong.buildGameSet(data);
-                        }
-                        if (data.status === "started" || data.status === "finished")
-                            pong.display(data, socket);
-                    };
+                if (data.status === "waiting") // Waiting for opponent(s)
+                    pong.waiting();
+                if (data.status === "ready" && test === 0) { // Waiting for display in front
+                    test = 1;
+                    pong.buildGameSet(data);
+                }
+                if (data.status === "started" || data.status === "finished")
+                    pong.display(data, socket);
+            };
 
-                    socket.onclose = function (event) {
-                        if (event.wasClean) {
-                            // console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
-                        } else {
-                            // console.log('Connection died');
-                        }
-                        setTimeout(initializeWebSocket, 2000);
-                    };
+            socket.onclose = function (event) {
+                if (event.wasClean) {
+                    // console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+                } else {
+                    // console.log('Connection died');
+                }
+                setTimeout(initializeWebSocket, 2000);
+            };
 
-                    socket.onerror = function (error) {
-                        // console.log(`WebSocket Error: ${error.message}`);
-                        reject(error);
-                    };
-                    window.myPongSocket = socket; // to access as a global var
-                })
-                .catch(error => {
-                    console.error("Error:", error);
-                    reject(error);
-                });
+            socket.onerror = function (error) {
+                // console.log(`WebSocket Error: ${error.message}`);
+                reject(error);
+            };
+            window.myPongSocket = socket; // to access as a global var
+//            })
+//            .catch(error => {
+//                    console.error("Error:", error);
+//                    reject(error);
+//            });
         } else {
             reject(new Error("User not authenticated"));
         }
@@ -290,8 +291,8 @@ export async function initializeWebSocket() {
 }
 
 function handle_received_friend_request(socket, message) {
-    console.log("socket is:", socket);
-    console.log("message is:", message);
+//    console.log("socket is:", socket);
+//    console.log("message is:", message);
 
     const toast = new ToastComponent();
     toast.throwToast('received-friend-request', `You have received a new friend request`, 5000);
@@ -299,8 +300,8 @@ function handle_received_friend_request(socket, message) {
 }
 
 function handle_friend_req_accept(socket, message) {
-    console.log("socket is:", socket);
-    console.log("message is:", message);
+//    console.log("socket is:", socket);
+//    console.log("message is:", message);
 
     const toast = new ToastComponent();
     toast.throwToast('friend-request', `${message.to_user} Is now your friend !`, 5000);
@@ -313,8 +314,8 @@ function handle_friend_req_accept(socket, message) {
 }
 
 function handle_friend_req_decline(socket, message) {
-    console.log("socket is:", socket);
-    console.log("message is:", message);
+//    console.log("socket is:", socket);
+//    console.log("message is:", message);
 
     const toast = new ToastComponent();
     toast.throwToast('friend-request', `${message.to_user} declined your friend request...`, 5000);
@@ -326,8 +327,8 @@ function handle_friend_req_decline(socket, message) {
 }
 
 function handle_friend_removed(socket, message) {
-    console.log("socket is:", socket);
-    console.log("message is:", message);
+//    console.log("socket is:", socket);
+//    console.log("message is:", message);
 
     const toast = new ToastComponent();
     toast.throwToast('received-friend-request', `${message.from_user} Is no longer your friend !`, 5000);
@@ -339,8 +340,8 @@ function handle_friend_removed(socket, message) {
 }
 
 function handle_friend_status(socket, message) {
-    console.log("socket is:", socket);
-    console.log("message is:", message);
+//    console.log("socket is:", socket);
+//    console.log("message is:", message);
     console.log("status change detected for user:", message.user_id, "new status is:", message.status);
 
     const friendItem = document.querySelector(`[data-id="${message.user_id}"]`)

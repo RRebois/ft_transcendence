@@ -478,7 +478,6 @@ export default class MyProfile {
             radio.addEventListener('change', function () {
                 if (this.checked) {
                     const selectedSize = this.value;
-                    console.log('Selected font size:', selectedSize);
                     changeFontSize(selectedSize);
                 }
             });

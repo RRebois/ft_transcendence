@@ -13,14 +13,11 @@ export const saveFontSize = (size) => {
 }
 
 export const applyFontSize = () => {
-    console.log('applying font size');
     const size = localStorage.getItem('fontSize') || 'md';
-    console.log('font size: ', size);
     changeFontSize(size);
 }
 
 export const changeFontSize = (size) => {
-    console.log('selected font size: ', size);
     let textSize = '';
     let titleSize = '';
     let subtitleSize = '';

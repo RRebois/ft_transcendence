@@ -36,10 +36,10 @@ export default class PongGame {
         this.props = newProps;
     }
 
-     initializeWs = async (gameCode) => {
+     initializeWs = async (data) => { console.log(data);
 		let ws;
 		try {
-			ws = await initializePongWebSocket(gameCode, this.props?.session_id, this);
+			ws = await initializePongWebSocket(data, this);
 		} catch (e) { return ;
 //			const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
 //			document.getElementById('errorModalBody').innerHTML = `
@@ -77,7 +77,7 @@ export default class PongGame {
         this.camera.lookAt(300, -100, 300);
 
         // Renderer
-        this.renderer = new THREE.WebGLRenderer();
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
@@ -803,7 +803,7 @@ export default class PongGame {
                 modal.style.background = "#bc7575";
             modal.innerHTML = `<p>${msg}</p>`;
 
-            if (data.game_state["tournament"]) {
+            if (data.game_state["tournament_name"]) {
                 modal.innerHTML +=`
                 <button id="back-home-btn" route="/" class="btn btn-primary">Back to dashboard</button>
                 <button id="new-game-btn" route="/" class="btn btn-primary">Back to tournament view</button> // to complete
@@ -871,7 +871,7 @@ export default class PongGame {
     }
 
     render() {
-        this.initializeWs(this.props?.code);
+        this.initializeWs(this.props);
 
         return `
             <div style="width: 100%; height: 100%; position: relative;" id="display">
