@@ -76,7 +76,7 @@ async def find_new_direction(ball, paddle):
 
     await ball.accelerate()
     ball.x_vel *= -1
-    min_x = paddle.x + ball.radius + PADDLE_WIDTH if paddle.x < GAME_WIDTH * 0.5 else paddle.x - ball.radius + ball.x_vel
+    min_x = paddle.x + ball.radius if paddle.x < GAME_WIDTH * 0.5 else paddle.x - ball.radius
     ball.x = min_x
     middle_paddle = paddle.height / 2
     middle_y = paddle.y + middle_paddle

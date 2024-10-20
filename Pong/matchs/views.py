@@ -375,9 +375,9 @@ class   PlayTournamentView(APIView):
         if user not in tournament.players.all():
             return JsonResponse({"message": "You have not joined this tournament."}, status=404)
         try:
-            session_id = MatchMaking.get_tournament_match(user.username, tournament_name) # verify if it returned a json
+            session_id = MatchMaking.get_tournament_match(user.username, tournament_name)
         except ValueError as e:
-            return JsonResponse({"message": e}, status=404)
+            return JsonResponse({"message": str(e)}, status=404)
 
         cache_db = cache.get(tournament.name)
         if not cache_db:
