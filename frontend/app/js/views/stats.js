@@ -309,7 +309,7 @@ export default class Stats {
 										</div>
 									</div>
 								</div>
-								<div id="canvasContainer" class="d-flex h-full justify-content-center align-self-center align-items-center" style="flex: 1 1;">
+								<div id="canvasContainer" class="d-flex h-full justify-content-center align-self-center align-items-center" style="flex: 1 1 0; min-width: 0;">
 									<div class="d-flex w-full h-full justify-content-center align-items-center">
 										<canvas id="eloChart" style="width: 100%; height: 100%;"></canvas>
 									</div>
