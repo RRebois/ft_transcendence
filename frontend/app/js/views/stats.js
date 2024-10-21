@@ -142,12 +142,15 @@ export default class Stats {
 						matchHistoryContainer.appendChild(noMatchElement);
 					}
           
-					data.forEach(match => { console.log("Match: ", match);
+					data.forEach(match => {
 						const   date = moment(match.timestamp);
 						const   matchElement = document.createElement('div');
 						const   background = match?.winner.includes(username) ? 'bg-victory' : 'bg-defeat';
 						const   count = match.count;
-						matchElement.classList.add('d-flex', 'my-2', 'flex-row', 'justify-content-between', 'play-regular', 'align-items-center', background, 'rounded', 'p-2');
+						const   victoryMsg = match?.deconnection ? " Victory by forfeit" : " Victory";
+						const   defeatMsg = match?.deconnection ? "Forfeit" : "Defeat"
+						matchElement.classList.add('d-flex', 'my-2', 'flex-row', 'overflow-hidden', 'justify-content-between', 'play-regular', 'align-items-center', background, 'rounded', 'p-2');
+
 						if (count === 2) {
                             matchElement.innerHTML = `
                                 <div class="d-flex flex-column align-items-center">
@@ -159,7 +162,7 @@ export default class Stats {
                                     <div class="d-flex flex-row">
                                         <div class="d-flex flex-column">
                                             <div class="d-flex flex-row align-items-center gap-1">
-                                                    <p class="m-0 cursor-click text-dark" route="/stats/${match.players[0].username}">${match.players[0].username}</p>
+                                                    <p class="m-0 cursor-click text-dark" route="/stats/${match.players[0].username}">${match?.players[0].username}</p>
                                                     <p class="play-bold m-0 fs-1">${match.players[0].score}</p>
                                             </div>
                                         </div>
@@ -167,17 +170,17 @@ export default class Stats {
                                         <div class="d-flex flex-column">
                                             <div class="d-flex flex-row align-items-center gap-1">
                                                     <p class="play-bold m-0 fs-1">${match.players[1].score}</p>
-                                                    <p class="m-0 cursor-click text-dark" route="/stats/${match.players[1].username}">${match.players[1].username}</p>
+                                                    <p class="m-0 cursor-click text-dark" route="/stats/${match.players[1].username}">${match?.players[1].username}</p>
                                             </div>
                                         </div>
                                     </div>
-                                    ${match?.winner[0] === username ?
-                                        `<div class="d-flex flex-row">
-                                            <i class="bi bi-trophy-fill" style="color: #e4ca6a;"></i>
-                                            <p>Victory</p>
-                                        </div>` :
-                                        `<p>Defeat</p>`
-                                }
+                                        ${match?.winner.includes(username) ?
+                                            `<div class="d-flex flex-row">
+                                                <i class="bi bi-trophy-fill" style="color: #e4ca6a;"></i>
+                                                <p>${victoryMsg}</p>
+                                            </div>` :
+                                            `<p>${defeatMsg}</p>`
+                                        }
                                 </div>
                                 <p class="play-regular m-0">${date.calendar()}</p>
                             `;
@@ -193,8 +196,8 @@ export default class Stats {
                                     <div class="d-flex flex-row">
                                         <div class="d-flex flex-column">
                                             <div class="d-flex flex-row align-items-center gap-1">
-                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[0].username}">${match.players[0].username}</p>
-                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[1].username}">${match.players[1].username}</p>
+                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[0].username}">${match?.players[0].username}</p>
+                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[1].username}">${match?.players[1].username}</p>
                                                 <p class="play-bold m-0 fs-1">${match.players[0].score}</p>
                                             </div>
                                         </div>
@@ -202,18 +205,18 @@ export default class Stats {
                                         <div class="d-flex flex-column">
                                             <div class="d-flex flex-row align-items-center gap-1">
                                                 <p class="play-bold m-0 fs-1">${match.players[2].score}</p>
-                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[2].username}">${match.players[2].username}</p>
-                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[3].username}">${match.players[3].username}</p>
+                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[2].username}">${match?.players[2].username}</p>
+                                                <p class="m-0 cursor-click text-dark" route="/stats/${match.players[3].username}">${match?.players[3].username}</p>
                                             </div>
                                         </div>
                                     </div>
-                                    ${match?.winner[0] === username ?
+                                    ${match?.winner.includes(username) ?
                                         `<div class="d-flex flex-row">
                                             <i class="bi bi-trophy-fill" style="color: #e4ca6a;"></i>
                                             <p>Victory</p>
                                         </div>` :
                                         `<p>Defeat</p>`
-                                }
+                                    }
                                 </div>
                                 <p class="play-regular m-0">${date.calendar()}</p>
                             `;
@@ -313,7 +316,7 @@ export default class Stats {
 								</div>
 							</div>						
 							<div class="w-full mt-5">
-								<div class="d-flex flex-row justify-content-between align-items-center">
+								<div class="d-flex flex-row justify-content-between align-items-center overflow-hidden">
 									<p class="d-flex play-bold title">Match history</p>	
 									<select class="form-select custom-select-filter-icon" id="game-filter" aria-label="Select a game" style="width: min-content; height: min-content;">
 										<option value="all">All</option>

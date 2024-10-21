@@ -167,7 +167,7 @@ export default class Navbar {
 				if (dropdownNotif) {
 					let notifChanged = false;
 					data.forEach(notification => {
-						console.log("Notif is: ", notification);
+//						console.log("Notif is: ", notification);
 						const notifElem = document.createElement('li');
 						notifElem.classList.add('bg-notif', 'dropdown-item');
 						notifElem.innerHTML = `

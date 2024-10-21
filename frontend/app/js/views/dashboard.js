@@ -15,7 +15,7 @@ export default class Dashboard {
 		this.purrinhaGameConnectivity = 'offline';
 		this.purrinhaGameNbPlayers = 'bot';
 		this.tournamentNbPlayers = '3';
-		this.load_tournaments= this.load_tournaments.bind(this);
+		this.load_tournaments = this.load_tournaments.bind(this);
 	}
 
 	setUser(user) {

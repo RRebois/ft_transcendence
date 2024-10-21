@@ -61,7 +61,7 @@ export function load_new_notifications() {
                 if (dropdownNotif) {
                     dropdownNotif.innerHTML = "";
                     data.forEach(notification => {
-                        console.log("Notif is: ", notification);
+//                        console.log("Notif is: ", notification);
                         const notifElem = document.createElement('li');
                         notifElem.classList.add('bg-notif', 'dropdown-item');
                         notifElem.innerHTML = `
