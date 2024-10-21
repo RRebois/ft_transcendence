@@ -1029,66 +1029,6 @@ class GetFriendView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-class DeleteAccountView(APIView):
-    serializer_class = CheckPassword
-
-    def post(self, request):
-        try:
-            user = authenticate_user(request)
-        except AuthenticationFailed as e:
-            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
-        if user.stud42:
-            Avatars.objects.get(pk=user.avatar_id.pk).delete()
-            User.objects.get(id=user.id).delete()
-            response = JsonResponse(data={'message': "Account successfully deleted."}, status=status.HTTP_200_OK)
-            response.delete_cookie('jwt_access')
-            response.delete_cookie('jwt_refresh')
-            # response['Location'] = 'https://localhost:4242/' if os.environ.get("FRONT_DEV") == '1' else 'https://localhost:3000/'
-            # response.status_code = 302
-            return response
-
-        serializer = self.serializer_class(data=request.data, context={'user': user})
-        try:
-            serializer.is_valid(raise_exception=True)
-            friend_list = list(user.friends.all())
-            avatars_uploaded = Avatars.objects.filter(uploaded_from=user)
-            for avatar in avatars_uploaded:
-                if avatar.uploaded_from.count() == 1:
-                    avatar.delete()
-            User.objects.get(id=user.id).delete()
-            channel_layer = get_channel_layer()
-            for friend in friend_list:
-                async_to_sync(channel_layer.group_send)(
-                    f"user_{friend.id}_group",
-                    {
-                        'type': 'friend_delete_acc',
-                        'from_user': user.username,
-                        'from_user_id': user.id,
-                        'from_image_url': get_profile_pic_url(user.get_img_url()),
-                        'to_image_url': get_profile_pic_url(friend.get_img_url()),
-                        'to_user': friend.username,
-                        # 'time': str(friend_request.time),
-                    }
-                )
-            response = JsonResponse(data={'message': "Account successfully deleted."}, status=status.HTTP_200_OK)
-            response.delete_cookie('jwt_access')
-            response.delete_cookie('jwt_refresh')
-            # response['Location'] = 'https://localhost:4242/' if os.environ.get("FRONT_DEV") == '1' else 'https://localhost:3000/'
-            # response.status_code = 302
-            return response
-        except serializers.ValidationError as e:
-            error_messages = []
-            for field, errors in e.detail.items():
-                for error in errors:
-                    if field == 'non_field_errors':
-                        error_messages.append(f"{error}")
-                    else:
-                        error_messages.append(f"{field}: {error}")
-            error_message = " | ".join(error_messages)
-            return JsonResponse(data={'message': error_message}, status=400)
-
-
-@method_decorator(csrf_protect, name='dispatch')
 class GetNotificationsView(APIView):
     def get(self, request):
         try:
