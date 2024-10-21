@@ -193,7 +193,7 @@ export default class Navbar {
 			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
 		});
 	}
-	
+
 	notificationsRead() {
 		const csrfToken = getCookie('csrftoken');
 		fetch(`https://${window.location.hostname}:8443/notifications_read`, {

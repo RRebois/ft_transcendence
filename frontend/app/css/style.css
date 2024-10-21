@@ -2,9 +2,10 @@
 @import "bootstrap/dist/css/bootstrap.css";
 @import "bootstrap-icons/font/bootstrap-icons.scss";
 
+
 .fullscreen {
-    min-height: 100vh;
-    min-width: 100vw;
+    min-height: 100%;
+    min-width: 100%;
 }
 
 body.bg-gradient {
