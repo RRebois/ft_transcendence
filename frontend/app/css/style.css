@@ -103,6 +103,10 @@ body.bg-gradient {
     width: fit-content;
 }
 
+.w-3-4 {
+    height: 75%;
+}
+
 .h-min {
     height: min-content;
 }

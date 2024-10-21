@@ -235,9 +235,9 @@ export default class MyProfile {
 
     render() {
         return `
-			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
+			<div class="d-flex w-full h-full flex-grow-1 justify-content-center align-items-center">
 				<div class="h-full w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 16px;">
-					<div class="bg-white d-flex g-4 flex-column align-items-center py-2 px-5 rounded login-card w-50" style="--bs-bg-opacity: .5;">
+					<div class="bg-white w-50 h-3-4 d-flex g-4 flex-column align-items-center py-2 px-5 rounded login-card my-4" style="--bs-bg-opacity: .5;">
 						<p class="text-justify play-bold title">${this.user?.username} profile</p>
 						<form id="personal-data-form">
 							<p class="play-bold subtitle">Your personal information</p>
