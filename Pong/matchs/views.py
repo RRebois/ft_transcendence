@@ -88,7 +88,6 @@ class TournamentDisplayAllView(APIView):
 
         return JsonResponse([tournament.serialize() for tournament in tournaments] if tournaments else [], safe=False, status=200)
 
-
 @method_decorator(csrf_protect, name='dispatch')
 class TournamentDisplayOneView(APIView):
     def get(self, request, tournament_name):
@@ -159,6 +158,7 @@ def create_match(match_result, winner, deco, is_pong=True):
         if player_username in winner:
             match.winner.add(player)
         match.players.add(player)
+        match.is_finished = True
     update_match_data(players_data, winner, is_pong)
     match.save()
     return match
@@ -167,7 +167,7 @@ def find_tournament_winner(tournament):
     players = {player.username: [0, 0, player] for player in tournament.players.all()}
     matchs = tournament.tournament_matchs.all()
     for match in matchs:
-        winner = match.winner.username
+        winner = match.match.winner
         if winner in players:
             players[winner][0] += 1
             players[winner][1] += match.get_winner_score()
@@ -193,9 +193,9 @@ def find_tournament_winner(tournament):
     MatchMaking.delete_tournament_session(tournament.get_id())
 
 
-def add_match_to_tournament(tournament_id, match):
+def add_match_to_tournament(tournament_name, match):
     try:
-        tournament = Tournament.objects.get(id=tournament_id)
+        tournament = Tournament.objects.get(name=tournament_name)
     except:
         return JsonResponse({"message": "Tournament does not exist."}, status=404)
     unfinished_matchs = tournament.get_unfinished_matchs()

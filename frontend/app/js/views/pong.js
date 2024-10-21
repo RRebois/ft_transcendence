@@ -7,6 +7,7 @@ import * as bootstrap from "bootstrap";
 import {getCookie} from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
 import {appRouter} from "@js/spa-router/initializeRouter.js";
+import {remove_modal_backdrops} from "../functions/display.js";
 
 export default class PongGame {
     constructor(props) {
@@ -142,37 +143,43 @@ export default class PongGame {
     }
 
     onKeyDown(event) {
-        if (window.location.pathname === "/pong") {
-            this.keyMap[event.key] = true;
-        }
+        if (window.location.pathname === "/pong")
+            if (event.key === 'w' || event.key === 's' || event.key === 'ArrowUp'
+            || event.key === 'ArrowDown')
+                this.keyMap[event.key] = true;
     }
 
     onKeyUp(event) {
-        if (window.location.pathname === "/pong") {
-            delete this.keyMap[event.key];
-        }
+        if (window.location.pathname === "/pong")
+            if (event.key === 'w' || event.key === 's' || event.key === 'ArrowUp'
+            || event.key === 'ArrowDown')
+                delete this.keyMap[event.key];
     }
 
      handleKeyEvent() {
-        if (this.props?.code !== "40") {
-            if (this.keyMap['w'] === true)
-                this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": 1}}));
-            if (this.keyMap['s'] === true)
-                this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": -1}}));
-            if (this.keyMap['ArrowUp'] === true)
-                this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
-            if (this.keyMap['ArrowDown'] === true)
-                this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
-        }
-        else {
-            if (this.keyMap['w'] === true)
-                this.gameSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": 1}}));
-            if (this.keyMap['s'] === true)
-                this.gameSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": -1}}));
-            if (this.keyMap['ArrowUp'] === true)
-                this.gameSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": 1}}));
-            if (this.keyMap['ArrowDown'] === true)
-                this.gameSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": -1}}));
+        if (window.location.pathname === "/pong") {
+            if (this.props?.code === "20") { console.log("1v1 offline");
+                if (this.keyMap['w'] === true)
+                    this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": 1}}));
+                if (this.keyMap['s'] === true)
+                    this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": -1}}));
+                if (this.keyMap['ArrowUp'] === true)
+                    this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
+                if (this.keyMap['ArrowDown'] === true)
+                    this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
+            }
+            else if (this.props?.code !== "40" && this.props?.code !== "20") { console.log("1vsbot or 1v1 online");
+                if (this.keyMap['ArrowUp'] === true)
+                    this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
+                if (this.keyMap['ArrowDown'] === true)
+                    this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
+            }
+            else { console.log("2v2");
+                if (this.keyMap['ArrowUp'] === true)
+                    this.gameSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": 1}}));
+                if (this.keyMap['ArrowDown'] === true)
+                    this.gameSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": -1}}));
+            }
         }
     }
 
@@ -301,7 +308,8 @@ export default class PongGame {
         textGroup.name = "textGroup";
         this.scene.add(textGroup);
 
-        this.keyMap = {};
+        if (!this.keyMap)
+            this.keyMap = new Map();
         this.paddles = {};
 
         // Ball initial stats
@@ -754,6 +762,7 @@ export default class PongGame {
 
     // Collecting info from the game logic in the back
     display(data) {
+        this.keyMap.clear();
 //        console.log(data);
         if (this.userIndex === 0 && this.props?.code === "40") {
             for (let i = 0; i < this.players_nick.length; i++) {
@@ -803,10 +812,10 @@ export default class PongGame {
                 modal.style.background = "#bc7575";
             modal.innerHTML = `<p>${msg}</p>`;
 
-            if (data.game_state["tournament_name"]) {
+            if (data["tournament_name"]) {
                 modal.innerHTML +=`
                 <button id="back-home-btn" route="/" class="btn btn-primary">Back to dashboard</button>
-                <button id="new-game-btn" route="/" class="btn btn-primary">Back to tournament view</button> // to complete
+                <button id="back-tournament-btn" class="btn btn-primary">Back to tournament view</button>
             `;
             }
             else {
@@ -814,6 +823,12 @@ export default class PongGame {
                     <button id="back-home-btn" route="/" class="btn btn-primary">Back to dashboard</button>
                     <button id="new-game-btn" class="btn btn-primary">Play again</button>
                 `;
+            }
+            const   backTournamentView = document.getElementById("back-tournament-btn");
+            if (backTournamentView) {
+                backTournamentView.addEventListener("click", () => {
+                    appRouter.navigate(`/tournament/${data['tournament_name']}`);
+                });
             }
             const   restart = document.getElementById("new-game-btn");
             if (restart) {
@@ -836,12 +851,6 @@ export default class PongGame {
                             console.log("Game request success: ", data);
                             data.code = `${this.props?.code}`;
                             const params = new URLSearchParams(data).toString();
-                            // Close modal
-                            const createMatchModal = bootstrap.Modal.getInstance(document.getElementById('create-pong-match-modal'));
-                            if (createMatchModal)
-                                createMatchModal.hide();
-                                const backdrops = document.querySelectorAll('.modal-backdrop');
-                                backdrops.forEach(backdrop => backdrop.remove());
                             appRouter.navigate(`/${this.props?.game}?${params}`);
                             const socket = window.mySocket;
                             socket.send(JSON.stringify({
@@ -862,6 +871,7 @@ export default class PongGame {
 
 			// close the webso
             this.gameSocket.close();
+            this.keyMap.clear();
         }
     }
 

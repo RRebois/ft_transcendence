@@ -3,7 +3,6 @@ from . import views
 from .views import *
 
 urlpatterns = [
-    path("", views.index, name="index"),
     path("isUserExisting/<str:username>", UserExistsView.as_view(), name="isUserExisting"),
     path("login", LoginView.as_view(), name="login"),
     path("login42", Login42View.as_view(), name="login42"),
@@ -38,7 +37,6 @@ urlpatterns = [
     path('remove_friend', RemoveFriendView.as_view(), name='remove_friend'),
     path('2FA', Security2FAView.as_view(), name='enable_2FA'),
     path('verifyotp', VerifyOTPView.as_view(), name='verify_otp'),
-    path("delete_account", DeleteAccountView.as_view(), name="delete"),
     path('get_ws_token/', views.get_ws_token, name='get_ws_token'),
     path('get_notifications', GetNotificationsView.as_view(), name='get_notifications'),
     path('notifications_read', NotificationsReadView.as_view(), name='notifications_read'),
