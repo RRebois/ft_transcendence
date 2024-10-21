@@ -12,10 +12,32 @@ from matchs.views import create_match, add_match_to_tournament, send_to_tourname
 from .views import MatchMaking
 from .game_ai.bot_manager import init_bot
 from configFiles.globals import *
+from userManagement.models import User
 
 
 class	GameManagerConsumer(AsyncWebsocketConsumer):
 	matchs = {}
+
+	@database_sync_to_async
+	def update_user_status(self, user, status):
+		try:
+			user_connected = User.objects.get(id=user.id)
+			print(f"GAME: User is {str(user_connected)}")
+			user_connected.status = status
+			user_connected.save(update_fields=['status'])
+			# self.scope['user'] = user_connected
+			print(f"GAME: User {str(self.scope['user'])} is now {user_connected.status}")
+			return
+		except:
+			return
+
+	async def user_online(self):
+		user = self.scope['user']
+		await self.update_user_status(user, "online")
+
+	async def user_in_game(self):
+		user = self.scope['user']
+		await self.update_user_status(user, "in-game")
 
 	async def	connect(self):
 		self.game_name = self.scope['url_route']['kwargs']['game_name']
@@ -24,6 +46,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		self.game_handler = None
 		self.user = self.scope['user']
 		self.username = self.user.username
+		self.loop = False
 
 		await self.accept()
 		self.session_data = await self.get_session_data()
@@ -61,6 +84,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 				await self.update_cache_db(self.session_data)
 		else:
 			self.loop_task = asyncio.create_task(self.fetch_session_data_loop())
+		await self.user_in_game()
 		print(f'\n\n\nusername => |{self.username}|\nuser => |{self.user}|\ncode => |{self.game_code}|\n data => |{self.session_data}|\nscope => |{self.scope}| \n\n')
 		await self.send_to_group(self.session_data)
 
@@ -73,7 +97,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 			if self.game_handler is not None:
 				await self.game_handler.reset_game()
 		if self.game_handler is not None:
-			if self.game_name == 'pong' and self.game_code != 20 and self.game_code != 40:
+			if self.game_name == 'pong' and self.game_code != 20:
 				player_move = data.get('player_move')
 				if player_move:
 					player_move['player'] = self.session_data['players'][self.username]['id']
@@ -88,13 +112,18 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		await self.send(text_data=json.dumps(message))
 
 	async def	disconnect(self, close_code):
+		await self.user_online()
+		if self.loop:
+			self.loop_task.cancel()
 		await self.decrement_connection_count()
+		print(f"\n\n\n{self.username} PONG WS disconnected\n\n\n")
 		await self.channel_layer.group_discard(
 			self.session_id,
 			self.channel_name
 		)
 
 	async def	fetch_session_data_loop(self):
+		self.loop = True
 		while True:
 			await self.fetch_session_data()
 			await asyncio.sleep(0.4)
@@ -105,8 +134,8 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		else:
 			self.game_handler = GameManagerConsumer.matchs.get(self.session_id)
 			await self.game_handler.add_consumer(self)
-			await self.loop_task.cancel()
-
+			self.loop = False
+			self.loop_task.cancel()
 
 	@database_sync_to_async
 	def update_cache_db(self, session_data):
@@ -151,10 +180,11 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 			await self.game_handler.end_game(winner=other_player)
 			await self.game_handler.remove_consumer(self)
 
-		if session_data['connected_players'] <= 0:
+		if session_data['connected_players'] <= 0 or (self.game_code in [10, 20] and session_data['connected_players'] <= 1):
 			await database_sync_to_async(cache.delete)(self.session_id)
 			await sync_to_async(MatchMaking.delete_session)(self.session_id)
-			GameManagerConsumer.matchs.pop(self.session_id)
+			if self.session_id in GameManagerConsumer.matchs:
+				GameManagerConsumer.matchs.pop(self.session_id)
 		else:
 			await database_sync_to_async(cache.set)(self.session_id, session_data)
 
@@ -165,15 +195,14 @@ class PongHandler():
 		self.consumer = [consumer]
 		self.game_code = consumer.game_code
 		self.bot = None
+		self.loop = False
 
 	async def	launch_game(self, players_name):
 		self.message = self.consumer[0].session_data
 		self.game = PongGame(players_name, multiplayer=(self.game_code == 40))
 		await self.send_game_state()
 		if BOT_NAME in self.message['players']:
-			self.bot = await init_bot('pong', self.game)
-		if self.bot:
-			print('\n\n\nYEAH\n\n\n')
+			self.bot = await init_bot('pong', self.game, self)
 
 
 	@database_sync_to_async
@@ -207,8 +236,9 @@ class PongHandler():
 			client.close()
 
 	async def	reset_game(self):
-		if not hasattr(self, 'loop_task'):
+		if not self.loop:
 			self.game.reset_game()
+			# await self.bot.launch_train()
 			self.loop_task = asyncio.create_task(self.game_loop())
 
 
@@ -218,6 +248,7 @@ class PongHandler():
 			await self.game.move_player_paddle(player_move)
 
 	async def	game_loop(self):
+		self.loop = True
 		if self.bot:
 			await self.bot.launch_bot()
 		while True:
@@ -238,9 +269,9 @@ class PongHandler():
 	async def	cancel_loop(self):
 		if self.bot:
 			await self.bot.cancel_loop()
-			# await self.bot.update_q_table_db()
-		if hasattr(self, 'loop_task'):
-			await self.loop_task.cancel()
+		if self.loop:
+			self.loop = False
+			self.loop_task.cancel()
 
 	async def	end_game(self, winner=None):
 
@@ -287,6 +318,7 @@ class PurrinhaHandler():
 	def	__init__(self, consumer):
 		self.consumer = [consumer]
 		self.game_code = consumer.game_code
+		self.bot = None
 
 	async def	launch_game(self, players_name):
 		self.message = self.consumer[0].session_data
@@ -295,8 +327,7 @@ class PurrinhaHandler():
 		self.wins = {player: 0 for player in players_name.keys()}
 		self.game = PurrinhaGame(players_name)
 		if BOT_NAME in self.message['players']:
-			# init_bot()
-			pass
+			self.bot = await init_bot('purrinha', self)
 
 	async def	add_consumer(self, consumer):
 		self.consumer.append(consumer)
@@ -314,6 +345,8 @@ class PurrinhaHandler():
 
 	async def	reset_game(self):
 		if len(self.turns_id) == self.player_nb:
+			if self.bot:
+				await self.bot.launch_bot()
 			await self.get_new_turn()
 			self.message['game_state'] = await self.game.get_status()
 			self.message['game_state']['player_turn'] = self.curr_turn
@@ -365,8 +398,8 @@ class PurrinhaHandler():
 			ret = await self.parse_guess(value, player_id)
 			if ret:
 				await self.game.set_player_guess(player_id, value)
+				await self.get_new_turn()
 		if ret:
-			await self.get_new_turn()
 			self.message['game_state'] = await self.game.get_status()
 			self.message['game_state']['player_turn'] = self.curr_turn
 			self.message['game_state']['history'] = self.wins
@@ -396,6 +429,8 @@ class PurrinhaHandler():
 				self.message['deconnection'] = deconnection
 				await self.consumer[0].update_cache_db(self.message)
 				await sync_to_async(create_match)(self.wins, [winner], deco=deconnection, is_pong=False)
+				if self.bot:
+					await self.bot.cancel_loop()
 		await self.consumer[0].send_to_group(self.message)
 		if not self.message['winner']:
 			self.game.play_again()

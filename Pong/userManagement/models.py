@@ -45,6 +45,7 @@ class User(AbstractUser):
     totp = models.CharField(max_length=100, blank=True, null=True)
     tfa_activated = models.BooleanField(default=False)
     stud42 = models.BooleanField(default=False)
+    active_ws = models.IntegerField(default=0)
 
     REQUIRED_FIELDS = ['email']
 

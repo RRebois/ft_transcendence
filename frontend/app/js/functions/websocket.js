@@ -1,7 +1,7 @@
 import {isUserConnected} from "./user_auth.js";
 import ToastComponent from "@js/components/Toast.js";
 import { create_friend_div_ws, create_friend_request_div, remove_friend_div, create_empty_request, create_empty_friend } from "@js/functions/friends_management.js";
-import { load_tournaments_ws, reload_new_players,load_players_ws } from "@js/functions/tournament_management.js";
+import { load_tournaments_ws, reload_new_players, load_players_ws } from "@js/functions/tournament_management.js";
 import {remove_friend_request_div} from "./friends_management.js";
 import {getCookie} from "@js/functions/cookie.js";
 import * as bootstrap from 'bootstrap';
@@ -107,7 +107,6 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, view) {
 						} else {
 							console.log('Connection died');
 						}
-						setTimeout(initializeWebSocket, 2000);
 					};
 
 					socket.onerror = function (error) {
@@ -168,7 +167,6 @@ export async function initializePongWebSocket(data, pong) { console.log("DATA re
                 } else {
                     // console.log('Connection died');
                 }
-                setTimeout(initializeWebSocket, 2000);
             };
 
             socket.onerror = function (error) {
@@ -185,6 +183,11 @@ export async function initializePongWebSocket(data, pong) { console.log("DATA re
 
 export async function initializeWebSocket() {
     return new Promise(async (resolve, reject) => {
+        if (window.mySocket) {
+            console.log("Socket already initialized");
+            resolve(window.mySocket);
+            return;
+        }
         console.log("In Init WS FRONT")
         const response = await fetch(`https://${window.location.hostname}:8443/get_ws_token/`, {
             credentials: 'include',
@@ -197,7 +200,7 @@ export async function initializeWebSocket() {
             const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
             const url = wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/'
             console.log("url is:", url);
-            const socket = new WebSocket(wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/');
+            let socket = new WebSocket(wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/');
 
             socket.onopen = function (e) {
                 console.log("WebSocket connection established");
@@ -255,11 +258,13 @@ export async function initializeWebSocket() {
                 } else {
                     console.log('Connection died');
                 }
+                socket = null;
                 setTimeout(initializeWebSocket, 2000);
             };
 
             socket.onerror = function (error) {
                 console.log(`WebSocket Error: ${error.message}`);
+                socket = null;
                 reject(error);
             };
             window.mySocket = socket; // to access as a global var
@@ -372,7 +377,7 @@ function handle_tournament_full(socket, data){
     console.log("data is:", data);
 
     const toast = new ToastComponent();
-    toast.throwToast('Notification', `${data.message}`, 5000);
+    toast.throwToast('Notification', `${data.message}`, 3000);
     load_new_notifications();
 }
 
@@ -387,7 +392,7 @@ async function handle_tournament_play(socket, data) {
     const user = await isUserConnected();
     if (user.id !== data.creator) {
         const toast = new ToastComponent();
-        toast.throwToast('Notification', `${data.message}`, 5000);
+        toast.throwToast('Notification', `${data.message}`, 3000);
         load_new_notifications();
     }
 }

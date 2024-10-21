@@ -1,4 +1,5 @@
 from random import choice, randrange
+
 from configFiles.globals import *
 
 class Paddle:
@@ -39,18 +40,21 @@ class Ball:
         self.x = self.original_x = x
         self.y = self.original_y = y
         self.radius = radius
-        self.y_vel = randrange(15) * choice([0.1, -0.1])
-        self.x_vel = BALL_START_VEL * choice([1, -1])
+        self.y_vel = self.x_vel = 0
 
     async def move(self):
+        if not self.x_vel:
+            self.x_vel = BALL_START_VEL * choice([1, -1])
+        if not self.y_vel:
+            self.y_vel = randrange(15) * choice([0.1, -0.1])
         self.x += self.x_vel
         self.y += self.y_vel
 
     async def reset(self):
         self.x = self.original_x
         self.y = self.original_y
-        self.y_vel = randrange(15) * choice([0.1, -0.1])
-        self.x_vel = BALL_START_VEL * choice([1, -1])
+        self.y_vel = self.x_vel = 0
+
 
     async def accelerate(self):
         if abs(self.x_vel) >= MAX_VEL:
@@ -71,33 +75,42 @@ class Ball:
 
 async def find_new_direction(ball, paddle):
 
+    await ball.accelerate()
     ball.x_vel *= -1
+    min_x = paddle.x + ball.radius if paddle.x < GAME_WIDTH * 0.5 else paddle.x - ball.radius
+    ball.x = min_x
     middle_paddle = paddle.height / 2
     middle_y = paddle.y + middle_paddle
     difference_in_y = middle_y - ball.y
     reduction_factor = middle_paddle / -abs(ball.x_vel)
     y_vel = difference_in_y / reduction_factor
     if abs(y_vel) < 0.1:
-        y_vel = 0.1 if y_vel >= 0 else -0.1
+        y_vel = -0.1 if y_vel >= 0 else 0.1
     ball.y_vel = y_vel
-    await ball.move()
-    # new_x = -ball.radius if paddle.x > GAME_WIDTH // 2 else ball.radius
-    # ball.x = paddle.x + new_x
-    await ball.accelerate()
+    # await ball.move()
 
 async def handle_collision(ball, paddles):
     if ball.y + ball.radius >= GAME_HEIGHT or ball.y - ball.radius <= 0:
         ball.y_vel *= -1
+        ball.y = max(ball.radius, min(GAME_HEIGHT - ball.radius, ball.y))
         await ball.accelerate()
 
     for paddle in paddles:
-        await check_paddle_collision(ball, paddle)
+        if await check_paddle_collision(ball, paddle):
+            break
 
 async def check_paddle_collision(ball, paddle):
-    if ball.y + ball.radius >= paddle.y and ball.y - ball.radius <= paddle.y + paddle.height:
-        if (ball.x_vel < 0 and ball.x - ball.radius <= paddle.x and ball.x >= paddle.x) or \
-           (ball.x_vel > 0 and ball.x + ball.radius >= paddle.x and ball.x <= paddle.x + paddle.width):
+    if (ball.y + ball.radius >= paddle.y and
+        ball.y - ball.radius <= paddle.y + paddle.height):
+        if ((ball.x_vel < 0 and paddle.x < GAME_WIDTH * 0.5 and
+             ball.x - ball.radius <= paddle.x + paddle.width and
+             ball.x + ball.radius >= paddle.x) or
+            (ball.x_vel > 0 and paddle.x > GAME_WIDTH * 0.5 and
+             ball.x + ball.radius >= paddle.x and
+             ball.x - ball.radius <= paddle.x + paddle.width)):
             await find_new_direction(ball, paddle)
+            return True
+    return False
 
 class   PongMatch():
 

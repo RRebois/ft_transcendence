@@ -61,7 +61,6 @@ export default class Home {
                         otpModal.show();
                     } else {
                         initializeWebSocket();
-                        // window.location.href = '/dashboard';
                         appRouter.navigate('/dashboard');
                     }
                 }
@@ -149,7 +148,6 @@ export default class Home {
                     initializeWebSocket();
                     console.log('Success:', data);
                     document.getElementById('otp').classList.remove('is-invalid');
-                    // window.location.href = '/dashboard';
                     appRouter.navigate('/dashboard');
                 }
             })

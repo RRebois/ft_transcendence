@@ -28,11 +28,11 @@ export default class Navbar {
 			credentials: 'include'
 		}).then(response => {
 			console.log('Logout response:', response);
-			appRouter.navigate('/', false);
 			if (window.mySocket && window.mySocket.readyState === WebSocket.OPEN) {
 				window.mySocket.close();
 				console.log('WebSocket connection closed');
 			}
+			appRouter.navigate('/', false);
 		}).catch(error => {
 			console.error('Logout error:', error);
 			const toastComponent = new ToastComponent();
@@ -94,8 +94,6 @@ export default class Navbar {
 				if (data.message === "superuser") {
 					return;
 				}
-				const toastComponent = new ToastComponent();
-				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 			} else {
 				data.map(avatar => {
 					create_previous_avatar_div(avatar, this.change_previous_avatar.bind(this));

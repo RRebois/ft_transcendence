@@ -271,11 +271,13 @@ class LogoutView(APIView):
     def get(self, request):
         user = authenticate_user(request)
         if user is not None:
-            response = JsonResponse({"redirect": True, "redirect_url": "/"}, status=status.HTTP_200_OK)
+            user.status = "offline"
+            user.save()
+            response = JsonResponse(data={}, status=status.HTTP_200_OK)
             response.delete_cookie('jwt_access')
             response.delete_cookie('jwt_refresh')
         else:
-            response = JsonResponse({"redirect": True, "redirect_url": "/"}, status=status.HTTP_401_UNAUTHORIZED)
+            response = JsonResponse(data={}, status=status.HTTP_401_UNAUTHORIZED)
         return response
 
 
@@ -379,6 +381,10 @@ class RegisterView(APIView):
 class UserStatsDataView(APIView):
     def get(self, request, username):
         try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
             user_stats = UserData.objects.get(user_id=User.objects.get(username=username))
         except User.DoesNotExist:
             return JsonResponse({"message": "User does not exist."}, status=500)
@@ -443,6 +449,10 @@ class GetAllUserAvatarsView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 class UserPersonalInformationView(APIView):
     def get(self, request, username):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
@@ -635,6 +645,10 @@ class PasswordResetRequestView(APIView):
     serializer_class = PasswordResetRequestSerializer
 
     def post(self, request):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = self.serializer_class(data=request.data, context={'request': request})
         logging.debug(f"In reset request view")
         try:
@@ -656,6 +670,10 @@ class SetNewPasswordView(APIView):
     serializer_class = SetNewPasswordSerializer
 
     def post(self, request, uidb64, token):
+        try:
+            user = authenticate_user(request)
+        except AuthenticationFailed as e:
+            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         data = request.data.copy()
         data['uidb64'] = uidb64
         data['token'] = token

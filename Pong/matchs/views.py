@@ -222,7 +222,7 @@ def send_to_tournament_group(tournament_id):
                 'matchs': cache_db['matchs'],
                 'message': cache_db['message'],
             }
-    )
+        )
 
 def reload_players_tournament_page(tournament_id, tournament):
     cache_db = cache.get(tournament_id)
@@ -374,7 +374,10 @@ class   PlayTournamentView(APIView):
             return JsonResponse({"message": "This tournament is not ready to play. Wait for all players."}, status=404)
         if user not in tournament.players.all():
             return JsonResponse({"message": "You have not joined this tournament."}, status=404)
-        session_id = MatchMaking.get_tournament_match(user.username, tournament_name) # verify if it returned a json
+        try:
+            session_id = MatchMaking.get_tournament_match(user.username, tournament_name)
+        except ValueError as e:
+            return JsonResponse({"message": str(e)}, status=404)
 
         cache_db = cache.get(tournament.name)
         if not cache_db:

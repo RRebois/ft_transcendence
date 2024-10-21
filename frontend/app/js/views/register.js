@@ -2,6 +2,7 @@ import ToastComponent from './../components/Toast.js';
 import {getCookie} from "../functions/cookie.js";
 import {validatePassword} from "../functions/validator.js";
 import {applyFontSize} from "../functions/display.js";
+import {initializeWebSocket} from "../functions/websocket.js";
 import {appRouter} from "../spa-router/initializeRouter.js";
 
 export default class Register {
@@ -123,7 +124,7 @@ export default class Register {
                 registerBtn.disabled = false;
             } else {
                 registerBtn.disabled = false;
-                // window.location.href = '/dashboard';
+                initializeWebSocket();
                 appRouter.navigate('/dashboard');
             }
         })
