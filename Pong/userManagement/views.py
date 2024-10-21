@@ -145,7 +145,7 @@ class LoginView(APIView):
         try:
             serializer.is_valid(raise_exception=True)
             user = serializer.validated_data['user']
-            if user.status == "online":
+            if user.status == "online" or user.status == "in-game":
                 message = "User already have an active session"
                 return JsonResponse(status=401, data={'message': message})
 
@@ -237,7 +237,7 @@ class Login42RedirectView(APIView):
                 error = login_42_error(request, "Username already taken")
                 return error
 
-        if user.status == "online":
+        if user.status == "online" or user.status == "in-game":
             error = login_42_error(request, "Username already have an active session")
             return error
         token = generate_JWT(user)
