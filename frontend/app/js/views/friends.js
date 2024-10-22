@@ -32,7 +32,7 @@ export default class Friends {
         return `
 			<div class="d-flex w-full min-h-full flex-grow-1">
 				<div class="d-flex min-h-full w-full flex-column align-items-center px-5" style="gap: 16px;">
-					<div class="bg-white rounded login-card min-h-full w-75 d-flex flex-column justify-content-center align-items-center px-5 mb-5 mt-5" style="gap: 16px; --bs-bg-opacity: .5;">
+					<div class="bg-white rounded login-card min-h-full w-75 d-flex flex-column justify-content-center align-items-center px-5 my-5" style="gap: 16px; --bs-bg-opacity: .5;">
 						<p class="play-bold text-center mt-1 title">Add a friend</p>
 						<form id="addfriend" class="d-flex mb-2">
 							<input type="text" id="username" class="form-control m-1"/>

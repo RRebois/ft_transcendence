@@ -143,7 +143,7 @@ export default class Stats {
 					}
           
 					data.forEach(match => {
-						const   date = moment(match.timestamp);
+						const   date = moment(match.timestamp, "MMM DD YYYY, hh:mm A");
 						const   matchElement = document.createElement('div');
 						const   background = match?.winner.includes(username) ? 'bg-victory' : 'bg-defeat';
 						const   count = match.count;
@@ -286,7 +286,7 @@ export default class Stats {
 		// document.title = `ft_transcendence | ${this.props?.username} stats`;
 		return `
 			<div class="d-flex w-3-4 min-h-full flex-grow-1 justify-content-center align-items-center" id="statsContainer">
-				<div class="h-full w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 16px;">
+				<div class="h-full w-full d-flex flex-column justify-content-center align-items-center px-5 my-5" style="gap: 16px;">
 					<div class="d-flex flex-column w-full" style="gap: 16px">
 						<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded" style="--bs-bg-opacity: .5;">
 							<p class="play-bold title">${this.props?.username} stats</p>
