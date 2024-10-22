@@ -636,10 +636,6 @@ class PasswordResetRequestView(APIView):
     serializer_class = PasswordResetRequestSerializer
 
     def post(self, request):
-        try:
-            user = authenticate_user(request)
-        except AuthenticationFailed as e:
-            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = self.serializer_class(data=request.data, context={'request': request})
         logging.debug(f"In reset request view")
         try:
@@ -661,10 +657,6 @@ class SetNewPasswordView(APIView):
     serializer_class = SetNewPasswordSerializer
 
     def post(self, request, uidb64, token):
-        try:
-            user = authenticate_user(request)
-        except AuthenticationFailed as e:
-            return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         data = request.data.copy()
         data['uidb64'] = uidb64
         data['token'] = token

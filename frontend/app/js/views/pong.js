@@ -308,8 +308,7 @@ export default class PongGame {
         textGroup.name = "textGroup";
         this.scene.add(textGroup);
 
-        if (!this.keyMap)
-            this.keyMap = new Map();
+        this.keyMap = {};
         this.paddles = {};
 
         // Ball initial stats
@@ -762,7 +761,6 @@ export default class PongGame {
 
     // Collecting info from the game logic in the back
     display(data) {
-        this.keyMap.clear();
 //        console.log(data);
         if (this.userIndex === 0 && this.props?.code === "40") {
             for (let i = 0; i < this.players_nick.length; i++) {
@@ -871,7 +869,6 @@ export default class PongGame {
 
 			// close the webso
             this.gameSocket.close();
-            this.keyMap.clear();
         }
     }
 

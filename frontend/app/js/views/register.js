@@ -145,7 +145,7 @@ export default class Register {
         // document.title = 'ft_transcendence | Register';
         return `
         <div class="w-100 min-h-screen d-flex flex-column justify-content-center align-items-center">
-            <div class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card w-50" style="--bs-bg-opacity: .5;">
+            <div class="bg-white d-flex flex-column align-items-center py-2 px-5 my-3 rounded login-card w-50" style="--bs-bg-opacity: .5;">
                 <p class="text-justify play-bold title">Créer un compte</p>
                 <form id="register-form">
                     <div class="row g-3">
