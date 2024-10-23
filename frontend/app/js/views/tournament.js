@@ -93,9 +93,12 @@ export default class Tournament {
             if (match.is_finished && isParticipant)
                 if (match?.winner.Username === this.user.username &&
                     (this.user.username === match?.players[0].Username || this.user.username === match?.players[1].Username))
-                        background = 'bg-victory'
-                else
+                    background = 'bg-victory'
+                else if (match?.winner.Username !== this.user.username &&
+                    (this.user.username === match?.players[0].Username || this.user.username === match?.players[1].Username))
                     background = 'bg-defeat';
+                else
+                    background = 'bg-tournament';
             else
                 background = 'bg-tournament';
             const   gameElement = document.createElement('div');
@@ -169,6 +172,7 @@ export default class Tournament {
     }
 
     setup_join_play_btn(tournament) {
+        this.playerFinished = false;
         const   joinBtn = document.getElementById('join-tournament');
         const   playBtn = document.getElementById('play-tournament');
         tournament.players.forEach(player => {

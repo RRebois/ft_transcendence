@@ -198,12 +198,18 @@ def add_match_to_tournament(tournament_name, match):
         tournament = Tournament.objects.get(name=tournament_name)
     except:
         return JsonResponse({"message": "Tournament does not exist."}, status=404)
+
     unfinished_matchs = tournament.get_unfinished_matchs()
+    match_player_ids = set(match.players.values_list('id', flat=True))
     for unfinished_match in unfinished_matchs:
-        unfinished_match.match = match
-        unfinished_match.score = [score.score for score in match.scores.all()]
-        unfinished_match.save()
-        break
+        unfinished_match_player_ids = set(unfinished_match.players.values_list('id', flat=True))
+        if unfinished_match_player_ids == match_player_ids:
+            unfinished_match.match = match
+            unfinished_match.score = [score.score for score in match.scores.all()]
+            print(f"Unfinished match is: {unfinished_match}")
+            unfinished_match.save()
+            break
+
     if len(unfinished_matchs) <= 1:
         find_tournament_winner(tournament)
 
