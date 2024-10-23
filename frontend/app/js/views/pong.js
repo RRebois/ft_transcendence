@@ -824,12 +824,18 @@ export default class PongGame {
             const   backTournamentView = document.getElementById("back-tournament-btn");
             if (backTournamentView) {
                 backTournamentView.addEventListener("click", () => {
+                    this.removeEventListeners();
+                    window.myPongSocket.close();
+                    window.myPongSocket = null;
                     appRouter.navigate(`/tournament/${data['tournament_name']}`);
                 });
             }
             const   restart = document.getElementById("new-game-btn");
             if (restart) {
                 restart.addEventListener("click", () => {
+                    this.removeEventListeners();
+                    window.myPongSocket.close();
+                    window.myPongSocket = null;
                     const csrfToken = getCookie('csrftoken');
                     fetch(`https://${window.location.hostname}:8443/game/${this.props?.game}/${this.props?.code}`, {
                         method: 'GET',
@@ -867,9 +873,6 @@ export default class PongGame {
 			modal.hidden = false;
 
 			// close the webso
-            this.removeEventListeners();
-            window.myPongSocket.close();
-            window.myPongSocket = null;
             console.log("RESTARTING GAME");
         }
     }
