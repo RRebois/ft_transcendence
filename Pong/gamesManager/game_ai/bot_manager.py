@@ -50,20 +50,20 @@ async def	init_bot(game_name, game, consumer):
 		# 			test.remove(t)
 		# 	await asyncio.sleep(SLEEP)
 
-		# """
-		# against Trainbot
-		# """
-		# tmp = TrainPong(0, bot_db, game, consumer)
-		# await tmp.launch_train()
-		# while not tmp.finished:
-		# 	await asyncio.sleep(SLEEP)
-		# """
-		# against himself
-		# """
-		# tmp = TrainPong(1, bot_db, game, consumer)
-		# await tmp.launch_train()
-		# while not tmp.finished:
-		# 	await asyncio.sleep(SLEEP)
+		"""
+		against Trainbot
+		"""
+		tmp = TrainPong(0, bot_db, game, consumer)
+		await tmp.launch_train()
+		while not tmp.finished:
+			await asyncio.sleep(SLEEP)
+		"""
+		against himself
+		"""
+		tmp = TrainPong(1, bot_db, game, consumer)
+		await tmp.launch_train()
+		while not tmp.finished:
+			await asyncio.sleep(SLEEP)
 
 		# test = TrainPong(1, bot_db)
 		# await test.launch_train()
@@ -80,7 +80,7 @@ class	TrainPong():
 
 	def	__init__(self, i, bot_db, game, consumer):
 		self.consumer = consumer
-		self.limit = 1000
+		self.limit = 500
 		self.count = self.step = 50
 		self.i = i
 		self.finished = False
@@ -107,8 +107,9 @@ class	TrainPong():
 		if gs['left_score'] >= self.count or gs['right_score'] >= self.count:
 			self.count += self.step
 			print(f'\n\nTrain {self.i} => {gs['left_score']} x {gs['right_score']}\nq-table size => {len(PongBot.q_table)}')
-		if gs['left_score'] >= self.limit or gs['right_score'] >= self.limit or len(PongBot.q_table) > 10500:
+		if gs['left_score'] >= self.limit or gs['right_score'] >= self.limit:# or len(PongBot.q_table) > 55500:
 			await self.cancel_loop()
+			# print(f'\n\nTrain {self.i} => {gs['left_score']} x {gs['right_score']}\nq-table size => {len(PongBot.q_table)}')
 			if self.i:
 				with open('ai_q_table.pickle', 'wb') as file:
 					pickle.dump(PongBot.q_table, file)
