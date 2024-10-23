@@ -78,9 +78,11 @@ export default class Router {
     closeGamesWebSockets() {
         if (window.myPongSocket && window.myPongSocket.readyState === WebSocket.OPEN) {
             window.myPongSocket.close();
+            window.myPongSocket = null;
             console.log('Pong websocket connection closed');
         } else if (window.myPurrinhaSocket && window.myPurrinhaSocket.readyState === WebSocket.OPEN) {
             window.myPurrinhaSocket.close();
+            window.myPurrinhaSocket = null;
             console.log('Purrinha websocket connection closed');
         }
     }

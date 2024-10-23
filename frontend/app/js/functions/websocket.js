@@ -163,14 +163,14 @@ export async function initializePongWebSocket(data, pong) { console.log("DATA re
 
             socket.onclose = function (event) {
                 if (event.wasClean) {
-                    // console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+                    console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
                 } else {
-                    // console.log('Connection died');
+                    console.log('Connection died');
                 }
             };
 
             socket.onerror = function (error) {
-                // console.log(`WebSocket Error: ${error.message}`);
+                console.log(`WebSocket Error: ${error.message}`);
                 reject(error);
             };
             window.myPongSocket = socket; // to access as a global var

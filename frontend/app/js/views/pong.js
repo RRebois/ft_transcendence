@@ -15,7 +15,7 @@ export default class PongGame {
         this.user = props?.user;
         this.userIndex = 0;
         this.winner = null;
-        this.gameSocket = null;
+        // this.gameSocket = null;
         this.setUser = this.setUser.bind(this);
         this.sceneWidth = 600;
         this.prevWidth = window.innerWidth;
@@ -37,8 +37,8 @@ export default class PongGame {
         this.props = newProps;
     }
 
-     initializeWs = async (data) => { console.log(data);
-		let ws;
+    initializeWs = async (data) => { console.log(data);
+        let ws;
 		try {
 			ws = await initializePongWebSocket(data, this);
 		} catch (e) { return ;
@@ -49,7 +49,7 @@ export default class PongGame {
 //			errorModal.show();
 //			return;
 		}
-		this.gameSocket = ws;
+		// window.myPongSocket = ws;
     }
 
     init() {
@@ -157,28 +157,28 @@ export default class PongGame {
     }
 
      handleKeyEvent() {
-        if (window.location.pathname === "/pong") {
+        if (window.location.pathname === "/pong" && window.myPongSocket != null) {
             if (this.props?.code === "20") {
                 if (this.keyMap['w'] === true)
-                    this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": 1}}));
+                    window.myPongSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": 1}}));
                 if (this.keyMap['s'] === true)
-                    this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": -1}}));
+                    window.myPongSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": -1}}));
                 if (this.keyMap['ArrowUp'] === true)
-                    this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
+                    window.myPongSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
                 if (this.keyMap['ArrowDown'] === true)
-                    this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
+                    window.myPongSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
             }
             else if (this.props?.code !== "40" && this.props?.code !== "20") {
                 if (this.keyMap['ArrowUp'] === true)
-                    this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
+                    window.myPongSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
                 if (this.keyMap['ArrowDown'] === true)
-                    this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
+                    window.myPongSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
             }
             else {
                 if (this.keyMap['ArrowUp'] === true)
-                    this.gameSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": 1}}));
+                    window.myPongSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": 1}}));
                 if (this.keyMap['ArrowDown'] === true)
-                    this.gameSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": -1}}));
+                    window.myPongSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": -1}}));
             }
         }
     }
@@ -575,7 +575,7 @@ export default class PongGame {
                     if (Math.abs(cube.position.x - targetPosition.x) < 0.1 &&
                     Math.abs(cube.position.y - targetPosition.y) < 0.1 &&
                     Math.abs(cube.position.z - targetPosition.z) < 0.1)
-                        this.gameSocket.send(JSON.stringify({"game_status": true}));
+                        window.myPongSocket.send(JSON.stringify({"game_status": true}));
                     else
                         requestAnimationFrame(check);
                 }
@@ -868,7 +868,9 @@ export default class PongGame {
 			modal.hidden = false;
 
 			// close the webso
-            this.gameSocket.close();
+            window.myPongSocket.close();
+            window.myPongSocket = null;
+            console.log("RESTARTING GAME");
         }
     }
 
