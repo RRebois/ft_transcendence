@@ -87,11 +87,15 @@ export default class Tournament {
     load_games(tournament) { console.log("Tournament info: ", tournament);
         const gameDiv = document.getElementById('games');
         gameDiv.innerHTML = '';
-        tournament.matchs.forEach(match => {
+        tournament.matchs.forEach(match => { console.log(match)
             var isParticipant = this.checkUserParticipate(tournament);
             var background;
             if (match.is_finished && isParticipant)
-                background = match?.winner.Username.includes(this.user.username) ? 'bg-victory' : 'bg-defeat';
+                if (match?.winner.Username === this.user.username &&
+                    (this.user.username === match?.players[0].Username || this.user.username === match?.players[1].Username))
+                        background = 'bg-victory'
+                else
+                    background = 'bg-defeat';
             else
                 background = 'bg-tournament';
             const   gameElement = document.createElement('div');
