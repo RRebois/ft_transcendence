@@ -21,8 +21,7 @@ export default class PongGame {
         this.prevWidth = window.innerWidth;
         this.prevHeight = window.innerHeight;
 
-        document.addEventListener('DOMContentLoaded', this.setupEventListeners.bind(this));
-        window.addEventListener('resize', this.onWindowResize.bind(this));
+        this.setupEventListeners();
     }
 
     setUser(user) {
@@ -143,21 +142,21 @@ export default class PongGame {
     }
 
     onKeyDown(event) {
-        if (window.location.pathname === "/pong")
+        if (window.location.pathname === "/pong" && window.myPongSocket.readyState === WebSocket.OPEN)
             if (event.key === 'w' || event.key === 's' || event.key === 'ArrowUp'
             || event.key === 'ArrowDown')
                 this.keyMap[event.key] = true;
     }
 
     onKeyUp(event) {
-        if (window.location.pathname === "/pong")
+        if (window.location.pathname === "/pong" && window.myPongSocket.readyState === WebSocket.OPEN)
             if (event.key === 'w' || event.key === 's' || event.key === 'ArrowUp'
             || event.key === 'ArrowDown')
                 delete this.keyMap[event.key];
     }
 
      handleKeyEvent() {
-        if (window.location.pathname === "/pong" && window.myPongSocket != null) {
+        if (window.location.pathname === "/pong" && window.myPongSocket.readyState === WebSocket.OPEN) {
             if (this.props?.code === "20") {
                 if (this.keyMap['w'] === true)
                     window.myPongSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": 1}}));
@@ -868,15 +867,24 @@ export default class PongGame {
 			modal.hidden = false;
 
 			// close the webso
+            this.removeEventListeners();
             window.myPongSocket.close();
             window.myPongSocket = null;
             console.log("RESTARTING GAME");
         }
     }
 
+    removeEventListeners() {
+        window.removeEventListener("keydown", this.onKeyDown.bind(this));
+        window.removeEventListener("keyup", this.onKeyUp.bind(this));
+        window.removeEventListener("resize", this.onWindowResize.bind(this));
+    }
+
     setupEventListeners() {
+        this.removeEventListeners(); // Remove existing event listeners
         window.addEventListener("keydown", this.onKeyDown.bind(this));
         window.addEventListener("keyup", this.onKeyUp.bind(this));
+        window.addEventListener("resize", this.onWindowResize.bind(this));
     }
 
     render() {
