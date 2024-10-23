@@ -56,7 +56,8 @@ export default class Stats {
 			},
 			options: {
 				responsive: true,
-				maintainAspectRatio: false,
+				aspectRatio: 1,
+				maintainAspectRatio: true,
 				plugins: {
 					legend: {
 						position: 'top',
@@ -77,7 +78,9 @@ export default class Stats {
 						title: {
 							display: true,
 							text: "Elo"
-						}
+						},
+						suggestedMin: 0,
+						suggestedMax: 2500,
 					}
 				},
 			}
@@ -309,8 +312,8 @@ export default class Stats {
 										</div>
 									</div>
 								</div>
-								<div id="canvasContainer" class="d-flex h-full justify-content-center align-self-center align-items-center" style="flex: 1 1 0; min-width: 0;">
-									<div class="d-flex w-full h-full justify-content-center align-items-center">
+								<div id="canvasContainer" class="d-flex flex-fill h-full justify-content-center align-self-center align-items-center" style="flex: 1 1 0; min-width: 0;">
+									<div class="d-flex w-full h-full flex-fill justify-content-center align-items-center">
 										<canvas id="eloChart" style="width: 100%; height: 100%;"></canvas>
 									</div>
 								</div>
