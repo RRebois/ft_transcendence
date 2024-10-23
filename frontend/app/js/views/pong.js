@@ -158,7 +158,7 @@ export default class PongGame {
 
      handleKeyEvent() {
         if (window.location.pathname === "/pong") {
-            if (this.props?.code === "20") { console.log("1v1 offline");
+            if (this.props?.code === "20") {
                 if (this.keyMap['w'] === true)
                     this.gameSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": 1}}));
                 if (this.keyMap['s'] === true)
@@ -168,13 +168,13 @@ export default class PongGame {
                 if (this.keyMap['ArrowDown'] === true)
                     this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
             }
-            else if (this.props?.code !== "40" && this.props?.code !== "20") { console.log("1vsbot or 1v1 online");
+            else if (this.props?.code !== "40" && this.props?.code !== "20") {
                 if (this.keyMap['ArrowUp'] === true)
                     this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
                 if (this.keyMap['ArrowDown'] === true)
                     this.gameSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
             }
-            else { console.log("2v2");
+            else {
                 if (this.keyMap['ArrowUp'] === true)
                     this.gameSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": 1}}));
                 if (this.keyMap['ArrowDown'] === true)

@@ -11,6 +11,7 @@ export default class Stats {
 		this.setUser = this.setUser.bind(this);
 		this.fetchStats = this.fetchStats.bind(this);
 		this.fetchMatchHistory = this.fetchMatchHistory.bind(this);
+		this.chartInstance = null;
 		// this.init(this.user?.username);
 	}
 
@@ -36,7 +37,7 @@ export default class Stats {
 		const pongElo = getEloData(data.pong.elo);
 		const purrinhaElo = getEloData(data.purrinha.elo);
 
-		new Chart(ctx, {
+		this.chartInstance = new Chart(ctx, {
 			type: 'line',
 			data: {
 				labels: ['L.M. -5', 'L.M. -4', 'L.M. -3', 'L.M. -2', 'L.M. -1', 'Last match'],
@@ -56,7 +57,7 @@ export default class Stats {
 			},
 			options: {
 				responsive: true,
-				aspectRatio: 1,
+				aspectRatio: 1.3,
 				maintainAspectRatio: true,
 				plugins: {
 					legend: {
@@ -80,7 +81,7 @@ export default class Stats {
 							text: "Elo"
 						},
 						suggestedMin: 0,
-						suggestedMax: 2500,
+						suggestedMax: 2000,
 					}
 				},
 			}
@@ -244,7 +245,7 @@ export default class Stats {
 			return;
 		}
 		let InitialValue = 0;
-		const maxElo = 2500;
+		const maxElo = 2000;
 		let finaleValue = (elo / maxElo) * 100;
 		let speed = 10;
 
@@ -350,7 +351,11 @@ export default class Stats {
 					this.fetchMatchHistory(username, event.target.value);
 				});
 			}
-			// this.initEloChart();
+			window.addEventListener('resize', () => {
+			if (this.chartInstance) {
+			  this.chartInstance.resize();
+			}
+		  });
 		}
 		else{
 			//document.title = 'User not found';
