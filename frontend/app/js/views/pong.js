@@ -7,6 +7,7 @@ import * as bootstrap from "bootstrap";
 import {getCookie} from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
 import {appRouter} from "@js/spa-router/initializeRouter.js";
+import {remove_modal_backdrops} from "../functions/display.js";
 
 export default class PongGame {
     constructor(props) {
@@ -47,7 +48,7 @@ export default class PongGame {
 //			errorModal.show();
 //			return;
 		}
-//		window.myPongSocket = ws;
+		// window.myPongSocket = ws;
     }
 
     init() {

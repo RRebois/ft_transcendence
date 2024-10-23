@@ -233,53 +233,11 @@ export default class MyProfile {
             })
     }
 
-    handleDeleteAccount = (event) => {
-        event.preventDefault();
-        const csrfToken = getCookie('csrftoken');
-        const password = document.getElementById('delete-account-password')?.value;
-
-        // if (!password) {
-        // 	document.getElementById('delete-account-password').classList.add('is-invalid');
-        // 	return;
-        // }
-        const deleteBtn = document.getElementById("delete-account-btn")
-        if (deleteBtn)
-            deleteBtn.disabled = true;
-        fetch(`https://${window.location.hostname}:8443/delete_account`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            },
-            credentials: 'include',
-            body: JSON.stringify({'password': password})
-        })
-            .then(response => response.json().then(data => ({ok: response.ok, data})))
-            .then(({ok, data}) => {
-                if (!ok) {
-                    const toastComponent = new ToastComponent();
-                    toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
-                    if (data.message === "Password is incorrect") {
-                        document.getElementById('delete-account-password').classList.add('is-invalid');
-                    }
-                    deleteBtn.disabled = false;
-                } else {
-                    location.href = '/';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                const toastComponent = new ToastComponent();
-                toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
-                deleteBtn.disabled = false;
-            })
-    }
-
     render() {
         return `
-			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
+			<div class="d-flex w-full h-full flex-grow-1 justify-content-center align-items-center">
 				<div class="h-full w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 16px;">
-					<div class="bg-white d-flex g-4 flex-column align-items-center py-2 px-5 rounded login-card w-50" style="--bs-bg-opacity: .5;">
+					<div class="bg-white w-50 h-3-4 d-flex g-4 flex-column align-items-center py-2 px-5 rounded login-card my-5" style="--bs-bg-opacity: .5;">
 						<p class="text-justify play-bold title">${this.user?.username} profile</p>
 						<form id="personal-data-form">
 							<p class="play-bold subtitle">Your personal information</p>
@@ -411,37 +369,6 @@ export default class MyProfile {
                                 </form>
 							</div>
 						` : ''}
-	
-						<div class="border border-1 py-3 px-2 rounded-2 border-danger w-100 mt-5">
-							<p class="play-bold subtitle text-danger">Danger zone</p>
-							<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
-								Delete my account
-							</button>
-							<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModal" aria-hidden="true">
-								<div class="modal-dialog">
-									<div class="modal-content">
-										<div class="modal-header">
-											<h1 class="modal-title subtitle" id="deleteAccountModalLabel">Delete your account</h1>
-											<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-										</div>
-										<div class="modal-body">
-											<p class="text">You are about to delete your account. This step is irreversible. Are you really sure?</p>
-											${this.user?.stud42 ? `` : `
-												<div class="form-floating has-validation">
-													<input type="password" id="delete-account-password" class="form-control" />
-													<label for="delete-account-password">Account password<span class="text-danger">*</span></label>
-													<div class="invalid-feedback clue-text">Invalid password</div>
-												</div>
-											`}										
-										</div>
-										<div class="modal-footer">
-											<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-											<button type="button" id="delete-account-btn" class="btn btn-danger">Delete my account</button>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
 					</div>
 				</div>
 			</div>
@@ -462,10 +389,10 @@ export default class MyProfile {
         if (passwordForm) {
             passwordForm.addEventListener('submit', this.handlePasswordChange);
         }
-        const deleteAccountBtn = document.getElementById('delete-account-btn');
-        if (deleteAccountBtn) {
-            deleteAccountBtn.addEventListener('click', this.handleDeleteAccount);
-        }
+        // const deleteAccountBtn = document.getElementById('delete-account-btn');
+        // if (deleteAccountBtn) {
+        //     deleteAccountBtn.addEventListener('click', this.handleDeleteAccount);
+        // }
         const newPassword = document.getElementById('password');
         if (newPassword) {
             newPassword.addEventListener('input', validatePassword);

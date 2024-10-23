@@ -141,15 +141,15 @@ export async function initializePongWebSocket(data, pong) { console.log("DATA re
             const url = wsSelect + `${window.location.hostname}:8443` + data.ws_route + token + '/'
             const   socket = new WebSocket(url);
 
-            socket.onopen = function (e) {
-                console.log("Pong WebSocket connection established");
-                resolve(socket);
-            };
-            pong.init();
-            let test = 0;
-            socket.onmessage = function (event) {
-//                console.log("Pong websocket msg received: ", event.data);
-                const data = JSON.parse(event.data);
+                socket.onopen = function (e) {
+                    console.log("Pong WebSocket connection established");
+                    resolve(socket);
+                };
+                pong.init();
+                let test = 0;
+                socket.onmessage = function (event) {
+                    // console.log("Pong websocket msg received: ", event.data);
+                    const data = JSON.parse(event.data);
 
                 if (data.status === "waiting") // Waiting for opponent(s)
                     pong.waiting();
@@ -163,14 +163,14 @@ export async function initializePongWebSocket(data, pong) { console.log("DATA re
 
             socket.onclose = function (event) {
                 if (event.wasClean) {
-                    // console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+                    console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
                 } else {
-                    // console.log('Connection died');
+                    console.log('Connection died');
                 }
             };
 
             socket.onerror = function (error) {
-                // console.log(`WebSocket Error: ${error.message}`);
+                console.log(`WebSocket Error: ${error.message}`);
                 reject(error);
             };
             window.myPongSocket = socket; // to access as a global var

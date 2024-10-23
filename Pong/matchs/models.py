@@ -116,6 +116,7 @@ class TournamentMatch(models.Model):
                         match_result['winner'] = player
 
         return match_result
+
     # def serialize(self):
     #     match_result = {
     #         'players': [{**player.serialize(), 'score': 0} for player in self.players.all()],

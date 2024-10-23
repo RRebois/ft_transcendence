@@ -11,6 +11,7 @@ export default class Stats {
 		this.setUser = this.setUser.bind(this);
 		this.fetchStats = this.fetchStats.bind(this);
 		this.fetchMatchHistory = this.fetchMatchHistory.bind(this);
+		this.chartInstance = null;
 		// this.init(this.user?.username);
 	}
 
@@ -36,7 +37,7 @@ export default class Stats {
 		const pongElo = getEloData(data.pong.elo);
 		const purrinhaElo = getEloData(data.purrinha.elo);
 
-		new Chart(ctx, {
+		this.chartInstance = new Chart(ctx, {
 			type: 'line',
 			data: {
 				labels: ['L.M. -5', 'L.M. -4', 'L.M. -3', 'L.M. -2', 'L.M. -1', 'Last match'],
@@ -56,7 +57,8 @@ export default class Stats {
 			},
 			options: {
 				responsive: true,
-				maintainAspectRatio: false,
+				aspectRatio: 1.3,
+				maintainAspectRatio: true,
 				plugins: {
 					legend: {
 						position: 'top',
@@ -77,7 +79,9 @@ export default class Stats {
 						title: {
 							display: true,
 							text: "Elo"
-						}
+						},
+						suggestedMin: 0,
+						suggestedMax: 2000,
 					}
 				},
 			}
@@ -143,7 +147,7 @@ export default class Stats {
 					}
           
 					data.forEach(match => {
-						const   date = moment(match.timestamp);
+						const   date = moment(match.timestamp, "MMM DD YYYY, hh:mm A");
 						const   matchElement = document.createElement('div');
 						const   background = match?.winner.includes(username) ? 'bg-victory' : 'bg-defeat';
 						const   count = match.count;
@@ -241,7 +245,7 @@ export default class Stats {
 			return;
 		}
 		let InitialValue = 0;
-		const maxElo = 2500;
+		const maxElo = 2000;
 		let finaleValue = (elo / maxElo) * 100;
 		let speed = 10;
 
@@ -285,13 +289,13 @@ export default class Stats {
 	render() {
 		// document.title = `ft_transcendence | ${this.props?.username} stats`;
 		return `
-			<div class="d-flex w-50 min-h-full flex-grow-1 justify-content-center align-items-center" id="statsContainer">
-				<div class="h-full w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 16px;">
+			<div class="d-flex w-3-4 min-h-full flex-grow-1 justify-content-center align-items-center" id="statsContainer">
+				<div class="h-full w-full d-flex flex-column justify-content-center align-items-center px-5 my-5" style="gap: 16px;">
 					<div class="d-flex flex-column w-full" style="gap: 16px">
 						<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded" style="--bs-bg-opacity: .5;">
 							<p class="play-bold title">${this.props?.username} stats</p>
-							<div class="d-flex flex-row w-full gap-2">
-								<div class="d-flex flex-column w-1-4 gap-2">
+							<div class="d-flex flex-row w-full gap-2 justify-content-center">
+								<div id="circles" class="d-flex flex-column justify-content-around gap-2" style="flex: 1 1 25%; min-width: 135px; max-width: 25%;">
 									<div class="d-flex w-full justify-content-center align-items-center">
 										<div class="wrapper">
 											<div class="circular-bar circular-bar-pong">
@@ -309,8 +313,8 @@ export default class Stats {
 										</div>
 									</div>
 								</div>
-								<div id="canvasContainer" class="d-flex w-full justify-content-center align-items-center">
-									<div class="d-flex w-full h-full justify-content-center align-items-center">
+								<div id="canvasContainer" class="d-flex flex-fill h-full justify-content-center align-self-center align-items-center" style="flex: 1 1 0; min-width: 0;">
+									<div class="d-flex w-full h-full flex-fill justify-content-center align-items-center">
 										<canvas id="eloChart" style="width: 100%; height: 100%;"></canvas>
 									</div>
 								</div>
@@ -347,7 +351,11 @@ export default class Stats {
 					this.fetchMatchHistory(username, event.target.value);
 				});
 			}
-			// this.initEloChart();
+			window.addEventListener('resize', () => {
+			if (this.chartInstance) {
+			  this.chartInstance.resize();
+			}
+		  });
 		}
 		else{
 			//document.title = 'User not found';
