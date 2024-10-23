@@ -115,6 +115,8 @@ class TournamentMatch(models.Model):
                     if player['score'] == max_score:
                         match_result['winner'] = player
 
+        return match_result
+
     # def serialize(self):
     #     match_result = {
     #         'players': [{**player.serialize(), 'score': 0} for player in self.players.all()],
@@ -159,4 +161,3 @@ class TournamentMatch(models.Model):
         #     match_result['players'] = serialized.players
         #     match_result['winner'] = serialized.winner
 
-        return match_result
