@@ -133,7 +133,7 @@ export async function initializePongWebSocket(data, pong) { console.log("DATA re
         if (!data.code || !data.session_id) {
 			reject(new Error("Missing game code or session id"));
 		}
-        if (isUserAuth) { console.log("\n\n\n\n\nuser is auth\n\n\n\n\n");
+        if (isUserAuth) {
             if (!data)
                 return ;
             const token = jwt.token

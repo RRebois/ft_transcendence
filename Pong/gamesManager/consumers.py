@@ -91,6 +91,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 	async def	receive(self, text_data):
 		data = json.loads(text_data)
 		msg = data.get('game_status')
+		count = 0
 		if self.game_name == 'pong' and msg:
 			self.session_data['status'] = 'started'
 			await self.update_cache_db(self.session_data)
