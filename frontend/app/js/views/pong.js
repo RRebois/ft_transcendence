@@ -821,19 +821,19 @@ export default class PongGame {
             const   modal = document.getElementById("modal");
             var     msg;
 
-            if (this.props?.code === 22 || this.props?.code === 40) {
+            if (this.props?.code === 22 || this.props?.code === 23 || this.props?.code === 40) {//[10, 20, 22, 23, 40] 10 bot,
                 if (this.winner.includes(this.user["username"]))
                     msg = `Congratulations ${this.user["username"]}, you won!`;
                 else
-                    msg = `${this.user["username"]} you are such a loser. Machines will soon dominate the world!`;
+                    msg = `${this.user["username"]} you are such a loser!`;
             }
-            else {
+            else if (this.props?.code === 10 || this.props?.code === 20) {
                 if (this.winner.includes(this.user["username"]))
                     msg = `Congratulations ${this.user["username"]}, you won!`;
                 else if (this.props?.code === "20")
                     msg = `${this.user["username"]} you are such a loser. However, you have a very talented friend!`;
                 else
-                    msg = `${this.user["username"]} you are such a loser!`;
+                    msg = `${this.user["username"]} you are such a loser. Machines will soon dominate the world!`;
             }
             if (this.winner.includes(this.user["username"]))
                 modal.style.background = "#3e783e";
