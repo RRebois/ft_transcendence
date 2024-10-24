@@ -19,9 +19,9 @@ export default class Dashboard {
 		this.load_tournaments = this.load_tournaments.bind(this);
 	}
 
-	setUser(user) {
-		this.user = user;
-	}
+    setUser(user) {
+        this.user = user;
+    }
 
 	removeUser() {
 		if (this.user) this.user = null;
@@ -632,5 +632,5 @@ export default class Dashboard {
 				</div>
             </div>
         `;
-	}
+    }
 }

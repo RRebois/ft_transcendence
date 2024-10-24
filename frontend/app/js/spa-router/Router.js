@@ -33,7 +33,6 @@ export default class Router {
         });
         window.addEventListener('popstate', (e) => {
             e.preventDefault();
-            console.log("POPSTATE EVENT TRIGGERED");
             this.navigate(window.location.pathname, false);
         });
     }
