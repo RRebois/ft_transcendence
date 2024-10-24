@@ -2,7 +2,7 @@ import {getCookie} from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
 import {appRouter} from "@js/spa-router/initializeRouter.js";
 import * as bootstrap from "bootstrap";
-import {applyFontSize} from "../functions/display.js";
+import {applyFontSize, remove_modal_backdrops} from "../functions/display.js";
 
 export default class Dashboard {
 	constructor(props) {
@@ -10,21 +10,26 @@ export default class Dashboard {
 		this.handleGameRequest = this.handleGameRequest.bind(this);
 		this.user = null;
 		this.setUser = this.setUser.bind(this);
+		this.removeUser = this.removeUser.bind(this);
 		this.pongGameConnectivity = 'offline';
 		this.pongGameNbPlayers = 'bot';
 		this.purrinhaGameConnectivity = 'offline';
 		this.purrinhaGameNbPlayers = 'bot';
 		this.tournamentNbPlayers = '3';
-		this.load_tournaments= this.load_tournaments.bind(this);
+		this.load_tournaments = this.load_tournaments.bind(this);
 	}
 
     setUser(user) {
         this.user = user;
     }
 
-    setProps(newProps) {
-        this.props = newProps;
-    }
+	removeUser() {
+		if (this.user) this.user = null;
+	}
+
+	setProps(newProps) {
+		this.props = newProps;
+	}
 
     validateInput(name) {
 		const nameRegex = new RegExp("^[a-zA-Z0-9-_]{3,15}$");
@@ -51,8 +56,7 @@ export default class Dashboard {
 		const createTournamentModal = bootstrap.Modal.getInstance(document.getElementById('create-tournament-modal'));
 		if (createTournamentModal) {
 			createTournamentModal.hide();
-			const backdrops = document.querySelectorAll('.modal-backdrop');
-			backdrops.forEach(backdrop => backdrop.remove());
+			remove_modal_backdrops();
 		}
 		fetch(`https://${window.location.hostname}:8443/tournament/create`, {
 			method: 'POST',
@@ -141,8 +145,7 @@ export default class Dashboard {
 					}
 					if (createMatchModal)
 						createMatchModal.hide();
-						const backdrops = document.querySelectorAll('.modal-backdrop');
-						backdrops.forEach(backdrop => backdrop.remove());
+						remove_modal_backdrops();
 				} else {
 					console.log("Game request success: ", data);
 					data.code = code;
@@ -156,8 +159,7 @@ export default class Dashboard {
 					}
 					if (createMatchModal)
 						createMatchModal.hide();
-						const backdrops = document.querySelectorAll('.modal-backdrop');
-						backdrops.forEach(backdrop => backdrop.remove());
+						remove_modal_backdrops();
 					appRouter.navigate(`/${game_type}?${params}`);
 				}
 			})
@@ -207,9 +209,9 @@ export default class Dashboard {
 							carouselInner.insertAdjacentHTML('beforeend', slide);
 
 							carouselIndicators.insertAdjacentHTML('beforeend', `
-								<button type="button" data-bs-target="#carouselTournament" 
-									data-bs-slide-to="${index}" 
-									class="${isActive}" 
+								<button type="button" data-bs-target="#carouselTournament"
+									data-bs-slide-to="${index}"
+									class="${isActive}"
 									aria-label="Slide ${index + 1}"></button>
 							`);
 						});
@@ -429,7 +431,7 @@ export default class Dashboard {
 
             		<!-- Pong game -->
             		<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded gap-3" style="--bs-bg-opacity: .5;"
-            		data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" 
+            		data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip"
             		title="A 3D adaptation of one of the oldest video game. Play offline against a bot or a friend, or online on 1v1 or 2v2.">
             			<p class="play-bold title">Pong 🏓</p>
             			<div class="d-flex flex-column justify-content-center align-items-center gap-3 w-full">
@@ -441,7 +443,7 @@ export default class Dashboard {
 
             		<!-- Purrinha game -->
             		<div class="w-full bg-white d-flex flex-column align-items-center py-2 px-5 rounded gap-3" style="--bs-bg-opacity: .5;"
-            		data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" title="A classic bar game! You have 3 tokens at disposal. 
+            		data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" title="A classic bar game! You have 3 tokens at disposal.
             			Each player select from 0 to 3 to hide in its hand. The goal is to guess the total selected by all the players. The closest to the total wins the round.">
             			<p class="play-bold title">Purrinha ✋</p>
             			<div class="d-flex flex-column justify-content-center align-items-center gap-3 w-full">
@@ -576,7 +578,7 @@ export default class Dashboard {
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="modal fade" id="create-tournament-modal" tabindex="-1" aria-labelledby="create tournament modal" aria-hidden="true">
 					<div class="modal-dialog">
 						<div class="modal-content">
@@ -584,8 +586,8 @@ export default class Dashboard {
 								<h1 class="modal-title fs-5">Pong tournament settings</h1>
 								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 							</div>
-							
-							<div class="modal-body">								
+
+							<div class="modal-body">
 								<p class="mb-3">Choose the number of players</p>
 								<div id="radio-btn-players-container" class="btn-group" role="group" aria-label="Game connectivity selection">
 									<input type="radio" class="btn-check" name="players" id="radio-btn-3p" value="3" autocomplete="off" checked>
@@ -595,7 +597,7 @@ export default class Dashboard {
 										<i class="bi bi-person-fill"></i>
 										<p class="m-2">3 players</p>
 									</label>
-									
+
 									<input type="radio" class="btn-check" name="players" id="radio-btn-4p" value="4" autocomplete="off">
 									<label class="btn btn-outline-primary" for="radio-btn-4p">
 										<i class="bi bi-person-fill"></i>
@@ -606,7 +608,7 @@ export default class Dashboard {
 									</label>
 								</div>
 							</div>
-							
+
 							<div class="row g-2 m-3">
 								<p class="mb-3">Choose the number of players</p>
 								<div class="form-floating has-validation">
@@ -616,11 +618,11 @@ export default class Dashboard {
 									<div class="invalid-feedback">Name have an invalid format</div>
 								</div>
 							</div>
-                        
+
 							<div class = "modal-infos">
 							<p class="mx-3 fst-italic">The tournaments are organized on the round-robin system, which means each participant plays once against everyone</p>
 							</div>
-							
+
 							<div class="modal-footer">
 								<button type="button" class="btn text-danger" data-bs-dismiss="modal">Close</button>
 								<button id="tournament-creation-btn" type="button" class="btn btn-primary">Start tournament! 🚀</button>

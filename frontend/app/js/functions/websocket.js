@@ -164,31 +164,11 @@ export async function initializePongWebSocket(data, pong) {
             reject(new Error("Missing game code or session id"));
         }
         if (isUserAuth) {
-            console.log("\n\n\n\n\nuser is auth\n\n\n\n\n");
-//            fetch(`https://${window.location.hostname}:8443/game/pong/${gameCode}/`, {
-//                method: "GET",
-//                headers: {
-//					'Content-Type': 'application/json',
-//					'X-CSRFToken': getCookie('csrftoken'),
-//				},
-//                credentials: 'include',
-//            })
-//            .then(gameResponse => {
-//                if (!gameResponse.ok) {
-//                    reject(new Error("Match not available"));
-//                    return ;
-//                }
-//                return gameResponse.json();
-//            })
-//            .then(data => { console.log("DATA WEBSO: ", data);
-            if (!data) { //data["session_id"] = sessionId;
+            if (!data)
                 return;
-            }
             const token = jwt.token
-            // console.log("In Init WS FRONT, USER AUTHENTICATED")
             const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
             const url = wsSelect + `${window.location.hostname}:8443` + data.ws_route + token + '/'
-            // console.log("url is:", url);
             const socket = new WebSocket(url);
 
             socket.onopen = function (e) {
@@ -213,22 +193,17 @@ export async function initializePongWebSocket(data, pong) {
 
             socket.onclose = function (event) {
                 if (event.wasClean) {
-                    // console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+                    console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
                 } else {
-                    // console.log('Connection died');
+                    console.log('Connection died');
                 }
             };
 
             socket.onerror = function (error) {
-                // console.log(`WebSocket Error: ${error.message}`);
+                console.log(`WebSocket Error: ${error.message}`);
                 reject(error);
             };
             window.myPongSocket = socket; // to access as a global var
-//            })
-//            .catch(error => {
-//                    console.error("Error:", error);
-//                    reject(error);
-//            });
         } else {
             reject(new Error("User not authenticated"));
         }

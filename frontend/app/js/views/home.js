@@ -2,7 +2,7 @@ import ToastComponent from "../components/Toast.js";
 import {getCookie} from "../functions/cookie.js";
 import {initializeWebSocket} from "../functions/websocket.js";
 import * as bootstrap from 'bootstrap'
-import {applyFontSize} from "../functions/display.js";
+import {applyFontSize, remove_modal_backdrops} from "../functions/display.js";
 import {appRouter} from "../spa-router/initializeRouter.js";
 
 export default class Home {
@@ -11,6 +11,7 @@ export default class Home {
         this.user_id = null;
         this.user = null;
         this.setUser = this.setUser.bind(this);
+        this.removeUser = this.removeUser.bind(this);
         this.loginUser = this.loginUser.bind(this);
         this.checkOtp = this.checkOtp.bind(this);
         this.sendResetLink = this.sendResetLink.bind(this);
@@ -20,7 +21,12 @@ export default class Home {
         this.user = user;
     }
 
+    removeUser() {
+        if (this.user) this.user = null;
+    }
+
     setProps(newProps) {
+        console.log('[HOME] new props: ', newProps);
         this.props = newProps;
     }
 
@@ -208,8 +214,7 @@ export default class Home {
                     const passwordModal = bootstrap.Modal.getInstance(document.getElementById('forgotPWModal'));
                     if (passwordModal)
                         passwordModal.hide();
-                    const backdrops = document.querySelectorAll('.modal-backdrop');
-                    backdrops.forEach(backdrop => backdrop.remove());
+                    remove_modal_backdrops();
                     submitBtn.disabled = false;
                     const toastComponent = new ToastComponent();
                     toastComponent.throwToast('Success', data.message, 5000, 'success');
@@ -255,6 +260,27 @@ export default class Home {
             forgotPWSubmit.addEventListener('click', this.sendResetLink);
         }
         applyFontSize();
+        if (this.props.message) {
+            const toastComponent = new ToastComponent();
+            toastComponent.throwToast('Error', this.props.message, 5000, 'error');
+        }
+        const togglePasswordVisibility = document.getElementById('togglePasswordVisibility');
+        if (togglePasswordVisibility) {
+            togglePasswordVisibility.addEventListener('click', () => {
+                const pwdInput = document.getElementById('login-pwd');
+                if (pwdInput) {
+                    if (pwdInput.type === 'password') {
+                        pwdInput.type = 'text';
+                        togglePasswordVisibility.classList.remove('bi-eye');
+                        togglePasswordVisibility.classList.add('bi-eye-slash');
+                    } else {
+                        pwdInput.type = 'password';
+                        togglePasswordVisibility.classList.remove('bi-eye-slash');
+                        togglePasswordVisibility.classList.add('bi-eye');
+                    }
+                }
+            });
+        }
     }
 
 // TODO: check form action link
@@ -281,6 +307,9 @@ export default class Home {
 							<i class="bi bi-lock"></i>
 						</div>
 						<input type="password" name="password" id="login-pwd" class="form-control" placeholder="••••••••" required/>
+						 <span class="input-group-text">
+    						 <i class="bi bi-eye" id="togglePasswordVisibility" style="cursor: pointer"></i>
+                         </span>
 					</div>
 					<a href="" class="text-decoration-none indexLink" id="forgot-pwd">Forgot password?</a>
 				</div>

@@ -88,7 +88,6 @@ class TournamentDisplayAllView(APIView):
 
         return JsonResponse([tournament.serialize() for tournament in tournaments] if tournaments else [], safe=False, status=200)
 
-
 @method_decorator(csrf_protect, name='dispatch')
 class TournamentDisplayOneView(APIView):
     def get(self, request, tournament_name):
@@ -159,6 +158,7 @@ def create_match(match_result, winner, deco, is_pong=True):
         if player_username in winner:
             match.winner.add(player)
         match.players.add(player)
+        match.is_finished = True
     update_match_data(players_data, winner, is_pong)
     match.save()
     return match
@@ -167,7 +167,7 @@ def find_tournament_winner(tournament):
     players = {player.username: [0, 0, player] for player in tournament.players.all()}
     matchs = tournament.tournament_matchs.all()
     for match in matchs:
-        winner = match.winner.username
+        winner = match.match.winner
         if winner in players:
             players[winner][0] += 1
             players[winner][1] += match.get_winner_score()
@@ -193,18 +193,24 @@ def find_tournament_winner(tournament):
     MatchMaking.delete_tournament_session(tournament.get_id())
 
 
-def add_match_to_tournament(tournament_id, match):
+def add_match_to_tournament(tournament_name, match):
     try:
-        tournament = Tournament.objects.get(id=tournament_id)
+        tournament = Tournament.objects.get(name=tournament_name)
     except:
         return JsonResponse({"message": "Tournament does not exist."}, status=404)
-    unfinished_matchs = tournament.get_unfinished_matchs()
-    for unfinished_match in unfinished_matchs:
-        unfinished_match.match = match
-        unfinished_match.score = [score.score for score in match.scores.all()]
-        unfinished_match.save()
-        break
-    if len(unfinished_matchs) <= 1:
+    unfinished_matches = tournament.get_unfinished_matchs()
+
+    match_player_ids = set(match.players.values_list('id', flat=True))
+    for unfinished_match in unfinished_matches:
+        unfinished_match_player_ids = set(unfinished_match.players.values_list('id', flat=True))
+        if unfinished_match_player_ids == match_player_ids:
+            unfinished_match.match = match
+            unfinished_match.score = [score.score for score in match.scores.all()]
+            print(f"Unfinished match is: {unfinished_match}")
+            unfinished_match.save()
+            break
+
+    if len(unfinished_matches) <= 1:
         find_tournament_winner(tournament)
 
 
@@ -374,7 +380,10 @@ class   PlayTournamentView(APIView):
             return JsonResponse({"message": "This tournament is not ready to play. Wait for all players."}, status=404)
         if user not in tournament.players.all():
             return JsonResponse({"message": "You have not joined this tournament."}, status=404)
-        session_id = MatchMaking.get_tournament_match(user.username, tournament_name) # verify if it returned a json
+        try:
+            session_id = MatchMaking.get_tournament_match(user.username, tournament_name)
+        except ValueError as e:
+            return JsonResponse({"message": str(e)}, status=404)
 
         cache_db = cache.get(tournament.name)
         if not cache_db:

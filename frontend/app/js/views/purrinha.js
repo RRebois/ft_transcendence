@@ -9,6 +9,7 @@ export default class PurrinhaGame {
         this.user = props?.user;
         this.player_set_id = null;
         this.setUser = this.setUser.bind(this);
+        this.removeUser = this.removeUser.bind(this);
         this.gameSocket = null;
         this.nb_players = 0;
         this.players = [];
@@ -20,9 +21,13 @@ export default class PurrinhaGame {
         this.user = user;
     }
 
-    addProps(newProps) {
-        this.props = {...this.props, ...newProps};
-    }
+	removeUser() {
+		if (this.user) this.user = null;
+	}
+
+	addProps(newProps) {
+		this.props = {...this.props, ...newProps};
+	}
 
     setProps(newProps) {
         console.log(newProps);

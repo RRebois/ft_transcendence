@@ -10,11 +10,16 @@ export default class ResetPw {
         this.props = props;
         this.user = null;
         this.setUser = this.setUser.bind(this);
+        this.removeUser = this.removeUser.bind(this);
         this.reset_password = this.reset_password.bind(this);
     }
 
     setUser = (user) => {
         this.user = user;
+    }
+
+    removeUser() {
+        if (this.user) this.user = null;
     }
 
     setProps(newProps) {
@@ -38,13 +43,8 @@ export default class ResetPw {
             .then(response => response.json().then(data => ({ok: response.ok, data})))
 			.then(({ok, data}) => {
 				if (!ok) {
-				    sessionStorage.setItem('toastMessage', JSON.stringify({
-                        title: 'Error',
-                        message: data.message,
-                        duration: 5000,
-                        type: 'error'
-                    }));
-                    // window.location.href = '/';
+                    const toastComponent = new ToastComponent();
+                    toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
                     appRouter.navigate('/');
                 } else {
 					console.log("RESET PW FETCH OK")
@@ -145,20 +145,11 @@ export default class ResetPw {
         .then(response => response.json().then(data => ({ ok: response.ok, data })))
         .then(({ok, data}) => {
             if (!ok) {
-                sessionStorage.setItem('toastMessage', JSON.stringify({
-                    title: 'Error',
-                    message: data.message,
-                    duration: 5000,
-                    type: 'error'
-                }));
+                const toastComponent = new ToastComponent();
+                toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
             } else {
-                sessionStorage.setItem('toastMessage', JSON.stringify({
-                    title: 'Success',
-                    message: data.message,
-                    duration: 5000,
-                    type: 'success'
-                }));
-                // window.location.href = "/";
+                const toastComponent = new ToastComponent();
+                toastComponent.throwToast("Success", data.message, 5000, 'success');
                 appRouter.navigate('/');
             }
         })
