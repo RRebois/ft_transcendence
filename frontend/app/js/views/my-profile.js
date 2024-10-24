@@ -9,12 +9,17 @@ export default class MyProfile {
         this.props = props;
         this.user = props?.user;
         this.setUser = this.setUser.bind(this);
+        this.removeUser = this.removeUser.bind(this);
         this.handlePersonalInfoSubmit = this.handlePersonalInfoSubmit.bind(this);
         this.handlePasswordChange = this.handlePasswordChange.bind(this);
     }
 
     setUser(user) {
         this.user = user;
+    }
+
+    removeUser() {
+        if (this.user) this.user = null;
     }
 
     setProps(newProps) {

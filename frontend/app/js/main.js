@@ -16,7 +16,7 @@ import initializeRouter from "@js/spa-router/initializeRouter.js";
 import {applyFontSize} from "./functions/display.js";
 
 const routes = [
-    new Route('Login', '/', homeView),
+    new Route('Login', '/', homeView, 1),
     new Route('Register', '/register', registerView),
     new Route('Pong', '/pong', matchView),
     new Route('', '/dashboard', dashboardView),

@@ -21,6 +21,11 @@ export default class Route {
         this.view.setUser(user);
     }
 
+    removeUser() {
+        this.user = null;
+        this.view.removeUser();
+    }
+
     renderView() {
         return this.view.render();
     }

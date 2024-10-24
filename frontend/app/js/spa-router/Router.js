@@ -49,11 +49,16 @@ export default class Router {
     }
 
 
-    redirectToLogin() {
+    redirectToLogin(route = null) {
         document.title = "ft_transcendence | Login";
         this.historyStack.unshift("/");
         window.history.pushState(null, null, '/');
-        const home = this.routes.find(route => this.match(route, "/"));
+        let home = null;
+        if (!route)
+            home = this.routes.find(route => this.match(route, "/"));
+        else
+            home = route;
+        console.log('home page: ', home);
         this.renderNode.innerHTML = home.renderView();
         home.setupEventListeners();
         if (window.mySocket && window.mySocket.readyState === WebSocket.OPEN) {
@@ -91,6 +96,7 @@ export default class Router {
     renderRoute(route, path) {
         document.title = `ft_transcendence${route.name.length > 0 ? ' | ' + route.name : ''}`;
         if (route.user) {
+            console.log('RENDER ROUTE WITH USER');
             if (path.startsWith('/purrinha') || path.startsWith('/pong')) {
                 this.renderNode.innerHTML = route.renderView();
             } else {
@@ -99,8 +105,10 @@ export default class Router {
                 this.navbar.setupEventListeners();
             }
         } else {
+            console.log('RENDER ROUTE WITHOUT USER');
             this.renderNode.innerHTML = route.renderView();
         }
+        console.log('SETUP EVENT LISTENERS');
         route.setupEventListeners();
     }
 
@@ -113,7 +121,10 @@ export default class Router {
         remove_modal_backdrops();
         const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
         const isUserAuth = await isUserConnected();
+        console.log('isUserAuth: ', isUserAuth);
         const route = this.routes.find(route => this.match(route, path));
+        console.log('route: ', route);
+        route.removeUser();
 
         if (!route) {
             this.render404Page(path);
@@ -127,12 +138,14 @@ export default class Router {
         const isPublicRoute = this.isPublicRoute(publicRoutes, path);
 
         if (!isPublicRoute && !isUserAuth) {
+            console.log('REDIRECT TO LOGIN BECAUSE NOT PUBLIC ROUTE AND NOT USER AUTHENTICATED');
             this.redirectToLogin();
             return;
         } else if (isPublicRoute && isUserAuth) {
             this.redirectToDashboard(isUserAuth);
             return;
         }
+        console.log('RENDER ROUTE');
         this.renderRoute(route, path);
 
         const currentPath = window.location.pathname + window.location.search;
@@ -189,8 +202,7 @@ export default class Router {
             params = this.getQueryParams(query);
             if (route.path === '/stats') {
                 params.username = parameters[0];
-            }
-            else if (route.path === '/tournament') {
+            } else if (route.path === '/tournament') {
                 params.id = parameters[0];
             }
             route.setProps(params);
@@ -201,6 +213,8 @@ export default class Router {
 
 
     isPublicRoute(publicRoutes, path) {
+        const splitPath = path.split('?');
+        path = splitPath[0];
         for (const route of publicRoutes) {
             const regexPath = route.replace(/([:*])(\w+)/g, (full, colon, name) => {
                 return '([^\/]+)';

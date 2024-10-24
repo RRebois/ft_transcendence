@@ -17,6 +17,7 @@ export default class PongGame {
         this.winner = null;
         // this.gameSocket = null;
         this.setUser = this.setUser.bind(this);
+        this.removeUser = this.removeUser.bind(this);
         this.sceneWidth = 600;
         this.prevWidth = window.innerWidth;
         this.prevHeight = window.innerHeight;
@@ -26,6 +27,10 @@ export default class PongGame {
 
     setUser(user) {
         this.user = user;
+    }
+
+    removeUser() {
+        if (this.user) this.user = null;
     }
 
     addProps(newProps) {
