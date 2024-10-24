@@ -15,13 +15,11 @@ async def	init_bot(game_name, game, consumer):
 	if game_name == 'pong':
 		try:
 			bot_db = await sync_to_async(BotQTable.objects.get)(name=BOT_NAME)
-			# with open('ai_q_table.pickle', 'wb') as file:
-			# 	pickle.dump(bot_db.q_table, file)
 			# await sync_to_async(bot_db.save_table)({})
 		except:
 			bot_db = await sync_to_async(BotQTable.objects.create)(name=BOT_NAME)
 			try:
-				with open('ai_q_table.pickle', 'rb') as file:
+				with open('gamesManager/game_ai/ai_q_table.pickle', 'rb') as file:
 					q_table = pickle.load(file)
 					await sync_to_async(bot_db.save_table)(q_table)
 			except:
@@ -50,24 +48,19 @@ async def	init_bot(game_name, game, consumer):
 		# 			test.remove(t)
 		# 	await asyncio.sleep(SLEEP)
 
-		"""
-		against Trainbot
-		"""
-		tmp = TrainPong(0, bot_db, game, consumer)
-		await tmp.launch_train()
-		while not tmp.finished:
-			await asyncio.sleep(SLEEP)
-		"""
-		against himself
-		"""
-		tmp = TrainPong(1, bot_db, game, consumer)
-		await tmp.launch_train()
-		while not tmp.finished:
-			await asyncio.sleep(SLEEP)
-
-		# test = TrainPong(1, bot_db)
-		# await test.launch_train()
-		# while not test.finished:
+		# """
+		# against Trainbot
+		# """
+		# tmp1 = TrainPong(0, bot_db, game, consumer)
+		# await tmp1.launch_train()
+		# while not tmp1.finished:
+		# 	await asyncio.sleep(SLEEP)
+		# """
+		# against himself
+		# """
+		# tmp2 = TrainPong(1, bot_db, game, consumer)
+		# await tmp2.launch_train()
+		# while not tmp2.finished:
 		# 	await asyncio.sleep(SLEEP)
 
 		bot = PongBot(game, 2, bot_db, training=False)
@@ -81,7 +74,7 @@ class	TrainPong():
 	def	__init__(self, i, bot_db, game, consumer):
 		self.consumer = consumer
 		self.limit = 500
-		self.count = self.step = 50
+		self.count = self.step = 25
 		self.i = i
 		self.finished = False
 		self.game = PongGame(TrainPong.players_name)
@@ -94,10 +87,9 @@ class	TrainPong():
 		await self.bot2.launch_bot()
 		while True:
 			await self.game.update()
-			# if not i:
 			# await self.consumer.send_game_state()
 			await self.try_cancel_loop()
-			await asyncio.sleep(SLEEP / 8)
+			await asyncio.sleep(SLEEP / 10)
 
 	async def launch_train(self):
 		self.loop_task = asyncio.create_task(self.game_loop())
@@ -107,11 +99,10 @@ class	TrainPong():
 		if gs['left_score'] >= self.count or gs['right_score'] >= self.count:
 			self.count += self.step
 			print(f'\n\nTrain {self.i} => {gs['left_score']} x {gs['right_score']}\nq-table size => {len(PongBot.q_table)}')
-		if gs['left_score'] >= self.limit or gs['right_score'] >= self.limit:# or len(PongBot.q_table) > 55500:
+		if gs['left_score'] >= self.limit or gs['right_score'] >= self.limit or len(PongBot.q_table) > 9500:
 			await self.cancel_loop()
-			# print(f'\n\nTrain {self.i} => {gs['left_score']} x {gs['right_score']}\nq-table size => {len(PongBot.q_table)}')
 			if self.i:
-				with open('ai_q_table.pickle', 'wb') as file:
+				with open('gamesManager/game_ai/ai_q_table.pickle', 'wb') as file:
 					pickle.dump(PongBot.q_table, file)
 
 	async def cancel_loop(self):
@@ -141,7 +132,7 @@ class TestBot():
 			ball = serialize['ball']['y']
 			action = 1 if ball > paddle_pos + PADDLE_HEIGHT_DUO / 2 else -1
 			await self.continuous_paddle_mov(action)
-			await asyncio.sleep(SLEEP / 8)
+			await asyncio.sleep(SLEEP / 10)
 
 	async def launch_bot(self):
 		self.loop_task = asyncio.create_task(self.bot_loop())
