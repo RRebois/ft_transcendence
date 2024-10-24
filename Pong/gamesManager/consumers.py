@@ -99,7 +99,7 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
             if self.game_handler is not None:
                 await self.game_handler.reset_game()
         if self.game_handler is not None:
-            if self.game_name == 'pong' and self.game_code != 20:
+            if self.game_name == 'pong' and self.game_code not in [10, 20]:
                 player_move = data.get('player_move')
                 if player_move:
                     player_move['player'] = self.session_data['players'][self.username]['id']
@@ -294,7 +294,7 @@ class PongHandler():
             for i in range(my_range[0], my_range[1]):
                 key = f'player{i + 1}'
                 winner.append(gs['players'][key]['name'])
-        if self.game_code != 20:  # mode vs 'guest', does not save scores
+        if self.game_code not in [10, 20]:  # mode vs 'guest', does not save scores
             match_result = {}
             for i in range(0, middle * 2):
                 key = f"player{i + 1}"
@@ -442,6 +442,8 @@ class PurrinhaHandler():
                 await sync_to_async(create_match)(self.wins, [winner], deco=deconnection, is_pong=False)
                 if self.bot:
                     await self.bot.cancel_loop()
+                else:
+                    await sync_to_async(create_match)(self.wins, [winner], deco=deconnection, is_pong=False)
         await self.consumer[0].update_cache_db(self.message)
         print(f"\n\n\nmessage => {self.message}\n\n\n")
         await self.consumer[0].send_to_group(self.message)
