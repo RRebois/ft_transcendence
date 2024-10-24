@@ -8,14 +8,13 @@ import {getCookie} from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
 import {appRouter} from "@js/spa-router/initializeRouter.js";
 import {remove_modal_backdrops} from "../functions/display.js";
+import {DDSLoader} from 'three/examples/jsm/loaders/DDSLoader';
 
 export default class PongGame {
     constructor(props) {
         this.props = props;
         this.user = props?.user;
-        this.userIndex = 0;
         this.winner = null;
-        // this.gameSocket = null;
         this.setUser = this.setUser.bind(this);
         this.removeUser = this.removeUser.bind(this);
         this.sceneWidth = 600;
@@ -59,6 +58,7 @@ export default class PongGame {
     init() {
         // document.title = "ft_transcendence | Pong";
         modal.hidden = true;
+        this.userIndex = 0;
 
         // Load all textures at once
         this.textures = {};
@@ -90,25 +90,36 @@ export default class PongGame {
         const   container = document.getElementById("display");
         container.appendChild(this.renderer.domElement);
 
+        // Get the WebGL rendering context
+        this.gl = this.renderer.getContext();
+
+        // Get the lose context extension
+        this.loseContextExtension = this.gl.getExtension('WEBGL_lose_context');
+
         this.animate = this.animate.bind(this);
+
+        this.gameFinished = false;
         this.animate();
     }
 
     load_textures() {
-        const   textureLoader = new THREE.TextureLoader();
-        const   textStadium = textureLoader.load("/textures/grass/grass_BaseColor.jpg");
-        const   textInitBall = textureLoader.load("/textures/football.jpg");
-        const   textBlueCube = textureLoader.load("/textures/blue_basecolor.png");
-        const   textRedCube = textureLoader.load("/textures/red_basecolor.png");
-        const   textPadBlue = textureLoader.load("/textures/ice/ice_basecolor.png");
-        const   textPadRed = textureLoader.load("/textures/lava/lava_basecolor.jpg");
+        const   textureLoader = new DDSLoader();
 
-        this.textures["textStadium"] = textStadium;
-        this.textures["textInitBall"] = textInitBall;
-        this.textures["textBlueCube"] = textBlueCube;
-        this.textures["textRedCube"] = textRedCube;
-        this.textures["textPadBlue"] = textPadBlue;
-        this.textures["textPadRed"] = textPadRed;
+        const   textStadium = textureLoader.load("/textures/grass/grass_BaseColor.dds");
+        const   textInitBall = textureLoader.load("/textures/football.dds");
+        const   textBlueCube = textureLoader.load("/textures/blue_basecolor.dds");
+        const   textRedCube = textureLoader.load("/textures/red_basecolor.dds");
+        const   textPadBlue = textureLoader.load("/textures/ice/ice_basecolor.dds");
+        const   textPadRed = textureLoader.load("/textures/lava/lava_basecolor.dds");
+
+        this.textures = {
+            textStadium,
+            textInitBall,
+            textBlueCube,
+            textRedCube,
+            textPadBlue,
+            textPadRed
+        };
     }
 
     load_materials() {
@@ -147,42 +158,42 @@ export default class PongGame {
     }
 
     onKeyDown(event) {
-        if (window.location.pathname === "/pong" && window.myPongSocket.readyState === WebSocket.OPEN)
+        if (window.location.pathname === "/pong")
             if (event.key === 'w' || event.key === 's' || event.key === 'ArrowUp'
             || event.key === 'ArrowDown')
                 this.keyMap[event.key] = true;
     }
 
     onKeyUp(event) {
-        if (window.location.pathname === "/pong" && window.myPongSocket.readyState === WebSocket.OPEN)
+        if (window.location.pathname === "/pong")
             if (event.key === 'w' || event.key === 's' || event.key === 'ArrowUp'
             || event.key === 'ArrowDown')
                 delete this.keyMap[event.key];
     }
 
      handleKeyEvent() {
-        if (window.location.pathname === "/pong" && window.myPongSocket.readyState === WebSocket.OPEN) {
+        if (window.location.pathname === "/pong") {
             if (this.props?.code === "20") {
                 if (this.keyMap['w'] === true)
-                    window.myPongSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": 1}}));
+                    window.myPongSocket.send(JSON.stringify({"player_move": {"player": 2, "direction": 1}}));
                 if (this.keyMap['s'] === true)
-                    window.myPongSocket.send(JSON.stringify({"player_move": { "player": 2, "direction": -1}}));
+                    window.myPongSocket.send(JSON.stringify({"player_move": {"player": 2, "direction": -1}}));
                 if (this.keyMap['ArrowUp'] === true)
-                    window.myPongSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
+                    window.myPongSocket.send(JSON.stringify({"player_move": {"player": 1, "direction": 1}}));
                 if (this.keyMap['ArrowDown'] === true)
-                    window.myPongSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
+                    window.myPongSocket.send(JSON.stringify({"player_move": {"player": 1, "direction": -1}}));
             }
-            else if (this.props?.code !== "40" && this.props?.code !== "20") {
+            else if (this.props?.code !== "40" && this.props?.code !== "20") { //console.log("1vsbot or 1v1 online");
                 if (this.keyMap['ArrowUp'] === true)
-                    window.myPongSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": 1}}));
+                    window.myPongSocket.send(JSON.stringify({"player_move": {"player": 1, "direction": 1}}));
                 if (this.keyMap['ArrowDown'] === true)
-                    window.myPongSocket.send(JSON.stringify({"player_move": { "player": 1, "direction": -1}}));
+                    window.myPongSocket.send(JSON.stringify({"player_move": {"player": 1, "direction": -1}}));
             }
-            else {
+            else { //console.log("2v2");
                 if (this.keyMap['ArrowUp'] === true)
-                    window.myPongSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": 1}}));
+                    window.myPongSocket.send(JSON.stringify({"player_move": {"player": this.userIndex, "direction": 1}}));
                 if (this.keyMap['ArrowDown'] === true)
-                    window.myPongSocket.send(JSON.stringify({"player_move": { "player": this.userIndex, "direction": -1}}));
+                    window.myPongSocket.send(JSON.stringify({"player_move": {"player": this.userIndex, "direction": -1}}));
             }
         }
     }
@@ -682,14 +693,19 @@ export default class PongGame {
         this.printInitScores();
     }
 
+    // Game loop
     animate() {
+        // exits game loop
+        if (this.gameFinished || window.location.pathname !== "/pong")
+            return ;
+
         const   msg = this.scene.getObjectByName("waitTxt");
         if (msg) {
             this.waitMSGMove(msg);
             this.materials["wait"].emissiveIntensity = 0.5 + Math.sin(Date.now() * 0.005) * 0.8;
         }
 
-        const   ball = this.scene.getObjectByName("ball")
+        const   ball = this.scene.getObjectByName("ball");
         if (ball) {
             this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
             this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
@@ -765,7 +781,6 @@ export default class PongGame {
 
     // Collecting info from the game logic in the back
     display(data) {
-//        console.log(data);
         if (this.userIndex === 0 && this.props?.code === "40") {
             for (let i = 0; i < this.players_nick.length; i++) {
                 if (this.players_nick[i].username === this.user.username) {
@@ -777,21 +792,18 @@ export default class PongGame {
             }
         }
         if (data["status"] === "started") {
-        const   ball = this.scene.getObjectByName("ball");
+            const   ball = this.scene.getObjectByName("ball");
 
-        this.updateBallPosition(data.game_state);
-        this.updatePaddlePosition(data.game_state, Object.values(data.game_state.players));
-        if (data.game_state["new_round"])
-            this.updateScores(data.game_state);
+            this.updateBallPosition(data.game_state);
+            this.updatePaddlePosition(data.game_state, Object.values(data.game_state.players));
+            if (data.game_state["new_round"])
+                this.updateScores(data.game_state);
         }
         else {
             this.winner = data["winner"];
 
             // Select modal message to display
             const   modal = document.getElementById("modal");
-//            console.log(this.winner);
-//            console.log(this.user["username"]);
-//            console.log("code: ", this.props?.code);
             var     msg;
 
             if (this.props?.code === 22 || this.props?.code === 40) {
@@ -826,9 +838,18 @@ export default class PongGame {
                     <button id="new-game-btn" class="btn btn-primary">Play again</button>
                 `;
             }
+            const   homeBtn = document.getElementById("back-home-btn");
+            if (homeBtn) {
+                homeBtn.addEventListener("click", () => {
+                    this.gameFinished = true;
+                    this.loseContextExtension.loseContext();
+                });
+            }
             const   backTournamentView = document.getElementById("back-tournament-btn");
             if (backTournamentView) {
                 backTournamentView.addEventListener("click", () => {
+                    this.gameFinished = true;
+                    this.loseContextExtension.loseContext();
                     appRouter.navigate(`/tournament/${data['tournament_name']}`);
                 });
             }
@@ -845,14 +866,16 @@ export default class PongGame {
 			            credentials: 'include'
 		            })
                     .then(response => response.json().then(data => ({ok: response.ok, data})))
-                    .then(({ok, data}) => {
+                    .then(({ok, data}) => { console.log("data fetch replay: ", data);
                         if (!ok) {
                             const toastComponent = new ToastComponent();
                             toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
                         } else {
-                            console.log("Game request success: ", data);
+                            // Lose the context to free up resources
                             data.code = `${this.props?.code}`;
                             const params = new URLSearchParams(data).toString();
+                            this.loseContextExtension.loseContext();
+                            this.gameFinished = true;
                             appRouter.navigate(`/${this.props?.game}?${params}`);
                             const socket = window.mySocket;
                             socket.send(JSON.stringify({
@@ -862,20 +885,20 @@ export default class PongGame {
 				        }
 			        })
                     .catch(error => {
-                        console.error("Error fetching game request: ", error);
+                        console.error("Error fetching new game request: ", error);
                         const toastComponent = new ToastComponent();
                         toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
                     });
                 });
             }
-            modal.classList.add("rounded", "border", "border-dark", "border-3");
-			modal.hidden = false;
 
-			// close the webso
+            // remove event listeners + close socket
             this.removeEventListeners();
             window.myPongSocket.close();
             window.myPongSocket = null;
-            console.log("RESTARTING GAME");
+
+            modal.classList.add("rounded", "border", "border-dark", "border-3");
+			modal.hidden = false;
         }
     }
 
