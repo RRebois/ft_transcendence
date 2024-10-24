@@ -233,7 +233,7 @@ class PongHandler():
 
     async def reset_game(self):
         if self.loop_task is None:
-            self.game.reset_game()
+            await self.game.reset_game()
             self.loop_task = asyncio.create_task(self.game_loop())
 
     async def receive(self, text_data):
@@ -336,18 +336,25 @@ class PurrinhaHandler():
             self.turns_id.remove(self.curr_turn)
 
     async def reset_game(self):
+        print(f"\n\n\nreset game outside\n\n\n")
         if len(self.turns_id) == self.player_nb:
+            print(f"\n\n\nreset game inside\n\n\n")
             if self.bot:
                 await self.bot.launch_bot()
+            # self.message = await self.consumer[0].get_session_data()
             await self.get_new_turn()
             self.message['game_state'] = await self.game.get_status()
+            print(f"\n\n\nnew available_to_guess => {self.message['game_state']['available_to_guess']}\n\n\n")
             self.message['game_state']['player_turn'] = self.curr_turn
             self.message['game_state']['history'] = self.wins
+            # await self.consumer[0].update_cache_db(self.message)
+            print(f"\n\n\nmessage => {self.message}\n\n\n")
             await self.consumer[0].send_to_group(self.message)
 
     async def parse_quantity(self, quantity, id):
         if not quantity and quantity != 0:
             return False
+        # self.message = await self.consumer[0].get_session_data()
         if self.message['game_state']['players'][f'player{id}']['quantity']:
             name = self.message['game_state']['players'][f'player{id}']['name']
             self.message['game_state']['error_message'] = 'you have already chosen a number'
@@ -358,9 +365,10 @@ class PurrinhaHandler():
         return True
 
     async def parse_guess(self, guess, id):
-        if not guess and quantity != 0:
+        if not guess and guess != 0:
             return False
         message = ''
+        # self.message = await self.consumer[0].get_session_data()
         nb_to_guess = await self.game.get_number_to_guess()
         if not self.message['game_state']['players'][f'player{id}']['quantity']:
             message = 'you need to choose a number before your guess'
@@ -415,22 +423,26 @@ class PurrinhaHandler():
             deconnection = True
         print(f"\n\n\nwinner => {winner[0]}\n\n\n")
         if winner[0] != 'tie':
+            print(f"winner is not tie")
             self.wins[winner[0]] += 1
             self.message['game_state']['history'] = self.wins
             if self.wins[winner[0]] == MAX_ROUND_WINS or deconnection:
+                print(f"winner has won => end of game")
                 self.message['winner'] = winner
                 self.message['status'] = 'finished'
                 self.message['deconnection'] = deconnection
                 # await self.consumer[0].update_cache_db(self.message)
+                await self.consumer[0].send_to_group(self.message)
                 await sync_to_async(create_match)(self.wins, [winner], deco=deconnection, is_pong=False)
                 if self.bot:
                     await self.bot.cancel_loop()
         await self.consumer[0].update_cache_db(self.message)
+        print(f"\n\n\nmessage => {self.message}\n\n\n")
         await self.consumer[0].send_to_group(self.message)
         if not self.message['winner']:
-            self.game.play_again()
+            await self.game.play_again()
             self.turns_id = [i + 1 for i in range(0, self.player_nb)]
-            self.reset_game()
+            await self.reset_game()
         else:
             await self.remove_consumer()
 

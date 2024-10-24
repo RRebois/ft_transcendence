@@ -68,13 +68,15 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
 
                 // Case : a winner is declared
                 if (data?.winner) {
+                    update_score(data, view);
                     display_game_winner(data, view);
                 }
 
                 // Case: the round have a winner
-                if (data?.game_state?.winner) {
-                    handle_round_winner(data, view);
-                }
+                // if (data?.game_state?.winner) {
+                //     update_score(data, view);
+                //     handle_round_winner(data, view);
+                // }
 
                 console.log("current user is ", view?.user);
 
@@ -97,6 +99,9 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
                             } else {
                                 display_hourglass();
                             }
+                        } else if (data.game_state?.round === "finished") {
+                            console.log("Round finished");
+                            handle_round_winner(data, view);
                         }
                     } else if (data?.status === 'finished') {
                         console.log("Game finished");

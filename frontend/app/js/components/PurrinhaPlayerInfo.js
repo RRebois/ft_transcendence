@@ -52,7 +52,7 @@ export default class PurrinhaPlayerInfo {
                         <div class="d-flex flex-row justify-content-between w-100">
                             <p id="user_info-username-${this.game_player_id}"></p>
                             <div class="d-flex flex-row gap-1">
-                                <i class="bi bi-trophy-fill"></i>
+                                <i class="trophy-${this.game_player_id} bi bi-trophy-fill"></i>
                                 <p id="user_info-score-${this.game_player_id}">0</p>
                             </div>
                         </div>
@@ -67,7 +67,7 @@ export default class PurrinhaPlayerInfo {
                         <div class="d-flex flex-row justify-content-between w-100">
                             <p id="user_info-username-${this.game_player_id}"></p>
                             <div class="d-flex flex-row gap-1">
-                                <i class="bi bi-trophy-fill"></i>
+                                <i class="trophy-${this.game_player_id} bi bi-trophy-fill"></i>
                                 <p id="user_info-score-${this.game_player_id}">0</p>
                             </div>
                         </div>

@@ -134,7 +134,7 @@ class PurrinhaGame:
         self.match = PurrinhaMatch(players)
         self.players_nb = len(players)
         self.numbers_to_guess = [i for i in range(self.players_nb * MAX_QUANTITY + 1)]
-        self.numbers_to_guess_init = self.numbers_to_guess
+        # self.numbers_to_guess_init = self.numbers_to_guess
 
     async def get_number_to_guess(self):
         return self.numbers_to_guess
@@ -185,4 +185,4 @@ class PurrinhaGame:
 
     async def play_again(self):
         await self.match.reset_match()
-        self.numbers_to_guess = self.numbers_to_guess_init
+        self.numbers_to_guess = [i for i in range(self.players_nb * MAX_QUANTITY + 1)]

@@ -11,20 +11,20 @@ class PurrinhaBot():
 		self.nb_guess = None
 
 	async def bot_loop(self):
-		print(f'\n\nbot loop\n\n')
 		while True:
 			await asyncio.sleep(0.35)
 			gs = self.game.message['game_state']
-			if self.nb_pick is None:
+			if gs['round'] == 'choosing' and self.nb_pick is None:
 				# choose
 				self.nb_pick = randint(0, MAX_QUANTITY)
 				# self.nb_pick = 0
-				print(f'\n\nBot pick: {self.nb_pick}\n\n')
+				# print(f'\n\nBot pick: {self.nb_pick}\n\n')
 				await self.game.receive({'action': 'pick_initial_number', 'selected_value': self.nb_pick, 'player_id': 2})
 			elif gs['round'] == 'guessing':
 				# guess
 				if gs['player_turn'] == 2 and self.nb_guess is None:
 					self.nb_guess = choice([nb for nb in gs['available_to_guess'] if nb > self.nb_pick])
+					# print(f'\n\nBot guess: {self.nb_guess}\n\n')
 					await self.game.receive({'action': 'sum_guessed', 'selected_value': self.nb_guess, 'player_id': 2})
 			elif gs['round'] == 'finished':
 				await self.reset_nbs()

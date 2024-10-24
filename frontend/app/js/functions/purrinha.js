@@ -1,5 +1,6 @@
 import * as bootstrap from "bootstrap";
 import {remove_modal_backdrops} from "./display.js";
+import confetti from "canvas-confetti";
 
 export function display_hourglass() {
     const pickInitialNumberContainer = document.getElementById('pick-initial-number');
@@ -27,21 +28,52 @@ export function display_hourglass() {
 
 export function display_game_winner(data, view) {
     const root = document.getElementById('game-root');
-    if (data?.winner === view.user.username) {
+    console.log("winner: ", data?.winner);
+    console.log("view.user.username: ", view.user.username);
+
+    const duration = 8 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = {startVelocity: 30, spread: 360, ticks: 60, zIndex: 0};
+
+    function randomInRange(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    if (data?.winner[0] === view.user.username) {
+        const interval = setInterval(function () {
+            const timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+                return clearInterval(interval);
+            }
+
+            const particleCount = 50 * (timeLeft / duration);
+            confetti({...defaults, particleCount, scale: 1.5, origin: {x: randomInRange(0.1, 0.3), y: Math.random() - 0.2}});
+            confetti({...defaults, particleCount, scale: 1.5, origin: {x: randomInRange(0.7, 0.9), y: Math.random() - 0.2}});
+        }, 250);
+
         if (root) {
             root.innerHTML = `
                 <div id="game-winner" class="d-flex flex-column gap-2 align-items-center justify-content-center">
                     <h1>Congratulations!</h1>
                     <p>You won the game!</p>
+                    <button type="button" class="btn btn-primary" route="/dashboard">Return home</button>
                 </div>
             `;
         }
     } else {
+        const scalar = 2;
+        const text = confetti.shapeFromText({ text: '🤡', scalar });
+        confetti({
+            shapes: [text],
+            scalar
+        });
         if (root) {
             root.innerHTML = `
                 <div id="game-winner" class="d-flex flex-column gap-2 align-items-center justify-content-center">
                     <h1>Game Over</h1>
                     <p>The winner is ${data?.winner}</p>
+                    <button type="button" class="btn btn-primary" route="/dashboard">Return home</button>
                 </div>
             `;
         }
@@ -50,6 +82,9 @@ export function display_game_winner(data, view) {
 
 export function handle_round_winner(data, view) {
     console.log("handle_round_winner called");
+    update_score(data, view);
+
+
     const root = document.getElementById('game-root');
     if (root) {
         pick_initial_number(view, true);
@@ -144,7 +179,7 @@ export const pick_initial_number = (view, force = false) => {
     if (hourglassSpinner) {
         if (force) {
             hourglassSpinner.remove();
-        } else{
+        } else {
             return;
         }
     }
@@ -233,6 +268,7 @@ export function update_score(data, view) {
     const scores = data?.game_state?.history;
     console.log("[score] scores: ", scores);
     console.log("[score] players: ", players);
+    let maxScore = {score: 0, user_id: null}
 
     players.forEach(player => {
         const username = player.name;
@@ -242,15 +278,21 @@ export function update_score(data, view) {
             console.log("[score] scores.username: ", scores.username);
         }
         if (scores && scores[username] !== undefined) {
+            if (scores[username] > maxScore.score) {
+                maxScore.score = scores[username];
+                maxScore.user_id = player.id;
+            }
             const playerScore = document.getElementById(`user_info-score-${player.id}`);
             if (playerScore) {
                 playerScore.innerText = scores[username];
             }
         }
     });
-}
+    if (maxScore.username) {
+        const trophy = document.querySelector(`.trophy-${maxScore.user_id}`);
+        if (trophy) {
+            trophy.classList.add('text-warning');
+        }
+    }
 
-function bot_guess_number(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
