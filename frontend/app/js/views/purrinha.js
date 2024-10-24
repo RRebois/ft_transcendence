@@ -42,10 +42,6 @@ export default class PurrinhaGame {
         }
     }
 
-    getMaxAvailableValue(nb_players) {
-        return (nb_players * 3);
-    }
-
     initializeWs = async (gameCode) => {
         console.log("purrihna initializeWs called");
         let ws;
@@ -89,7 +85,6 @@ export default class PurrinhaGame {
             }
         }
     }
-
 
     setupEventListeners() {
         console.log("purrihna setupEventListeners called");

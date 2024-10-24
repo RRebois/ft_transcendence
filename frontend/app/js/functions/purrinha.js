@@ -84,15 +84,10 @@ export function handle_round_winner(data, view) {
     console.log("handle_round_winner called");
     update_score(data, view);
 
-
     const root = document.getElementById('game-root');
     if (root) {
         pick_initial_number(view, true);
     }
-
-    // if (data?.game_state?.winner !== 'tie') {
-    //     ;
-    // }
 }
 
 export function send_player_action(websocket, game_code, action, value, player, player_set_id, session_id) {

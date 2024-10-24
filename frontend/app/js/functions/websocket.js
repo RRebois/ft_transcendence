@@ -21,7 +21,6 @@ import {
     update_score,
 } from "./purrinha.js";
 
-
 export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route, view) {
     return new Promise(async (resolve, reject) => {
         const response = await fetch(`https://${window.location.hostname}:8443/get_ws_token/`, {
@@ -33,25 +32,6 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
             reject(new Error("Missing game code or session id"));
         }
         if (isUserAuth) {
-            // fetch(`https://${window.location.hostname}:8443/game/check/purrinha/${gameCode}/${sessionId}/`, {
-            //     method: 'GET',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'X-CSRFToken': getCookie('csrftoken'),
-            //     },
-            //     credentials: 'include',
-            // })
-            //     .then(response => {
-            //         if (!response.ok) {
-            //             reject(new Error("Match not available"));
-            //             return;
-            //         }
-            //         return response.json();
-            //     })
-            //     .then(data => {
-            //         if (!data) {
-            //             return;
-            //         }
             const token = jwt.token
             const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
             const url = wsSelect + `${window.location.hostname}:8443` + ws_route + token + '/'
@@ -71,14 +51,6 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
                     update_score(data, view);
                     display_game_winner(data, view);
                 }
-
-                // Case: the round have a winner
-                // if (data?.game_state?.winner) {
-                //     update_score(data, view);
-                //     handle_round_winner(data, view);
-                // }
-
-                console.log("current user is ", view?.user);
 
                 if (data?.status === 'waiting') {
                     console.log("Waiting for players...");
@@ -107,27 +79,6 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
                         console.log("Game finished");
                     }
                 }
-
-
-                // else
-                //     if (data?.status === 'started') {
-                //         console.log("Game started");
-                //         hide_looking_for_players_modal();
-                //         display_users_info(data, view);
-                //         if (data.game_state?.round === "choosing") {
-                //             pick_initial_number(view);
-                //         } else if (data.game_state?.round === "guessing") {
-                //             console.log("player_set_id is:", view?.player_set_id);
-                //             if (data.game_state?.player_turn === view?.player_set_id) {
-                //                 console.log("It's your turn to guess the sum");
-                //                 guess_sum(data, view);
-                //             }
-                //         }
-                //     } else if (data?.status === 'finished') {
-                //         console.log("Game finished");
-                //     }
-
-
             };
 
             socket.onclose = function (event) {
@@ -143,11 +94,6 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
                 reject(error);
             };
             window.mySocket = socket; // to access as a global var
-            // })
-            // .catch(error => {
-            //     console.error("Error:", error);
-            //     reject(error);
-            // });
         }
     });
 }
