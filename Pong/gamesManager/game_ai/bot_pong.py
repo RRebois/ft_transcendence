@@ -58,7 +58,7 @@ class PongBot():
 
 	async def predict_ball_position(self, ball_x, ball_y, ball_v_x, ball_v_y, paddle_x, paddle_y):
 		if (self.player == 2 and ball_v_x < 0) or (self.player == 1 and ball_v_x > 0) or ball_v_x == 0:
-			return int(GAME_HEIGHT / PongBot.REDUCTION - PongBot.HALF_PAD)
+			return int(GAME_HEIGHT / 2 / PongBot.REDUCTION - PongBot.HALF_PAD)
 		while (self.player == 2 and ball_x < paddle_x) or (self.player == 1 and ball_x > paddle_x):
 			ball_x += ball_v_x
 			ball_y += ball_v_y
@@ -89,7 +89,7 @@ class PongBot():
 		correction = 1 if self.player == 2 else -1
 		distance_x = int((paddle_x - ball_x) / PongBot.REDUCTION) * correction\
 			if (self.player == 2 and ball_x < paddle_x) or (self.player == 1 and ball_x > paddle_x) else 0
-		rad = round(math.atan2(ball_v_y, ball_v_x) * correction)
+		rad = round(math.atan2(ball_v_y, ball_v_x) * 10 * correction) * 0.1
 		return (distance_x, int(ball_y / PongBot.REDUCTION), rad, int(paddle_y / PongBot.REDUCTION))
 
 	async def get_state(self):
@@ -128,7 +128,7 @@ class PongBot():
 		last_time = time.time()
 		state = new_state = await self.get_state()
 		refresh_rate = 1 if not self.training else 0
-		sleep_rate = SLEEP * 2 if not self.training else SLEEP / 10
+		sleep_rate = SLEEP if not self.training else SLEEP / 10
 		while True:
 			try:
 				action = await self.continuous_paddle_mov(state)

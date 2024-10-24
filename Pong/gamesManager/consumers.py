@@ -97,7 +97,7 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 			if self.game_handler is not None:
 				await self.game_handler.reset_game()
 		if self.game_handler is not None:
-			if self.game_name == 'pong' and self.game_code != 20:
+			if self.game_name == 'pong' and self.game_code not in [10, 20]:
 				player_move = data.get('player_move')
 				if player_move:
 					player_move['player'] = self.session_data['players'][self.username]['id']
@@ -167,7 +167,8 @@ class	GameManagerConsumer(AsyncWebsocketConsumer):
 		session_data = await self.get_session_data()
 		session_data['connected_players'] -= 1
 		session_data['players'][self.username]['connected'] = False
-		if session_data['status'] != 'waiting' and not session_data['deconnection'] and session_data['connected_players'] == self.session_data['awaited_players'] - 1:
+		if session_data['status'] != 'waiting' and not session_data['deconnection']\
+			and session_data['connected_players'] == self.session_data['awaited_players'] - 1:
 			other_player = []
 			winner_group = [1, 2] if session_data['players'][self.username]['id'] > 2 else [3, 4]
 			for player in session_data['players']:
@@ -292,7 +293,7 @@ class PongHandler():
 			for i in range(my_range[0], my_range[1]):
 				key = f'player{i + 1}'
 				winner.append(gs['players'][key]['name'])
-		if self.game_code != 20: # mode vs 'guest', does not save scores
+		if self.game_code not in [10, 20]: # mode vs 'guest', does not save scores
 			match_result = {}
 			for i in range(0, middle * 2):
 				key = f"player{i + 1}"
@@ -428,9 +429,10 @@ class PurrinhaHandler():
 				self.message['status'] = 'finished'
 				self.message['deconnection'] = deconnection
 				await self.consumer[0].update_cache_db(self.message)
-				await sync_to_async(create_match)(self.wins, [winner], deco=deconnection, is_pong=False)
 				if self.bot:
 					await self.bot.cancel_loop()
+				else:
+					await sync_to_async(create_match)(self.wins, [winner], deco=deconnection, is_pong=False)
 		await self.consumer[0].send_to_group(self.message)
 		if not self.message['winner']:
 			self.game.play_again()
