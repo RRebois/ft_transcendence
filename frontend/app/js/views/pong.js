@@ -51,6 +51,11 @@ export default class PongGame {
     }
 
     init() {
+
+        // limit 60 fps
+        this.lastFrameTime = 0;  // Store the time of the last frame
+        this.fpsInterval = 1000 / 60;
+
         // document.title = "ft_transcendence | Pong";
         modal.hidden = true;
         this.userIndex = 0;
@@ -73,7 +78,8 @@ export default class PongGame {
         const horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
         const distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
         this.camera.position.set(300, ((distance * 3) * Math.tan(verticalFOV * 0.5)), -distance);
-        this.scene.fog = new THREE.Fog(0x000000, -300, 1500);
+//        this.scene.fog = new THREE.Fog(0x000000, -300, 1500);
+        this.scene.fog = new THREE.Fog(0x000000, -300, 3500);
         this.camera.lookAt(300, -100, 300);
 
         // Renderer
@@ -94,10 +100,12 @@ export default class PongGame {
         this.animate = this.animate.bind(this);
 
         this.gameFinished = false;
+        this.gameHasStarted = false;
         this.animate();
     }
 
     load_textures() {
+//    requestIdleCallback(() => {
         const   textureLoader = new DDSLoader();
 
         const   textStadium = textureLoader.load("/textures/grass/grass_BaseColor.dds");
@@ -115,9 +123,11 @@ export default class PongGame {
             textPadBlue,
             textPadRed
         };
+//        });
     }
 
     load_materials() {
+//    requestIdleCallback(() => {
         // Load all materials
         this.materials["wait"] = new THREE.MeshStandardMaterial({
             color: 0xffffff,
@@ -150,6 +160,7 @@ export default class PongGame {
             metalness: 0.8,
             roughness: 0,
         });
+//        });
     }
 
     onKeyDown(event) {
@@ -251,7 +262,7 @@ export default class PongGame {
 
             // Create plane for mirror text to appear ghosty
             const   planeGeometry = new THREE.PlaneGeometry(10000, 10000);
-            const   planeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true });
+            const   planeMaterial = new THREE.MeshBasicMaterial({color: 0xffffff, opacity: 0.5, transparent: true});
             const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
             plane.position.set(300, 40, 0);
             plane.rotation.x = - Math.PI * 0.5;
@@ -264,7 +275,7 @@ export default class PongGame {
             loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
                 const   geometry = new TextGeometry(txt, {
                     font: font,
-                    size: 85,
+                    size: 75,
                     depth: 20,
                     curveSegments: 4,
                     bevelEnabled: true,
@@ -584,7 +595,7 @@ export default class PongGame {
                 const   check = () => {
                     if (Math.abs(cube.position.x - targetPosition.x) < 0.1 &&
                     Math.abs(cube.position.y - targetPosition.y) < 0.1 &&
-                    Math.abs(cube.position.z - targetPosition.z) < 0.1)
+                    Math.abs(cube.position.z - targetPosition.z) < 0.1 && window.myPongSocket)
                         window.myPongSocket.send(JSON.stringify({"game_status": true}));
                     else
                         requestAnimationFrame(check);
@@ -689,33 +700,40 @@ export default class PongGame {
     }
 
     // Game loop
-    animate() {
+    animate(currentTime) { //animate()
         // exits game loop
         if (this.gameFinished || window.location.pathname !== "/pong")
             return ;
 
-        const   msg = this.scene.getObjectByName("waitTxt");
-        if (msg) {
-            this.waitMSGMove(msg);
-            this.materials["wait"].emissiveIntensity = 0.5 + Math.sin(Date.now() * 0.005) * 0.8;
+        // Calculate the time since the last frame (60fps)
+        if (!this.lastFrameTime) this.lastFrameTime = currentTime; // Initialize at first call
+        const elapsed = currentTime - this.lastFrameTime;
+
+        if (elapsed > this.fpsInterval) {
+            this.lastFrameTime = currentTime - (elapsed % this.fpsInterval);
+                const   msg = this.scene.getObjectByName("waitTxt");
+                if (msg)
+                    this.waitMSGMove(msg);
+
+                const   ball = this.scene.getObjectByName("ball");
+                if (ball) {
+                    this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+                    this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+                    this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+
+                    if (this.gameHasStarted === true)
+                        this.handleKeyEvent();
+                }
+
+            // Render scene
+            this.renderer.render(this.scene, this.camera);
         }
-
-        const   ball = this.scene.getObjectByName("ball");
-        if (ball) {
-            this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-            this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-            this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-
-            this.handleKeyEvent();
-        }
-
-        // Render scene
-        this.renderer.render(this.scene, this.camera);
         requestAnimationFrame(this.animate);
     }
 
     waitMSGMove(msg) {
         msg.rotation.y += 0.001;
+        this.materials["wait"].emissiveIntensity = 0.5 + Math.sin(Date.now() * 0.005) * 0.8;
     }
 
      onWindowResize() {
@@ -787,6 +805,7 @@ export default class PongGame {
             }
         }
         if (data["status"] === "started") {
+            this.gameHasStarted = true;
             const   ball = this.scene.getObjectByName("ball");
 
             this.updateBallPosition(data.game_state);
@@ -795,6 +814,7 @@ export default class PongGame {
                 this.updateScores(data.game_state);
         }
         else {
+            this.gameHasStarted = false;
             this.winner = data["winner"];
 
             // Select modal message to display
