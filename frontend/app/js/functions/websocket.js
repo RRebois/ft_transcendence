@@ -84,9 +84,9 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
 
             socket.onclose = function (event) {
                 if (event.wasClean) {
-                    console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+                    console.log(`Purrinha Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
                 } else {
-                    console.log('Connection died');
+                    console.log('Purrinha Connection died');
                 }
             };
 
@@ -94,12 +94,7 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
                 console.log(`Purrinha webSocket Error: ${error.message}`);
                 reject(error);
             };
-            window.mySocket = socket; // to access as a global var
-            // })
-            // .catch(error => {
-            //     console.error("Error:", error);
-            //     reject(error);
-            // });
+            window.myPurrinhaSocket = socket; // to access as a global var
         }
     });
 }

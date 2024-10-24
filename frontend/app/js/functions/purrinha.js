@@ -220,7 +220,7 @@ export const pick_initial_number = (view, force = false) => {
                 console.log("view.props: ", view.props);
                 const current_player = view.props.players.find(player => player.name === view.user.username);
                 console.log("current_player: ", current_player);
-                send_player_action(view.gameSocket, view.props.code, 'pick_initial_number', selectedValue, current_player, view.player_set_id, view.props.session_id);
+                send_player_action(window.myPurrinhaSocket, view.props.code, 'pick_initial_number', selectedValue, current_player, view.player_set_id, view.props.session_id);
             }
         });
     }
@@ -276,7 +276,7 @@ export const guess_sum = (data, view, socket) => {
                 const selectedValue = parseInt(guessed_sum.value);
                 const current_player = view.props.players.find(player => player.name === view.user.username);
                 console.log("SENDING GUESS: ", selectedValue);
-                send_player_action(view.gameSocket, view.props.code, 'sum_guessed', selectedValue, current_player, view.player_set_id, view.props.session_id);
+                send_player_action(window.myPurrinhaSocket, view.props.code, 'sum_guessed', selectedValue, current_player, view.player_set_id, view.props.session_id);
             }
         });
     }
