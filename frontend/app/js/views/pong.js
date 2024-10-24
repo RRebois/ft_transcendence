@@ -14,7 +14,6 @@ export default class PongGame {
     constructor(props) {
         this.props = props;
         this.user = props?.user;
-        this.userIndex = 0;
         this.winner = null;
         this.setUser = this.setUser.bind(this);
         this.sceneWidth = 600;
@@ -51,17 +50,18 @@ export default class PongGame {
 		// window.myPongSocket = ws;
     }
 
-    async init() {
+    init() {
         // document.title = "ft_transcendence | Pong";
         modal.hidden = true;
+        this.userIndex = 0;
 
         // Load all textures at once
         this.textures = {};
-        await this.load_textures();
+        this.load_textures();
 
         // Load all materials
         this.materials = {};
-        await this.load_materials();
+        this.load_materials();
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x000000);
@@ -92,6 +92,8 @@ export default class PongGame {
         this.loseContextExtension = this.gl.getExtension('WEBGL_lose_context');
 
         this.animate = this.animate.bind(this);
+
+        this.gameFinished = false;
         this.animate();
     }
 
@@ -151,21 +153,21 @@ export default class PongGame {
     }
 
     onKeyDown(event) {
-        if (window.location.pathname === "/pong" && window.myPongSocket.readyState === WebSocket.OPEN)
+        if (window.location.pathname === "/pong")
             if (event.key === 'w' || event.key === 's' || event.key === 'ArrowUp'
             || event.key === 'ArrowDown')
                 this.keyMap[event.key] = true;
     }
 
     onKeyUp(event) {
-        if (window.location.pathname === "/pong" && window.myPongSocket.readyState === WebSocket.OPEN)
+        if (window.location.pathname === "/pong")
             if (event.key === 'w' || event.key === 's' || event.key === 'ArrowUp'
             || event.key === 'ArrowDown')
                 delete this.keyMap[event.key];
     }
 
      handleKeyEvent() {
-        if (window.location.pathname === "/pong" && window.myPongSocket.readyState === WebSocket.OPEN) {
+        if (window.location.pathname === "/pong") {
             if (this.props?.code === "20") {
                 if (this.keyMap['w'] === true)
                     window.myPongSocket.send(JSON.stringify({"player_move": {"player": 2, "direction": 1}}));
@@ -686,14 +688,19 @@ export default class PongGame {
         this.printInitScores();
     }
 
+    // Game loop
     animate() {
+        // exits game loop
+        if (this.gameFinished || window.location.pathname !== "/pong")
+            return ;
+
         const   msg = this.scene.getObjectByName("waitTxt");
         if (msg) {
             this.waitMSGMove(msg);
             this.materials["wait"].emissiveIntensity = 0.5 + Math.sin(Date.now() * 0.005) * 0.8;
         }
 
-        const   ball = this.scene.getObjectByName("ball")
+        const   ball = this.scene.getObjectByName("ball");
         if (ball) {
             this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
             this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
@@ -769,7 +776,6 @@ export default class PongGame {
 
     // Collecting info from the game logic in the back
     display(data) {
-//        console.log(data);
         if (this.userIndex === 0 && this.props?.code === "40") {
             for (let i = 0; i < this.players_nick.length; i++) {
                 if (this.players_nick[i].username === this.user.username) {
@@ -830,17 +836,14 @@ export default class PongGame {
             const   homeBtn = document.getElementById("back-home-btn");
             if (homeBtn) {
                 homeBtn.addEventListener("click", () => {
-                    this.removeEventListeners();
+                    this.gameFinished = true;
                     this.loseContextExtension.loseContext();
                 });
             }
             const   backTournamentView = document.getElementById("back-tournament-btn");
             if (backTournamentView) {
                 backTournamentView.addEventListener("click", () => {
-                    this.removeEventListeners();
-                    window.myPongSocket.close();
-                    window.myPongSocket = null;
-
+                    this.gameFinished = true;
                     this.loseContextExtension.loseContext();
                     appRouter.navigate(`/tournament/${data['tournament_name']}`);
                 });
@@ -848,9 +851,6 @@ export default class PongGame {
             const   restart = document.getElementById("new-game-btn");
             if (restart) {
                 restart.addEventListener("click", () => {
-                    this.removeEventListeners();
-                    window.myPongSocket.close();
-                    window.myPongSocket = null;
                     const csrfToken = getCookie('csrftoken');
                     fetch(`https://${window.location.hostname}:8443/game/${this.props?.game}/${this.props?.code}`, {
                         method: 'GET',
@@ -867,9 +867,10 @@ export default class PongGame {
                             toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
                         } else {
                             // Lose the context to free up resources
-                            this.loseContextExtension.loseContext();
                             data.code = `${this.props?.code}`;
                             const params = new URLSearchParams(data).toString();
+                            this.loseContextExtension.loseContext();
+                            this.gameFinished = true;
                             appRouter.navigate(`/${this.props?.game}?${params}`);
                             const socket = window.mySocket;
                             socket.send(JSON.stringify({
@@ -885,6 +886,12 @@ export default class PongGame {
                     });
                 });
             }
+
+            // remove event listeners + close socket
+            this.removeEventListeners();
+            window.myPongSocket.close();
+            window.myPongSocket = null;
+
             modal.classList.add("rounded", "border", "border-dark", "border-3");
 			modal.hidden = false;
         }
