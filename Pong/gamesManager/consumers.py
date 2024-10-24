@@ -358,7 +358,7 @@ class PurrinhaHandler():
         return True
 
     async def parse_guess(self, guess, id):
-        if not guess:
+        if not guess and quantity != 0:
             return False
         message = ''
         nb_to_guess = await self.game.get_number_to_guess()

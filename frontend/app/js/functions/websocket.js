@@ -1,22 +1,24 @@
 import {isUserConnected} from "./user_auth.js";
 import ToastComponent from "@js/components/Toast.js";
 import {
+    create_empty_friend,
+    create_empty_request,
     create_friend_div_ws,
     create_friend_request_div,
     remove_friend_div,
-    create_empty_request,
-    create_empty_friend,
 } from "@js/functions/friends_management.js";
 import {load_tournaments_ws, reload_new_players} from "@js/functions/tournament_management.js";
 import {remove_friend_request_div} from "./friends_management.js";
 import {load_new_notifications} from "../functions/navbar_utils.js";
 import {
-    display_users_info,
+    display_game_winner,
+    display_hourglass,
     display_looking_for_players_modal,
-    guess_sum,
+    display_users_info,
+    guess_sum, handle_round_winner,
     hide_looking_for_players_modal,
     pick_initial_number,
-    update_score, display_hourglass,
+    update_score,
 } from "./purrinha.js";
 
 
@@ -63,6 +65,18 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
             socket.onmessage = function (event) {
                 const data = JSON.parse(event.data);
                 console.log("[purrinha websocket] Data is:", data);
+
+                // Case : a winner is declared
+                if (data?.winner) {
+                    display_game_winner(data, view);
+                }
+
+                // Case: the round have a winner
+                if (data?.game_state?.winner) {
+                    handle_round_winner(data, view);
+                }
+
+                console.log("current user is ", view?.user);
 
                 if (data?.status === 'waiting') {
                     console.log("Waiting for players...");

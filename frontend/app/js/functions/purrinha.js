@@ -25,6 +25,41 @@ export function display_hourglass() {
     }
 }
 
+export function display_game_winner(data, view) {
+    const root = document.getElementById('game-root');
+    if (data?.winner === view.user.username) {
+        if (root) {
+            root.innerHTML = `
+                <div id="game-winner" class="d-flex flex-column gap-2 align-items-center justify-content-center">
+                    <h1>Congratulations!</h1>
+                    <p>You won the game!</p>
+                </div>
+            `;
+        }
+    } else {
+        if (root) {
+            root.innerHTML = `
+                <div id="game-winner" class="d-flex flex-column gap-2 align-items-center justify-content-center">
+                    <h1>Game Over</h1>
+                    <p>The winner is ${data?.winner}</p>
+                </div>
+            `;
+        }
+    }
+}
+
+export function handle_round_winner(data, view) {
+    console.log("handle_round_winner called");
+    const root = document.getElementById('game-root');
+    if (root) {
+        pick_initial_number(view, true);
+    }
+
+    // if (data?.game_state?.winner !== 'tie') {
+    //     ;
+    // }
+}
+
 export function send_player_action(websocket, game_code, action, value, player, player_set_id, session_id) {
     console.log(`current player ${action}: ${value}`);
     console.log("player: ", player);
@@ -104,10 +139,14 @@ export const display_users_info = (data, view) => {
     });
 }
 
-export const pick_initial_number = (view) => {
+export const pick_initial_number = (view, force = false) => {
     const hourglassSpinner = document.getElementById('hourglass-spinner');
     if (hourglassSpinner) {
-        return;
+        if (force) {
+            hourglassSpinner.remove();
+        } else{
+            return;
+        }
     }
     const pickInitialNumberContainer = document.getElementById('pick-initial-number');
     if (pickInitialNumberContainer) {
