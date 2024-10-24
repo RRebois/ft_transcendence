@@ -48,8 +48,18 @@ export function display_game_winner(data, view) {
             }
 
             const particleCount = 50 * (timeLeft / duration);
-            confetti({...defaults, particleCount, scale: 1.5, origin: {x: randomInRange(0.1, 0.3), y: Math.random() - 0.2}});
-            confetti({...defaults, particleCount, scale: 1.5, origin: {x: randomInRange(0.7, 0.9), y: Math.random() - 0.2}});
+            confetti({
+                ...defaults,
+                particleCount,
+                scale: 1.5,
+                origin: {x: randomInRange(0.1, 0.3), y: Math.random() - 0.2}
+            });
+            confetti({
+                ...defaults,
+                particleCount,
+                scale: 1.5,
+                origin: {x: randomInRange(0.7, 0.9), y: Math.random() - 0.2}
+            });
         }, 250);
 
         if (root) {
@@ -63,7 +73,7 @@ export function display_game_winner(data, view) {
         }
     } else {
         const scalar = 2;
-        const text = confetti.shapeFromText({ text: '🤡', scalar });
+        const text = confetti.shapeFromText({text: '🤡', scalar});
         confetti({
             shapes: [text],
             scalar
@@ -216,7 +226,7 @@ export const pick_initial_number = (view, force = false) => {
     }
 }
 
-export const guess_sum = (data, view) => {
+export const guess_sum = (data, view, socket) => {
     const pick_init_nb_container = document.getElementById('pick-initial-number');
     if (pick_init_nb_container) {
         pick_init_nb_container.remove();
@@ -231,21 +241,35 @@ export const guess_sum = (data, view) => {
         if (guessSumContainer) {
             return;
         }
+        const nb_choices = data?.game_state?.available_to_guess.length;
         gameRoot.innerHTML += `
             <div id="guess-sum">
                 <div class="d-flex justify-content-center">
-                    <div class="btn-group btn-group-lg" role="group" aria-label="Select your guess">
-                    ${data?.game_state?.available_to_guess.map(value => {
-            return `
-                            <input type="radio" class="btn-check" name="guess-choice" id="guess-choice-${value}" value="${value}" autocomplete="off">
-                            <label class="btn btn-outline-dark" for="guess-choice-${value}">${value}</label>
-                        `;
-        })}
+                    <div class="purrinha-choices-grid">
+                       ${data?.game_state?.available_to_guess.map(value => {
+            console.log("value: ", value);
+            return`
+                    <div>
+                        <input type="radio" class="btn btn-check rounded-circle" name="guess-choice" id="guess-choice-${value}" value="${value}" autocomplete="off">
+                        <label class="btn btn-outline-dark" for="guess-choice-${value}">${value}</label>
+                    </div>                        
+                `;
+        }).join('')}
                     </div>
                 </div>
                 <button id="guess-sum-btn" class="btn btn-primary">Guess</button>
-            </div>     
-        `;
+            </div>`
+
+        //
+        // gameRoot.innerHTML += `
+        //             <div class="btn-group btn-group-lg " role="group" aria-label="Select your guess">
+        //             ${data?.game_state?.available_to_guess.map(value => {
+        //     return `
+        //                     <input type="radio" class="btn-check" name="guess-choice" id="guess-choice-${value}" value="${value}" autocomplete="off">
+        //                     <label class="btn btn-outline-dark" for="guess-choice-${value}">${value}</label>
+        //                 `;
+        // })}
+        //             </div>`;
         document.getElementById('guess-sum-btn').addEventListener('click', () => {
             const guessed_sum = document.querySelector('input[name="guess-choice"]:checked');
             if (guessed_sum) {

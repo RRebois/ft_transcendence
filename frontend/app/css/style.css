@@ -391,3 +391,26 @@ body.bg-gradient {
         transform: rotate(360deg);
     }
 }
+
+.purrinha-choices-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 50px);
+    justify-content: space-evenly;
+    justify-items: center;
+    align-content: space-evenly;
+    align-items: center;
+    grid-column-gap: 0px;
+    grid-row-gap: 0px;
+}
+
+.purrinha-choices-grid > * {
+    width: 50px;
+    height: 50px;
+    aspect-ratio: 1 / 1;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 1rem; /* Adjust as needed */
+}

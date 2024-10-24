@@ -30,8 +30,8 @@ export default class PurrinhaPlayerInfo {
     get_img_elmt = (side) => {
         if (side === 'top' || side === 'bottom') {
             return `   
-                <div style="height: 100%;">
-                    <img src="/purrinha/closed_hand_${this.side}.png" style="max-width: 100%; max-height: 100%; width: ${this.side === 'top' ? 'auto' : '100%'}; height: auto;"
+                <div class="d-flex flex-grow-1 ${side === 'bottom' ? 'align-items-end' : 'align-items-start'}" style="height: 100%;">
+                    <img src="/purrinha/closed_hand_${this.side}.png" style="max-width: 100%; max-height: 100%; width: ${this.side === 'bottom' ? 'auto' : '100%'}; height: auto;"
                     alt="purrinha ${this.side} hand"/>
                 </div>
             `;
@@ -48,8 +48,8 @@ export default class PurrinhaPlayerInfo {
         if (side === 'top' || side === 'bottom') {
             return `
                 <div class="equal-elmt-x mx-3 d-flex justify-content-start align-items-center">
-                    <div style="--bs-bg-opacity: .5" class="bg-white d-flex g-4 flex-column align-items-center rounded">
-                        <div class="d-flex flex-row justify-content-between w-100">
+                    <div style="--bs-bg-opacity: .5; min-width: 300px" class="bg-white d-flex g-4 flex-column align-items-center px-3 py-1 rounded">
+                        <div class="d-flex flex-row justify-content-between w-100" >
                             <p id="user_info-username-${this.game_player_id}"></p>
                             <div class="d-flex flex-row gap-1">
                                 <i class="trophy-${this.game_player_id} bi bi-trophy-fill"></i>
@@ -84,7 +84,7 @@ export default class PurrinhaPlayerInfo {
         console.log('this.side: ', this.side);
         console.log("this.player: ", this.player);
         return `
-            <div class="${this.side}-edge-container\">
+            <div class="${this.side}-edge-container ${this.side === 'bottom' && "d-flex flex-row"}">
                 ${this.side === 'top' || this.side === 'bottom' || this.side === 'right' ? this.get_void_equal_elmt(this.side) : ''}
                 ${this.side === 'top' || this.side === 'bottom' || this.side === 'right' ? this.get_img_elmt(this.side) : this.get_user_info_elmt(this.side)}
                 ${this.side === 'top' || this.side === 'bottom' || this.side === 'right' ? this.get_user_info_elmt(this.side) : this.get_img_elmt(this.side)}
