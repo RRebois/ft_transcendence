@@ -44,15 +44,14 @@ export default class PongGame {
         let ws;
 		try {
 			ws = await initializePongWebSocket(data, this);
-		} catch (e) { return ;
-//			const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
-//			document.getElementById('errorModalBody').innerHTML = `
-//				<p>This match is not available. Please try again later.</p>
-//			`
-//			errorModal.show();
-//			return;
+		} catch (e) {
+			const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
+			document.getElementById('errorModalBody').innerHTML = `
+				<p>This match is not available. Please try again later.</p>
+			`
+			errorModal.show();
+			return;
 		}
-		// window.myPongSocket = ws;
     }
 
     init() {
@@ -913,6 +912,18 @@ export default class PongGame {
         window.addEventListener("keydown", this.onKeyDown.bind(this));
         window.addEventListener("keyup", this.onKeyUp.bind(this));
         window.addEventListener("resize", this.onWindowResize.bind(this));
+        const returnBtn = document.getElementById('returnHomeBtn')
+        if (returnBtn) {
+            returnBtn.addEventListener('click', () => {
+                console.log("click on return home");
+                const errorModal = bootstrap.Modal.getInstance(document.getElementById('ErrorModal'));
+                if (errorModal) {
+                    console.log("hide error modal");
+                    errorModal.hide();
+                }
+                appRouter.navigate("/dashboard");
+            });
+        }
     }
 
     render() {
@@ -923,6 +934,18 @@ export default class PongGame {
                 <div id="modal" class="w-fit h-fit div-centered text-center p-3">
                 </div>
             </div>
+            
+            <!-- Unauthorized modal -->
+			<div class="modal fade" id="ErrorModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div id="errorModalBody" class="modal-body"></div>
+						<div class="modal-footer">
+							<button id="returnHomeBtn" type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Return home</button>
+						</div>
+					</div>
+				</div>
+			</div>
         `;
     }
 }

@@ -10,7 +10,6 @@ export default class PurrinhaGame {
         this.player_set_id = null;
         this.setUser = this.setUser.bind(this);
         this.removeUser = this.removeUser.bind(this);
-        this.gameSocket = null;
         this.nb_players = 0;
         this.players = [];
 
@@ -57,7 +56,6 @@ export default class PurrinhaGame {
         }
 
         console.log("ws: ", ws);
-        this.gameSocket = ws;
         this.nb_players = this.getNumberOfPlayers(this.props?.code);
 
         const gameRoot = document.getElementById('game-root');
