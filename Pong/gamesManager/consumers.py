@@ -8,7 +8,7 @@ from django.core.cache import cache
 from random import choice
 from .games.pong import PongGame
 from .games.purrinha import PurrinhaGame
-from matchs.views import create_match, add_match_to_tournament, send_to_tournament_group
+from matchs.views import create_match, update_match_data, add_match_to_tournament, send_to_tournament_group
 from .views import MatchMaking
 from .game_ai.bot_manager import init_bot
 from configFiles.globals import *
@@ -200,10 +200,13 @@ class PongHandler():
         self.consumer = [consumer]
         self.game_code = consumer.game_code
         self.session_id = consumer.session_id
+        self.players = consumer.session_data['players']
         self.bot = None
         self.loop = False
+        self.match = None
 
     async def launch_game(self, players_name):
+        self.match = await sync_to_async(create_match)(self.players, self.session_id, deco=False, is_pong=True)
         self.message = self.consumer[0].session_data
         self.game = PongGame(players_name, multiplayer=(self.game_code == 40))
         await self.send_game_state()
@@ -242,7 +245,7 @@ class PongHandler():
 
     async def reset_game(self):
         if not self.loop:
-            self.game.reset_game()
+            await self.game.reset_game()
             # await self.bot.launch_train()
             self.loop_task = asyncio.create_task(self.game_loop())
 
@@ -300,14 +303,15 @@ class PongHandler():
             for i in range(0, middle * 2):
                 key = f"player{i + 1}"
                 match_result[gs['players'][key]['name']] = gs['left_score'] if i < middle else gs['right_score']
-            match = await sync_to_async(create_match)(match_result, winner, self.session_id, deco=deconnection)
+            self.match = await sync_to_async(update_match_data)(match_result, winner, self.match, deco=deconnection,
+                                                                is_pong=True)
         self.message['deconnection'] = deconnection
         self.message['winner'] = winner
         self.message['status'] = 'finished'
         await self.consumer[0].update_cache_db(self.message)
         await self.consumer[0].send_to_group(self.message)
         if self.message['tournament_name']:
-            await sync_to_async(add_match_to_tournament)(self.message['tournament_name'], match)
+            await sync_to_async(add_match_to_tournament)(self.message['tournament_name'], self.match)
         await self.cancel_loop()
         await self.remove_consumer()
 
@@ -318,7 +322,9 @@ class PurrinhaHandler():
         self.consumer = [consumer]
         self.game_code = consumer.game_code
         self.session_id = consumer.session_id
+        self.players = consumer.session_data['players']
         self.bot = None
+        self.match = None
 
     async def launch_game(self, players_name):
         self.message = self.consumer[0].session_data
@@ -328,6 +334,7 @@ class PurrinhaHandler():
         self.game = PurrinhaGame(players_name)
         if BOT_NAME in self.message['players']:
             self.bot = await init_bot('purrinha', self, self.consumer[0])
+        self.match = await sync_to_async(create_match)(self.players, self.session_id, deco=False, is_pong=False)
 
     async def add_consumer(self, consumer):
         self.consumer.append(consumer)
@@ -441,11 +448,10 @@ class PurrinhaHandler():
                 self.message['deconnection'] = deconnection
                 # await self.consumer[0].update_cache_db(self.message)
                 await self.consumer[0].send_to_group(self.message)
-                await sync_to_async(create_match)(self.wins, [winner], self.session_id, deco=deconnection, is_pong=False)
+                self.match = await sync_to_async(update_match_data)(self.wins, winner, self.match, deco=deconnection,
+                                                                    is_pong=False)
                 if self.bot:
                     await self.bot.cancel_loop()
-                else:
-                    await sync_to_async(create_match)(self.wins, [winner], self.session_id, deco=deconnection, is_pong=False)
         await self.consumer[0].update_cache_db(self.message)
         print(f"\n\n\nmessage => {self.message}\n\n\n")
         await self.consumer[0].send_to_group(self.message)

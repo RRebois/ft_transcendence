@@ -114,12 +114,29 @@ def get_new_elo(player_elo, opponent_elo, win):
     return new_elo
 
 
-def update_match_data(players_data, winner, is_pong=True):
+def update_match_data(match_result, winner, match, deco, is_pong=True):
     elo = 'user_elo_pong' if is_pong else 'user_elo_purrinha'
     game = 0 if is_pong else 1
     winner_elo = 0
     opponent_elo = 0
     timestamp = gen_timestamp()
+
+    players_data = []
+
+    for player_username in match_result.keys():
+        player = User.objects.get(username=player_username)
+        players_data.append(player.data)
+        score = Score.objects.create(
+            player=player,
+            match=match,
+            score=match_result[player_username]
+            )
+        score.save()
+        if player_username in winner:
+            match.winner.add(player)
+        match.is_finished = True
+        match.deconnection = deco
+        match.save()
 
     for data in players_data:
         if data.get_username() in winner:
@@ -142,24 +159,14 @@ def update_match_data(players_data, winner, is_pong=True):
         data.save()
 
 
-def create_match(match_result, winner, session_id, deco, is_pong=True):
-    match = Match.objects.create(is_pong=is_pong, session_id=session_id, count=len(match_result), deconnection=deco)
-    players_data = []
+def create_match(players, session_id, deco, is_pong):
+    match = Match.objects.create(is_pong=is_pong, session_id=session_id, count=len(players), deconnection=deco)
+    # players_data = []
 
-    for player_username in match_result.keys():
-        player = User.objects.get(username=player_username)
-        players_data.append(player.data)
-        score = Score.objects.create(
-            player=player,
-            match=match,
-            score=match_result[player_username]
-            )
-        score.save()
-        if player_username in winner:
-            match.winner.add(player)
-        match.players.add(player)
-        match.is_finished = True
-    update_match_data(players_data, winner, is_pong)
+    for player in players:
+        print(f"PLAYER: {player}")
+        user = User.objects.get(username=player)
+        match.players.add(user)
     match.save()
     return match
 
