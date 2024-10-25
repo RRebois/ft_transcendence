@@ -41,9 +41,8 @@ export default class PongGame {
     }
 
     initializeWs = async (data) => { console.log(data);
-        let ws;
 		try {
-			ws = await initializePongWebSocket(data, this);
+			await initializePongWebSocket(data, this);
 		} catch (e) {
 			const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
 			document.getElementById('errorModalBody').innerHTML = `
