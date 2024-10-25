@@ -295,81 +295,83 @@ export default class PongGame {
 
     buildGameSet(data) {
         //  remove all from wait message(if any)
-        const   dirLight = this.scene.getObjectByName("light_1");
-        const   pointLight = this.scene.getObjectByName("light_2");
-        const   wait = this.scene.getObjectByName("waitTxt");
-        const   planeWait = this.scene.getObjectByName("waitPlane");
-        this.scene.fog.near = 0.1;
-        this.scene.fog.far = 0;
+        if (window.myPongSocket.readyState === WebSocket.OPEN) {
+            const dirLight = this.scene.getObjectByName("light_1");
+            const pointLight = this.scene.getObjectByName("light_2");
+            const wait = this.scene.getObjectByName("waitTxt");
+            const planeWait = this.scene.getObjectByName("waitPlane");
+            this.scene.fog.near = 0.1;
+            this.scene.fog.far = 0;
 
-        if (dirLight)
-            this.scene.remove(dirLight, pointLight, wait, planeWait);
+            if (dirLight)
+                this.scene.remove(dirLight, pointLight, wait, planeWait);
 
-        // Create stade group with all objetcs so when rotate everything follows
-        const   stadiumGroup = new THREE.Group();
-        const   stadium = new THREE.Object3D();
-        stadium.name = "stadium";
-        stadiumGroup.add(stadium);
-        this.scene.add(stadiumGroup);
+            // Create stade group with all objetcs so when rotate everything follows
+            const stadiumGroup = new THREE.Group();
+            const stadium = new THREE.Object3D();
+            stadium.name = "stadium";
+            stadiumGroup.add(stadium);
+            this.scene.add(stadiumGroup);
 
-        // Display text from the beginning
-        const    textGroup = new THREE.Object3D();//textGroup.position.set(300, 100, 300);
-        textGroup.position.x = 300;
-        textGroup.position.y = 300;
-        textGroup.position.z = 300;
-        textGroup.rotation.set(0, Math.PI, 0);
-        textGroup.name = "textGroup";
-        this.scene.add(textGroup);
+            // Display text from the beginning
+            const textGroup = new THREE.Object3D();//textGroup.position.set(300, 100, 300);
+            textGroup.position.x = 300;
+            textGroup.position.y = 300;
+            textGroup.position.z = 300;
+            textGroup.rotation.set(0, Math.PI, 0);
+            textGroup.name = "textGroup";
+            this.scene.add(textGroup);
 
-        this.keyMap = {};
-        this.paddles = {};
+            this.keyMap = {};
+            this.paddles = {};
 
-        // Ball initial stats
-        this.ball_x = 0;
-        this.ball_z = 0;
-        this.ball_radius = data.game_state.ball["radius"];
+            // Ball initial stats
+            this.ball_x = 0;
+            this.ball_z = 0;
+            this.ball_radius = data.game_state.ball["radius"];
 
-        // rm previous scene stuff
-        this.scene.children;
-        for (let i = 0; i < this.scene.children.length; i++) {
-            this.scene.children[i].remove();
-        }
+            // rm previous scene stuff
+            this.scene.children;
+            for (let i = 0; i < this.scene.children.length; i++) {
+                this.scene.children[i].remove();
+            }
 
-        // Set players info
-        this.xPosition = 0;
-        this.score_p1 = 0;
-        this.score_p2 = 0;
-        this.nameArray = ["p2Nick", "p2Score", "hyphen", "p1Score", "p1Nick"];
+            // Set players info
+            this.xPosition = 0;
+            this.score_p1 = 0;
+            this.score_p2 = 0;
+            this.nameArray = ["p2Nick", "p2Score", "hyphen", "p1Score", "p1Nick"];
 
-        // Set players nick
-        this.players_nick = []; //p2, p1, p4, p3
-        this.players_nick.push({
-            "username": data.game_state.players.player2["name"],
-            "truncUser": null,
-        });
-        this.players_nick.push({
-            "username": data.game_state.players.player1["name"],
-            "truncUser": null,
-        });
-
-        if (Object.keys(data.players).length > 2) {
+            // Set players nick
+            this.players_nick = []; //p2, p1, p4, p3
             this.players_nick.push({
-                "username": data.game_state.players.player4["name"],
+                "username": data.game_state.players.player2["name"],
                 "truncUser": null,
             });
             this.players_nick.push({
-                "username": data.game_state.players.player3["name"],
+                "username": data.game_state.players.player1["name"],
                 "truncUser": null,
             });
+
+            if (Object.keys(data.players).length > 2) {
+                this.players_nick.push({
+                    "username": data.game_state.players.player4["name"],
+                    "truncUser": null,
+                });
+                this.players_nick.push({
+                    "username": data.game_state.players.player3["name"],
+                    "truncUser": null,
+                });
+            }
+
+            this.sprite = [];
+
+            // Display scores to the scene
+            this.printInitScores();
+
+            // Create floor for game and spotlight purpose
+            this.createGameElements(data);
         }
-
-        this.sprite = [];
-
-        // Display scores to the scene
-        this.printInitScores();
-
-        // Create floor for game and spotlight purpose
-        this.createGameElements(data);
     }
 
     createGameElements(data) {
