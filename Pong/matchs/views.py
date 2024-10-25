@@ -142,8 +142,8 @@ def update_match_data(players_data, winner, is_pong=True):
         data.save()
 
 
-def create_match(match_result, winner, deco, is_pong=True):
-    match = Match.objects.create(is_pong=is_pong, count=len(match_result), deconnection=deco)
+def create_match(match_result, winner, session_id, deco, is_pong=True):
+    match = Match.objects.create(is_pong=is_pong, session_id=session_id, count=len(match_result), deconnection=deco)
     players_data = []
 
     for player_username in match_result.keys():

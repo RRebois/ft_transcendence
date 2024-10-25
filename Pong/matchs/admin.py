@@ -26,7 +26,7 @@ class MatchAdmin(admin.ModelAdmin):
 
     winners_display.short_description = "Winners"
 
-    list_display = ("pk", "winners_display", "players_display", "scores_display", "timeMatch")
+    list_display = ("pk", "winners_display", "players_display", "scores_display", "timeMatch", "session_id")
     filter_horizontal = ("players",)
 
     def get_form(self, request, obj=None, **kwargs):

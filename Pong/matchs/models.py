@@ -17,6 +17,7 @@ class Match(models.Model):
     count = models.IntegerField(default=2)
     deconnection = models.BooleanField(default=False)
     is_finished = models.BooleanField(default=False)
+    session_id = models.CharField(default=False, editable=False)
 
     class Meta:
         ordering = ['-timeMatch']

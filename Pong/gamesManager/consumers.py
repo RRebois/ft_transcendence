@@ -199,6 +199,7 @@ class PongHandler():
     def __init__(self, consumer):
         self.consumer = [consumer]
         self.game_code = consumer.game_code
+        self.session_id = consumer.session_id
         self.bot = None
         self.loop = False
 
@@ -269,12 +270,12 @@ class PongHandler():
         self.message['game_state'] = game_state
         await self.consumer[0].send_to_group(self.message)
 
-        async def cancel_loop(self):
-            if self.bot:
-                await self.bot.cancel_loop()
-            if self.loop:
-                self.loop = False
-                self.loop_task.cancel()
+    async def cancel_loop(self):
+        if self.bot:
+            await self.bot.cancel_loop()
+        if self.loop:
+            self.loop = False
+            self.loop_task.cancel()
 
     async def end_game(self, winner=None):
         gs = self.message['game_state']
@@ -299,7 +300,7 @@ class PongHandler():
             for i in range(0, middle * 2):
                 key = f"player{i + 1}"
                 match_result[gs['players'][key]['name']] = gs['left_score'] if i < middle else gs['right_score']
-            match = await sync_to_async(create_match)(match_result, winner, deco=deconnection)
+            match = await sync_to_async(create_match)(match_result, winner, self.session_id, deco=deconnection)
         self.message['deconnection'] = deconnection
         self.message['winner'] = winner
         self.message['status'] = 'finished'
@@ -316,6 +317,7 @@ class PurrinhaHandler():
     def __init__(self, consumer):
         self.consumer = [consumer]
         self.game_code = consumer.game_code
+        self.session_id = consumer.session_id
         self.bot = None
 
     async def launch_game(self, players_name):
@@ -439,11 +441,11 @@ class PurrinhaHandler():
                 self.message['deconnection'] = deconnection
                 # await self.consumer[0].update_cache_db(self.message)
                 await self.consumer[0].send_to_group(self.message)
-                await sync_to_async(create_match)(self.wins, [winner], deco=deconnection, is_pong=False)
+                await sync_to_async(create_match)(self.wins, [winner], self.session_id, deco=deconnection, is_pong=False)
                 if self.bot:
                     await self.bot.cancel_loop()
                 else:
-                    await sync_to_async(create_match)(self.wins, [winner], deco=deconnection, is_pong=False)
+                    await sync_to_async(create_match)(self.wins, [winner], self.session_id, deco=deconnection, is_pong=False)
         await self.consumer[0].update_cache_db(self.message)
         print(f"\n\n\nmessage => {self.message}\n\n\n")
         await self.consumer[0].send_to_group(self.message)

@@ -170,7 +170,7 @@ export default class PongGame {
     }
 
      handleKeyEvent() {
-        if (window.location.pathname === "/pong") {
+        if (window.location.pathname === "/pong" && window.myPongSocket) {
             if (this.props?.code === "20") {
                 if (this.keyMap['w'] === true)
                     window.myPongSocket.send(JSON.stringify({"player_move": {"player": 2, "direction": 1}}));
