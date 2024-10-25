@@ -41,7 +41,6 @@ class MatchHistoryView(APIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-@method_decorator(login_required(login_url='login'), name='dispatch')
 class MatchScoreView(APIView):
     def get(self, request, match_id):
         try:
@@ -50,6 +49,18 @@ class MatchScoreView(APIView):
             raise Http404("Error: Match does not exists.")
 
         return JsonResponse(game.serialize())
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class MatchExistsView(APIView):
+
+    def get(self, request, session_id):
+        try:
+            Match.objects.get(session_id=session_id)
+        except Match.DoesNotExist:
+            return JsonResponse({"message": "Match not existing", "session_id": session_id}, status=200)
+
+        return JsonResponse({"message": "Match exists.", "session_id": session_id}, status=404)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -138,6 +149,7 @@ def update_match_data(match_result, winner, match, deco, is_pong=True):
         match.deconnection = deco
         match.save()
 
+# TODO: If a user is Bot or Guest, no elo modification
     for data in players_data:
         if data.get_username() in winner:
             tmp = getattr(data, elo)[-1]['elo']
@@ -161,7 +173,6 @@ def update_match_data(match_result, winner, match, deco, is_pong=True):
 
 def create_match(players, session_id, deco, is_pong):
     match = Match.objects.create(is_pong=is_pong, session_id=session_id, count=len(players), deconnection=deco)
-    # players_data = []
 
     for player in players:
         print(f"PLAYER: {player}")

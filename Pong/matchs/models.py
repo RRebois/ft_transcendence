@@ -1,6 +1,5 @@
 import logging
 import uuid
-
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from userManagement.models import User, UserData
@@ -17,7 +16,7 @@ class Match(models.Model):
     count = models.IntegerField(default=2)
     deconnection = models.BooleanField(default=False)
     is_finished = models.BooleanField(default=False)
-    session_id = models.CharField(default=False, editable=False)
+    session_id = models.CharField(default=False, editable=False, unique=True)
 
     class Meta:
         ordering = ['-timeMatch']

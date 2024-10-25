@@ -116,6 +116,7 @@ export default class Router {
         if (path !== "/") {
             path = path.replace(/\/+$/, ''); // Remove trailing slashes
         }
+        console.log('PATH: ', path);
         // find all elements with class "modal-backdrop" and remove them
         remove_modal_backdrops();
         const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
