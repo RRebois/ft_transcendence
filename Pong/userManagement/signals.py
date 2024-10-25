@@ -17,3 +17,6 @@ def create_user_data_if_new_user(sender, instance, created, **kwargs):
         user_data.user_elo_pong.append({'elo': 900, 'timestamp': timestamp})
         user_data.user_elo_purrinha.append({'elo': 900, 'timestamp': timestamp})
         user_data.save()
+        if instance.username == os.environ.get('DJANGO_SUPERUSER_USERNAME'):
+            User.objects.create_user(username=BOT_NAME)
+            User.objects.create_user(username='guest')
