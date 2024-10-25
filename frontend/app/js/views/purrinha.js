@@ -29,7 +29,6 @@ export default class PurrinhaGame {
 	}
 
     setProps(newProps) {
-        console.log(newProps);
         this.props = newProps;
     }
 
@@ -42,7 +41,6 @@ export default class PurrinhaGame {
     }
 
     initializeWs = async (gameCode) => {
-        console.log("purrihna initializeWs called");
         let ws;
         try {
             ws = await initializePurrinhaWebSocket(gameCode, this.props?.session_id, this.props?.ws_route, this);
@@ -55,7 +53,6 @@ export default class PurrinhaGame {
             return;
         }
 
-        console.log("ws: ", ws);
         this.nb_players = this.getNumberOfPlayers(this.props?.code);
 
         const gameRoot = document.getElementById('game-root');
@@ -79,14 +76,11 @@ export default class PurrinhaGame {
                     ${player3.render()}
                     ${player4.render()}
 				`;
-
             }
         }
     }
 
     setupEventListeners() {
-        console.log("purrihna setupEventListeners called");
-        console.log("this.props: ", this.props);
         if (!this.props?.game || !this.props?.ws_route || !this.props?.session_id || !this?.props.code) {
             const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
             document.getElementById('errorModalBody').innerHTML = `
@@ -96,10 +90,8 @@ export default class PurrinhaGame {
         }
 
         document.getElementById('returnHomeBtn').addEventListener('click', () => {
-            console.log("click on return home");
             const errorModal = bootstrap.Modal.getInstance(document.getElementById('ErrorModal'));
             if (errorModal) {
-                console.log("hide error modal");
                 errorModal.hide();
             }
             appRouter.navigate("/dashboard");

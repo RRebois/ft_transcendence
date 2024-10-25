@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Play:wght@400;700&family=Poppins&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 @import "bootstrap/dist/css/bootstrap.css";
 @import "bootstrap-icons/font/bootstrap-icons.scss";
 
@@ -25,6 +26,12 @@ body.bg-gradient {
     font-style: normal;
     text-decoration: none;
     color: black;
+}
+
+.vt323-regular {
+    font-family: "VT323", monospace;
+    font-weight: 400;
+    font-style: normal;
 }
 
 .h-40 {
@@ -394,23 +401,104 @@ body.bg-gradient {
 
 .purrinha-choices-grid {
     display: grid;
-    grid-template-columns: repeat(6, 50px);
-    justify-content: space-evenly;
-    justify-items: center;
-    align-content: space-evenly;
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+    max-width: 300px;
+    justify-content: center;
     align-items: center;
-    grid-column-gap: 0px;
-    grid-row-gap: 0px;
+    grid-gap: 5px;
+    padding-bottom: 20px;
+    padding-top: 50px;
 }
 
 .purrinha-choices-grid > * {
     width: 50px;
     height: 50px;
     aspect-ratio: 1 / 1;
-    border-radius: 25px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     font-size: 1rem; /* Adjust as needed */
+}
+
+.tie-message {
+    color: #ff6b6b; /* Vibrant color */
+    animation: pulse 1.5s infinite alternate, fade-in 0.6s ease-in-out;
+    font-weight: bold;
+}
+
+/* Pulse Animation */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        color: #ff6b6b;
+    }
+    100% {
+        transform: scale(1.2);
+        color: #ff9999;
+    }
+}
+
+/* Fade-in Animation */
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.monitor-table {
+    width: 40vh;
+    height: 80px;
+    background-color: #d4e5ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.monitor-table .monitor-wrapper {
+    background: #050321;
+    width: 95%;
+    height: 90%;
+    box-shadow: 0px 2px 2px 2px rgba(0, 0, 0, 0.30);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.monitor-table .monitor-wrapper .monitor {
+    width: 95%;
+    height: 90%;
+    background-color: #344151;
+    overflow: hidden;
+    white-space: nowrap;
+    box-shadow: inset 0px 5px 10px 2px rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.monitor-table .monitor-wrapper .monitor p {
+    font-family: "VT323", monospace;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 50px;
+    position: relative;
+    display: inline-block;
+    animation: move 5s infinite linear;
+    background-color: transparent;
+    color: #EBB55F;
+}
+
+@keyframes move {
+    from {
+        transform: translateX(100%); /* Start off the right side */
+    }
+    to {
+        transform: translateX(-100%); /* End off the left side */
+    }
 }
