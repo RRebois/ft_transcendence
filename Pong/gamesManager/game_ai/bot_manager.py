@@ -11,7 +11,6 @@ from configFiles.globals import *
 
 
 async def	init_bot(game_name, game, consumer):
-	await sync_to_async(User.objects.get_or_create)(username=BOT_NAME)
 	if game_name == 'pong':
 		try:
 			bot_db = await sync_to_async(BotQTable.objects.get)(name=BOT_NAME)
