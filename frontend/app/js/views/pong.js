@@ -821,13 +821,13 @@ export default class PongGame {
             const   modal = document.getElementById("modal");
             var     msg;
 
-            if (this.props?.code === 22 || this.props?.code === 23 || this.props?.code === 40) {//[10, 20, 22, 23, 40] 10 bot,
+            if (this.props?.code === "22" || this.props?.code === "23" || this.props?.code === "40") {//[10, 20, 22, 23, 40] 10 bot,
                 if (this.winner.includes(this.user["username"]))
                     msg = `Congratulations ${this.user["username"]}, you won!`;
                 else
                     msg = `${this.user["username"]} you are such a loser!`;
             }
-            else if (this.props?.code === 10 || this.props?.code === 20) {
+            else {
                 if (this.winner.includes(this.user["username"]))
                     msg = `Congratulations ${this.user["username"]}, you won!`;
                 else if (this.props?.code === "20")
