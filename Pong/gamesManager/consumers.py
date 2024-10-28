@@ -269,12 +269,12 @@ class PongHandler():
         self.message['game_state'] = game_state
         await self.consumer[0].send_to_group(self.message)
 
-        async def cancel_loop(self):
-            if self.bot:
-                await self.bot.cancel_loop()
-            if self.loop:
-                self.loop = False
-                self.loop_task.cancel()
+    async def cancel_loop(self):
+        if self.bot:
+            await self.bot.cancel_loop()
+        if self.loop:
+            self.loop = False
+            self.loop_task.cancel()
 
     async def end_game(self, winner=None):
         gs = self.message['game_state']
@@ -307,7 +307,7 @@ class PongHandler():
         await self.consumer[0].send_to_group(self.message)
         if self.message['tournament_name']:
             await sync_to_async(add_match_to_tournament)(self.message['tournament_name'], match)
-        await self.cancel_loop()
+        self.cancel_loop()
         await self.remove_consumer()
 
 

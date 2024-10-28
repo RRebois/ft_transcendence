@@ -689,17 +689,19 @@ export default class PongGame {
             text.remove(toRemove);
         })
 
-        if (gameState["right_score"] != this.score_p2.toString()) { console.log("\n\nUpdate player2 Score");
-            this.score_p2++;
+        if (gameState["right_score"] != this.score_p2) { console.log("\n\nUpdate player2 Score");
+            this.score_p2 = gameState["right_score"];
             ball.material.map = this.textures["textPadBlue"];
             ball.material.needsUpdate = true;
+            this.printInitScores();
         }
-        else { console.log("\n\nUpdate player1 Score");
-            this.score_p1++;
+        else if (gameState["left_score"] != this.score_p1) { console.log("\n\nUpdate player1 Score");
+            this.score_p1 = gameState["left_score"];
             ball.material.map = this.textures["textPadRed"];
             ball.material.needsUpdate = true;
+            this.printInitScores();
         }
-        this.printInitScores();
+//        this.printInitScores();
     }
 
     // Game loop
