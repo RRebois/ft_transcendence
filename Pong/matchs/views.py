@@ -30,11 +30,11 @@ class MatchHistoryView(APIView):
         except User.DoesNotExist:
             return JsonResponse({"message": "User does not exists."}, status=404)
         if word == 'all':
-            matches = Match.objects.filter(players=user).order_by('-timeMatch')
+            matches = Match.objects.filter(players=user).exclude(players__username__in=['bot', 'guest']).order_by('-timeMatch')
         elif word == 'pong':
-            matches = Match.objects.filter(players=user, is_pong=True).order_by('-timeMatch')
+            matches = Match.objects.filter(players=user, is_pong=True).exclude(players__username__in=['bot', 'guest']).order_by('-timeMatch')
         elif word == 'purrinha':
-            matches = Match.objects.filter(players=user, is_pong=False).order_by('-timeMatch')
+            matches = Match.objects.filter(players=user, is_pong=False).exclude(players__username__in=['bot', 'guest']).order_by('-timeMatch')
         else:
             return JsonResponse({"message": "Invalid word."}, status=400)
         return JsonResponse([match.serialize() for match in matches] if matches else [], safe=False, status=200)
