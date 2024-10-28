@@ -2,9 +2,12 @@ import {getCookie} from "./cookie.js";
 import * as bootstrap from "bootstrap";
 
 export function checkGameInstance(session_id) {
+    console.log("CHECKING GAME INSTANCE");
     const csrfToken = getCookie('csrftoken');
-    if (!session_id)
+    if (!session_id) {
+        console.log("NO SESSION ID");
         return false;
+        }
     fetch(`https://${window.location.hostname}:8443/match/${session_id}`, {
         method: 'GET',
         headers: {
@@ -19,7 +22,7 @@ export function checkGameInstance(session_id) {
         if (!ok) {
             const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
             document.getElementById('errorModalBody').innerHTML = `
-                <p>This match is not available. Please try again later.</p>
+                <p>This match is not available or already finished. Please try again later.</p>
             `
             errorModal.show();
             return true;

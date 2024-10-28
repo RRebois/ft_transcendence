@@ -2,6 +2,7 @@ import * as bootstrap from "bootstrap";
 import {appRouter} from "@js/spa-router/initializeRouter.js";
 import {initializePurrinhaWebSocket} from "@js/functions/websocket.js";
 import PurrinhaPlayerInfo from "../components/PurrinhaPlayerInfo.js";
+import {checkGameInstance} from "../functions/games_utils.js";
 
 export default class PurrinhaGame {
     constructor(props) {
@@ -41,8 +42,11 @@ export default class PurrinhaGame {
         }
     }
 
-    initializeWs = async (gameCode) => {
+    initializeWs = async (gameCode, match_exists) => {
         console.log("purrihna initializeWs called");
+        if (match_exists) {
+            return ;
+        }
         let ws;
         try {
             ws = await initializePurrinhaWebSocket(gameCode, this.props?.session_id, this.props?.ws_route, this);
@@ -79,7 +83,6 @@ export default class PurrinhaGame {
                     ${player3.render()}
                     ${player4.render()}
 				`;
-
             }
         }
     }
@@ -107,7 +110,12 @@ export default class PurrinhaGame {
     }
 
     render() {
-        this.initializeWs(this.props?.code);
+        console.log("RENDERING PURRINHA !!!");
+        let match_exists = checkGameInstance(this.props?.session_id);
+        if (!match_exists) {
+            console.log("Match not existing");
+            this.initializeWs(this.props?.code, match_exists);
+        }
         // document.title = "ft_transcendence | Purrinha";
         return `
 			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center overflow-hidden" id="game-root"></div>
