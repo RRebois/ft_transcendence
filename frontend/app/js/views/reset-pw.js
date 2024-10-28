@@ -10,11 +10,16 @@ export default class ResetPw {
         this.props = props;
         this.user = null;
         this.setUser = this.setUser.bind(this);
+        this.removeUser = this.removeUser.bind(this);
         this.reset_password = this.reset_password.bind(this);
     }
 
     setUser = (user) => {
         this.user = user;
+    }
+
+    removeUser() {
+        if (this.user) this.user = null;
     }
 
     setProps(newProps) {

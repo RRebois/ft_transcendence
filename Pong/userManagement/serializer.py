@@ -11,6 +11,7 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.urls import reverse
 from django.http import JsonResponse
 from rest_framework.exceptions import AuthenticationFailed
+from configFiles.globals import *
 from configFiles.settings import FILE_UPLOAD_MAX_MEMORY_SIZE
 from PIL import Image
 import math
@@ -62,6 +63,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Lastname must contain only alphabetic characters and hyphens (-)")
         if not username_pattern.match(username):
             raise serializers.ValidationError("Username must contain only alphanumeric characters and hyphens (- or _)")
+        if username in ['guest', BOT_NAME]:
+            raise serializers.ValidationError("This username is forbidden")
         if not password_pattern.match(password):
             raise serializers.ValidationError("Password must contain at least 8 characters, including uppercase, lowercase, number and special character (?!@$ %^&*)")
         if password != password2:
@@ -157,6 +160,8 @@ class EditUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Firstname must contain only alphabetic characters and hyphens (-)")
         if not name_pattern.match(last_name):
             raise serializers.ValidationError("Lastname must contain only alphabetic characters and hyphens (-)")
+        if username in ['guest', BOT_NAME]:
+            raise serializers.ValidationError("This username is forbidden")
         if not username_pattern.match(username):
             raise serializers.ValidationError("Username must contain only alphanumeric characters and hyphens (- or _)")
         # if language not in ['en', 'fr']:

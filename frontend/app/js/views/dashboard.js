@@ -10,6 +10,7 @@ export default class Dashboard {
 		this.handleGameRequest = this.handleGameRequest.bind(this);
 		this.user = null;
 		this.setUser = this.setUser.bind(this);
+		this.removeUser = this.removeUser.bind(this);
 		this.pongGameConnectivity = 'offline';
 		this.pongGameNbPlayers = 'bot';
 		this.purrinhaGameConnectivity = 'offline';
@@ -18,8 +19,12 @@ export default class Dashboard {
 		this.load_tournaments = this.load_tournaments.bind(this);
 	}
 
-	setUser(user) {
-		this.user = user;
+    setUser(user) {
+        this.user = user;
+    }
+
+	removeUser() {
+		if (this.user) this.user = null;
 	}
 
 	setProps(newProps) {
@@ -627,5 +632,5 @@ export default class Dashboard {
 				</div>
             </div>
         `;
-	}
+    }
 }

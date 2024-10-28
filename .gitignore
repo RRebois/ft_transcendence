@@ -7,6 +7,7 @@ Pong/env/*
 .vite/
 .DS_Store
 stopAll
+*.subject.pdf
 
 Pong/configFiles/__pycache__/*
 Pong/userManagement/migrations/*

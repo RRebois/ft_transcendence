@@ -9,6 +9,7 @@ export default class Stats {
 		this.props = props;
 		this.user = props?.user;
 		this.setUser = this.setUser.bind(this);
+		this.removeUser = this.removeUser.bind(this);
 		this.fetchStats = this.fetchStats.bind(this);
 		this.fetchMatchHistory = this.fetchMatchHistory.bind(this);
 		this.chartInstance = null;
@@ -17,6 +18,10 @@ export default class Stats {
 
 	setUser = (user) => {
 		this.user = user;
+	}
+
+	removeUser() {
+		if (this.user) this.user = null;
 	}
 
 	setProps(newProps) {

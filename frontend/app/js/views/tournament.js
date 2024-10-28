@@ -9,12 +9,17 @@ export default class Tournament {
         this.playerFinished = false;
         this.user = props?.user;
         this.setUser = this.setUser.bind(this);
+        this.removeUser = this.removeUser.bind(this);
         this.toast = new ToastComponent();
     }
 
     setUser = (user) => {
 		this.user = user;
 	}
+
+    removeUser() {
+        if (this.user) this.user = null;
+    }
 
     setProps = (props) => {
         this.props = props;
