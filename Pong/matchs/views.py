@@ -152,7 +152,10 @@ def update_match_data(match_result, winner, match, deco, is_pong=True):
         match.deconnection = deco
         match.save()
 
-# TODO: If a user is Bot or Guest, no elo modification
+    for player_username in match_result.keys():
+        if player_username == "bot" or player_username == "guest":
+            return
+
     for data in players_data:
         if data.get_username() in winner:
             tmp = getattr(data, elo)[-1]['elo']
