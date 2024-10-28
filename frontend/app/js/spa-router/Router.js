@@ -1,7 +1,6 @@
 import {getCsrf, isUserConnected} from "@js/functions/user_auth.js";
 import Navbar from "@js/components/Navbar.js";
 import {remove_modal_backdrops} from "@js/functions/display.js";
-import {getCookie} from "@js/functions/cookie.js";
 
 export default class Router {
     constructor(routes = [], renderNode) {

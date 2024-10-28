@@ -61,26 +61,21 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
                 }
 
                 if (data?.status === 'waiting') {
-                    console.log("Waiting for players...");
                     display_looking_for_players_modal();
                 } else {
                     update_score(data, view);
                     if (data?.status === 'started') {
-                        console.log("Game started");
                         hide_looking_for_players_modal();
                         display_users_info(data, view);
                         if (data.game_state?.round === "choosing") {
                             pick_initial_number(view);
                         } else if (data.game_state?.round === "guessing") {
-                            console.log("player_set_id is:", view?.player_set_id);
                             if (data.game_state?.player_turn === view?.player_set_id) {
-                                console.log("It's your turn to guess the sum");
                                 guess_sum(data, view);
                             } else {
                                 display_hourglass();
                             }
                         } else if (data.game_state?.round === "finished") {
-                            console.log("Round finished");
                             handle_round_winner(data, view);
                         }
                     } else if (data?.status === 'finished') {

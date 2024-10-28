@@ -379,7 +379,7 @@ export default class Dashboard {
                                     <input type="radio" class="btn-check" name="purrinha-nb-players" id="purrinha-radio-btn-online-2v2" value="online-2v2" autocomplete="off">
                                     <label class="btn btn-outline-primary" for="purrinha-radio-btn-online-2v2">
                                         <i class="bi bi-people"></i>
-                                        <p>2v2</p>
+                                        <p>1v4</p>
                                     </label>
                                    `;
 								const nbPlayersRadios = document.querySelectorAll('input[name="purrinha-nb-players"]');

@@ -49,14 +49,14 @@ export default class PurrinhaPlayerInfo {
             return `
                 <div class="equal-elmt-x mx-3 d-flex justify-content-start align-items-center">
                     <div style="--bs-bg-opacity: .5; min-width: 300px" class="bg-white d-flex g-4 flex-column align-items-center px-3 py-1 rounded">
-                        <div class="d-flex flex-row justify-content-between w-100" >
-                            <p id="user_info-username-${this.game_player_id}"></p>
+                        <div class="d-flex flex-row justify-content-between w-100">
+                            <p id="user_info-username-${this.game_player_id}" class="play-bold fd-5"></p>
                             <div class="d-flex flex-row gap-1">
                                 <i class="trophy-${this.game_player_id} bi bi-trophy-fill"></i>
                                 <p id="user_info-score-${this.game_player_id}">0</p>
                             </div>
                         </div>
-                        <p id="user_info-status-${this.game_player_id}"></p>
+                        <p id="user_info-status-${this.game_player_id}" class="play-regular"></p>
                     </div>
                 </div>
             `;
@@ -64,14 +64,14 @@ export default class PurrinhaPlayerInfo {
             return `
                 <div class="equal-elmt-y my-3 d-flex justify-content-center align-items-${this.side === 'right' ? 'start' : 'end'}">
                     <div style="--bs-bg-opacity: .5; width: 100%;" class="bg-white d-flex g-4 flex-column align-items-center px-3 py-1 rounded">
-                        <div class="d-flex flex-row justify-content-between w-100">
-                            <p id="user_info-username-${this.game_player_id}"></p>
+                        <div class="d-flex flex-row justify-content-between align-items-center w-100">
+                            <p id="user_info-username-${this.game_player_id}" class="play-bold fs-5"></p>
                             <div class="d-flex flex-row gap-1">
                                 <i class="trophy-${this.game_player_id} bi bi-trophy-fill"></i>
                                 <p id="user_info-score-${this.game_player_id}">0</p>
                             </div>
                         </div>
-                        <p id="user_info-status-${this.game_player_id}"></p>
+                        <p id="user_info-status-${this.game_player_id}" class="play-regular"></p>
                     </div>
                 </div>
             `;
