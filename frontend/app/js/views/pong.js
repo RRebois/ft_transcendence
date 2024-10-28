@@ -54,7 +54,7 @@ export default class PongGame {
 		}
     }
 
-    init() {
+    init() { console.log("\n\nINIT");
 
         // limit 60 fps
         this.lastFrameTime = 0;  // Store the time of the last frame
@@ -105,7 +105,7 @@ export default class PongGame {
 
         this.gameFinished = false;
         this.gameHasStarted = false;
-        this.animate();
+//        this.animate();
     }
 
     load_textures() {
@@ -305,7 +305,7 @@ export default class PongGame {
         }
     }
 
-    buildGameSet(data) {
+    buildGameSet(data) { console.log("\n\nbuild");
         //  remove all from wait message(if any)
         const   dirLight = this.scene.getObjectByName("light_1");
         const   pointLight = this.scene.getObjectByName("light_2");
@@ -599,7 +599,7 @@ export default class PongGame {
                 const   check = () => {
                     if (Math.abs(cube.position.x - targetPosition.x) < 0.1 &&
                     Math.abs(cube.position.y - targetPosition.y) < 0.1 &&
-                    Math.abs(cube.position.z - targetPosition.z) < 0.1 && window.myPongSocket)
+                    Math.abs(cube.position.z - targetPosition.z) < 0.1 && window.myPongSocket != null)
                         window.myPongSocket.send(JSON.stringify({"game_status": true}));
                     else
                         requestAnimationFrame(check);
@@ -635,7 +635,6 @@ export default class PongGame {
             lt = now;
         }
         animate();
-//console.log("Anim end: ", this.cubeAnimationEnded[i]);
     }
 
     createBlueMaterial() {
@@ -680,7 +679,7 @@ export default class PongGame {
         }
     }
 
-    updateScores(gameState) {
+    updateScores(gameState) { console.log("\n\nUpdate Score");
         // Select objects
         const   text = this.scene.getObjectByName("textGroup");
         const   ball = this.scene.getObjectByName("ball");
@@ -690,12 +689,12 @@ export default class PongGame {
             text.remove(toRemove);
         })
 
-        if (gameState["right_score"] != this.score_p2.toString()) {
+        if (gameState["right_score"] != this.score_p2.toString()) { console.log("\n\nUpdate player2 Score");
             this.score_p2++;
             ball.material.map = this.textures["textPadBlue"];
             ball.material.needsUpdate = true;
         }
-        else {
+        else { console.log("\n\nUpdate player1 Score");
             this.score_p1++;
             ball.material.map = this.textures["textPadRed"];
             ball.material.needsUpdate = true;
@@ -797,7 +796,7 @@ export default class PongGame {
     }
 
     // Collecting info from the game logic in the back
-    display(data) {
+    display(data) { console.log(data);
         if (this.userIndex === 0 && this.props?.code === "40") {
             for (let i = 0; i < this.players_nick.length; i++) {
                 if (this.players_nick[i].username === this.user.username) {
