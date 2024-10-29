@@ -21,7 +21,6 @@ import {
     update_score,
 } from "./purrinha.js";
 
-
 export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route, view) {
     return new Promise(async (resolve, reject) => {
         const response = await fetch(`https://${window.location.hostname}:8443/get_ws_token/`, {
@@ -168,7 +167,7 @@ export async function initializePongWebSocket(data, pong) {
 
 export async function initializeWebSocket() {
     return new Promise(async (resolve, reject) => {
-        if (window.mySocket) {
+        if (window.mySocket && window.mySocket.readyState === WebSocket.OPEN) {
             console.log("Socket already initialized");
             resolve(window.mySocket);
             return;
