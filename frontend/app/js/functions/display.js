@@ -1,6 +1,10 @@
 export const remove_modal_backdrops = () => {
     const backdrops = document.querySelectorAll('.modal-backdrop');
     backdrops.forEach(backdrop => backdrop.remove());
+    const body = document.getElementById("full-body")
+    if (body){
+        body.style.removeProperty('overflow');
+    }
 }
 
 export const saveFontSize = (size) => {
