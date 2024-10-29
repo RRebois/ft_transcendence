@@ -39,18 +39,25 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
         user = self.scope['user']
         await self.update_user_status(user, "in-game")
 
-    async def connect(self):
-        self.game_name = self.scope['url_route']['kwargs']['game_name']
-        self.game_code = int(self.scope['url_route']['kwargs']['game_code'])
-        self.session_id = self.scope['url_route']['kwargs']['session_id']
+    async def hydrate(self, scope, channel_layer=None, channel_name=None):
+        self.game_name = scope['url_route']['kwargs']['game_name']
+        self.game_code = int(scope['url_route']['kwargs']['game_code'])
+        self.session_id = scope['url_route']['kwargs']['session_id']
         self.game_handler = None
-        self.user = self.scope['user']
+        self.user = scope['user']
         self.username = self.user.username
         self.loop = False
-
-        await self.accept()
         self.session_data = await self.get_session_data()
         self.players_max = self.session_data['awaited_players']
+        self.scope = scope
+        if channel_layer:
+            self.channel_layer = channel_layer
+        if channel_name:
+            self.channel_name = channel_name
+
+    async def connect(self):
+        await self.hydrate(self.scope)
+        await self.accept()
 
         error_msg = ''
         print(f"\n\n\nusername => {self.username}\nsession_data => {self.session_data}")
@@ -68,7 +75,9 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({"error_message": error_msg}))
             await self.close()
             return
+        await self.handle_connection()
 
+    async def handle_connection(self):
         await self.change_connection_status()
         await self.channel_layer.group_add(
             self.session_id,
@@ -88,6 +97,7 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
         print(
             f'\n\n\nusername => |{self.username}|\nuser => |{self.user}|\ncode => |{self.game_code}|\n data => |{self.session_data}|\nscope => |{self.scope}| \n\n')
         await self.send_to_group(self.session_data)
+
 
     async def receive(self, text_data):
         data = json.loads(text_data)
