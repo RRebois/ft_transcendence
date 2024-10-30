@@ -244,7 +244,7 @@ class PongHandler():
             client.close()
 
     async def reset_game(self):
-        if not self.loop:
+        if not self.loop and not self.message["winner"]:
             await self.game.reset_game()
             # await self.bot.launch_train()
             self.loop_task = asyncio.create_task(self.game_loop())
@@ -315,7 +315,7 @@ class PongHandler():
             print(f"ADDING TO TOURNAMENT")
             print(f"THE MATCH IS: {self.match}")
             await sync_to_async(add_match_to_tournament)(self.message['tournament_name'], self.match)
-        await self.cancel_loop()
+        self.cancel_loop()
         await self.remove_consumer()
 
 

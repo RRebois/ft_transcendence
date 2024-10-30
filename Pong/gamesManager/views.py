@@ -30,9 +30,9 @@ class MatchMaking():
             MatchMaking.matchs.pop(session_id)
 
     @staticmethod
-    def change_session_status(session_id, open=True):
+    def change_session_status(session_id, is_open=True):
         if MatchMaking.matchs.get(session_id):
-            MatchMaking.matchs[session_id]['status'] = 'open' if open else 'closed'
+            MatchMaking.matchs[session_id]['status'] = 'open' if is_open else 'closed'
 
     @staticmethod
     def add_player(session_id, username):
@@ -47,10 +47,10 @@ class MatchMaking():
                 MatchMaking.matchs[session_id]['elos'].append(elo)
                 MatchMaking.matchs[session_id]['players'].append(username)
                 if MatchMaking.matchs[session_id]['awaited_players'] == len(MatchMaking.matchs[session_id]['players']):
-                    MatchMaking.change_session_status(session_id, open=False)
+                    MatchMaking.change_session_status(session_id, is_open=False)
                 session_data = cache.get(session_id)
-                id = len(session_data['players']) + 1
-                session_data['players'][username] = {'id': id, 'connected': False}
+                player_id = len(session_data['players']) + 1
+                session_data['players'][username] = {'id': player_id, 'connected': False}
                 cache.set(session_id, session_data)
 
     @staticmethod
