@@ -679,29 +679,33 @@ export default class PongGame {
         }
     }
 
-    updateScores(gameState) { console.log("\n\nUpdate Score");
-        // Select objects
+    updateScoresDisplay() {
         const   text = this.scene.getObjectByName("textGroup");
-        const   ball = this.scene.getObjectByName("ball");
         let     toRemove;
+
         this.nameArray.forEach(value => {
             toRemove = text.getObjectByName(value);
             text.remove(toRemove);
-        })
+        });
+        this.printInitScores();
+    }
+
+    updateScores(gameState) { console.log("\n\nUpdate Score");
+        // Select objects
+        const   ball = this.scene.getObjectByName("ball");
 
         if (gameState["right_score"] != this.score_p2) { console.log("\n\nUpdate player2 Score");
             this.score_p2 = gameState["right_score"];
             ball.material.map = this.textures["textPadBlue"];
             ball.material.needsUpdate = true;
-            this.printInitScores();
+            this.updateScoresDisplay();
         }
         else if (gameState["left_score"] != this.score_p1) { console.log("\n\nUpdate player1 Score");
             this.score_p1 = gameState["left_score"];
             ball.material.map = this.textures["textPadRed"];
             ball.material.needsUpdate = true;
-            this.printInitScores();
+            this.updateScoresDisplay();
         }
-//        this.printInitScores();
     }
 
     // Game loop
@@ -815,8 +819,7 @@ export default class PongGame {
 
             this.updateBallPosition(data.game_state);
             this.updatePaddlePosition(data.game_state, Object.values(data.game_state.players));
-            if (data.game_state["new_round"])
-                this.updateScores(data.game_state);
+            this.updateScores(data.game_state);
         }
         else {
             this.gameHasStarted = false;
