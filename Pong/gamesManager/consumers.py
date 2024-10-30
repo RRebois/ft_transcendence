@@ -335,7 +335,6 @@ class PurrinhaHandler():
         self.turns_id = [i + 1 for i in range(0, self.player_nb)]
         self.wins = {player: 0 for player in players_name.keys()}
         self.game = PurrinhaGame(players_name)
-        print(f"\n\n\nplayers_name => {players_name}\n\n\n")
         if BOT_NAME in self.message['players']:
             self.bot = await init_bot('purrinha', self, self.consumer[0])
         self.match = await sync_to_async(create_match)(self.players, self.session_id, deco=False, is_pong=False)

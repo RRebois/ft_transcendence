@@ -293,33 +293,36 @@ body.bg-gradient {
 
 .top-edge-container {
     position: absolute;
-    top: 0;
+    top: 5px;
     left: 0;
     width: 100%;
-    height: 25vh;
+    height: 10vh;
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
+    background-color: darkred;
 }
 
 .bottom-edge-container {
     position: absolute;
-    bottom: 0;
+    bottom: 5px;
     left: 0;
     width: 100%;
-    height: 25vh;
+    height: 10vh;
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
+    background-color: darkred;
+
 }
 
 .right-edge-container {
     position: absolute;
     top: 0;
-    right: 0;
-    width: 25vh;
+    right: 5px;
+    max-width: 300px;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -331,8 +334,8 @@ body.bg-gradient {
 .left-edge-container {
     position: absolute;
     top: 0;
-    left: 0;
-    width: 25vh;
+    left: 5px;
+    max-width: 300px;
     height: 100%;
     display: flex;
     flex-direction: column;
