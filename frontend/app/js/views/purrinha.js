@@ -13,6 +13,7 @@ export default class PurrinhaGame {
         this.removeUser = this.removeUser.bind(this);
         this.nb_players = 0;
         this.players = [];
+        this.matchExists = false;
 
         document.addEventListener('DOMContentLoaded', this.setupEventListeners.bind(this));
     }
@@ -86,6 +87,8 @@ export default class PurrinhaGame {
     }
 
     setupEventListeners() {
+        console.log("PurrinhaGame setupEventListeners called");
+        console.log("PurrinhaGame matchExists: ", this.matchExists);
         if (!this.props?.game || !this.props?.ws_route || !this.props?.session_id || !this?.props.code) {
             const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
             document.getElementById('errorModalBody').innerHTML = `
@@ -93,6 +96,12 @@ export default class PurrinhaGame {
 			`
             errorModal.show();
         }
+        if (this.matchExists) {
+            const backdrop = document.createElement('div');
+            backdrop.classList.add('custom-modal-backdrop', 'fade', 'show');
+            document.body.appendChild(backdrop);
+        }
+
 
         document.getElementById('returnHomeBtn').addEventListener('click', () => {
             const errorModal = bootstrap.Modal.getInstance(document.getElementById('ErrorModal'));
@@ -104,9 +113,10 @@ export default class PurrinhaGame {
     }
 
     render() {
-        let match_exists = checkGameInstance(this.props?.session_id);
-        if (!match_exists) {
-            this.initializeWs(this.props?.code, match_exists);
+        console.log("PurrinhaGame render called");
+        this.matchExists = checkGameInstance(this.props?.session_id);
+        if (!this.matchExists) {
+            this.initializeWs(this.props?.code, this.matchExists);
         }
         // document.title = "ft_transcendence | Purrinha";
         return `

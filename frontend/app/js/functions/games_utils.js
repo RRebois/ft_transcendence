@@ -21,6 +21,7 @@ export function checkGameInstance(session_id) {
         console.log("data fetch replay: ", data);
         if (!ok) {
             const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
+            console.log("MODAL CREATED");
             document.getElementById('errorModalBody').innerHTML = `
                 <p>This match is not available or already finished. Please try again later.</p>
             `
@@ -35,4 +36,29 @@ export function checkGameInstance(session_id) {
         const toastComponent = new ToastComponent();
         toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
     });
+}
+
+export async function checkGameInstanceWithoutFetch(session_id) {
+    const csrfToken = getCookie('csrftoken');
+    if (!session_id) {
+        console.log("NO SESSION ID");
+        return false;
+    }
+    fetch(`https://${window.location.hostname}:8443/match/${session_id}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+        },
+        credentials: 'include'
+    })
+        .then(response => response.json().then(data => ({ok: response.ok, data})))
+        .then(({ok, data}) => {
+            return !ok;
+        })
+        .catch(error => {
+            console.error("Error fetching new game request: ", error);
+            const toastComponent = new ToastComponent();
+            toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+        });
 }
