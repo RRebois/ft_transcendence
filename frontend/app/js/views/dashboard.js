@@ -329,6 +329,7 @@ export default class Dashboard {
 
 		const purrinha_modal = document.getElementById('create-purrinha-match-modal');
 		if (purrinha_modal) {
+			this.purrinhaGameNbPlayers = 'bot'
 			purrinha_modal.addEventListener('show.bs.modal', (event) => {
 				// Handle game request
 				const purrinhaGameRequestBtn = document.getElementById('purrinha-game-request-btn');
