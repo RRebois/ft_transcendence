@@ -1,31 +1,29 @@
-import json
 import asyncio
+import json
+
+from asgiref.sync import sync_to_async
 # import websockets
 # import os
 from channels.generic.websocket import AsyncWebsocketConsumer
-from rest_framework.exceptions import AuthenticationFailed
-from asgiref.sync import sync_to_async
-
 # import requests
 # from django.urls import reverse
-from django.http import HttpRequest
+from django.http import HttpResponse, HttpRequest
 from django.middleware.csrf import get_token
-
+from gamesManager.consumers import GameManagerConsumer
+from gamesManager.views import GameManagerView
+from rest_framework.exceptions import AuthenticationFailed
 # from userManagement.views import LoginView
 from userManagement.models import User
 from userManagement.serializer import LoginSerializer
-from gamesManager.consumers import GameManagerConsumer, PongHandler
-from gamesManager.views import GameManagerView
+
 
 class TerminalConsumer(AsyncWebsocketConsumer):
 
 	async def connect(self):
 			self.user = None
-			self.username = None
 			self.current_game = None
 			self.game_consumer = None
 			self.error_message = None
-			self.handler = GameStateHandler()
 			headers = dict(self.scope['headers'])
 
 			self.commands = {
@@ -42,8 +40,10 @@ class TerminalConsumer(AsyncWebsocketConsumer):
 				await self.close()
 				return
 			self.username = self.user.username
+			self.handler = GameStateHandler(self.username)
 			scope = [{sc: self.scope[sc]} for sc in self.scope]
-			await self.send(f'{scope}\n{self.user.username} conectado ao servidor. Type "help" to see the available commands')
+			await self.send(f'{scope}\n{self.user.username} conectado ao servidor.')
+			await self.handle_help()
 
 	async def disconnect(self, close_code):
 		print("\n\t\t\tDISCONNECT")
@@ -53,33 +53,39 @@ class TerminalConsumer(AsyncWebsocketConsumer):
 			await self.user_disconnection()
 
 	async def session_msg(self, event):
-		# {"players": {"testing2": {"id": 1, "connected": true}, 
-		# "fbelfort": {"id": 2, "connected": true}}, 
-		# "game": "pong", 
-		# "awaited_players": 2, 
-		# "connected_players": 2, 
-		# "session_id": "pong_bd35deb62d984086b2270afdb50c3582", 
-		# "status": "started", 
-		# "winner": null, 
-		# "tournament_name": null, 
+		# {"players": {"testing2": {"id": 1, "connected": true},
+		# "fbelfort": {"id": 2, "connected": true}},
+		# "game": "pong",
+		# "awaited_players": 2,
+		# "connected_players": 2,
+		# "session_id": "pong_bd35deb62d984086b2270afdb50c3582",
+		# "status": "started",
+		# "winner": null,
+		# "tournament_name": null,
 		# "game_state": {
-		# 		"players": {"player1": {"name": "testing2", "pos": {"x": 10, "y": 110}}, "player2": {"name": "fbelfort", "pos": {"x": 590, "y": 110}}}, 
-		# 		"ball": {"x": 237, "y": 137.90000000000012, "radius": 10, "x_vel": -3, "y_vel": -0.1}, 
-		# 		"left_score": 0, 
-		# 		"right_score": 0, 
-		# 		"game_width": 600, 
-		# 		"game_height": 280, 
-		# 		"paddle_width": 10, 
-		# 		"paddle_height": 60, 
-		# 		"winning_score": 1, 
-		# 		"new_round": false}, 
+		# 		"players": {"player1": {"name": "testing2", "pos": {"x": 10, "y": 110}}, "player2": {"name": "fbelfort", "pos": {"x": 590, "y": 110}}},
+		# 		"ball": {"x": 237, "y": 137.90000000000012, "radius": 10, "x_vel": -3, "y_vel": -0.1},
+		# 		"left_score": 0,
+		# 		"right_score": 0,
+		# 		"game_width": 600,
+		# 		"game_height": 280,
+		# 		"paddle_width": 10,
+		# 		"paddle_height": 60,
+		# 		"winning_score": 1,
+		# 		"new_round": false},
 		# "deconnection": false}
+		responses = ["refresh", "waiting", "end_game"]
 
 		message = event["message"]
-		game_frame = await self.handler.parse_game_state(message)
-		for line in game_frame:
-			await self.send(line)
-			# await self.send(text_data=json.dumps(message))
+		# await self.send(text_data=json.dumps(message))
+		response = await self.handler.parse_game_state(message)
+		key_response = response.keys()
+		if key_response in responses:
+			await self.send(text_data=response[key_response])
+			if key_response == "end_game":
+				self.game_consumer = None
+			# for line in response["refresh"]:
+			# 	await self.send(text_data=json.dumps(line))
 
 	async def receive(self, text_data):
 			data = text_data.lower()
@@ -90,7 +96,8 @@ class TerminalConsumer(AsyncWebsocketConsumer):
 					"s": 1,
 				}
 				if data in commands:
-					await self.send_paddle_move(commands[data])
+					for _ in range(4):
+						await self.send_paddle_move(commands[data])
 			else:
 				if data in self.commands:
 					await self.commands[data]()
@@ -113,13 +120,19 @@ class TerminalConsumer(AsyncWebsocketConsumer):
 	async def send_paddle_move(self, move):
 		# {"player_move":{"player":2,"direction":1}}
 		player_move = {'player_move': {
-			'player': self.game_consumer.session_data['players'][self.username]['id'],
+			'player': self.player_id,
 			'direction': move,
 		}}
 		await self.game_consumer.receive(json.dumps(player_move))
 
 	async def handle_help(self):
-		await self.send('Test\nType "help" to see the available commands')
+		await self.send(f'Welcome, {self.username}.\
+			\nHere you can play pong.\
+			\nType "join_game" to play against another player\
+			\nor type "play_bot" to play with the bot.\
+			\n\tWhen the game starts you can type "w" to move up or "s" to move down\
+			\n\tattention here you\'ll see the game in reduced dimensions\
+			\nType "help" to see this again')
 
 	@sync_to_async
 	def user_disconnection(self):
@@ -144,7 +157,7 @@ class TerminalConsumer(AsyncWebsocketConsumer):
 				return None
 			self.access_token = serializer.validated_data['jwt_access']
 			self.refresh_token = serializer.validated_data['jwt_refresh']
-			self.csrf_token = get_token(HttpRequest())
+			# self.csrf_token = get_token(HttpResponse())
 			user.status = "online"
 			user.save()
 			return user
@@ -153,10 +166,15 @@ class TerminalConsumer(AsyncWebsocketConsumer):
 			return None
 
 	@sync_to_async
-	def fetch_game_consumer(self, game_consumer):
-		request = HttpRequest()
-		request.COOKIES['csrftoken'] = self.csrf_token
-		request.COOKIES['jwt_access'] = self.access_token
+	def fetch_game_consumer(self):
+		request = HttpResponse()
+		request.set_cookie(key='jwt_access', value=self.access_token, httponly=True, samesite='Lax', secure=True,
+							path='/')
+		request.set_cookie(key='jwt_refresh', value=self.refresh_token, httponly=True, samesite='Lax', secure=True,
+							path='/')
+		request.set_cookie(key='csrftoken', value=get_token(HttpRequest()), samesite='Lax', secure=True, path='/')
+		# request.COOKIES['csrftoken'] = self.csrf_token
+		# request.COOKIES['jwt_access'] = self.access_token
 		view = GameManagerView()
 		game_code = 22
 		response = view.get(request, "pong", game_code)
@@ -213,10 +231,11 @@ class TerminalConsumer(AsyncWebsocketConsumer):
 
 	async def handle_join_game(self):
 		self.game_consumer = GameManagerConsumer()
-		scope = await self.fetch_game_consumer(self.game_consumer)
+		scope = await self.fetch_game_consumer()
 		if scope:
 			await self.game_consumer.hydrate(scope, self.channel_layer, self.channel_name)
 			await self.game_consumer.handle_connection()
+			self.player_id = self.game_consumer.session_data['players'][self.username]['id']
 		else:
 			self.game_consumer = None
 		# 	# await self.game_consumer.connect()
@@ -236,11 +255,11 @@ class TerminalConsumer(AsyncWebsocketConsumer):
 		# 				response = await websocket.recv()
 		# 				game_state = json.loads(response)
 		# 				await self.send(json.dumps(game_state))
-						
+
 		# 				# Enviar comandos (exemplo de movimento do jogador)
 		# 				# player_move = json.dumps({"player_move": {"direction": "up"}})
 		# 				await websocket.send(player_move)
-						
+
 		# 			except websockets.ConnectionClosed:
 		# 				print("Conexão com o WebSocket encerrada.")
 		# 				break
@@ -254,73 +273,144 @@ class TerminalConsumer(AsyncWebsocketConsumer):
 
 class GameStateHandler():
 
-			# {"players": {"testing2": {"id": 1, "connected": true}, 
-		# "fbelfort": {"id": 2, "connected": true}}, 
-		# "game": "pong", 
-		# "awaited_players": 2, 
-		# "connected_players": 2, 
-		# "session_id": "pong_bd35deb62d984086b2270afdb50c3582", 
-		# "status": "started", 
-		# "winner": null, 
-		# "tournament_name": null, 
+			# {"players": {"testing2": {"id": 1, "connected": true},
+		# "fbelfort": {"id": 2, "connected": true}},
+		# "game": "pong",
+		# "awaited_players": 2,
+		# "connected_players": 2,
+		# "session_id": "pong_bd35deb62d984086b2270afdb50c3582",
+		# "status": "started",
+		# "winner": null,
+		# "tournament_name": null,
 		# "game_state": {
-		# 		"players": {"player1": {"name": "testing2", "pos": {"x": 10, "y": 110}}, "player2": {"name": "fbelfort", "pos": {"x": 590, "y": 110}}}, 
-		# 		"ball": {"x": 237, "y": 137.90000000000012, "radius": 10, "x_vel": -3, "y_vel": -0.1}, 
-		# 		"left_score": 0, 
-		# 		"right_score": 0, 
-		# 		"game_width": 600, 
-		# 		"game_height": 280, 
-		# 		"paddle_width": 10, 
-		# 		"paddle_height": 60, 
-		# 		"winning_score": 1, 
-		# 		"new_round": false}, 
+		# 		"players": {"player1": {"name": "testing2", "pos": {"x": 10, "y": 110}}, "player2": {"name": "fbelfort", "pos": {"x": 590, "y": 110}}},
+		# 		"ball": {"x": 237, "y": 137.90000000000012, "radius": 10, "x_vel": -3, "y_vel": -0.1},
+		# 		"left_score": 0,
+		# 		"right_score": 0,
+		# 		"game_width": 600,
+		# 		"game_height": 280,
+		# 		"paddle_width": 10,
+		# 		"paddle_height": 60,
+		# 		"winning_score": 1,
+		# 		"new_round": false},
 		# "deconnection": false}
 
-		def __init__(self):
-			pass
+	REDUCTION = 10
+	COUNTER = 5
 
-		async def parse_game_state(self, msg):
-			# return None
-			response = ""
-			if msg["deconnection"]:
-				# fulano desconectou e voce venceu
-				pass
-			if msg["winner"]:
-				# O jogo acabou e fulano venceu de X x y 
-				pass
-			if msg["status"] == "waiting":
-				# waiting um oponente
-				pass
-			else:
-				game_frame = []
-				game_width = int(msg["game_state"]["game_width"])
-				game_height = int(msg["game_state"]["game_height"])
-				player1_pos = msg["game_state"]["players"]["player1"]["pos"]
-				player2_pos = msg["game_state"]["players"]["player2"]["pos"]
-				player1_name = msg["game_state"]["players"]["player1"]["name"]
-				player2_name = msg["game_state"]["players"]["player2"]["name"]
-				player1_score = msg["game_state"]["left_score"]
-				player2_score = msg["game_state"]["right_score"]
-				ball = msg["game_state"]["ball"]
-				paddle_height = int(msg["game_state"]["paddle_height"])
-				game_frame.append("X" * (game_width // 10))
-				game_frame.append(f'{{:^{game_width // 10}}}'.format(f'{player1_name[:10]} {player1_score} - {player2_score} {player2_name[:10]}'))
-				for y in range(game_height // 10):
-					line = "|"
-					for x in range(game_width // 10):
-						# if (player1_pos["x"] - 10) // 10 > x and ((player1_pos["y"] // 10) <= y <= (player1_pos["y"] + paddle_height) // 10):
-						if 0 == x and ((player1_pos["y"] // 10) <= y <= (player1_pos["y"] + paddle_height) // 10):
-							char = "Y"
-						elif player2_pos["x"] // 10 <= x and ((player2_pos["y"] // 10) <= y <= (player2_pos["y"] + paddle_height) // 10):
-						# if player2_pos["x"] // 10 <= x and ((player2_pos["y"] // 10) <= y <= (player2_pos["y"] + paddle_height) // 10):
-							char = "E"
-						elif (ball["x"] // 10) == x and (ball["y"] // 10) == y:
-							char = "O"
-						else:
-							char = "."
-						line += char
-					line += "|"
-					game_frame.append(line)
-				# game_frame.append("X" * game_width)
-				return game_frame
-			return response
+	def __init__(self, username):
+		self.new_game = True
+		self.counter = GameStateHandler.COUNTER
+		self.username = username
+		self.p1_pos = None
+		self.p1_x = None
+		self.p1_name = None
+		self.p1_score = None
+		self.p2_pos = None
+		self.p2_x = None
+		self.p2_name = None
+		self.p2_score = None
+		self.width = None
+		self.height = None
+		self.paddle_height = None
+		self.ball = None
+		self.old_ball = []
+
+	async def fill_data(self, msg):
+		if msg["game_state"] != "waiting":
+			self.new_game = False
+			gs = msg["game_state"]
+			self.p1_pos = gs["players"]["player1"]["pos"]["y"] // GameStateHandler.REDUCTION
+			self.p1_x = gs["players"]["player1"]["pos"]["x"] // GameStateHandler.REDUCTION
+			self.p1_name = gs["players"]["player1"]["name"]
+			self.p1_score = gs["left_score"]
+			self.p2_pos = gs["players"]["player2"]["pos"]["y"] // GameStateHandler.REDUCTION
+			self.p2_x = gs["players"]["player2"]["pos"]["x"] // GameStateHandler.REDUCTION
+			self.p2_name = gs["players"]["player2"]["name"]
+			self.p2_score = gs["right_score"]
+			self.width = gs["game_width"] // GameStateHandler.REDUCTION
+			self.height = gs["game_height"] // GameStateHandler.REDUCTION
+			self.paddle_height = gs["paddle_height"] // GameStateHandler.REDUCTION
+			self.ball = gs["ball"]
+			self.enemy = self.p2_name if self.p2_name != self.username else self.p1_name
+
+	async def update_data(self, msg):
+		if msg["game_state"] != "waiting":
+			gs = msg["game_state"]
+			self.p1_pos = gs["players"]["player1"]["pos"]["y"] // GameStateHandler.REDUCTION
+			self.p1_score = gs["left_score"]
+			self.p2_pos = gs["players"]["player2"]["pos"]["y"] // GameStateHandler.REDUCTION
+			self.p2_score = gs["right_score"]
+			self.ball = gs["ball"]
+
+	async def parse_game_state(self, msg):
+		if self.new_game:
+			await self.fill_data(msg)
+		response = {}
+		if msg["deconnection"]:
+			# fulano desconectou e voce venceu
+			response["end_game"] = f"\n\n\t\tYou won!\n\t\t{self.enemy} has left the match.\n\n"
+			self.new_game = True
+		elif msg["winner"]:
+			# O jogo acabou e fulano venceu de X x y
+			await self.update_data(msg)
+			final_msg = "Congratulations, you won!" if msg["winner"] == self.username else "You lost!"
+			response["end_game"] = f"\n\n\t\tYou won!\n\t{self.p1_name[:20]} {self.p1_score} - {self.p2_score} {self.p2_name[:20]}\n\n"
+			self.new_game = True
+		elif msg["status"] == "waiting":
+			# waiting um oponente
+			response["waiting"] = "\n\n\t\tWaiting for another player\n\n"
+		# else:
+		elif msg["game_state"] != "waiting":
+			if msg["game_state"]["new_round"]:
+				self.counter = 0
+				self.old_ball = []
+			if self.counter:
+				self.counter -= 1
+				self.old_ball.append(msg["game_state"]["ball"])
+			if not self.counter:
+				self.counter = GameStateHandler.COUNTER
+				await self.update_data(msg)
+				game_frame = await self.create_frame()
+				response["refresh"] = game_frame
+		return response
+
+	# async def make_grid(self):
+	# 	# max_width = self.width + 2
+	# 	# max_height = self.height + 4
+	# 	blank_frame = [['.' for _ in range(self.width)] for _ in range(self.height)]
+	# 	# frame = '-' * max_width
+	# 	# blank_frame[0] = blank_frame[-1] = frame
+	# 	# blank_frame[1] = f'{{:^{max_width}}}'\
+	# 	# 			.format(f'{self.p1_name[:20]} {self.p1_score} - {self.p2_score} {self.p2_name[:20]}')
+	# 	return blank_frame
+
+	async def create_frame(self):
+		# game_frame = self.blank_frame.copy()
+		game_frame = [['.' for _ in range(self.width)] for _ in range(self.height)]
+		for ball in self.old_ball:
+			ball_x = int(ball["x"] / GameStateHandler.REDUCTION)
+			ball_y = int(ball["y"] / GameStateHandler.REDUCTION)
+			game_frame[ball_y][ball_x] = 'o'
+		ball_x = int(self.ball["x"] / GameStateHandler.REDUCTION)
+		ball_y = int(self.ball["y"] / GameStateHandler.REDUCTION)
+		game_frame[ball_y][ball_x] = '@'
+		for i in range(self.p1_pos, self.p1_pos + self.paddle_height + 1):
+			char = 'Y' if self.p1_name == self.username else 'E'
+			game_frame[i][0] = char
+		for i in range(self.p2_pos, self.p2_pos + self.paddle_height + 1):
+			char = 'Y' if self.p2_name == self.username else 'E'
+			game_frame[i][self.p2_x] = char
+		self.old_ball.clear()
+		final_frame = []
+		frame = '-' * (self.width + 2)
+		score_line = f'{{:^{self.width + 2}}}'\
+					.format(f'{self.p1_name[:20]} {self.p1_score} - {self.p2_score} {self.p2_name[:20]}')
+		# final_frame.append(frame)
+		final_frame.append(score_line)
+		for line in game_frame:
+			final_frame.append('|' + ''.join(line) + '|')
+		final_frame.append(frame)
+		final_frame2d = '\n'.join(final_frame)
+		# game_frame.clear()
+		return final_frame2d
