@@ -178,7 +178,8 @@ class LoginView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 class Login42View(APIView):
     def get(self, request):
-        redirect_url = os.environ.get('API_42_CALL')
+        server_ip = os.environ.get('SERVER_IP').upper()
+        redirect_url = os.environ.get(f'API_42_CALL_{server_ip}')
         return JsonResponse(data={'redirect_url': redirect_url}, status=200)
 
 

@@ -64,8 +64,8 @@ MIDDLEWARE = [
     # 'userManagement.middleware.JWTAuthenticationMiddleware',
 ]
 
-CSRF_TRUSTED_ORIGINS = ["https://localhost:8080", "https://localhost:8443", "https://localhost:3000", "https://localhost:4242"]
-CORS_ORIGIN_WHITELIST = ["https://localhost:8443", "https://localhost:3000", "https://localhost:4242"]
+CSRF_TRUSTED_ORIGINS = [f"{SERVER}:8080", f"{SERVER}:8443", f"{SERVER}:3000", f"{SERVER}:4242"]
+CORS_ORIGIN_WHITELIST = [f"{SERVER}:8443", f"{SERVER}:3000", f"{SERVER}:4242"]
 
 ROOT_URLCONF = 'configFiles.urls'
 
@@ -107,7 +107,7 @@ DATABASES = {
         'NAME': os.environ.get('SQL_DATABASE'),
         'USER': os.environ.get('SQL_USER', 'user'),
         'PASSWORD': os.environ.get('SQL_PASSWORD', 'password'),
-        'HOST': os.environ.get('SQL_HOST', 'localhost'),
+        'HOST': os.environ.get('SQL_HOST', os.environ.get('SERVER_IP')),
         'PORT': os.environ.get('SQL_PORT', '5432'),
     }
 }
@@ -166,7 +166,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS_ORIGIN_ALLOW_ALL = True  # allow all frontend ports to access app
 CORS_ALLOW_CREDENTIALS = True  # for frontend to get the jwt cookies
 CORS_ALLOWED_ORIGINS = [
-    'https://localhost:3000', 'https://localhost:4242',
+    f'{SERVER}:3000', f'{SERVER}:4242',
 ]
 CORS_ALLOW_ALL_ORIGINS = False
 
