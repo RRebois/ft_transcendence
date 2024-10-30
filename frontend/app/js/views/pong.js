@@ -692,17 +692,17 @@ export default class PongGame {
         this.printInitScores();
     }
 
-    updateScores(gameState) { console.log("\n\nUpdate Score");
+    updateScores(gameState) {
         // Select objects
         const   ball = this.scene.getObjectByName("ball");
 
-        if (gameState["right_score"] != this.score_p2) { console.log("\n\nUpdate player2 Score");
+        if (gameState["right_score"] != this.score_p2) {
             this.score_p2 = gameState["right_score"];
             ball.material.map = this.textures["textPadBlue"];
             ball.material.needsUpdate = true;
             this.updateScoresDisplay();
         }
-        else if (gameState["left_score"] != this.score_p1) { console.log("\n\nUpdate player1 Score");
+        else if (gameState["left_score"] != this.score_p1) {
             this.score_p1 = gameState["left_score"];
             ball.material.map = this.textures["textPadRed"];
             ball.material.needsUpdate = true;
@@ -804,7 +804,7 @@ export default class PongGame {
     }
 
     // Collecting info from the game logic in the back
-    display(data) { console.log(data);
+    display(data) {
         if (this.userIndex === 0 && this.props?.code === "40") {
             for (let i = 0; i < this.players_nick.length; i++) {
                 if (this.players_nick[i].username === this.user.username) {

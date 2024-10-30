@@ -94,7 +94,6 @@ export default class Router {
     renderRoute(route, path) {
         document.title = `ft_transcendence${route.name.length > 0 ? ' | ' + route.name : ''}`;
         if (route.user) {
-            console.log('RENDER ROUTE WITH USER');
             if (path.startsWith('/purrinha') || path.startsWith('/pong')) {
                 this.renderNode.innerHTML = route.renderView();
             } else {
@@ -103,10 +102,8 @@ export default class Router {
                 this.navbar.setupEventListeners();
             }
         } else {
-            console.log('RENDER ROUTE WITHOUT USER');
             this.renderNode.innerHTML = route.renderView();
         }
-        console.log('SETUP EVENT LISTENERS');
         route.setupEventListeners();
     }
 
