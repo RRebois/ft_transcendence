@@ -1,14 +1,13 @@
 from configFiles.globals import *
-from userManagement.models import User
+from userManagement.models import *
 from asgiref.sync import sync_to_async
-
+from userManagement.views import get_profile_pic_url
 
 class PurrinhaMatch:
 
     def __init__(self, players):
         self.players = []
         for k, v in players.items():
-            print(f"\n USER {k} == {v['id']} \n")
             self.players.append(PurrinhaPlayer(k, v['id']))
 
     async def get_player(self, id):
@@ -89,6 +88,16 @@ class PurrinhaPlayer:
         self.photo_url = None
 
     async def get_final_data(self):
+        try:
+            user = await sync_to_async(User.objects.get)(username=self.username)
+            avatar_id = user.avatar_id_id
+            avatar = await sync_to_async(Avatars.objects.get)(id=avatar_id)
+            self.photo_url = get_profile_pic_url(avatar.image_url)
+        except Exception:
+            if self.username == 'bot':
+                self.photo_url = get_profile_pic_url("/media/profile_pics/bot.png")
+            else:
+                self.photo_url = get_profile_pic_url(None)
         return {
             f"player{self.id}": {
                 "name": self.username,
@@ -100,14 +109,16 @@ class PurrinhaPlayer:
         }
 
     async def get_data(self):
-        # TODO : remove the if statement when the bot will be created at the same time as the superuser
-        # if self.username is not BOT_NAME:
-        #     user = await sync_to_async(User.objects.get)(username=self.username)
-        #     # TODO : get the server url in the env file
-        #     self.photo_url = "https://localhost:8443" + user.get_img_url()
-        # else:
-        #     self.photo_url = "https://localhost:8443/media/profile_pics/default_pp.jpg"
-        # print(f"\n PLAYER {self.username}PROFILE PICTURE: {self.photo_url} \n")
+        try:
+            user = await sync_to_async(User.objects.get)(username=self.username)
+            avatar_id = user.avatar_id_id
+            avatar = await sync_to_async(Avatars.objects.get)(id=avatar_id)
+            self.photo_url = get_profile_pic_url(avatar.image_url)
+        except Exception:
+            if self.username == 'bot':
+                self.photo_url = get_profile_pic_url("/media/profile_pics/bot.png")
+            else:
+                self.photo_url = get_profile_pic_url(None)
         return {
             f"player{self.id}": {
                 "name": self.username,

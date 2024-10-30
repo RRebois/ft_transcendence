@@ -37,13 +37,13 @@ function getScoreTable(players, winner) {
             </thead>
             <tbody>
                 ${players.map(player => {
-                    return `
+        return `
                         <tr>
                             <td>${player.name === winner ? player.name + ' 👑' : player.name}</td>
                             <td>${player.guess}</td>
                         </tr>
                     `;
-                }).join('')}
+    }).join('')}
             </tbody>
         </table>
     `;
@@ -117,8 +117,6 @@ export function display_game_winner(data, view) {
 }
 
 export function handle_round_winner(data, view) {
-    update_score(data, view);
-
     const root = document.getElementById('game-root');
     if (root) {
         pick_initial_number(view, true);
@@ -196,6 +194,12 @@ export const display_users_info = (data, view) => {
             playerUsername.innerText = player.name;
         }
 
+        const playerProfilePic = document.getElementById(`user_info-profile-pic-${id}`);
+        if (playerProfilePic) {
+            playerProfilePic.src = player.photo_url;
+            playerProfilePic.alt = `${player.name} profile picture`;
+        }
+
         const playerAction = document.getElementById(`user_info-status-${id}`);
         if (playerAction) {
             playerAction.innerText = get_player_description(player, data?.game_state);
@@ -235,13 +239,13 @@ export const pick_initial_number = (view, tie = false) => {
                     <div class="d-flex justify-content-center align-items-center">
                         <div class="purrinha-choices-grid">
                            ${choices.map(value => {
-                            return `
+            return `
                                 <div>
                                     <input type="radio" class="btn btn-check rounded-circle" name="initial-choice" id="initial-choice-${value}" value="${value}" autocomplete="off">
                                     <label class="btn btn-outline-dark" for="initial-choice-${value}">${value}</label>
                                 </div>
                             `;
-                            }).join('')}
+        }).join('')}
                         </div>
                     </div>
                     <button id="pick-initial-number-btn" class="btn btn-primary" disabled>Pick</button>
@@ -286,13 +290,13 @@ export const guess_sum = (data, view, socket) => {
                 <div class="d-flex justify-content-center align-items-center">
                     <div class="purrinha-choices-grid">
                        ${data?.game_state?.available_to_guess.map(value => {
-                        return `
+            return `
                             <div>
                                 <input type="radio" class="btn btn-check rounded-circle" name="guess-choice" id="guess-choice-${value}" value="${value}" autocomplete="off">
                                 <label class="btn btn-outline-dark" for="guess-choice-${value}">${value}</label>
                             </div>
                             `;
-                        }).join('')}
+        }).join('')}
                     </div>
                 </div>
                 <button id="guess-sum-btn" class="btn btn-primary" disabled>Guess</button>
@@ -313,29 +317,17 @@ export const guess_sum = (data, view, socket) => {
     }
 }
 
-export function update_score(data, view) {
+export const display_guesses = (data, view) => {
     const players = lst2arr(data?.game_state?.players);
-    const scores = data?.game_state?.history;
-    let maxScore = {score: 0, user_id: null}
-
     players.forEach(player => {
-        const username = player.name;
-        if (scores && scores[username] !== undefined) {
-            if (scores[username] > maxScore.score) {
-                maxScore.score = scores[username];
-                maxScore.user_id = player.id;
-            }
-            const playerScore = document.getElementById(`user_info-score-${player.id}`);
-            if (playerScore) {
-                playerScore.innerText = scores[username];
+        const id = player.id;
+        const playerGuess = document.getElementById(`user_info-guess-${id}`);
+        if (playerGuess) {
+            if (player.guess !== -1) {
+                playerGuess.innerText = player.guess;
+            } else {
+                playerGuess.innerText = '-';
             }
         }
     });
-    if (maxScore.username) {
-        const trophy = document.querySelector(`.trophy-${maxScore.user_id}`);
-        if (trophy) {
-            trophy.classList.add('text-warning');
-        }
-    }
-
 }

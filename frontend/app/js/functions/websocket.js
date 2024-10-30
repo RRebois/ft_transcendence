@@ -11,14 +11,13 @@ import {load_tournaments_ws, reload_new_players} from "@js/functions/tournament_
 import {remove_friend_request_div} from "./friends_management.js";
 import {load_new_notifications} from "../functions/navbar_utils.js";
 import {
-    display_game_winner,
+    display_game_winner, display_guesses,
     display_hourglass,
     display_looking_for_players_modal,
     display_users_info,
     guess_sum, handle_round_winner,
     hide_looking_for_players_modal,
     pick_initial_number,
-    update_score,
 } from "./purrinha.js";
 
 export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route, view) {
@@ -55,20 +54,19 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
 
                 // Case : a winner is declared
                 if (data?.winner) {
-                    update_score(data, view);
                     display_game_winner(data, view);
                 }
 
                 if (data?.status === 'waiting') {
                     display_looking_for_players_modal();
                 } else {
-                    update_score(data, view);
                     if (data?.status === 'started') {
                         hide_looking_for_players_modal();
                         display_users_info(data, view);
                         if (data.game_state?.round === "choosing") {
                             pick_initial_number(view);
                         } else if (data.game_state?.round === "guessing") {
+                            display_guesses(data, view);
                             if (data.game_state?.player_turn === view?.player_set_id) {
                                 guess_sum(data, view);
                             } else {
