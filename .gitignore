@@ -8,6 +8,7 @@ Pong/env/*
 .DS_Store
 stopAll
 *.subject.pdf
+.logs.txt
 
 Pong/configFiles/__pycache__/*
 Pong/userManagement/migrations/*

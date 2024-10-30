@@ -310,7 +310,10 @@ class PongHandler():
         self.message['status'] = 'finished'
         await self.consumer[0].update_cache_db(self.message)
         await self.consumer[0].send_to_group(self.message)
+        print(f"\n\nMATCH IS TOURNAMENT ?: {self.message['tournament_name']}")
         if self.message['tournament_name']:
+            print(f"ADDING TO TOURNAMENT")
+            print(f"THE MATCH IS: {self.match}")
             await sync_to_async(add_match_to_tournament)(self.message['tournament_name'], self.match)
         await self.cancel_loop()
         await self.remove_consumer()

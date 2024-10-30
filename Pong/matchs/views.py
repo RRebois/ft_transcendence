@@ -175,6 +175,7 @@ def update_match_data(match_result, winner, match, deco, is_pong=True):
             new_elo = get_new_elo(elo_lst[-1]['elo'], winner_elo, False)
         elo_lst.append({'elo': new_elo, 'timestamp': timestamp})
         data.save()
+    return match
 
 
 def create_match(players, session_id, deco, is_pong):
@@ -226,7 +227,8 @@ def add_match_to_tournament(tournament_name, match):
     except:
         return JsonResponse({"message": "Tournament does not exist."}, status=404)
     unfinished_matches = tournament.get_unfinished_matchs()
-
+    print(f"\n\nUNFINISHED MATCHES ARE: {unfinished_matches}")
+    print(f"\n\nMATCH IS: {match}")
     match_player_ids = set(match.players.values_list('id', flat=True))
     for unfinished_match in unfinished_matches:
         unfinished_match_player_ids = set(unfinished_match.players.values_list('id', flat=True))
