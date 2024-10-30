@@ -181,6 +181,14 @@ export default class PongGame {
                 delete this.keyMap[event.key];
     }
 
+    clearKeyMap() { console.log("FOCUS OUT");
+        if (this.keyMap) {
+            const   keys = Object.keys(this.keyMap);
+            for(let i = 0; i < keys.length; i++)
+                delete this.keyMap[keys[i]];
+        }
+    }
+
      handleKeyEvent() {
         if (window.location.pathname === "/pong") {
             if (this.props?.code === "20") {
@@ -802,7 +810,7 @@ export default class PongGame {
     }
 
     // Collecting info from the game logic in the back
-    display(data) { console.log(data);
+    display(data) { //console.log(data);
         if (this.userIndex === 0 && this.props?.code === "40") {
             for (let i = 0; i < this.players_nick.length; i++) {
                 if (this.players_nick[i].username === this.user.username) {
@@ -933,6 +941,9 @@ export default class PongGame {
 
     setupEventListeners() {
         this.removeEventListeners(); // Remove existing event listeners
+        window.addEventListener('blur', () => {
+            this.clearKeyMap();
+        });
         window.addEventListener("keydown", this.onKeyDown.bind(this));
         window.addEventListener("keyup", this.onKeyUp.bind(this));
         window.addEventListener("resize", this.onWindowResize.bind(this));
