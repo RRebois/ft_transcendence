@@ -38,7 +38,10 @@ class MatchMaking():
     def add_player(session_id, username):
         if MatchMaking.matchs.get(session_id):
             if username not in ['guest', BOT_NAME]:
-                user_data = UserData.objects.get(user_id=User.objects.get(username=username))
+                try:
+                    user_data = UserData.objects.get(user_id=User.objects.get(username=username))
+                except:
+                    return JsonResponse({"message": "User does not exist."}, status=404)
                 elo = user_data.user_elo_pong[-1]['elo'] if MatchMaking.matchs[session_id]['game_name'] == 'pong' else \
                     user_data.user_elo_purrinha[-1]['elo']
                 MatchMaking.matchs[session_id]['elos'].append(elo)
@@ -127,7 +130,10 @@ class MatchMaking():
 
     @staticmethod
     def create_tournament_session(tournament_name):
-        tournament = Tournament.objects.get(name=tournament_name)
+        try:
+            tournament = Tournament.objects.get(name=tournament_name)
+        except:
+            return JsonResponse({"message": "Tournament does not exist."}, status=404)
         print("\n\n\nTournament Name create tournament sess: ", tournament_name)
         # matchs = [match.get_players() for match in tournament.tournament_matchs.all()]
         MatchMaking.tournament[tournament_name] = {

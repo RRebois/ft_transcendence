@@ -125,6 +125,8 @@ def get_profile_pic_url(pp_path):
 @method_decorator(csrf_protect, name='dispatch')
 class UserExistsView(APIView):
     def get(self, request, username):
+        if username == "bot" or username == "guest":
+            return JsonResponse({"message": "User not found"}, status=404)
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:

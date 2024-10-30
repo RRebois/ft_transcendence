@@ -1,7 +1,6 @@
 import {getCsrf, isUserConnected} from "@js/functions/user_auth.js";
 import Navbar from "@js/components/Navbar.js";
 import {remove_modal_backdrops} from "@js/functions/display.js";
-import {getCookie} from "@js/functions/cookie.js";
 
 export default class Router {
     constructor(routes = [], renderNode) {
@@ -116,6 +115,7 @@ export default class Router {
         if (path !== "/") {
             path = path.replace(/\/+$/, ''); // Remove trailing slashes
         }
+        console.log('PATH: ', path);
         // find all elements with class "modal-backdrop" and remove them
         remove_modal_backdrops();
         const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];

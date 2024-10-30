@@ -30,18 +30,17 @@ class MatchHistoryView(APIView):
         except User.DoesNotExist:
             return JsonResponse({"message": "User does not exists."}, status=404)
         if word == 'all':
-            matches = Match.objects.filter(players=user).order_by('-timeMatch')
+            matches = Match.objects.filter(players=user).exclude(players__username__in=['bot', 'guest']).order_by('-timeMatch')
         elif word == 'pong':
-            matches = Match.objects.filter(players=user, is_pong=True).order_by('-timeMatch')
+            matches = Match.objects.filter(players=user, is_pong=True).exclude(players__username__in=['bot', 'guest']).order_by('-timeMatch')
         elif word == 'purrinha':
-            matches = Match.objects.filter(players=user, is_pong=False).order_by('-timeMatch')
+            matches = Match.objects.filter(players=user, is_pong=False).exclude(players__username__in=['bot', 'guest']).order_by('-timeMatch')
         else:
             return JsonResponse({"message": "Invalid word."}, status=400)
         return JsonResponse([match.serialize() for match in matches] if matches else [], safe=False, status=200)
 
 
 @method_decorator(csrf_protect, name='dispatch')
-@method_decorator(login_required(login_url='login'), name='dispatch')
 class MatchScoreView(APIView):
     def get(self, request, match_id):
         try:
@@ -50,6 +49,18 @@ class MatchScoreView(APIView):
             raise Http404("Error: Match does not exists.")
 
         return JsonResponse(game.serialize())
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class MatchExistsView(APIView):
+
+    def get(self, request, session_id):
+        try:
+            Match.objects.get(session_id=session_id)
+        except Match.DoesNotExist:
+            return JsonResponse({"message": "Match not existing", "session_id": session_id}, status=200)
+
+        return JsonResponse({"message": "Match exists.", "session_id": session_id}, status=404)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -114,12 +125,36 @@ def get_new_elo(player_elo, opponent_elo, win):
     return new_elo
 
 
-def update_match_data(players_data, winner, is_pong=True):
+def update_match_data(match_result, winner, match, deco, is_pong=True):
     elo = 'user_elo_pong' if is_pong else 'user_elo_purrinha'
     game = 0 if is_pong else 1
     winner_elo = 0
     opponent_elo = 0
     timestamp = gen_timestamp()
+
+    players_data = []
+
+    for player_username in match_result.keys():
+        try:
+            player = User.objects.get(username=player_username)
+        except User.DoesNotExist:
+            return JsonResponse({"message": "User does not exists."}, status=404)
+        players_data.append(player.data)
+        score = Score.objects.create(
+            player=player,
+            match=match,
+            score=match_result[player_username]
+            )
+        score.save()
+        if player_username in winner:
+            match.winner.add(player)
+        match.is_finished = True
+        match.deconnection = deco
+        match.save()
+
+    for player_username in match_result.keys():
+        if player_username == "bot" or player_username == "guest":
+            return
 
     for data in players_data:
         if data.get_username() in winner:
@@ -142,24 +177,16 @@ def update_match_data(players_data, winner, is_pong=True):
         data.save()
 
 
-def create_match(match_result, winner, deco, is_pong=True):
-    match = Match.objects.create(is_pong=is_pong, count=len(match_result), deconnection=deco)
-    players_data = []
+def create_match(players, session_id, deco, is_pong):
+    match = Match.objects.create(is_pong=is_pong, session_id=session_id, count=len(players), deconnection=deco)
 
-    for player_username in match_result.keys():
-        player = User.objects.get(username=player_username)
-        players_data.append(player.data)
-        score = Score.objects.create(
-            player=player,
-            match=match,
-            score=match_result[player_username]
-            )
-        score.save()
-        if player_username in winner:
-            match.winner.add(player)
-        match.players.add(player)
-        match.is_finished = True
-    update_match_data(players_data, winner, is_pong)
+    for player in players:
+        print(f"PLAYER: {player}")
+        try:
+            user = User.objects.get(username=player)
+        except User.DoesNotExist:
+            return JsonResponse({"message": "User does not exists."}, status=404)
+        match.players.add(user)
     match.save()
     return match
 

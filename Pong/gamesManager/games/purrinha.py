@@ -1,4 +1,6 @@
 from configFiles.globals import *
+from userManagement.models import User
+from asgiref.sync import sync_to_async
 
 
 class PurrinhaMatch:
@@ -6,6 +8,7 @@ class PurrinhaMatch:
     def __init__(self, players):
         self.players = []
         for k, v in players.items():
+            print(f"\n USER {k} == {v['id']} \n")
             self.players.append(PurrinhaPlayer(k, v['id']))
 
     async def get_player(self, id):
@@ -83,6 +86,7 @@ class PurrinhaPlayer:
         self.quantity = -1
         self.guess = -1
         self.username = username
+        self.photo_url = None
 
     async def get_final_data(self):
         return {
@@ -91,17 +95,26 @@ class PurrinhaPlayer:
                 'quantity': self.quantity,
                 'guess': self.guess,
                 'id': self.id,
+                'photo_url': self.photo_url,
             }
         }
 
     async def get_data(self):
-        print(f"\nplayer{self.username} == {self.quantity}\n")
+        # TODO : remove the if statement when the bot will be created at the same time as the superuser
+        # if self.username is not BOT_NAME:
+        #     user = await sync_to_async(User.objects.get)(username=self.username)
+        #     # TODO : get the server url in the env file
+        #     self.photo_url = "https://localhost:8443" + user.get_img_url()
+        # else:
+        #     self.photo_url = "https://localhost:8443/media/profile_pics/default_pp.jpg"
+        # print(f"\n PLAYER {self.username}PROFILE PICTURE: {self.photo_url} \n")
         return {
             f"player{self.id}": {
                 "name": self.username,
                 'quantity': False if self.quantity == -1 else True,
                 'guess': self.guess,
                 'id': self.id,
+                'photo_url': self.photo_url,
             }
         }
 

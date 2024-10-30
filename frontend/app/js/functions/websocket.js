@@ -21,7 +21,6 @@ import {
     update_score,
 } from "./purrinha.js";
 
-
 export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route, view) {
     return new Promise(async (resolve, reject) => {
         const response = await fetch(`https://${window.location.hostname}:8443/get_ws_token/`, {
@@ -31,13 +30,20 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
         const isUserAuth = await isUserConnected();
         if (!gameCode || !sessionId) {
             reject(new Error("Missing game code or session id"));
+            return;
         }
         if (isUserAuth) {
             const token = jwt.token
             const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
             const url = wsSelect + `${window.location.hostname}:8443` + ws_route + token + '/'
-            const socket = new WebSocket(url);
-
+            let socket;
+            try {
+                socket = new WebSocket(url);
+            }
+            catch (error) {
+                reject(new Error("Failed to construct Pong WebSocket: " + error.message));
+                return;
+            }
             socket.onopen = function (e) {
                 console.log("Purrinha webSocket connection established");
                 resolve(socket);
@@ -54,26 +60,21 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
                 }
 
                 if (data?.status === 'waiting') {
-                    console.log("Waiting for players...");
                     display_looking_for_players_modal();
                 } else {
                     update_score(data, view);
                     if (data?.status === 'started') {
-                        console.log("Game started");
                         hide_looking_for_players_modal();
                         display_users_info(data, view);
                         if (data.game_state?.round === "choosing") {
                             pick_initial_number(view);
                         } else if (data.game_state?.round === "guessing") {
-                            console.log("player_set_id is:", view?.player_set_id);
                             if (data.game_state?.player_turn === view?.player_set_id) {
-                                console.log("It's your turn to guess the sum");
                                 guess_sum(data, view);
                             } else {
                                 display_hourglass();
                             }
                         } else if (data.game_state?.round === "finished") {
-                            console.log("Round finished");
                             handle_round_winner(data, view);
                         }
                     } else if (data?.status === 'finished') {
@@ -109,6 +110,7 @@ export async function initializePongWebSocket(data, pong) {
         const isUserAuth = await isUserConnected();
         if (!data.code || !data.session_id) {
             reject(new Error("Missing game code or session id"));
+            return;
         }
         if (isUserAuth) {
             if (!data)
@@ -116,8 +118,14 @@ export async function initializePongWebSocket(data, pong) {
             const token = jwt.token
             const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
             const url = wsSelect + `${window.location.hostname}:8443` + data.ws_route + token + '/'
-            const socket = new WebSocket(url);
-
+            let socket
+            try {
+                socket = new WebSocket(url);
+            }
+            catch (error) {
+                reject(new Error("Failed to construct Purrinha WebSocket: " + error.message));
+                return;
+            }
             socket.onopen = function (e) {
                 console.log("Pong WebSocket connection established");
                 resolve(socket);
@@ -160,7 +168,7 @@ export async function initializePongWebSocket(data, pong) {
 
 export async function initializeWebSocket() {
     return new Promise(async (resolve, reject) => {
-        if (window.mySocket) {
+        if (window.mySocket && window.mySocket.readyState === WebSocket.OPEN) {
             console.log("Socket already initialized");
             resolve(window.mySocket);
             return;
@@ -177,8 +185,14 @@ export async function initializeWebSocket() {
             const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
             const url = wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/'
             console.log("url is:", url);
-            let socket = new WebSocket(wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/');
-
+            let socket;
+            try {
+                socket = new WebSocket(wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/');
+            }
+            catch (error) {
+                reject(new Error("Failed to construct WebSocket: " + error.message));
+                return;
+            }
             socket.onopen = function (e) {
                 console.log("WebSocket connection established");
                 resolve(socket);
