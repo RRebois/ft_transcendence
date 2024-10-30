@@ -253,6 +253,7 @@ export default class Dashboard {
 	setupEventListeners() {
 		const pong_modal = document.getElementById('create-pong-match-modal');
 		if (pong_modal) {
+			this.pongGameNbPlayers = 'bot'
 			pong_modal.addEventListener('show.bs.modal', (event) => {
 				// Handle game request
 				const pongGameRequestBtn = document.getElementById('pong-game-request-btn');
