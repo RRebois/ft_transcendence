@@ -131,6 +131,7 @@ export async function initializePongWebSocket(data, pong) {
                 resolve(socket);
             };
             pong.init();
+            pong.animate(); // placed here to avoid requestAnimationFrame violation
             let test = 0;
             socket.onmessage = function (event) {
                 // console.log("Pong websocket msg received: ", event.data);
@@ -138,12 +139,12 @@ export async function initializePongWebSocket(data, pong) {
 
                 if (data.status === "waiting") // Waiting for opponent(s)
                     pong.waiting();
-                if (data.status === "ready" && test === 0) { // Waiting for display in front
+                if (data.status === "ready" && test === 0) {
                     test = 1;
                     pong.buildGameSet(data);
                 }
                 if (data.status === "started" || data.status === "finished")
-                    pong.display(data, socket);
+                    pong.display(data);
             };
 
             socket.onclose = function (event) {
