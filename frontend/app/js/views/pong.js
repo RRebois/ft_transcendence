@@ -56,6 +56,9 @@ export default class PongGame {
 
     init() { console.log("\n\nINIT");
 
+        // Counter to check all cubes are in their final position
+        this.cubesReady = 0;
+
         // limit 60 fps
         this.lastFrameTime = 0;  // Store the time of the last frame
         this.fpsInterval = 1000 / 60;
@@ -105,7 +108,6 @@ export default class PongGame {
 
         this.gameFinished = false;
         this.gameHasStarted = false;
-//        this.animate();
     }
 
     load_textures() {
@@ -181,7 +183,7 @@ export default class PongGame {
                 delete this.keyMap[event.key];
     }
 
-    clearKeyMap() { console.log("FOCUS OUT");
+    clearKeyMap() {
         if (this.keyMap) {
             const   keys = Object.keys(this.keyMap);
             for(let i = 0; i < keys.length; i++)
@@ -603,17 +605,18 @@ export default class PongGame {
             const   cube = cubes[i];
             const   targetPosition = targetPositions[i];
             this.moveObjectTrans(cube, targetPosition);
-            if (i === cubes.length - 1) {
-                const   check = () => {
-                    if (Math.abs(cube.position.x - targetPosition.x) < 0.1 &&
-                    Math.abs(cube.position.y - targetPosition.y) < 0.1 &&
-                    Math.abs(cube.position.z - targetPosition.z) < 0.1 && window.myPongSocket != null)
+            const   check = () => {
+                if (Math.abs(cube.position.x - targetPosition.x) < 0.1 &&
+                Math.abs(cube.position.y - targetPosition.y) < 0.1 &&
+                Math.abs(cube.position.z - targetPosition.z) < 0.1 && window.myPongSocket != null) {
+                    this.cubesReady++;
+                    if (this.cubesReady === cubes.length)
                         window.myPongSocket.send(JSON.stringify({"game_status": true}));
-                    else
-                        requestAnimationFrame(check);
                 }
-                check();
+                else
+                    requestAnimationFrame(check);
             }
+            check();
         }
     }
 
