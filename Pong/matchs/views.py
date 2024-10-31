@@ -131,6 +131,7 @@ def update_match_data(match_result, winner, match, deco, is_pong=True):
     winner_elo = 0
     opponent_elo = 0
     timestamp = gen_timestamp()
+    print(f"UPDATING MATCH DATA !")
 
     players_data = []
     for player_username in match_result.keys():
@@ -158,7 +159,7 @@ def update_match_data(match_result, winner, match, deco, is_pong=True):
 
     for player_username in match_result.keys():
         if player_username == "bot" or player_username == "guest":
-            return
+            return match
 
     for data in players_data:
         if data.get_username() in winner:
