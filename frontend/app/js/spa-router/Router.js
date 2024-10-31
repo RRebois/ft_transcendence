@@ -1,7 +1,6 @@
 import {getCsrf, isUserConnected} from "@js/functions/user_auth.js";
 import Navbar from "@js/components/Navbar.js";
 import {remove_modal_backdrops} from "@js/functions/display.js";
-import {getCookie} from "@js/functions/cookie.js";
 
 export default class Router {
     constructor(routes = [], renderNode) {
@@ -95,7 +94,6 @@ export default class Router {
     renderRoute(route, path) {
         document.title = `ft_transcendence${route.name.length > 0 ? ' | ' + route.name : ''}`;
         if (route.user) {
-            console.log('RENDER ROUTE WITH USER');
             if (path.startsWith('/purrinha') || path.startsWith('/pong')) {
                 this.renderNode.innerHTML = route.renderView();
             } else {
@@ -104,10 +102,8 @@ export default class Router {
                 this.navbar.setupEventListeners();
             }
         } else {
-            console.log('RENDER ROUTE WITHOUT USER');
             this.renderNode.innerHTML = route.renderView();
         }
-        console.log('SETUP EVENT LISTENERS');
         route.setupEventListeners();
     }
 
@@ -116,6 +112,7 @@ export default class Router {
         if (path !== "/") {
             path = path.replace(/\/+$/, ''); // Remove trailing slashes
         }
+        console.log('PATH: ', path);
         // find all elements with class "modal-backdrop" and remove them
         remove_modal_backdrops();
         const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];

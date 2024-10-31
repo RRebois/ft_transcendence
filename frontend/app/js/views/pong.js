@@ -4,6 +4,7 @@ import {TextGeometry} from 'three/addons/geometries/TextGeometry.js';
 import {initializePongWebSocket} from "@js/functions/websocket.js";
 import {SpotLight} from 'three';
 import * as bootstrap from "bootstrap";
+import {checkGameInstance} from "../functions/games_utils.js";
 import {getCookie} from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
 import {appRouter} from "@js/spa-router/initializeRouter.js";
@@ -41,9 +42,8 @@ export default class PongGame {
     }
 
     initializeWs = async (data) => { console.log(data);
-        let ws;
 		try {
-			ws = await initializePongWebSocket(data, this);
+			await initializePongWebSocket(data, this);
 		} catch (e) {
 			const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
 			document.getElementById('errorModalBody').innerHTML = `
@@ -54,7 +54,15 @@ export default class PongGame {
 		}
     }
 
-    init() {
+    init() { console.log("\n\nINIT");
+
+        // Counter to check all cubes are in their final position
+        this.cubesReady = 0;
+
+        // limit 60 fps
+        this.lastFrameTime = 0;  // Store the time of the last frame
+        this.fpsInterval = 1000 / 60;
+
         // document.title = "ft_transcendence | Pong";
         modal.hidden = true;
         this.userIndex = 0;
@@ -77,7 +85,8 @@ export default class PongGame {
         const horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
         const distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
         this.camera.position.set(300, ((distance * 3) * Math.tan(verticalFOV * 0.5)), -distance);
-        this.scene.fog = new THREE.Fog(0x000000, -300, 1500);
+//        this.scene.fog = new THREE.Fog(0x000000, -300, 1500);
+        this.scene.fog = new THREE.Fog(0x000000, -300, 3500);
         this.camera.lookAt(300, -100, 300);
 
         // Renderer
@@ -98,10 +107,11 @@ export default class PongGame {
         this.animate = this.animate.bind(this);
 
         this.gameFinished = false;
-        this.animate();
+        this.gameHasStarted = false;
     }
 
     load_textures() {
+//    requestIdleCallback(() => {
         const   textureLoader = new DDSLoader();
 
         const   textStadium = textureLoader.load("/textures/grass/grass_BaseColor.dds");
@@ -119,9 +129,11 @@ export default class PongGame {
             textPadBlue,
             textPadRed
         };
+//        });
     }
 
     load_materials() {
+//    requestIdleCallback(() => {
         // Load all materials
         this.materials["wait"] = new THREE.MeshStandardMaterial({
             color: 0xffffff,
@@ -154,6 +166,7 @@ export default class PongGame {
             metalness: 0.8,
             roughness: 0,
         });
+//        });
     }
 
     onKeyDown(event) {
@@ -170,8 +183,16 @@ export default class PongGame {
                 delete this.keyMap[event.key];
     }
 
+    clearKeyMap() {
+        if (this.keyMap) {
+            const   keys = Object.keys(this.keyMap);
+            for(let i = 0; i < keys.length; i++)
+                delete this.keyMap[keys[i]];
+        }
+    }
+
      handleKeyEvent() {
-        if (window.location.pathname === "/pong") {
+        if (window.location.pathname === "/pong" && window.myPongSocket) {
             if (this.props?.code === "20") {
                 if (this.keyMap['w'] === true)
                     window.myPongSocket.send(JSON.stringify({"player_move": {"player": 2, "direction": 1}}));
@@ -255,7 +276,7 @@ export default class PongGame {
 
             // Create plane for mirror text to appear ghosty
             const   planeGeometry = new THREE.PlaneGeometry(10000, 10000);
-            const   planeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true });
+            const   planeMaterial = new THREE.MeshBasicMaterial({color: 0xffffff, opacity: 0.5, transparent: true});
             const   plane = new THREE.Mesh(planeGeometry, planeMaterial);
             plane.position.set(300, 40, 0);
             plane.rotation.x = - Math.PI * 0.5;
@@ -268,7 +289,7 @@ export default class PongGame {
             loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
                 const   geometry = new TextGeometry(txt, {
                     font: font,
-                    size: 85,
+                    size: 75,
                     depth: 20,
                     curveSegments: 4,
                     bevelEnabled: true,
@@ -294,83 +315,85 @@ export default class PongGame {
         }
     }
 
-    buildGameSet(data) {
+    buildGameSet(data) { console.log("\n\nbuild");
         //  remove all from wait message(if any)
-        const   dirLight = this.scene.getObjectByName("light_1");
-        const   pointLight = this.scene.getObjectByName("light_2");
-        const   wait = this.scene.getObjectByName("waitTxt");
-        const   planeWait = this.scene.getObjectByName("waitPlane");
-        this.scene.fog.near = 0.1;
-        this.scene.fog.far = 0;
+        if (window.myPongSocket.readyState === WebSocket.OPEN) {
+            const dirLight = this.scene.getObjectByName("light_1");
+            const pointLight = this.scene.getObjectByName("light_2");
+            const wait = this.scene.getObjectByName("waitTxt");
+            const planeWait = this.scene.getObjectByName("waitPlane");
+            this.scene.fog.near = 0.1;
+            this.scene.fog.far = 0;
 
-        if (dirLight)
-            this.scene.remove(dirLight, pointLight, wait, planeWait);
+            if (dirLight)
+                this.scene.remove(dirLight, pointLight, wait, planeWait);
 
-        // Create stade group with all objetcs so when rotate everything follows
-        const   stadiumGroup = new THREE.Group();
-        const   stadium = new THREE.Object3D();
-        stadium.name = "stadium";
-        stadiumGroup.add(stadium);
-        this.scene.add(stadiumGroup);
+            // Create stade group with all objetcs so when rotate everything follows
+            const stadiumGroup = new THREE.Group();
+            const stadium = new THREE.Object3D();
+            stadium.name = "stadium";
+            stadiumGroup.add(stadium);
+            this.scene.add(stadiumGroup);
 
-        // Display text from the beginning
-        const    textGroup = new THREE.Object3D();//textGroup.position.set(300, 100, 300);
-        textGroup.position.x = 300;
-        textGroup.position.y = 300;
-        textGroup.position.z = 300;
-        textGroup.rotation.set(0, Math.PI, 0);
-        textGroup.name = "textGroup";
-        this.scene.add(textGroup);
+            // Display text from the beginning
+            const textGroup = new THREE.Object3D();//textGroup.position.set(300, 100, 300);
+            textGroup.position.x = 300;
+            textGroup.position.y = 300;
+            textGroup.position.z = 300;
+            textGroup.rotation.set(0, Math.PI, 0);
+            textGroup.name = "textGroup";
+            this.scene.add(textGroup);
 
-        this.keyMap = {};
-        this.paddles = {};
+            this.keyMap = {};
+            this.paddles = {};
 
-        // Ball initial stats
-        this.ball_x = 0;
-        this.ball_z = 0;
-        this.ball_radius = data.game_state.ball["radius"];
+            // Ball initial stats
+            this.ball_x = 0;
+            this.ball_z = 0;
+            this.ball_radius = data.game_state.ball["radius"];
 
-        // rm previous scene stuff
-        this.scene.children;
-        for (let i = 0; i < this.scene.children.length; i++) {
-            this.scene.children[i].remove();
-        }
+            // rm previous scene stuff
+            this.scene.children;
+            for (let i = 0; i < this.scene.children.length; i++) {
+                this.scene.children[i].remove();
+            }
 
-        // Set players info
-        this.xPosition = 0;
-        this.score_p1 = 0;
-        this.score_p2 = 0;
-        this.nameArray = ["p2Nick", "p2Score", "hyphen", "p1Score", "p1Nick"];
+            // Set players info
+            this.xPosition = 0;
+            this.score_p1 = 0;
+            this.score_p2 = 0;
+            this.nameArray = ["p2Nick", "p2Score", "hyphen", "p1Score", "p1Nick"];
 
-        // Set players nick
-        this.players_nick = []; //p2, p1, p4, p3
-        this.players_nick.push({
-            "username": data.game_state.players.player2["name"],
-            "truncUser": null,
-        });
-        this.players_nick.push({
-            "username": data.game_state.players.player1["name"],
-            "truncUser": null,
-        });
-
-        if (Object.keys(data.players).length > 2) {
+            // Set players nick
+            this.players_nick = []; //p2, p1, p4, p3
             this.players_nick.push({
-                "username": data.game_state.players.player4["name"],
+                "username": data.game_state.players.player2["name"],
                 "truncUser": null,
             });
             this.players_nick.push({
-                "username": data.game_state.players.player3["name"],
+                "username": data.game_state.players.player1["name"],
                 "truncUser": null,
             });
+
+            if (Object.keys(data.players).length > 2) {
+                this.players_nick.push({
+                    "username": data.game_state.players.player4["name"],
+                    "truncUser": null,
+                });
+                this.players_nick.push({
+                    "username": data.game_state.players.player3["name"],
+                    "truncUser": null,
+                });
+            }
+
+            this.sprite = [];
+
+            // Display scores to the scene
+            this.printInitScores();
+
+            // Create floor for game and spotlight purpose
+            this.createGameElements(data);
         }
-
-        this.sprite = [];
-
-        // Display scores to the scene
-        this.printInitScores();
-
-        // Create floor for game and spotlight purpose
-        this.createGameElements(data);
     }
 
     createGameElements(data) {
@@ -584,17 +607,18 @@ export default class PongGame {
             const   cube = cubes[i];
             const   targetPosition = targetPositions[i];
             this.moveObjectTrans(cube, targetPosition);
-            if (i === cubes.length - 1) {
-                const   check = () => {
-                    if (Math.abs(cube.position.x - targetPosition.x) < 0.1 &&
-                    Math.abs(cube.position.y - targetPosition.y) < 0.1 &&
-                    Math.abs(cube.position.z - targetPosition.z) < 0.1)
+            const   check = () => {
+                if (Math.abs(cube.position.x - targetPosition.x) < 0.1 &&
+                Math.abs(cube.position.y - targetPosition.y) < 0.1 &&
+                Math.abs(cube.position.z - targetPosition.z) < 0.1 && window.myPongSocket != null) {
+                    this.cubesReady++;
+                    if (this.cubesReady === cubes.length)
                         window.myPongSocket.send(JSON.stringify({"game_status": true}));
-                    else
-                        requestAnimationFrame(check);
                 }
-                check();
+                else
+                    requestAnimationFrame(check);
             }
+            check();
         }
     }
 
@@ -624,7 +648,6 @@ export default class PongGame {
             lt = now;
         }
         animate();
-//console.log("Anim end: ", this.cubeAnimationEnded[i]);
     }
 
     createBlueMaterial() {
@@ -669,57 +692,70 @@ export default class PongGame {
         }
     }
 
-    updateScores(gameState) {
-        // Select objects
+    updateScoresDisplay() {
         const   text = this.scene.getObjectByName("textGroup");
-        const   ball = this.scene.getObjectByName("ball");
         let     toRemove;
+
         this.nameArray.forEach(value => {
             toRemove = text.getObjectByName(value);
             text.remove(toRemove);
-        })
-
-        if (gameState["right_score"] != this.score_p2.toString()) {
-            this.score_p2++;
-            ball.material.map = this.textures["textPadBlue"];
-            ball.material.needsUpdate = true;
-        }
-        else {
-            this.score_p1++;
-            ball.material.map = this.textures["textPadRed"];
-            ball.material.needsUpdate = true;
-        }
+        });
         this.printInitScores();
     }
 
+    updateScores(gameState) { console.log("\n\nUpdate Score");
+        // Select objects
+        const   ball = this.scene.getObjectByName("ball");
+
+        if (gameState["right_score"] != this.score_p2) { console.log("\n\nUpdate player2 Score");
+            this.score_p2 = gameState["right_score"];
+            ball.material.map = this.textures["textPadBlue"];
+            ball.material.needsUpdate = true;
+            this.updateScoresDisplay();
+        }
+        else if (gameState["left_score"] != this.score_p1) { console.log("\n\nUpdate player1 Score");
+            this.score_p1 = gameState["left_score"];
+            ball.material.map = this.textures["textPadRed"];
+            ball.material.needsUpdate = true;
+            this.updateScoresDisplay();
+        }
+    }
+
     // Game loop
-    animate() {
+    animate(currentTime) { //animate()
         // exits game loop
         if (this.gameFinished || window.location.pathname !== "/pong")
             return ;
 
-        const   msg = this.scene.getObjectByName("waitTxt");
-        if (msg) {
-            this.waitMSGMove(msg);
-            this.materials["wait"].emissiveIntensity = 0.5 + Math.sin(Date.now() * 0.005) * 0.8;
+        // Calculate the time since the last frame (60fps)
+        if (!this.lastFrameTime) this.lastFrameTime = currentTime; // Initialize at first call
+        const elapsed = currentTime - this.lastFrameTime;
+
+        if (elapsed > this.fpsInterval) {
+            this.lastFrameTime = currentTime - (elapsed % this.fpsInterval);
+                const   msg = this.scene.getObjectByName("waitTxt");
+                if (msg)
+                    this.waitMSGMove(msg);
+
+                const   ball = this.scene.getObjectByName("ball");
+                if (ball) {
+                    this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+                    this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+                    this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+
+                    if (this.gameHasStarted === true)
+                        this.handleKeyEvent();
+                }
+
+            // Render scene
+            this.renderer.render(this.scene, this.camera);
         }
-
-        const   ball = this.scene.getObjectByName("ball");
-        if (ball) {
-            this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-            this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-            this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-
-            this.handleKeyEvent();
-        }
-
-        // Render scene
-        this.renderer.render(this.scene, this.camera);
         requestAnimationFrame(this.animate);
     }
 
     waitMSGMove(msg) {
         msg.rotation.y += 0.001;
+        this.materials["wait"].emissiveIntensity = 0.5 + Math.sin(Date.now() * 0.005) * 0.8;
     }
 
      onWindowResize() {
@@ -779,7 +815,7 @@ export default class PongGame {
     }
 
     // Collecting info from the game logic in the back
-    display(data) {
+    display(data) { //console.log(data);
         if (this.userIndex === 0 && this.props?.code === "40") {
             for (let i = 0; i < this.players_nick.length; i++) {
                 if (this.players_nick[i].username === this.user.username) {
@@ -791,25 +827,26 @@ export default class PongGame {
             }
         }
         if (data["status"] === "started") {
+            this.gameHasStarted = true;
             const   ball = this.scene.getObjectByName("ball");
 
             this.updateBallPosition(data.game_state);
             this.updatePaddlePosition(data.game_state, Object.values(data.game_state.players));
-            if (data.game_state["new_round"])
-                this.updateScores(data.game_state);
+            this.updateScores(data.game_state);
         }
         else {
+            this.gameHasStarted = false;
             this.winner = data["winner"];
 
             // Select modal message to display
             const   modal = document.getElementById("modal");
             var     msg;
 
-            if (this.props?.code === 22 || this.props?.code === 40) {
+            if (this.props?.code === "22" || this.props?.code === "23" || this.props?.code === "40") {//[10, 20, 22, 23, 40] 10 bot,
                 if (this.winner.includes(this.user["username"]))
                     msg = `Congratulations ${this.user["username"]}, you won!`;
                 else
-                    msg = `${this.user["username"]} you are such a loser. Machines will soon dominate the world!`;
+                    msg = `${this.user["username"]} you are such a loser!`;
             }
             else {
                 if (this.winner.includes(this.user["username"]))
@@ -817,7 +854,7 @@ export default class PongGame {
                 else if (this.props?.code === "20")
                     msg = `${this.user["username"]} you are such a loser. However, you have a very talented friend!`;
                 else
-                    msg = `${this.user["username"]} you are such a loser!`;
+                    msg = `${this.user["username"]} you are such a loser. Machines will soon dominate the world!`;
             }
             if (this.winner.includes(this.user["username"]))
                 modal.style.background = "#3e783e";
@@ -909,6 +946,9 @@ export default class PongGame {
 
     setupEventListeners() {
         this.removeEventListeners(); // Remove existing event listeners
+        window.addEventListener('blur', () => {
+            this.clearKeyMap();
+        });
         window.addEventListener("keydown", this.onKeyDown.bind(this));
         window.addEventListener("keyup", this.onKeyUp.bind(this));
         window.addEventListener("resize", this.onWindowResize.bind(this));
@@ -927,25 +967,29 @@ export default class PongGame {
     }
 
     render() {
-        this.initializeWs(this.props);
-
+        console.log(this.props);
+        let match_exists = checkGameInstance(this.props?.session_id);
+        if (!match_exists) {
+            console.log("match not existing");
+            this.initializeWs(this.props);
+        }
         return `
-            <div style="width: 100%; height: 100%; position: relative;" id="display">
-                <div id="modal" class="w-fit h-fit div-centered text-center p-3">
+        <div style="width: 100%; height: 100%; position: relative;" id="display">
+            <div id="modal" class="w-fit h-fit div-centered text-center p-3">
+            </div>
+        </div>
+        
+        <!-- Unauthorized modal -->
+        <div class="modal fade" id="ErrorModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div id="errorModalBody" class="modal-body"></div>
+                    <div class="modal-footer">
+                        <button id="returnHomeBtn" type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Return home</button>
+                    </div>
                 </div>
             </div>
-            
-            <!-- Unauthorized modal -->
-			<div class="modal fade" id="ErrorModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
-				<div class="modal-dialog">
-					<div class="modal-content">
-						<div id="errorModalBody" class="modal-body"></div>
-						<div class="modal-footer">
-							<button id="returnHomeBtn" type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Return home</button>
-						</div>
-					</div>
-				</div>
-			</div>
-        `;
+        </div>
+    `;
     }
 }

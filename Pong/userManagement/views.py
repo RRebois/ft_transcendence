@@ -125,6 +125,8 @@ def get_profile_pic_url(pp_path):
 @method_decorator(csrf_protect, name='dispatch')
 class UserExistsView(APIView):
     def get(self, request, username):
+        if username == "bot" or username == "guest":
+            return JsonResponse({"message": "User not found"}, status=404)
         try:
             user = authenticate_user(request)
         except AuthenticationFailed as e:
@@ -176,7 +178,8 @@ class LoginView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 class Login42View(APIView):
     def get(self, request):
-        redirect_url = os.environ.get('API_42_CALL')
+        server_ip = os.environ.get('SERVER_IP').upper()
+        redirect_url = os.environ.get(f'API_42_CALL_{server_ip}')
         return JsonResponse(data={'redirect_url': redirect_url}, status=200)
 
 

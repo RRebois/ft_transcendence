@@ -1,5 +1,7 @@
 from configFiles.globals import *
-
+from userManagement.models import *
+from asgiref.sync import sync_to_async
+from userManagement.views import get_profile_pic_url
 
 class PurrinhaMatch:
 
@@ -83,25 +85,47 @@ class PurrinhaPlayer:
         self.quantity = -1
         self.guess = -1
         self.username = username
+        self.photo_url = None
 
     async def get_final_data(self):
+        try:
+            user = await sync_to_async(User.objects.get)(username=self.username)
+            avatar_id = user.avatar_id_id
+            avatar = await sync_to_async(Avatars.objects.get)(id=avatar_id)
+            self.photo_url = get_profile_pic_url(avatar.image_url)
+        except Exception:
+            if self.username == 'bot':
+                self.photo_url = get_profile_pic_url("/media/profile_pics/bot.png")
+            else:
+                self.photo_url = get_profile_pic_url(None)
         return {
             f"player{self.id}": {
                 "name": self.username,
                 'quantity': self.quantity,
                 'guess': self.guess,
                 'id': self.id,
+                'photo_url': self.photo_url,
             }
         }
 
     async def get_data(self):
-        print(f"\nplayer{self.username} == {self.quantity}\n")
+        try:
+            user = await sync_to_async(User.objects.get)(username=self.username)
+            avatar_id = user.avatar_id_id
+            avatar = await sync_to_async(Avatars.objects.get)(id=avatar_id)
+            self.photo_url = get_profile_pic_url(avatar.image_url)
+        except Exception:
+            if self.username == 'bot':
+                self.photo_url = get_profile_pic_url("/media/profile_pics/bot.png")
+            else:
+                self.photo_url = get_profile_pic_url(None)
         return {
             f"player{self.id}": {
                 "name": self.username,
                 'quantity': False if self.quantity == -1 else True,
                 'guess': self.guess,
                 'id': self.id,
+                'photo_url': self.photo_url,
             }
         }
 

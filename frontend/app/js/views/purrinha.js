@@ -2,6 +2,7 @@ import * as bootstrap from "bootstrap";
 import {appRouter} from "@js/spa-router/initializeRouter.js";
 import {initializePurrinhaWebSocket} from "@js/functions/websocket.js";
 import PurrinhaPlayerInfo from "../components/PurrinhaPlayerInfo.js";
+import {checkGameInstance} from "../functions/games_utils.js";
 
 export default class PurrinhaGame {
     constructor(props) {
@@ -29,7 +30,6 @@ export default class PurrinhaGame {
 	}
 
     setProps(newProps) {
-        console.log(newProps);
         this.props = newProps;
     }
 
@@ -41,8 +41,11 @@ export default class PurrinhaGame {
         }
     }
 
-    initializeWs = async (gameCode) => {
+    initializeWs = async (gameCode, match_exists) => {
         console.log("purrihna initializeWs called");
+        if (match_exists) {
+            return ;
+        }
         let ws;
         try {
             ws = await initializePurrinhaWebSocket(gameCode, this.props?.session_id, this.props?.ws_route, this);
@@ -55,7 +58,6 @@ export default class PurrinhaGame {
             return;
         }
 
-        console.log("ws: ", ws);
         this.nb_players = this.getNumberOfPlayers(this.props?.code);
 
         const gameRoot = document.getElementById('game-root');
@@ -79,14 +81,11 @@ export default class PurrinhaGame {
                     ${player3.render()}
                     ${player4.render()}
 				`;
-
             }
         }
     }
 
     setupEventListeners() {
-        console.log("purrihna setupEventListeners called");
-        console.log("this.props: ", this.props);
         if (!this.props?.game || !this.props?.ws_route || !this.props?.session_id || !this?.props.code) {
             const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
             document.getElementById('errorModalBody').innerHTML = `
@@ -96,10 +95,8 @@ export default class PurrinhaGame {
         }
 
         document.getElementById('returnHomeBtn').addEventListener('click', () => {
-            console.log("click on return home");
             const errorModal = bootstrap.Modal.getInstance(document.getElementById('ErrorModal'));
             if (errorModal) {
-                console.log("hide error modal");
                 errorModal.hide();
             }
             appRouter.navigate("/dashboard");
@@ -107,7 +104,10 @@ export default class PurrinhaGame {
     }
 
     render() {
-        this.initializeWs(this.props?.code);
+        let match_exists = checkGameInstance(this.props?.session_id);
+        if (!match_exists) {
+            this.initializeWs(this.props?.code, match_exists);
+        }
         // document.title = "ft_transcendence | Purrinha";
         return `
 			<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center overflow-hidden" id="game-root"></div>

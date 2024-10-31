@@ -11,16 +11,14 @@ import {load_tournaments_ws, reload_new_players} from "@js/functions/tournament_
 import {remove_friend_request_div} from "./friends_management.js";
 import {load_new_notifications} from "../functions/navbar_utils.js";
 import {
-    display_game_winner,
+    display_game_winner, display_guesses,
     display_hourglass,
     display_looking_for_players_modal,
     display_users_info,
     guess_sum, handle_round_winner,
     hide_looking_for_players_modal,
     pick_initial_number,
-    update_score,
 } from "./purrinha.js";
-
 
 export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route, view) {
     return new Promise(async (resolve, reject) => {
@@ -31,13 +29,20 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
         const isUserAuth = await isUserConnected();
         if (!gameCode || !sessionId) {
             reject(new Error("Missing game code or session id"));
+            return;
         }
         if (isUserAuth) {
             const token = jwt.token
             const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
             const url = wsSelect + `${window.location.hostname}:8443` + ws_route + token + '/'
-            const socket = new WebSocket(url);
-
+            let socket;
+            try {
+                socket = new WebSocket(url);
+            }
+            catch (error) {
+                reject(new Error("Failed to construct Pong WebSocket: " + error.message));
+                return;
+            }
             socket.onopen = function (e) {
                 console.log("Purrinha webSocket connection established");
                 resolve(socket);
@@ -49,31 +54,25 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
 
                 // Case : a winner is declared
                 if (data?.winner) {
-                    update_score(data, view);
                     display_game_winner(data, view);
                 }
 
                 if (data?.status === 'waiting') {
-                    console.log("Waiting for players...");
                     display_looking_for_players_modal();
                 } else {
-                    update_score(data, view);
                     if (data?.status === 'started') {
-                        console.log("Game started");
                         hide_looking_for_players_modal();
                         display_users_info(data, view);
                         if (data.game_state?.round === "choosing") {
                             pick_initial_number(view);
                         } else if (data.game_state?.round === "guessing") {
-                            console.log("player_set_id is:", view?.player_set_id);
+                            display_guesses(data, view);
                             if (data.game_state?.player_turn === view?.player_set_id) {
-                                console.log("It's your turn to guess the sum");
                                 guess_sum(data, view);
                             } else {
                                 display_hourglass();
                             }
                         } else if (data.game_state?.round === "finished") {
-                            console.log("Round finished");
                             handle_round_winner(data, view);
                         }
                     } else if (data?.status === 'finished') {
@@ -109,6 +108,7 @@ export async function initializePongWebSocket(data, pong) {
         const isUserAuth = await isUserConnected();
         if (!data.code || !data.session_id) {
             reject(new Error("Missing game code or session id"));
+            return;
         }
         if (isUserAuth) {
             if (!data)
@@ -116,13 +116,20 @@ export async function initializePongWebSocket(data, pong) {
             const token = jwt.token
             const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
             const url = wsSelect + `${window.location.hostname}:8443` + data.ws_route + token + '/'
-            const socket = new WebSocket(url);
-
+            let socket
+            try {
+                socket = new WebSocket(url);
+            }
+            catch (error) {
+                reject(new Error("Failed to construct Purrinha WebSocket: " + error.message));
+                return;
+            }
             socket.onopen = function (e) {
                 console.log("Pong WebSocket connection established");
                 resolve(socket);
             };
             pong.init();
+            pong.animate(); // placed here to avoid requestAnimationFrame violation
             let test = 0;
             socket.onmessage = function (event) {
                 // console.log("Pong websocket msg received: ", event.data);
@@ -130,12 +137,12 @@ export async function initializePongWebSocket(data, pong) {
 
                 if (data.status === "waiting") // Waiting for opponent(s)
                     pong.waiting();
-                if (data.status === "ready" && test === 0) { // Waiting for display in front
+                if (data.status === "ready" && test === 0) {
                     test = 1;
                     pong.buildGameSet(data);
                 }
                 if (data.status === "started" || data.status === "finished")
-                    pong.display(data, socket);
+                    pong.display(data);
             };
 
             socket.onclose = function (event) {
@@ -159,7 +166,7 @@ export async function initializePongWebSocket(data, pong) {
 
 export async function initializeWebSocket() {
     return new Promise(async (resolve, reject) => {
-        if (window.mySocket) {
+        if (window.mySocket && window.mySocket.readyState === WebSocket.OPEN) {
             console.log("Socket already initialized");
             resolve(window.mySocket);
             return;
@@ -176,8 +183,14 @@ export async function initializeWebSocket() {
             const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
             const url = wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/'
             console.log("url is:", url);
-            let socket = new WebSocket(wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/');
-
+            let socket;
+            try {
+                socket = new WebSocket(wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/');
+            }
+            catch (error) {
+                reject(new Error("Failed to construct WebSocket: " + error.message));
+                return;
+            }
             socket.onopen = function (e) {
                 console.log("WebSocket connection established");
                 resolve(socket);

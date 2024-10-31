@@ -253,6 +253,7 @@ export default class Dashboard {
 	setupEventListeners() {
 		const pong_modal = document.getElementById('create-pong-match-modal');
 		if (pong_modal) {
+			this.pongGameNbPlayers = 'bot'
 			pong_modal.addEventListener('show.bs.modal', (event) => {
 				// Handle game request
 				const pongGameRequestBtn = document.getElementById('pong-game-request-btn');
@@ -328,6 +329,7 @@ export default class Dashboard {
 
 		const purrinha_modal = document.getElementById('create-purrinha-match-modal');
 		if (purrinha_modal) {
+			this.purrinhaGameNbPlayers = 'bot'
 			purrinha_modal.addEventListener('show.bs.modal', (event) => {
 				// Handle game request
 				const purrinhaGameRequestBtn = document.getElementById('purrinha-game-request-btn');
@@ -379,7 +381,7 @@ export default class Dashboard {
                                     <input type="radio" class="btn-check" name="purrinha-nb-players" id="purrinha-radio-btn-online-2v2" value="online-2v2" autocomplete="off">
                                     <label class="btn btn-outline-primary" for="purrinha-radio-btn-online-2v2">
                                         <i class="bi bi-people"></i>
-                                        <p>2v2</p>
+                                        <p>1v4</p>
                                     </label>
                                    `;
 								const nbPlayersRadios = document.querySelectorAll('input[name="purrinha-nb-players"]');

@@ -237,7 +237,7 @@ export default class Navbar {
 						${(this.user?.stud42 || this.user?.username === "superuser") ?
 							`<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">` :
 							`<a role="button" data-bs-toggle="modal" data-bs-target="#update-user-picture" title="Update your profile picture !" data-bs-toggle="tooltip">
-								<img src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">
+								<img id="imgAvatar" src="${this.user?.image_url}" class="rounded-circle h-40 w-40 me-2" alt="avatar">
 							</a>`
 						}
 						<div class="dropdown">
@@ -304,7 +304,10 @@ export default class Navbar {
 		if (saveAvatarBtn){
 			saveAvatarBtn.addEventListener("click", this.changeAvatar);
 		}
-		this.loadPreviousAvatar();
+        const   imgAvatar = document.getElementById("imgAvatar");
+        if (imgAvatar) {
+		    imgAvatar.addEventListener("click", this.loadPreviousAvatar());
+        }
 		applyFontSize();
 		this.loadNotifications();
 		const notifBtn = document.getElementById("notifBtn");
