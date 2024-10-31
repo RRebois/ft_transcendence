@@ -27,6 +27,19 @@ up:
 generate_cert:
 	openssl req -x509 -nodes -newkey rsa:4096 -out certs/transcendence.crt -keyout certs/transcendence.key -subj "/C=FR/ST=Rhone-Alpes/L=Lyon/O=42/OU=42Lyon/CN=localhost/UID=cbernot"
 
+cli:
+	@if [ -z "$(FILE)" ]; then \
+		echo "Error: A file with the SERVER_URL, USERNAME and PASSWORD is expected."; \
+		echo "Try 'make cli FILE=<YOUR_FILE>'"; \
+		exit 1; \
+	elif [ ! -f $(FILE) ]; then \
+		echo "Error: File $(FILE) not found."; \
+		exit 1; \
+	else \
+		. $(FILE); \
+		NODE_TLS_REJECT_UNAUTHORIZED=0 wscat -c wss://$${SERVER_URL}:8443/ws/api/ -H "username:$${USERNAME}" -H "password:$${PASSWORD}"; \
+	fi
+
 down:
 	docker compose down -v
 
@@ -51,4 +64,4 @@ re: down up
 confirm_clean:
 	@read -p "Are you sure you want to remove Docker volumes, networks, and images? [y/N] " confirm && if [ "$$confirm" != "y" ] && [ "$$confirm" != "Y" ]; then echo "Aborted."; exit 1; fi
 
-.PHONY: all up down restart logs clean fclean confirm_clean clear_migrations re
+.PHONY: all up down restart logs clean fclean confirm_clean clear_migrations re cli

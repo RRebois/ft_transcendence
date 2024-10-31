@@ -39,18 +39,25 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
         user = self.scope['user']
         await self.update_user_status(user, "in-game")
 
-    async def connect(self):
-        self.game_name = self.scope['url_route']['kwargs']['game_name']
-        self.game_code = int(self.scope['url_route']['kwargs']['game_code'])
-        self.session_id = self.scope['url_route']['kwargs']['session_id']
+    async def hydrate(self, scope, channel_layer=None, channel_name=None):
+        self.game_name = scope['url_route']['kwargs']['game_name']
+        self.game_code = int(scope['url_route']['kwargs']['game_code'])
+        self.session_id = scope['url_route']['kwargs']['session_id']
         self.game_handler = None
-        self.user = self.scope['user']
+        self.user = scope['user']
         self.username = self.user.username
         self.loop = False
-
-        await self.accept()
         self.session_data = await self.get_session_data()
         self.players_max = self.session_data['awaited_players']
+        self.scope = scope
+        if channel_layer:
+            self.channel_layer = channel_layer
+        if channel_name:
+            self.channel_name = channel_name
+
+    async def connect(self):
+        await self.hydrate(self.scope)
+        await self.accept()
 
         error_msg = ''
         print(f"\n\n\nusername => {self.username}\nsession_data => {self.session_data}")
@@ -68,7 +75,9 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({"error_message": error_msg}))
             await self.close()
             return
+        await self.handle_connection()
 
+    async def handle_connection(self):
         await self.change_connection_status()
         await self.channel_layer.group_add(
             self.session_id,
@@ -88,6 +97,7 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
         print(
             f'\n\n\nusername => |{self.username}|\nuser => |{self.user}|\ncode => |{self.game_code}|\n data => |{self.session_data}|\nscope => |{self.scope}| \n\n')
         await self.send_to_group(self.session_data)
+
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -131,11 +141,12 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
             await asyncio.sleep(0.4)
 
     async def fetch_session_data(self):
-        if self.session_data['status'] == 'waiting':
+        if self.session_data['status'] != 'started':
             self.session_data = await self.get_session_data()
+            if self.session_data['status'] == "ready" and not self.game_handler:
+                self.game_handler = GameManagerConsumer.matchs.get(self.session_id)
+                await self.game_handler.add_consumer(self)
         else:
-            self.game_handler = GameManagerConsumer.matchs.get(self.session_id)
-            await self.game_handler.add_consumer(self)
             self.loop = False
             self.loop_task.cancel()
 
@@ -184,14 +195,14 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
             await self.game_handler.end_game(winner=other_player)
             await self.game_handler.remove_consumer(self)
 
-            if session_data['connected_players'] <= 0 or (
-                    self.game_code in [10, 20] and session_data['connected_players'] <= 1):
-                await database_sync_to_async(cache.delete)(self.session_id)
-                await sync_to_async(MatchMaking.delete_session)(self.session_id)
-                if self.session_id in GameManagerConsumer.matchs:
-                    GameManagerConsumer.matchs.pop(self.session_id)
-            else:
-                await database_sync_to_async(cache.set)(self.session_id, session_data)
+        if session_data['connected_players'] <= 0 or (
+                self.game_code in [10, 20] and session_data['connected_players'] <= 1):
+            await database_sync_to_async(cache.delete)(self.session_id)
+            await sync_to_async(MatchMaking.delete_session)(self.session_id)
+            if self.session_id in GameManagerConsumer.matchs:
+                GameManagerConsumer.matchs.pop(self.session_id)
+        else:
+            await database_sync_to_async(cache.set)(self.session_id, session_data)
 
 
 class PongHandler():
@@ -241,7 +252,7 @@ class PongHandler():
         if consumer:
             self.consumer.remove(consumer)
         for client in self.consumer:
-            client.close()
+            await client.disconnect(1000)
 
     async def reset_game(self):
         if not self.loop and not self.message["winner"]:
@@ -271,7 +282,8 @@ class PongHandler():
     async def send_game_state(self):
         game_state = await self.game.serialize()
         self.message['game_state'] = game_state
-        await self.consumer[0].send_to_group(self.message)
+        for consumer in self.consumer:
+            await consumer.send_to_group(self.message)
 
     async def cancel_loop(self):
         if self.bot:
@@ -283,10 +295,12 @@ class PongHandler():
     async def end_game(self, winner=None):
         gs = self.message['game_state']
         deconnection = False
-        if winner is None and gs['left_score'] != gs['winning_score'] and gs['right_score'] != gs['winning_score']:
+        if (winner is None and gs['left_score'] != gs['winning_score'] and gs['right_score'] != gs['winning_score'])\
+            or not self.consumer:
             return
         middle = 1 if self.game_code != 40 else 2
         self.message = await self.consumer[0].get_session_data()
+        self.message['game_state'] = gs
         if self.message['deconnection'] or self.message['status'] == 'finished':
             return
         if winner:
@@ -346,7 +360,7 @@ class PurrinhaHandler():
         if consumer:
             self.consumer.remove(consumer)
         for client in self.consumer:
-            client.close()
+            await client.disconnect(1000)
 
     async def get_new_turn(self):
         if self.turns_id:
