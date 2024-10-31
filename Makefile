@@ -38,7 +38,7 @@ logs:
 clean: down
 
 fclean: confirm_clean clean clear_migrations
-	find ./Pong/media/profile_pics/ -type f -not -name 'default_pp.jpg' -delete
+	find ./Pong/media/profile_pics/ -type f -not -name 'default_pp.jpg' -not -name 'bot.png' -delete
 
 clear_migrations:
 	@rm -rf ./Pong/userManagement/migrations/0*.py

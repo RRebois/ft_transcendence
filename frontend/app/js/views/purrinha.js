@@ -13,8 +13,6 @@ export default class PurrinhaGame {
         this.removeUser = this.removeUser.bind(this);
         this.nb_players = 0;
         this.players = [];
-
-        document.addEventListener('DOMContentLoaded', this.setupEventListeners.bind(this));
     }
 
     setUser = (user) => {
@@ -88,19 +86,23 @@ export default class PurrinhaGame {
     setupEventListeners() {
         if (!this.props?.game || !this.props?.ws_route || !this.props?.session_id || !this?.props.code) {
             const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
-            document.getElementById('errorModalBody').innerHTML = `
+            if (errorModal) {
+                errorModal.innerHTML = `
 				<p>This match is not available. Please try again later.</p>
-			`
+			`}
             errorModal.show();
         }
 
-        document.getElementById('returnHomeBtn').addEventListener('click', () => {
-            const errorModal = bootstrap.Modal.getInstance(document.getElementById('ErrorModal'));
-            if (errorModal) {
-                errorModal.hide();
-            }
-            appRouter.navigate("/dashboard");
-        });
+        const homeBtn = document.getElementById('returnHomeBtn')
+        if (homeBtn) {
+            homeBtn.addEventListener('click', () => {
+                const errorModal = bootstrap.Modal.getInstance(document.getElementById('ErrorModal'));
+                if (errorModal) {
+                    errorModal.hide();
+                }
+                appRouter.navigate("/dashboard");
+            });
+        }
     }
 
     render() {

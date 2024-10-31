@@ -120,12 +120,11 @@ export default class Router {
         console.log('isUserAuth: ', isUserAuth);
         const route = this.routes.find(route => this.match(route, path));
         console.log('route: ', route);
-        route.removeUser();
-
         if (!route) {
             this.render404Page(path);
             return;
         }
+        route.removeUser();
         if (isUserAuth) {
             route.setUser(isUserAuth);
             this.navbar.setUser(isUserAuth);
