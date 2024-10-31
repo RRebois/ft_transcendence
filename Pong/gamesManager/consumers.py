@@ -358,7 +358,7 @@ class PurrinhaHandler():
         self.consumer.append(consumer)
 
     async def remove_consumer(self, consumer=None):
-        if consumer:
+        if consumer and consumer in self.consumer:
             self.consumer.remove(consumer)
         for client in self.consumer:
             await client.disconnect(1000)
