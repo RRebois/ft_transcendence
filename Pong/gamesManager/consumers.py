@@ -110,6 +110,7 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
                 await self.game_handler.reset_game()
         if self.game_handler is not None:
             if self.game_name == 'pong' and self.game_code not in [10, 20]:
+                print(f"\n HEEEERE : data => {data}")
                 player_move = data.get('player_move')
                 if player_move:
                     player_move['player'] = self.session_data['players'][self.username]['id']
@@ -249,7 +250,7 @@ class PongHandler():
         self.consumer.append(consumer)
 
     async def remove_consumer(self, consumer=None):
-        if consumer:
+        if consumer and consumer in self.consumer:
             self.consumer.remove(consumer)
         for client in self.consumer:
             await client.disconnect(1000)
