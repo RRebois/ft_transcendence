@@ -33,10 +33,10 @@ export default class Stats {
 
 		const getEloData = (eloArray) => {
 			const extractedElo = eloArray.map(entry => entry?.elo || 900).reverse();
-			while (extractedElo.length < 6) {
+			while (extractedElo.length < 16) {
 				extractedElo.push(900);
 			}
-			return extractedElo.slice(0, 6).reverse();
+			return extractedElo.slice(0, 16).reverse();
 		}
 
 		const pongElo = getEloData(data.pong.elo);
@@ -45,7 +45,7 @@ export default class Stats {
 		this.chartInstance = new Chart(ctx, {
 			type: 'line',
 			data: {
-				labels: ['L.M. -5', 'L.M. -4', 'L.M. -3', 'L.M. -2', 'L.M. -1', 'Last match'],
+				labels: ['L.M. -15', 'L.M. -14', 'L.M. -13', 'L.M. -12', 'L.M. -11', 'L.M. -10', 'L.M. -9', 'L.M. -8', 'L.M. -7', 'L.M. -6', 'L.M. -5', 'L.M. -4', 'L.M. -3', 'L.M. -2', 'L.M. -1', 'Last match'],
 				datasets: [{
 					label: 'Pong elo 🏓',
 					data: pongElo,
