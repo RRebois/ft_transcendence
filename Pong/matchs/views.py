@@ -133,12 +133,11 @@ def update_match_data(match_result, winner, match, deco, is_pong=True):
     timestamp = gen_timestamp()
 
     players_data = []
-
     for player_username in match_result.keys():
         try:
             player = User.objects.get(username=player_username)
         except User.DoesNotExist:
-            return JsonResponse({"message": "User does not exists."}, status=404)
+            return JsonResponse({"message": "User does not exist."}, status=404)
         players_data.append(player.data)
         try:
             score = Score.objects.get(match=match, player=player)
@@ -153,7 +152,8 @@ def update_match_data(match_result, winner, match, deco, is_pong=True):
             if player_username in winner:
                 match.winner.add(player)
         match.is_finished = True
-        match.deconnection = deco
+        if match.deconnection == False:
+            match.deconnection = deco
         match.save()
 
     for player_username in match_result.keys():
