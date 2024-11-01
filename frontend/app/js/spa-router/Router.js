@@ -1,5 +1,6 @@
 import {getCsrf, isUserConnected} from "@js/functions/user_auth.js";
 import Navbar from "@js/components/Navbar.js";
+import * as bootstrap from 'bootstrap';
 import {remove_modal_backdrops} from "@js/functions/display.js";
 
 export default class Router {
@@ -115,6 +116,12 @@ export default class Router {
         console.log('PATH: ', path);
         // find all elements with class "modal-backdrop" and remove them
         remove_modal_backdrops();
+        const tooltips = document.querySelectorAll('.tooltip');
+        if (tooltips) {
+            tooltips.forEach(tooltip => {
+                tooltip.remove();
+            });
+        }
         const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
         const isUserAuth = await isUserConnected();
         console.log('isUserAuth: ', isUserAuth);
