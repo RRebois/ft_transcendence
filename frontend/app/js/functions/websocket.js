@@ -196,37 +196,28 @@ export async function initializeWebSocket() {
                 resolve(socket);
             };
             socket.onmessage = function (event) {
-                console.log("Message from server:", event.data);
+                // console.log("Message from server:", event.data);
                 const data = JSON.parse(event.data);
                 if (data.type === 'status_change') {
-                    console.log("Status change detected");
                     handle_friend_status(socket, data);
                 }
                 if (data.type === 'test_message') {
-                    console.log('Received test message:', data.message);
                 }
                 if (data.type === 'friend_request') {
-                    console.log("Friend request received");
-                    console.log("data is:", data);
                     handle_received_friend_request(socket, data);
                 }
                 if (data.type === 'friend_req_accept') {
-                    console.log("Friend request accepted");
                     handle_friend_req_accept(socket, data);
                 }
                 if (data.type === 'friend_req_decline') {
-                    console.log("Friend request declined");
                     handle_friend_req_decline(socket, data);
                 }
                 if (data.type === 'friend_remove') {
-                    console.log("Friend removed");
                     handle_friend_removed(socket, data);
                 }
                 if (data.type === 'friend_delete_acc') {
-                    console.log("Friend delete accepted");
                 }
                 if (data.type === 'friend_data_edit') {
-                    console.log("Friend data edit");
                 }
                 if (data.type === 'tournament_created') {
                     handle_tournament_created(socket, data);

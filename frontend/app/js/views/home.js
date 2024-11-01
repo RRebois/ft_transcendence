@@ -35,8 +35,6 @@ export default class Home {
         const username = document.getElementById('login-username').value;
         const password = document.getElementById('login-pwd').value;
         const csrfToken = getCookie('csrftoken');
-        console.log("CALLING LOGIN USER");
-        console.log("CSRF Token: ", csrfToken);
         console.log(username, password);
         if (!username || !password) {
             return;
@@ -60,7 +58,6 @@ export default class Home {
                     toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
                     loginBtn.disabled = false;
                 } else {
-                    console.log('Success:', data);
                     if (data?.otp_required) {
                         this.user_id = data.user_id;
                         const otpModal = new bootstrap.Modal(document.getElementById('otpModal'));
@@ -100,10 +97,8 @@ export default class Home {
                     window.location.href = data.redirect_url;
                 } else {
                     initializeWebSocket();
-                    console.log('Success:', data);
                     OauthBtn.disabled = false;
                     window.location.href = data.redirect_url;
-                    // appRouter.navigate(data.redirect_url);
                 }
             })
             .catch(error => {
@@ -116,7 +111,6 @@ export default class Home {
     }
 
     checkOtp() {
-        console.log("CALLING CHECK OTP");
         const otp = document.getElementById('otp').value;
         const user_id = this.user_id;
         const csrfToken = getCookie('csrftoken');
@@ -152,7 +146,6 @@ export default class Home {
                     otpBtn.disabled = false;
                 } else {
                     initializeWebSocket();
-                    console.log('Success:', data);
                     document.getElementById('otp').classList.remove('is-invalid');
                     appRouter.navigate('/dashboard');
                 }

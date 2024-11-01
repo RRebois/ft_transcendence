@@ -133,7 +133,6 @@ export default class Router {
         const isPublicRoute = this.isPublicRoute(publicRoutes, path);
 
         if (!isPublicRoute && !isUserAuth) {
-            console.log('REDIRECT TO LOGIN BECAUSE NOT PUBLIC ROUTE AND NOT USER AUTHENTICATED');
             this.redirectToLogin();
             return;
         } else if (isPublicRoute && isUserAuth) {

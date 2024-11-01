@@ -703,17 +703,17 @@ export default class PongGame {
         this.printInitScores();
     }
 
-    updateScores(gameState) { console.log("\n\nUpdate Score");
+    updateScores(gameState) { //console.log("\n\nUpdate Score");
         // Select objects
         const   ball = this.scene.getObjectByName("ball");
 
-        if (gameState["right_score"] != this.score_p2) { console.log("\n\nUpdate player2 Score");
+        if (gameState["right_score"] != this.score_p2) { //console.log("\n\nUpdate player2 Score");
             this.score_p2 = gameState["right_score"];
             ball.material.map = this.textures["textPadBlue"];
             ball.material.needsUpdate = true;
             this.updateScoresDisplay();
         }
-        else if (gameState["left_score"] != this.score_p1) { console.log("\n\nUpdate player1 Score");
+        else if (gameState["left_score"] != this.score_p1) { //console.log("\n\nUpdate player1 Score");
             this.score_p1 = gameState["left_score"];
             ball.material.map = this.textures["textPadRed"];
             ball.material.needsUpdate = true;

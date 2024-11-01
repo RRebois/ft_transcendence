@@ -2,10 +2,8 @@ import {getCookie} from "./cookie.js";
 import * as bootstrap from "bootstrap";
 
 export function checkGameInstance(session_id) {
-    console.log("CHECKING GAME INSTANCE");
     const csrfToken = getCookie('csrftoken');
     if (!session_id) {
-        console.log("NO SESSION ID");
         return false;
         }
     fetch(`https://${window.location.hostname}:8443/match/${session_id}`, {

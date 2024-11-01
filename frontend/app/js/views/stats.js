@@ -105,7 +105,6 @@ export default class Stats {
 		})
 		.then(response => response.json().then(data => ({ok: response.ok, data})))
 		.then(({ok, data}) => {
-			console.log('Stats:', data);
 			if (!ok) {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast('Error', data.message, 5000, 'error');
@@ -134,7 +133,6 @@ export default class Stats {
 		})
 		.then(response => response.json().then(data => ({ok: response.ok, data})))
 		.then(({ok, data}) => {
-			console.log('Match history:', data);
 			if (!ok) {
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
