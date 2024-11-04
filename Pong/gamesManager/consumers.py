@@ -338,7 +338,7 @@ class PongHandler():
             print(f"ADDING TO TOURNAMENT")
             print(f"THE MATCH IS: {self.match}")
             await sync_to_async(add_match_to_tournament)(self.message['tournament_name'], self.match)
-        self.cancel_loop()
+        await self.cancel_loop()
         await self.remove_consumer()
 
 
