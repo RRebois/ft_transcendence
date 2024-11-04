@@ -332,18 +332,35 @@ export default class Home {
 							<h1 class="modal-title title" id="otpModalLabel">2FA check 🔒</h1>
 							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 						</div>
-						<div class="modal-body">
-							<p class="text">Enter the OTP provided by your authentication application.</p>
-							<div class="form-floating has-validation">
-								<input type="text" id="otp" class="form-control" required />
-								<label for="otp">One Time Password<span class="text-danger">*</span></label>
-								<div class="invalid-feedback clue-text">OTP is invalid.</div>
-							</div>
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-							<button type="button" id="otp-submit" class="btn btn-primary">Log in</button>
-						</div>
+						<div id="default-form">
+                            <div class="modal-body">
+                                <p class="text">Enter the OTP provided by your authentication application.</p>
+                                <div class="form-floating has-validation">
+                                    <input type="text" id="otp" class="form-control" required />
+                                    <label for="otp">One Time Password<span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback clue-text">OTP is invalid.</div>
+                                </div>
+                            </div>
+                            <div class=" d-flex flex-column">
+                                <button type="button" id="code-lost" class="btn btn-secondary">Lost your code?</button>>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" id="otp-submit" class="btn btn-primary">Log in</button>
+                            </div>
+                        </div>
+                        <div id="lost-form" hidden>
+                            <div class="modal-body">
+                                <p class="text">Enter your email address, you will receive a temporary code</p>
+                                <div class="form-floating has-validation">
+                                    <input type="text" id="email" class="form-control" required />
+                                    <label for="email">Email address<span class="text-danger">*</span></label>
+                                    <div id="email-feedback" class="invalid-feedback clue-text">.</div>
+                                </div>
+                            </div>
+                            <div class=" d-flex flex-column">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" id="mail-submit" class="btn btn-primary">Send</button>
+                            </div>
+                        </div>
 					</div>
 				</div>
 			</div>

@@ -314,7 +314,7 @@ export default class MyProfile {
                                 <form id="2fa-form">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" role="switch" id="2fa-enable" ${this.user?.tfa_activated === true ? "checked" : ""}>
-                                        <label class="form-check-label" for="2fa-enable" id="2fa-enable-label">${this.user?.tfa_activated === true ? "2FA is enable 🔒" : "2FA is disable 🔓"}</label>
+                                        <label class="form-check-label" for="2fa-enable" id="2fa-enable-label">${this.user?.tfa_activated === true ? "2FA is enabled 🔒" : "2FA is disabled 🔓"}</label>
                                     </div>
                                     <div id="qrcode_div" class="d-flex flex-column align-items-center"></div>
                                 </form>

@@ -47,7 +47,6 @@ export default class ResetPw {
                     toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
                     appRouter.navigate('/');
                 } else {
-					console.log("RESET PW FETCH OK")
                     const container = document.getElementById('password-reset-container');
                     if (container) {
                         container.innerHTML = `

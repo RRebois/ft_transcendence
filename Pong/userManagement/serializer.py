@@ -192,7 +192,7 @@ class ProfilePicSerializer(serializers.ModelSerializer):
 
     def validate_image(self, value):
         # checking extension
-        valid_extension = ['jpg', 'jpeg', 'png', 'gif']
+        valid_extension = ['jpg', 'jpeg', 'png']
         ext = os.path.splitext(value.name)[1][1:].lower()
         if ext not in valid_extension:
             raise serializers.ValidationError("Only jpg/jpeg and png files are allowed")
@@ -200,10 +200,10 @@ class ProfilePicSerializer(serializers.ModelSerializer):
         # checking file content, that it matches the format given
         try:
             img = Image.open(value)
-            if img.format not in ['JPEG', 'PNG']:
-                raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
+            if img.format not in ['JPEG', 'PNG', 'JPG']:
+                raise serializers.ValidationError("Only jpg/jpeg and png images are allowed")
         except Exception as e:
-            raise serializers.ValidationError("Only jpg/jpeg/gif and png images are allowed")
+            raise serializers.ValidationError("Only jpg/jpeg and png images are allowed")
         if value.size > FILE_UPLOAD_MAX_MEMORY_SIZE:
             raise serializers.ValidationError("File cannot be larger than "
                                               f"{convert_to_megabyte(FILE_UPLOAD_MAX_MEMORY_SIZE)}MB.")

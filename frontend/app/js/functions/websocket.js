@@ -134,6 +134,7 @@ export async function initializePongWebSocket(data, pong) {
             socket.onmessage = function (event) {
                 // console.log("Pong websocket msg received: ", event.data);
                 const data = JSON.parse(event.data);
+                console.log("Pong websocket data msg received: ", data);
 
                 if (data.status === "waiting") // Waiting for opponent(s)
                     pong.waiting();

@@ -628,7 +628,6 @@ export default class PongGame {
     }
 
     moveObjectTrans(object, targetPosition) {
-        //    console.log("Anim not ended: ", this.cubeAnimationEnded[i]);
         let lt = new Date(),
         f = 0,
         fm = 300;
@@ -637,7 +636,6 @@ export default class PongGame {
             const   now = new Date();
             const   secs = (now - lt) / 1000;
             const   p = f / fm;
-
             requestAnimationFrame(animate);
 
             object.position.x = this.lerp(object.position.x, targetPosition.x, 0.03);

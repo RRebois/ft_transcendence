@@ -69,7 +69,7 @@ def refresh_token_user(refresh_token, request):
 
 def validate_image(image_path):
 
-    valid_extension = ['jpg', 'jpeg', 'png', 'gif']
+    valid_extension = ['jpg', 'jpeg', 'png']
     if not image_path:
         return "profile_pics/default_pp.jpg"
     image = image_path
@@ -77,15 +77,15 @@ def validate_image(image_path):
 
     # checking file extension, that it matches the chosen format
     if ext not in valid_extension:
-        raise serializers.ValidationError("Only jpg/jpeg/png/gif and png images are allowed")
+        raise serializers.ValidationError("Only jpg/jpeg/png and png images are allowed")
 
     # checking file content, that it matches the format given
     try:
         img = Image.open(image_path)
-        if img.format not in ['JPEG', 'PNG', 'GIF']:
-            raise serializers.ValidationError("Only jpg/jpeg/png/gif and png images are allowed")
+        if img.format not in ['JPEG', 'PNG', 'JPG']:
+            raise serializers.ValidationError("Only jpg/jpeg and png images are allowed")
     except Exception as e:
-        raise serializers.ValidationError("Only jpg/jpeg/png/gif and png images are allowed")
+        raise serializers.ValidationError("Only jpg/jpeg and png images are allowed")
 
     return image_path
 
