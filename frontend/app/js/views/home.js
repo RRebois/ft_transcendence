@@ -222,6 +222,23 @@ export default class Home {
         console.log("End of reset pw");
     }
 
+    // sendOTPMail(event) {
+    //     event.preventDefault();
+    //     const csrfToken = getCookie('csrftoken');
+    //     const email = document.getElementById('email').value;
+    //     const emailFeedback = document.getElementById('email-feedback')
+    //     console.log("Mail entered: '", email, "'");
+    //     if (!this.checkEmailFormat(email)) {
+    //         console.log("Email regex failed");
+    //         emailFeedback.textContent = "Wrong email format";
+    //         return;
+    //     }
+    //     const submitBtn = document.getElementById('mail-submit');
+    //     if (submitBtn)
+    //         submitBtn.disabled = true;
+    //     fetch
+    // }
+
     setupEventListeners() {
         const form = document.getElementById('login-form');
         if (form) {
@@ -252,6 +269,10 @@ export default class Home {
         if (forgotPWSubmit) {
             forgotPWSubmit.addEventListener('click', this.sendResetLink);
         }
+        // const lostOTP = document.getElementById('mail-submit');
+        // if (lostOTP) {
+        //     lostOTP.addEventListener('click', this.sendOTPMail);
+        // }
         applyFontSize();
         if (this.props.message) {
             const toastComponent = new ToastComponent();
@@ -341,24 +362,9 @@ export default class Home {
                                     <div class="invalid-feedback clue-text">OTP is invalid.</div>
                                 </div>
                             </div>
-                            <div class=" d-flex flex-column">
-                                <button type="button" id="code-lost" class="btn btn-secondary">Lost your code?</button>>
+                            <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                 <button type="button" id="otp-submit" class="btn btn-primary">Log in</button>
-                            </div>
-                        </div>
-                        <div id="lost-form" hidden>
-                            <div class="modal-body">
-                                <p class="text">Enter your email address, you will receive a temporary code</p>
-                                <div class="form-floating has-validation">
-                                    <input type="text" id="email" class="form-control" required />
-                                    <label for="email">Email address<span class="text-danger">*</span></label>
-                                    <div id="email-feedback" class="invalid-feedback clue-text">.</div>
-                                </div>
-                            </div>
-                            <div class=" d-flex flex-column">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="button" id="mail-submit" class="btn btn-primary">Send</button>
                             </div>
                         </div>
 					</div>

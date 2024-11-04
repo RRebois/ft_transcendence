@@ -698,9 +698,26 @@ class PasswordResetConfirmedView(APIView):
             return JsonResponse({'message': 'Invalid or expired reset password token.'}, status=400)
 
 
+# @method_decorator(csrf_protect, name='dispatch')
+# class LostOTPView(APIView):
+#     serializer_class = LostOTPSerializer
+#
+#     def post(self, request):
+#         serializer = self.serializer_class(data=request.data, context={'request': request})
+#         logging.debug(f"In reset request view")
+#         try:
+#             serializer.is_valid(raise_exception=True)
+#             return JsonResponse(data={'message': 'A mail to reset your password has been sent.'}, status=200)
+#         except serializers.ValidationError as e:
+#             error_message = e.detail.get('non_field_errors', [str(e)])[0]
+#
+#             return JsonResponse(data={'message': error_message}, status=400)
+
 
 @method_decorator(csrf_protect, name='dispatch')
 class Security2FAView(APIView):
+    serializer_class = Activating2FASerializer
+
     def put(self, request):
         try:
             user = authenticate_user(request)
@@ -717,6 +734,8 @@ class Security2FAView(APIView):
                 user.tfa_activated = True
                 user.save()
                 qr_url = pyotp.totp.TOTP(secret_key).provisioning_uri(user.username)
+                email_serializer = Activating2FASerializer(data={'email': user.email, 'qr_url': qr_url})
+                email_serializer.send_2fa_email(user, qr_url)
                 return JsonResponse({"qrcode_url": qr_url,
                                      "message": "2FA activated, please scan the QR-code in your authenticator app to save your account code."})
             except Exception as e:

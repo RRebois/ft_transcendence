@@ -6,6 +6,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.sites.shortcuts import get_current_site
+from django.core.files.base import ContentFile
 from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.urls import reverse
@@ -21,6 +22,8 @@ import os
 import re
 from datetime import datetime, timedelta, timezone
 import logging
+import qrcode
+from io import BytesIO
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -256,7 +259,6 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         email = attrs.get('email')
-        logging.debug(f"email in serializer is: {email}")
         if User.objects.filter(email=email).exists():
             user = User.objects.get(email=attrs.get('email'))
             if user.stud42:
@@ -279,6 +281,29 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             raise serializers.ValidationError("No user with that email exists")
 
         return super().validate(attrs)
+
+class Activating2FASerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=100)
+    qr_url = serializers.URLField()
+
+    def send_2fa_email(self, user, qr_url):
+        qr = qrcode.make(qr_url)
+        buffer = BytesIO()
+        qr.save(buffer, format="PNG")
+        qr_code_image = ContentFile(buffer.getvalue(), "2fa_qrcode.png")
+
+        subject = "Two-Factor Authentication Activated"
+        content = f"Hello {user.username},\n\nYour 2FA has been successfully activated. If you didn't add this code in your Authenticator app, do it now and save this qrcode."
+        data = {
+            'email_body': content,
+            'email_subject': subject,
+            'to_email': user.email,
+        }
+        print(f"Sending email to {user.email}")
+        attachments = [("2fa_qrcode.png", qr_code_image.read(), "image/png")]
+
+        send_email(data, attachments)
+        return
 
 
 class SetNewPasswordSerializer(serializers.Serializer):

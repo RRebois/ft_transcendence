@@ -14,13 +14,18 @@ import logging
 
 logger = logging.getLogger('userManagement')
 
-def send_email(data):
+def send_email(data, attachments=None):
     email = EmailMessage(
         to=[data['to_email']],
         subject=data['email_subject'],
         body=data['email_body'],
         from_email=settings.EMAIL_HOST_USER,
     )
+
+    if attachments:
+        for attachment in attachments:
+            email.attach(*attachment)
+
     email.send()
 
 
