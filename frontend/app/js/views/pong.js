@@ -608,13 +608,15 @@ export default class PongGame {
             const   targetPosition = targetPositions[i];
             this.moveObjectTrans(cube, targetPosition);
             const   check = () => {
-                if (Math.abs(cube.position.x - targetPosition.x) < 0.1 &&
-                Math.abs(cube.position.y - targetPosition.y) < 0.1 &&
-                Math.abs(cube.position.z - targetPosition.z) < 0.1 && window.myPongSocket != null) {
+                if (Math.abs(cube.position.x - targetPosition.x) < 0.2 &&
+                Math.abs(cube.position.y - targetPosition.y) < 0.2 &&
+                Math.abs(cube.position.z - targetPosition.z) < 0.2 && window.location.pathname === "/pong") {
                     this.cubesReady++;
                     if (this.cubesReady === cubes.length)
                         window.myPongSocket.send(JSON.stringify({"game_status": true}));
                 }
+                else if (window.location.pathname !== "/pong")
+                    return ;
                 else
                     requestAnimationFrame(check);
             }
@@ -628,7 +630,6 @@ export default class PongGame {
     }
 
     moveObjectTrans(object, targetPosition) {
-        //    console.log("Anim not ended: ", this.cubeAnimationEnded[i]);
         let lt = new Date(),
         f = 0,
         fm = 300;
@@ -638,16 +639,29 @@ export default class PongGame {
             const   secs = (now - lt) / 1000;
             const   p = f / fm;
 
-            requestAnimationFrame(animate);
-
             object.position.x = this.lerp(object.position.x, targetPosition.x, 0.03);
             object.position.y = this.lerp(object.position.y, targetPosition.y, 0.03);
             object.position.z = this.lerp(object.position.z, targetPosition.z, 0.03);
             f += 30 * secs;
             f %= fm;
             lt = now;
+
+            // exit loop
+            if (Math.abs(object.position.x - targetPosition.x) < 0.2 &&
+            Math.abs(object.position.y - targetPosition.y) < 0.2 &&
+            Math.abs(object.position.z - targetPosition.z) < 0.2) {
+                return ;
+            } else {
+                requestAnimationFrame(animate);
+            }
         }
-        animate();
+        if (Math.abs(object.position.x - targetPosition.x) < 0.2 &&
+            Math.abs(object.position.y - targetPosition.y) < 0.2 &&
+            Math.abs(object.position.z - targetPosition.z) < 0.2) {
+                return ;
+            } else {
+                animate();
+            }
     }
 
     createBlueMaterial() {
@@ -978,7 +992,7 @@ export default class PongGame {
             <div id="modal" class="w-fit h-fit div-centered text-center p-3">
             </div>
         </div>
-        
+
         <!-- Unauthorized modal -->
         <div class="modal fade" id="ErrorModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
