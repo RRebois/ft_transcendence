@@ -335,15 +335,6 @@ export default class PongGame {
         stadiumGroup.add(stadium);
         this.scene.add(stadiumGroup);
 
-        // Display text from the beginning
-        const textGroup = new THREE.Object3D();//textGroup.position.set(300, 100, 300);
-        textGroup.position.x = 300;
-        textGroup.position.y = 300;
-        textGroup.position.z = 300;
-        textGroup.rotation.set(0, Math.PI, 0);
-        textGroup.name = "textGroup";
-        this.scene.add(textGroup);
-
         this.keyMap = {};
         this.paddles = {};
 
@@ -411,6 +402,15 @@ export default class PongGame {
     }
 
     printInitScores() {
+        // Display text from the beginning
+        const textGroup = new THREE.Object3D();//textGroup.position.set(300, 100, 300);
+        textGroup.position.x = 300;
+        textGroup.position.y = 300;
+        textGroup.position.z = 300;
+        textGroup.rotation.set(0, Math.PI, 0);
+        textGroup.name = "textGroup";
+        this.scene.add(textGroup);
+
         for (let i = 0; i < this.players_nick.length; i++) {
             if (this.players_nick[i].username.length > 8)
                 this.players_nick[i].truncUser = this.players_nick[i].username.substr(0, 7) + ".";
@@ -433,7 +433,6 @@ export default class PongGame {
                         this.textArray[1] + this.textArray[2] + this.textArray[3],
                         this.textArray[4]];
 
-        const   textGroup = this.scene.getObjectByName("textGroup");
         const   loader = new FontLoader();
 
         this.xPosition = 0;
@@ -709,12 +708,7 @@ export default class PongGame {
 
     updateScoresDisplay() {
         const   text = this.scene.getObjectByName("textGroup");
-        let     toRemove;
-
-        this.nameArray.forEach(value => {
-            toRemove = text.getObjectByName(value);
-            text.remove(toRemove);
-        });
+        this.scene.remove(text);
         this.printInitScores();
     }
 
@@ -795,7 +789,7 @@ export default class PongGame {
          }
     }
 
-    updateBallPosition(gameState) {
+    updateBallPosition(gameState) { console.log("\n\n", gameState, "\n\n");
         const   ball = this.scene.getObjectByName("ball");
         const   prevPosition = new THREE.Vector3(ball.position.x, ball.position.y, ball.position.z);
         const   v = new THREE.Vector3(gameState.ball["x_vel"], 0, gameState.ball["y_vel"]);
