@@ -19,11 +19,9 @@ def send_email(data, attachments=None):
         body=data['email_body'],
         from_email=settings.EMAIL_HOST_USER,
     )
-
     if attachments:
         for attachment in attachments:
             email.attach(*attachment)
-
     email.send()
 
 
