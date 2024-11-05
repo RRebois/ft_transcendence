@@ -26,7 +26,6 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
             user_connected.status = status
             self.status = status
             user_connected.save(update_fields=['status'])
-            # self.scope['user'] = user_connected
             print(f"GAME: User {str(self.scope['user'])} is now {user_connected.status}")
             return
         except:
@@ -68,8 +67,6 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
             error_msg = 'this game does not exist'
         elif self.game_code not in [10, 20, 22, 23, 40]:
             error_msg = 'this game code does not exist'
-        # elif self.session_data is None:
-        # 	error_msg = 'this session does not exist'
         elif self.username == '':
             error_msg = 'error getting the user data, maybe you are not connected anymore'
         elif self.username not in self.session_data['players']:
@@ -110,6 +107,7 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
             self.session_data['status'] = 'started'
             await self.update_cache_db(self.session_data)
             if self.game_handler is not None:
+                self.game_handler.message = self.session_data
                 await self.game_handler.reset_game()
         if self.game_handler is not None:
             if self.game_name == 'pong' and self.game_code not in [10, 20]:
