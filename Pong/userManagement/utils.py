@@ -10,17 +10,18 @@ from PIL import Image
 from .models import User, FriendRequest
 import jwt
 import os
-import logging
 
-logger = logging.getLogger('userManagement')
 
-def send_email(data):
+def send_email(data, attachments=None):
     email = EmailMessage(
         to=[data['to_email']],
         subject=data['email_subject'],
         body=data['email_body'],
         from_email=settings.EMAIL_HOST_USER,
     )
+    if attachments:
+        for attachment in attachments:
+            email.attach(*attachment)
     email.send()
 
 
@@ -62,14 +63,14 @@ def refresh_token_user(refresh_token, request):
     new_token = generate_JWT(user)
 
     response = JsonResponse({'token': new_token})
-    response.set_cookie(key='jwt', value=new_token, httponly=True)
+    response.set_cookie(key='jwt_access', value=new_token, httponly=True)
 
     return user
 
 
 def validate_image(image_path):
 
-    valid_extension = ['jpg', 'jpeg', 'png', 'gif']
+    valid_extension = ['jpg', 'jpeg', 'png']
     if not image_path:
         return "profile_pics/default_pp.jpg"
     image = image_path
@@ -77,15 +78,15 @@ def validate_image(image_path):
 
     # checking file extension, that it matches the chosen format
     if ext not in valid_extension:
-        raise serializers.ValidationError("Only jpg/jpeg/png/gif and png images are allowed")
+        raise serializers.ValidationError("Only jpg/jpeg/png and png images are allowed")
 
     # checking file content, that it matches the format given
     try:
         img = Image.open(image_path)
-        if img.format not in ['JPEG', 'PNG', 'GIF']:
-            raise serializers.ValidationError("Only jpg/jpeg/png/gif and png images are allowed")
+        if img.format not in ['JPEG', 'PNG', 'JPG']:
+            raise serializers.ValidationError("Only jpg/jpeg and png images are allowed")
     except Exception as e:
-        raise serializers.ValidationError("Only jpg/jpeg/png/gif and png images are allowed")
+        raise serializers.ValidationError("Only jpg/jpeg and png images are allowed")
 
     return image_path
 
@@ -139,10 +140,8 @@ def get_ws_token(request):
     try:
         user = authenticate_user(request)
     except AuthenticationFailed:
-        logger.warning("In get_ws_token: auth failed")
         return JsonResponse({'message': 'Not authenticated'}, status=401)
 
-    logging.debug(user)
     token = generate_short_lived_JWT(user)
     return JsonResponse({'token': token}, status=200)
 

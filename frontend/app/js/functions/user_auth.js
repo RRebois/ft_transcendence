@@ -1,3 +1,5 @@
+import ToastComponent from "../components/Toast.js";
+
 export function isUserConnected() {
     return new Promise((resolve, reject) => {
         fetch(`https://${window.location.hostname}:8443/check_jwt`, {
@@ -9,16 +11,15 @@ export function isUserConnected() {
         })
             .then(response => response.json())
             .then(data => {
-                console.log("isUserConnected response: ", data);
                 if (data.user) {
-                    resolve(data.user);
+                    resolve(data.user, true);
                 } else {
-                    resolve(null);
+                    resolve(false);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                resolve(false); // Resolve false in case of an error
+                resolve(false);
             });
     });
 }

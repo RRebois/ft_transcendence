@@ -63,8 +63,14 @@ export default class Home {
                         const otpModal = new bootstrap.Modal(document.getElementById('otpModal'));
                         otpModal.show();
                     } else {
-                        initializeWebSocket();
-                        appRouter.navigate('/dashboard');
+                        try {
+                            initializeWebSocket();
+                            appRouter.navigate('/dashboard');
+                        }
+                        catch (e) {
+                            const toastComponent = new ToastComponent();
+                            toastComponent.throwToast('Error', e || 'Network error or server is unreachable', 5000, 'error');
+                        }
                     }
                 }
             })
@@ -96,9 +102,15 @@ export default class Home {
                     // appRouter.navigate(data.redirect_url);
                     window.location.href = data.redirect_url;
                 } else {
-                    initializeWebSocket();
-                    OauthBtn.disabled = false;
-                    window.location.href = data.redirect_url;
+                    try {
+                        initializeWebSocket();
+                        OauthBtn.disabled = false;
+                        window.location.href = data.redirect_url;
+                    }
+                    catch (e) {
+                        const toastComponent = new ToastComponent();
+                        toastComponent.throwToast('Error', e || 'Network error or server is unreachable', 5000, 'error');
+                    }
                 }
             })
             .catch(error => {
@@ -145,9 +157,15 @@ export default class Home {
                     document.getElementById('otp').classList.add('is-invalid');
                     otpBtn.disabled = false;
                 } else {
-                    initializeWebSocket();
-                    document.getElementById('otp').classList.remove('is-invalid');
-                    appRouter.navigate('/dashboard');
+                    try {
+                        initializeWebSocket();
+                        document.getElementById('otp').classList.remove('is-invalid');
+                        appRouter.navigate('/dashboard');
+                    }
+                    catch (e) {
+                        const toastComponent = new ToastComponent();
+                        toastComponent.throwToast('Error', e || 'Network error or server is unreachable', 5000, 'error');
+                    }
                 }
             })
             .catch(error => {
@@ -222,6 +240,23 @@ export default class Home {
         console.log("End of reset pw");
     }
 
+    // sendOTPMail(event) {
+    //     event.preventDefault();
+    //     const csrfToken = getCookie('csrftoken');
+    //     const email = document.getElementById('email').value;
+    //     const emailFeedback = document.getElementById('email-feedback')
+    //     console.log("Mail entered: '", email, "'");
+    //     if (!this.checkEmailFormat(email)) {
+    //         console.log("Email regex failed");
+    //         emailFeedback.textContent = "Wrong email format";
+    //         return;
+    //     }
+    //     const submitBtn = document.getElementById('mail-submit');
+    //     if (submitBtn)
+    //         submitBtn.disabled = true;
+    //     fetch
+    // }
+
     setupEventListeners() {
         const form = document.getElementById('login-form');
         if (form) {
@@ -252,6 +287,10 @@ export default class Home {
         if (forgotPWSubmit) {
             forgotPWSubmit.addEventListener('click', this.sendResetLink);
         }
+        // const lostOTP = document.getElementById('mail-submit');
+        // if (lostOTP) {
+        //     lostOTP.addEventListener('click', this.sendOTPMail);
+        // }
         applyFontSize();
         if (this.props.message) {
             const toastComponent = new ToastComponent();
@@ -332,18 +371,20 @@ export default class Home {
 							<h1 class="modal-title title" id="otpModalLabel">2FA check 🔒</h1>
 							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 						</div>
-						<div class="modal-body">
-							<p class="text">Enter the OTP provided by your authentication application.</p>
-							<div class="form-floating has-validation">
-								<input type="text" id="otp" class="form-control" required />
-								<label for="otp">One Time Password<span class="text-danger">*</span></label>
-								<div class="invalid-feedback clue-text">OTP is invalid.</div>
-							</div>
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-							<button type="button" id="otp-submit" class="btn btn-primary">Log in</button>
-						</div>
+						<div id="default-form">
+                            <div class="modal-body">
+                                <p class="text">Enter the OTP provided by your authentication application.</p>
+                                <div class="form-floating has-validation">
+                                    <input type="text" id="otp" class="form-control" required />
+                                    <label for="otp">One Time Password<span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback clue-text">OTP is invalid.</div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" id="otp-submit" class="btn btn-primary">Log in</button>
+                            </div>
+                        </div>
 					</div>
 				</div>
 			</div>
