@@ -317,6 +317,9 @@ export default class PongGame {
     }
 
     buildGameSet(data) { //console.log("\n\nbuild: ", data);
+        // checks resize before building first
+        this.onWindowResize()
+
         //  remove all from wait message(if any)
         const dirLight = this.scene.getObjectByName("light_1");
         const pointLight = this.scene.getObjectByName("light_2");
@@ -769,17 +772,25 @@ export default class PongGame {
 
      onWindowResize() {
          if (window.location.pathname === "/pong") {
-             const newWidth = window.innerWidth;
-             const newHeight = window.innerHeight;
-             const aspectRatio = newWidth / newHeight;
+             const  newWidth = window.innerWidth;
+             const  newHeight = window.innerHeight;
+             const  aspectRatio = newWidth / newHeight;
              this.camera.aspect = aspectRatio;
 
              if ((newWidth !== this.prevWidth && aspectRatio < 1.5) || (newHeight !== this.prevHeight && aspectRatio < 1.5)) {
-                 const verticalFOV = this.camera.fov * (Math.PI / 180);
-                 const horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
-                 const distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
+                 const  verticalFOV = this.camera.fov * (Math.PI / 180);
+                 const  horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
+                 const  distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
                  this.camera.position.z = -distance;
                  this.camera.position.y = ((distance * 3) * Math.tan(verticalFOV * 0.5));
+                 this.camera.position.x = 300;
+             }
+             else if (aspectRatio > 1.5) {
+                const  verticalFOV = this.camera.fov * (Math.PI / 180);
+                 const  horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
+                 const  distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
+                 this.camera.position.z = -distance * 2.5;
+                 this.camera.position.y = ((distance * 3) * Math.tan(verticalFOV * 0.5)) - this.camera.position.z * 0.5;
                  this.camera.position.x = 300;
              }
              this.camera.updateProjectionMatrix();
