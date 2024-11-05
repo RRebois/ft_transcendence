@@ -10,9 +10,7 @@ from PIL import Image
 from .models import User, FriendRequest
 import jwt
 import os
-import logging
 
-logger = logging.getLogger('userManagement')
 
 def send_email(data, attachments=None):
     email = EmailMessage(
@@ -67,7 +65,7 @@ def refresh_token_user(refresh_token, request):
     new_token = generate_JWT(user)
 
     response = JsonResponse({'token': new_token})
-    response.set_cookie(key='jwt', value=new_token, httponly=True)
+    response.set_cookie(key='jwt_access', value=new_token, httponly=True)
 
     return user
 
@@ -144,10 +142,8 @@ def get_ws_token(request):
     try:
         user = authenticate_user(request)
     except AuthenticationFailed:
-        logger.warning("In get_ws_token: auth failed")
         return JsonResponse({'message': 'Not authenticated'}, status=401)
 
-    logging.debug(user)
     token = generate_short_lived_JWT(user)
     return JsonResponse({'token': token}, status=200)
 

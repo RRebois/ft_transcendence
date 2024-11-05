@@ -63,8 +63,14 @@ export default class Home {
                         const otpModal = new bootstrap.Modal(document.getElementById('otpModal'));
                         otpModal.show();
                     } else {
-                        initializeWebSocket();
-                        appRouter.navigate('/dashboard');
+                        try {
+                            initializeWebSocket();
+                            appRouter.navigate('/dashboard');
+                        }
+                        catch (e) {
+                            const toastComponent = new ToastComponent();
+                            toastComponent.throwToast('Error', e || 'Network error or server is unreachable', 5000, 'error');
+                        }
                     }
                 }
             })
@@ -96,9 +102,15 @@ export default class Home {
                     // appRouter.navigate(data.redirect_url);
                     window.location.href = data.redirect_url;
                 } else {
-                    initializeWebSocket();
-                    OauthBtn.disabled = false;
-                    window.location.href = data.redirect_url;
+                    try {
+                        initializeWebSocket();
+                        OauthBtn.disabled = false;
+                        window.location.href = data.redirect_url;
+                    }
+                    catch (e) {
+                        const toastComponent = new ToastComponent();
+                        toastComponent.throwToast('Error', e || 'Network error or server is unreachable', 5000, 'error');
+                    }
                 }
             })
             .catch(error => {
@@ -145,9 +157,15 @@ export default class Home {
                     document.getElementById('otp').classList.add('is-invalid');
                     otpBtn.disabled = false;
                 } else {
-                    initializeWebSocket();
-                    document.getElementById('otp').classList.remove('is-invalid');
-                    appRouter.navigate('/dashboard');
+                    try {
+                        initializeWebSocket();
+                        document.getElementById('otp').classList.remove('is-invalid');
+                        appRouter.navigate('/dashboard');
+                    }
+                    catch (e) {
+                        const toastComponent = new ToastComponent();
+                        toastComponent.throwToast('Error', e || 'Network error or server is unreachable', 5000, 'error');
+                    }
                 }
             })
             .catch(error => {

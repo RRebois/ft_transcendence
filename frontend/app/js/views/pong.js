@@ -617,8 +617,10 @@ export default class PongGame {
                 }
                 else if (window.location.pathname !== "/pong")
                     return ;
-                else
+                else {
+                    console.log("ANIMATE MOVE CUBES");
                     requestAnimationFrame(check);
+                }
             }
             check();
         }
@@ -652,6 +654,7 @@ export default class PongGame {
             Math.abs(object.position.z - targetPosition.z) < 0.2) {
                 return ;
             } else {
+                console.log("ANIMATE MOVE OBJECT TRANS");
                 requestAnimationFrame(animate);
             }
         }
@@ -764,6 +767,7 @@ export default class PongGame {
             // Render scene
             this.renderer.render(this.scene, this.camera);
         }
+        console.log("ANIMATE ANIMATE");
         requestAnimationFrame(this.animate);
     }
 

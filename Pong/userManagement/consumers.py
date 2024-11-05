@@ -80,14 +80,12 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def connect_active_ws(self, user):
         await self.ws_count(1)
         if self.scope['user'].active_ws == 1:
-            print(f"CONNECT: Scope User {self.scope['user']} is in ONLINE STATUS: {self.scope['user'].active_ws} active ws")
             await self.user_online()
         return
 
     async def disconnect_active_ws(self, user):
         await self.ws_count(-1)
         if self.scope['user'].active_ws == 0:
-            print(f"DISCONNECT: Scope User {self.scope['user']} is in OFFLINE STATUS: {self.scope['user'].active_ws} active ws")
             await self.user_offline()
         return
 
@@ -97,20 +95,16 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.accept()
             await self.close()
         else:
-            print(f"CONNECT START: SCOPE User {self.scope['user']} has {self.scope['user'].active_ws} active ws")
             await self.accept()
             await self.channel_layer.group_add(f"user_{user.id}_group", self.channel_name)
             await self.channel_layer.group_add("Connected_users_group", self.channel_name)
             await self.connect_active_ws(user)
-            print(f"CONNECT END: SCOPE User {self.scope['user']} has {self.scope['user'].active_ws} active ws")
 
     async def disconnect(self, close_code):
         user = self.scope['user']
-        print(f"DISCONNECT START: SCOPE User {self.scope['user']} has {self.scope['user'].active_ws} active ws")
         await self.disconnect_active_ws(user)
         await self.channel_layer.group_discard(f"user_{user.id}_group", self.channel_name)
         await self.channel_layer.group_discard("Connected_users_group", self.channel_name)
-        print(f"DISCONNECT END: SCOPE User {self.scope['user']} has {self.scope['user'].active_ws} active ws")
 
     async def receive(self, text_data):
         print(f"Received message: {text_data}")

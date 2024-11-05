@@ -48,12 +48,12 @@ logging.basicConfig(
 class JWTAuthView(APIView):
     def get(self, request):
         user = authenticate_user(request)
-        logging.debug(user)
+        print(f"{user}")
         if user is not None:
-            logging.debug("returning isAuthenticated: True")
+            print(f"returning isAuthenticated: True")
             return JsonResponse({'user': user_as_json(user)}, status=200)
         else:
-            logging.debug("returning isAuthenticated: False")
+            print(f"returning isAuthenticated: False")
             return JsonResponse({'user': None}, status=401)
 
 
@@ -66,7 +66,8 @@ def authenticate_user(request):
     if not token:
         token = request.COOKIES.get('jwt_access')
     if not token:
-        raise AuthenticationFailed('No JWT were found, please login.')
+        token = request.COOKIES.get('jwt_refresh')
+        raise AuthenticationFailed('No JWT found, please login.')
 
     secret = os.environ.get('SECRET_KEY')
 

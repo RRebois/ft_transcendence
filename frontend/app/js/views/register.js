@@ -128,9 +128,16 @@ export default class Register {
                 toastComponent.throwToast('Error', data || 'Something went wrong', 5000, 'error');
                 registerBtn.disabled = false;
             } else {
-                registerBtn.disabled = false;
-                initializeWebSocket();
-                appRouter.navigate('/dashboard');
+                try {
+                    registerBtn.disabled = false;
+                    initializeWebSocket();
+                    appRouter.navigate('/dashboard');
+                }
+                catch (e) {
+                    const toastComponent = new ToastComponent();
+                    toastComponent.throwToast('Error', e || 'Network error or server is unreachable', 5000, 'error');
+                    registerBtn.disabled = false;
+                }
             }
         })
         .catch(error => {
