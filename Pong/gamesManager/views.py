@@ -35,6 +35,16 @@ class MatchMaking():
             MatchMaking.matchs[session_id]['status'] = 'open' if is_open else 'closed'
 
     @staticmethod
+    def remove_players(session_data):
+        session_id = session_data['session_id']
+        if MatchMaking.matchs.get(session_id):
+            MatchMaking.matchs[session_id]['elos'] = []
+            MatchMaking.matchs[session_id]['players'] = []
+            session_data['players'] = {}
+            session_data['connected_players'] = 0
+            cache.set(session_id, session_data)
+
+    @staticmethod
     def add_player(session_id, username):
         if MatchMaking.matchs.get(session_id):
             if username not in ['guest', BOT_NAME]:
@@ -156,6 +166,9 @@ class MatchMaking():
             print("\n\n\nTournament match found")
         if len(tournament['players'][username]) >= tournament['number_players'] - 1:
             raise ValueError("You have already played all matchs for this tournament.")
+        for match in tournament['matchs']:
+            if MatchMaking.matchs.get(match):
+                print(f"\n\t\tget match\ntournament => {tournament}\nmatch => {MatchMaking.matchs[match]}")
         for match in tournament['matchs']:
             if MatchMaking.matchs.get(match) and MatchMaking.matchs[match]['status'] == 'open':
                 players_list = MatchMaking.matchs[match]['players']
