@@ -15,7 +15,7 @@ Pong/userManagement/migrations/*
 Pong/matchs/migrations/*
 Pong/warning.log
 Pong/debug.log
-#Pong/media/profile_pics/*
+Pong/media/profile_pics/*
 
 Pong/gamesManager/game_ai/ai_q_table.pickle
 Pong/userManagement/migrations/*_initial.py
