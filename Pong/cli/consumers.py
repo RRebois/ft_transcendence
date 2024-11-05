@@ -10,6 +10,7 @@ from gamesManager.consumers import GameManagerConsumer
 from gamesManager.views import GameManagerView
 from userManagement.utils import generate_JWT, generate_refresh_JWT
 from userManagement.serializer import LoginSerializer
+from configFiles.globals import *
 
 
 class TerminalConsumer(AsyncWebsocketConsumer):
@@ -23,6 +24,7 @@ class TerminalConsumer(AsyncWebsocketConsumer):
 			self.commands = {
 				'help': self.handle_help,
 				'join_game': self.handle_join_game,
+				'test': self.handle_test_grid,
 				'quit': self.handle_leave_game,
 			}
 			await self.accept()
@@ -45,13 +47,10 @@ class TerminalConsumer(AsyncWebsocketConsumer):
 			await self.user_disconnection()
 
 	async def session_msg(self, event):
-
+		print(f"\n\t\tsession_msg => {event}")
 		message = event["message"]
 		response = await self.handler.parse_game_state(message)
 		for k in response.keys():
-			if k == "ready" and not self.ready:
-				self.ready = True
-				await self.game_consumer.receive(json.dumps({"game_status": True}))
 			await self.send(text_data=response[k])
 			if k == "end_game":
 				self.game_consumer = None
@@ -86,7 +85,9 @@ class TerminalConsumer(AsyncWebsocketConsumer):
 		await self.send('Here you can play pong.\
 			\nType "join_game" to play against another player\
 			\n\tWhen the game starts you can type "w" to move up or "s" to move down\
+			\n\tbe aware, your paddle is the "Y" as for the enemy is the "E"\
 			\n\tattention here you\'ll see the game in reduced dimensions\
+			\nType "test" to have an exemple of the game grid, no surprises while gaming\
 			\nType "quit" to leave the game or to close the connection\
 			\nType "help" to see this again')
 
@@ -168,6 +169,12 @@ class TerminalConsumer(AsyncWebsocketConsumer):
 		else:
 			self.game_consumer = None
 
+	async def handle_test_grid(self):
+		game_grid = ""
+		line = f"{'*' * (GAME_WIDTH // GameStateHandler.REDUCTION)}\n"
+		for _ in range(GAME_HEIGHT // GameStateHandler.REDUCTION):
+			game_grid += line
+		await self.send(f"\tResize you terminal to fit this grid\n\tin order to have a better play experience\n{game_grid}")
 
 class GameStateHandler():
 

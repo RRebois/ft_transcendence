@@ -24,8 +24,8 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
             user_connected = User.objects.get(id=user.id)
             print(f"GAME: User is {str(user_connected)}")
             user_connected.status = status
+            self.status = status
             user_connected.save(update_fields=['status'])
-            # self.scope['user'] = user_connected
             print(f"GAME: User {str(self.scope['user'])} is now {user_connected.status}")
             return
         except:
@@ -47,6 +47,8 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
         self.user = scope['user']
         self.username = self.user.username
         self.loop = False
+        self.status = None
+        self.lock = asyncio.Lock()
         self.session_data = await self.get_session_data()
         self.players_max = self.session_data['awaited_players']
         self.scope = scope
@@ -65,8 +67,6 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
             error_msg = 'this game does not exist'
         elif self.game_code not in [10, 20, 22, 23, 40]:
             error_msg = 'this game code does not exist'
-        # elif self.session_data is None:
-        # 	error_msg = 'this session does not exist'
         elif self.username == '':
             error_msg = 'error getting the user data, maybe you are not connected anymore'
         elif self.username not in self.session_data['players']:
@@ -107,6 +107,7 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
             self.session_data['status'] = 'started'
             await self.update_cache_db(self.session_data)
             if self.game_handler is not None:
+                self.game_handler.message = self.session_data
                 await self.game_handler.reset_game()
         if self.game_handler is not None:
             if self.game_name == 'pong' and self.game_code not in [10, 20]:
@@ -125,7 +126,10 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(message))
 
     async def disconnect(self, close_code):
-        await self.user_online()
+        async with self.lock:
+            if self.status == "online":
+                return
+            await self.user_online()
         if self.loop:
             self.loop_task.cancel()
         await self.decrement_connection_count()
@@ -214,6 +218,7 @@ class PongHandler():
         self.session_id = consumer.session_id
         self.players = consumer.session_data['players']
         self.bot = None
+        self.lock = asyncio.Lock()
         self.loop = False
         self.match = None
 
@@ -256,10 +261,11 @@ class PongHandler():
             await client.disconnect(1000)
 
     async def reset_game(self):
-        if not self.loop and not self.message["winner"]:
-            await self.game.reset_game()
-            # await self.bot.launch_train()
-            self.loop_task = asyncio.create_task(self.game_loop())
+        async with self.lock:
+            if not self.loop and not self.message["winner"]:
+                self.loop = True
+                await self.game.reset_game()
+                self.loop_task = asyncio.create_task(self.game_loop())
 
     async def receive(self, text_data):
         player_move = text_data.get('player_move')
@@ -267,7 +273,6 @@ class PongHandler():
             await self.game.move_player_paddle(player_move)
 
     async def game_loop(self):
-        self.loop = True
         if self.bot:
             await self.bot.launch_bot()
         while True:
@@ -287,11 +292,12 @@ class PongHandler():
             await consumer.send_to_group(self.message)
 
     async def cancel_loop(self):
-        if self.bot:
-            await self.bot.cancel_loop()
-        if self.loop:
-            self.loop = False
-            self.loop_task.cancel()
+        async with self.lock:
+            if self.loop:
+                self.loop = False
+                self.loop_task.cancel()
+            if self.bot:
+                await self.bot.cancel_loop()
 
     async def end_game(self, winner=None):
         gs = self.message['game_state']
@@ -330,7 +336,7 @@ class PongHandler():
             print(f"ADDING TO TOURNAMENT")
             print(f"THE MATCH IS: {self.match}")
             await sync_to_async(add_match_to_tournament)(self.message['tournament_name'], self.match)
-        self.cancel_loop()
+        await self.cancel_loop()
         await self.remove_consumer()
 
 
