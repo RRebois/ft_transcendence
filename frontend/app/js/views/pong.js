@@ -255,6 +255,9 @@ export default class PongGame {
     }
 
     waiting() {
+        // checks resize before building first
+        this.onWindowResize();
+
         const   check = this.scene.getObjectByName("light_1");
         if (!check) {
             // Set lights
