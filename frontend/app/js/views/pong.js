@@ -60,8 +60,8 @@ export default class PongGame {
         this.cubesReady = 0;
 
         // limit 60 fps
-        this.lastFrameTime = 0;  // Store the time of the last frame
-        this.fpsInterval = 1000 / 60;
+//        this.lastFrameTime = 0;  // Store the time of the last frame
+//        this.fpsInterval = 1000 / 60;
 
         // document.title = "ft_transcendence | Pong";
         modal.hidden = true;
@@ -106,30 +106,31 @@ export default class PongGame {
 
         this.animate = this.animate.bind(this);
 
+        this.gameClosed = false;
         this.gameFinished = false;
         this.gameHasStarted = false;
     }
 
     load_textures() {
-//    requestIdleCallback(() => {
-        const   textureLoader = new DDSLoader();
+        requestIdleCallback(() => {
+            const   textureLoader = new DDSLoader();
 
-        const   textStadium = textureLoader.load("/textures/grass/grass_BaseColor.dds");
-        const   textInitBall = textureLoader.load("/textures/football.dds");
-        const   textBlueCube = textureLoader.load("/textures/blue_basecolor.dds");
-        const   textRedCube = textureLoader.load("/textures/red_basecolor.dds");
-        const   textPadBlue = textureLoader.load("/textures/ice/ice_basecolor.dds");
-        const   textPadRed = textureLoader.load("/textures/lava/lava_basecolor.dds");
+            const   textStadium = textureLoader.load("/textures/grass/grass_BaseColor.dds");
+            const   textInitBall = textureLoader.load("/textures/football.dds");
+            const   textBlueCube = textureLoader.load("/textures/blue_basecolor.dds");
+            const   textRedCube = textureLoader.load("/textures/red_basecolor.dds");
+            const   textPadBlue = textureLoader.load("/textures/ice/ice_basecolor.dds");
+            const   textPadRed = textureLoader.load("/textures/lava/lava_basecolor.dds");
 
-        this.textures = {
-            textStadium,
-            textInitBall,
-            textBlueCube,
-            textRedCube,
-            textPadBlue,
-            textPadRed
-        };
-//        });
+            this.textures = {
+                textStadium,
+                textInitBall,
+                textBlueCube,
+                textRedCube,
+                textPadBlue,
+                textPadRed
+            };
+        });
     }
 
     load_materials() {
@@ -315,85 +316,83 @@ export default class PongGame {
         }
     }
 
-    buildGameSet(data) { console.log("\n\nbuild");
+    buildGameSet(data) { //console.log("\n\nbuild: ", data);
         //  remove all from wait message(if any)
-        if (window.myPongSocket.readyState === WebSocket.OPEN) {
-            const dirLight = this.scene.getObjectByName("light_1");
-            const pointLight = this.scene.getObjectByName("light_2");
-            const wait = this.scene.getObjectByName("waitTxt");
-            const planeWait = this.scene.getObjectByName("waitPlane");
-            this.scene.fog.near = 0.1;
-            this.scene.fog.far = 0;
+        const dirLight = this.scene.getObjectByName("light_1");
+        const pointLight = this.scene.getObjectByName("light_2");
+        const wait = this.scene.getObjectByName("waitTxt");
+        const planeWait = this.scene.getObjectByName("waitPlane");
+        this.scene.fog.near = 0.1;
+        this.scene.fog.far = 0;
 
-            if (dirLight)
-                this.scene.remove(dirLight, pointLight, wait, planeWait);
+        if (dirLight)
+            this.scene.remove(dirLight, pointLight, wait, planeWait);
 
-            // Create stade group with all objetcs so when rotate everything follows
-            const stadiumGroup = new THREE.Group();
-            const stadium = new THREE.Object3D();
-            stadium.name = "stadium";
-            stadiumGroup.add(stadium);
-            this.scene.add(stadiumGroup);
+        // Create stade group with all objetcs so when rotate everything follows
+        const stadiumGroup = new THREE.Group();
+        const stadium = new THREE.Object3D();
+        stadium.name = "stadium";
+        stadiumGroup.add(stadium);
+        this.scene.add(stadiumGroup);
 
-            // Display text from the beginning
-            const textGroup = new THREE.Object3D();//textGroup.position.set(300, 100, 300);
-            textGroup.position.x = 300;
-            textGroup.position.y = 300;
-            textGroup.position.z = 300;
-            textGroup.rotation.set(0, Math.PI, 0);
-            textGroup.name = "textGroup";
-            this.scene.add(textGroup);
+        // Display text from the beginning
+        const textGroup = new THREE.Object3D();//textGroup.position.set(300, 100, 300);
+        textGroup.position.x = 300;
+        textGroup.position.y = 300;
+        textGroup.position.z = 300;
+        textGroup.rotation.set(0, Math.PI, 0);
+        textGroup.name = "textGroup";
+        this.scene.add(textGroup);
 
-            this.keyMap = {};
-            this.paddles = {};
+        this.keyMap = {};
+        this.paddles = {};
 
-            // Ball initial stats
-            this.ball_x = 0;
-            this.ball_z = 0;
-            this.ball_radius = data.game_state.ball["radius"];
+        // Ball initial stats
+        this.ball_x = 0;
+        this.ball_z = 0;
+        this.ball_radius = data.game_state.ball["radius"];
 
-            // rm previous scene stuff
-            this.scene.children;
-            for (let i = 0; i < this.scene.children.length; i++) {
-                this.scene.children[i].remove();
-            }
-
-            // Set players info
-            this.xPosition = 0;
-            this.score_p1 = 0;
-            this.score_p2 = 0;
-            this.nameArray = ["p2Nick", "p2Score", "hyphen", "p1Score", "p1Nick"];
-
-            // Set players nick
-            this.players_nick = []; //p2, p1, p4, p3
-            this.players_nick.push({
-                "username": data.game_state.players.player2["name"],
-                "truncUser": null,
-            });
-            this.players_nick.push({
-                "username": data.game_state.players.player1["name"],
-                "truncUser": null,
-            });
-
-            if (Object.keys(data.players).length > 2) {
-                this.players_nick.push({
-                    "username": data.game_state.players.player4["name"],
-                    "truncUser": null,
-                });
-                this.players_nick.push({
-                    "username": data.game_state.players.player3["name"],
-                    "truncUser": null,
-                });
-            }
-
-            this.sprite = [];
-
-            // Display scores to the scene
-            this.printInitScores();
-
-            // Create floor for game and spotlight purpose
-            this.createGameElements(data);
+        // rm previous scene stuff
+        this.scene.children;
+        for (let i = 0; i < this.scene.children.length; i++) {
+            this.scene.children[i].remove();
         }
+
+        // Set players info
+        this.xPosition = 0;
+        this.score_p1 = 0;
+        this.score_p2 = 0;
+        this.nameArray = ["p2Nick", "p2Score", "hyphen", "p1Score", "p1Nick"];
+
+        // Set players nick
+        this.players_nick = []; //p2, p1, p4, p3
+        this.players_nick.push({
+            "username": data.game_state.players.player2["name"],
+            "truncUser": null,
+        });
+        this.players_nick.push({
+            "username": data.game_state.players.player1["name"],
+            "truncUser": null,
+        });
+
+        if (Object.keys(data.players).length > 2) {
+            this.players_nick.push({
+                "username": data.game_state.players.player4["name"],
+                "truncUser": null,
+            });
+            this.players_nick.push({
+                "username": data.game_state.players.player3["name"],
+                "truncUser": null,
+            });
+        }
+
+        this.sprite = [];
+
+        // Display scores to the scene
+        this.printInitScores();
+
+        // Create floor for game and spotlight purpose
+        this.createGameElements(data);
     }
 
     createGameElements(data) {
@@ -612,8 +611,10 @@ export default class PongGame {
                 Math.abs(cube.position.y - targetPosition.y) < 0.2 &&
                 Math.abs(cube.position.z - targetPosition.z) < 0.2 && window.location.pathname === "/pong") {
                     this.cubesReady++;
-                    if (this.cubesReady === cubes.length)
+                    if (this.cubesReady === cubes.length && !this.gameFinished)
                         window.myPongSocket.send(JSON.stringify({"game_status": true}));
+                    else
+                        return ;
                 }
                 else if (window.location.pathname !== "/pong")
                     return ;
@@ -736,17 +737,17 @@ export default class PongGame {
     }
 
     // Game loop
-    animate(currentTime) { //animate()
+    animate(){//currentTime) { //animate()
         // exits game loop
-        if (this.gameFinished || window.location.pathname !== "/pong")
+        if (this.gameClosed || window.location.pathname !== "/pong")
             return ;
 
         // Calculate the time since the last frame (60fps)
-        if (!this.lastFrameTime) this.lastFrameTime = currentTime; // Initialize at first call
-        const elapsed = currentTime - this.lastFrameTime;
-
-        if (elapsed > this.fpsInterval) {
-            this.lastFrameTime = currentTime - (elapsed % this.fpsInterval);
+//        if (!this.lastFrameTime) this.lastFrameTime = currentTime; // Initialize at first call
+//        const elapsed = currentTime - this.lastFrameTime;
+//
+//        if (elapsed > this.fpsInterval) {
+//            this.lastFrameTime = currentTime - (elapsed % this.fpsInterval);
                 const   msg = this.scene.getObjectByName("waitTxt");
                 if (msg)
                     this.waitMSGMove(msg);
@@ -763,7 +764,7 @@ export default class PongGame {
 
             // Render scene
             this.renderer.render(this.scene, this.camera);
-        }
+//        }
         requestAnimationFrame(this.animate);
     }
 
@@ -849,6 +850,7 @@ export default class PongGame {
             this.updateScores(data.game_state);
         }
         else {
+            this.gameFinished = true;
             this.gameHasStarted = false;
             this.winner = data["winner"];
 
@@ -891,14 +893,14 @@ export default class PongGame {
             const   homeBtn = document.getElementById("back-home-btn");
             if (homeBtn) {
                 homeBtn.addEventListener("click", () => {
-                    this.gameFinished = true;
+                    this.gameClosed = true;
                     this.loseContextExtension.loseContext();
                 });
             }
             const   backTournamentView = document.getElementById("back-tournament-btn");
             if (backTournamentView) {
                 backTournamentView.addEventListener("click", () => {
-                    this.gameFinished = true;
+                    this.gameClosed = true;
                     this.loseContextExtension.loseContext();
                     appRouter.navigate(`/tournament/${data['tournament_name']}`);
                 });
@@ -925,7 +927,7 @@ export default class PongGame {
                             data.code = `${this.props?.code}`;
                             const params = new URLSearchParams(data).toString();
                             this.loseContextExtension.loseContext();
-                            this.gameFinished = true;
+                            this.gameClosed = true;
                             appRouter.navigate(`/${this.props?.game}?${params}`);
                             const socket = window.mySocket;
                             socket.send(JSON.stringify({
