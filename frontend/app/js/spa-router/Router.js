@@ -141,12 +141,19 @@ export default class Router {
         const isPublicRoute = this.isPublicRoute(publicRoutes, path);
 
         if (!isPublicRoute && !isUserAuth) {
+            console.log("PASSING THROUGH NOT AUTH");
             const toastComponent = new ToastComponent();
             toastComponent.throwToast('Error', "User not authenticated", 5000, 'error');
             this.redirectToLogin();
             return;
         } else if (isPublicRoute && isUserAuth) {
+            console.log("PASSING THROUGH AUTH");
             this.redirectToDashboard(isUserAuth);
+            return;
+        }
+        else if (isPublicRoute && !isUserAuth && path === '/') {
+            console.log("PASSING THROUGH PUBLIC, NOT AUTH");
+            this.redirectToLogin();
             return;
         }
         console.log('RENDER ROUTE');
