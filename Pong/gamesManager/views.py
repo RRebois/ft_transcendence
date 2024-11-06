@@ -167,9 +167,6 @@ class MatchMaking():
         if len(tournament['players'][username]) >= tournament['number_players'] - 1:
             raise ValueError("You have already played all matchs for this tournament.")
         for match in tournament['matchs']:
-            if MatchMaking.matchs.get(match):
-                print(f"\n\t\tget match\ntournament => {tournament}\nmatch => {MatchMaking.matchs[match]}")
-        for match in tournament['matchs']:
             if MatchMaking.matchs.get(match) and MatchMaking.matchs[match]['status'] == 'open':
                 players_list = MatchMaking.matchs[match]['players']
                 if not players_list or players_list[0] not in tournament['players'][username]:

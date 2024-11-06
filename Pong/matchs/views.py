@@ -149,9 +149,8 @@ def update_match_data(match_result, winner, match, deco, is_pong=True):
                 score=match_result[player_username]
                 )
             score.save()
-        if not match.winner.exists():
-            if player_username in winner:
-                match.winner.add(player)
+        if player_username in winner:
+            match.winner.add(player)
         match.is_finished = True
         if match.deconnection == False:
             match.deconnection = deco

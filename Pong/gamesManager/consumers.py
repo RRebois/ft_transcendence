@@ -203,7 +203,6 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
         if session_data['connected_players'] <= 0 or (
                 self.game_code in [10, 20] and session_data['connected_players'] <= 1):
             if session_data['status'] == 'waiting' and session_data['tournament_name']:
-                print(f"\n\t\tdecrement\ntournament => {MatchMaking.tournament[session_data['tournament_name']]}\nmatch => {MatchMaking.matchs[session_data['session_id']]}")
                 await sync_to_async(MatchMaking.remove_players)(session_data)
                 return
             await database_sync_to_async(cache.delete)(self.session_id)
