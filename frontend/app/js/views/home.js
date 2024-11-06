@@ -351,7 +351,7 @@ export default class Home {
 			</form>
 			<div class="d-flex flex-row align-items-center w-100 my-2">
 				<hr class="flex-grow-1">
-				<span class="px-2">or</span>
+				<span class="px-2 fst-italic">or</span>
 				<hr class="flex-grow-1">
 			</div>
 			<button type="button" id="42login" class="btn btn-dark my-2">
@@ -362,6 +362,13 @@ export default class Home {
 			<div class="padForm mt-2">
 				Don't have an account? <a class="cursor-click text-decoration-none" route="/register">Register here</a>.
 			</div>
+			<div class="d-flex flex-row align-items-center w-100 my-2">
+				<hr class="flex-grow-1">
+			    <span class="px-2 fst-italic">Having trouble?</span>
+				<hr class="flex-grow-1">
+			</div>
+			<span class="px-2">Send us an email</span>
+			<span class="px-2 play-bold mb-2">ft.transcendence.42.lyon@gmail.com</span>
 			
 			<!-- OTP Modal -->
 			<div class="modal fade" id="otpModal" tabindex="-1" aria-labelledby="otpModal" aria-hidden="true">
