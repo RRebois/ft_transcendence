@@ -89,6 +89,11 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
             self.session_id,
             self.channel_name
         )
+        # ?????????
+        if self.game_name == 'purrinha' and not self.game_handler:
+            self.game_handler = PurrinhaHandler(self)
+            GameManagerConsumer.matchs[self.session_id] = self.game_handler
+
         print(f"\n\nstatus: {self.session_data['status']}\n\n")
         if self.session_data['status'] == 'ready':
             self.game_handler = PongHandler(self) if self.game_name == 'pong' else PurrinhaHandler(self)
