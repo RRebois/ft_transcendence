@@ -23,7 +23,7 @@ services:
       - 8000
     volumes:
       - static_volume:/home/Pong/web/staticfiles
-      - media_volume:/home/Pong/web/mediafiles
+      - media_volume:/home/Pong/web/media
       - ./Pong/:/home/Pong/web/
     env_file:
       - ./.env
@@ -68,7 +68,7 @@ services:
     container_name: nginx
     volumes:
       - static_volume:/home/Pong/web/staticfiles
-      - media_volume:/home/Pong/web/mediafiles
+      - media_volume:/home/Pong/web/media
       - ./certs:/etc/nginx/ssl
     ports:
       - 8080:80     # <-- Change the http port here
