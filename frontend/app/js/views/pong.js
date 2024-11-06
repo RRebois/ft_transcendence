@@ -41,7 +41,7 @@ export default class PongGame {
         this.props = newProps;
     }
 
-    initializeWs = async (data) => { console.log(data);
+    initializeWs = async (data) => { //console.log(data);
 		try {
 			await initializePongWebSocket(data, this);
 		} catch (e) {
@@ -85,9 +85,14 @@ export default class PongGame {
         const horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
         const distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
         this.camera.position.set(300, ((distance * 3) * Math.tan(verticalFOV * 0.5)), -distance);
-//        this.scene.fog = new THREE.Fog(0x000000, -300, 1500);
         this.scene.fog = new THREE.Fog(0x000000, -300, 3500);
         this.camera.lookAt(300, -100, 300);
+
+        if (aspectRatio > 2.4) {
+            this.camera.position.z = -distance * 2.5;
+            this.camera.position.y = ((distance * 3) * Math.tan(verticalFOV * 0.5)) - this.camera.position.z * 0.5;
+            this.camera.position.x = 300;
+        }
 
         // Renderer
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -777,20 +782,12 @@ export default class PongGame {
              const  aspectRatio = newWidth / newHeight;
              this.camera.aspect = aspectRatio;
 
-             if ((newWidth !== this.prevWidth && aspectRatio < 1.5) || (newHeight !== this.prevHeight && aspectRatio < 1.5)) {
+             if ((newWidth !== this.prevWidth && aspectRatio < 1.8) || (newHeight !== this.prevHeight && aspectRatio < 1.8)) {
                  const  verticalFOV = this.camera.fov * (Math.PI / 180);
                  const  horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
                  const  distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
                  this.camera.position.z = -distance;
                  this.camera.position.y = ((distance * 3) * Math.tan(verticalFOV * 0.5));
-                 this.camera.position.x = 300;
-             }
-             else if (aspectRatio > 1.5) {
-                const  verticalFOV = this.camera.fov * (Math.PI / 180);
-                 const  horizontalFOV = 2 * Math.atan(Math.tan(verticalFOV * 0.5) * aspectRatio);
-                 const  distance = (this.sceneWidth * 0.5) / Math.tan(horizontalFOV * 0.5);
-                 this.camera.position.z = -distance * 2.5;
-                 this.camera.position.y = ((distance * 3) * Math.tan(verticalFOV * 0.5)) - this.camera.position.z * 0.5;
                  this.camera.position.x = 300;
              }
              this.camera.updateProjectionMatrix();
@@ -835,7 +832,7 @@ export default class PongGame {
     }
 
     // Collecting info from the game logic in the back
-    display(data) { console.log(data);
+    display(data) { //console.log(data);
         if (this.userIndex === 0 && this.props?.code === "40") {
             for (let i = 0; i < this.players_nick.length; i++) {
                 if (this.players_nick[i].username === this.user.username) {
@@ -923,7 +920,7 @@ export default class PongGame {
 			            credentials: 'include'
 		            })
                     .then(response => response.json().then(data => ({ok: response.ok, data})))
-                    .then(({ok, data}) => { console.log("data fetch replay: ", data);
+                    .then(({ok, data}) => { //console.log("data fetch replay: ", data);
                         if (!ok) {
                             const toastComponent = new ToastComponent();
                             toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
