@@ -31,7 +31,7 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
             reject(new Error("Missing game code or session id"));
             return;
         }
-        if (isUserAuth) {
+        if (isUserAuth !== false) {
             const token = jwt.token
             const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
             const url = wsSelect + `${window.location.hostname}:8443` + ws_route + token + '/'
@@ -95,6 +95,9 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
             };
             window.myPurrinhaSocket = socket; // to access as a global var
         }
+        else {
+            reject(new Error("User not authenticated"));
+        }
     });
 }
 
@@ -110,7 +113,7 @@ export async function initializePongWebSocket(data, pong) {
             reject(new Error("Missing game code or session id"));
             return;
         }
-        if (isUserAuth) {
+        if (isUserAuth !== false) {
             if (!data)
                 return;
             const token = jwt.token
@@ -134,6 +137,7 @@ export async function initializePongWebSocket(data, pong) {
             socket.onmessage = function (event) {
                 // console.log("Pong websocket msg received: ", event.data);
                 const data = JSON.parse(event.data);
+                // console.log("Pong websocket data msg received: ", data);
 
                 if (data.status === "waiting") // Waiting for opponent(s)
                     pong.waiting();
@@ -177,7 +181,7 @@ export async function initializeWebSocket() {
         });
         const jwt = await response.json();
         const isUserAuth = await isUserConnected();
-        if (isUserAuth) {
+        if (isUserAuth !== false) {
             const token = jwt.token
             console.log("In Init WS FRONT, USER AUTHENTICATED")
             const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
@@ -239,7 +243,6 @@ export async function initializeWebSocket() {
                     console.log('Connection died');
                 }
                 socket = null;
-                setTimeout(initializeWebSocket, 2000);
             };
 
             socket.onerror = function (error) {

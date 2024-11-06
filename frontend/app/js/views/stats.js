@@ -170,13 +170,13 @@ export default class Stats {
                                         <div class="d-flex flex-column">
                                             <div class="d-flex flex-row align-items-center gap-1">
                                                     <p class="m-0 cursor-click text-dark" route="/stats/${match?.players[0]?.username}">${match?.players[0]?.username}</p>
-                                                    <p class="play-bold m-0 fs-1">${match.players[0].score}</p>
+                                                    <p class="play-bold m-0 fs-1">${match?.players[0]?.score}</p>
                                             </div>
                                         </div>
                                         <p class="play-bold m-0 fs-1">-</p>
                                         <div class="d-flex flex-column">
                                             <div class="d-flex flex-row align-items-center gap-1">
-                                                    <p class="play-bold m-0 fs-1">${match.players[1].score}</p>
+                                                    <p class="play-bold m-0 fs-1">${match?.players[1]?.score}</p>
                                                     <p class="m-0 cursor-click text-dark" route="/stats/${match?.players[1]?.username}">${match?.players[1]?.username}</p>
                                             </div>
                                         </div>

@@ -32,7 +32,7 @@ export default class Navbar {
 				window.mySocket.close();
 				console.log('WebSocket connection closed');
 			}
-			appRouter.navigate('/dashboard', false);
+			appRouter.navigate('/', false);
 		}).catch(error => {
 			console.error('Logout error:', error);
 			const toastComponent = new ToastComponent();

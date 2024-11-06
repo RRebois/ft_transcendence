@@ -2,6 +2,7 @@ import {getCsrf, isUserConnected} from "@js/functions/user_auth.js";
 import Navbar from "@js/components/Navbar.js";
 import * as bootstrap from 'bootstrap';
 import {remove_modal_backdrops} from "@js/functions/display.js";
+import ToastComponent from "../components/Toast.js";
 
 export default class Router {
     constructor(routes = [], renderNode) {
@@ -132,7 +133,7 @@ export default class Router {
             return;
         }
         route.removeUser();
-        if (isUserAuth) {
+        if (isUserAuth !== false) {
             route.setUser(isUserAuth);
             this.navbar.setUser(isUserAuth);
         }
@@ -140,10 +141,16 @@ export default class Router {
         const isPublicRoute = this.isPublicRoute(publicRoutes, path);
 
         if (!isPublicRoute && !isUserAuth) {
+            const toastComponent = new ToastComponent();
+            toastComponent.throwToast('Error', "User not authenticated", 5000, 'error');
             this.redirectToLogin();
             return;
         } else if (isPublicRoute && isUserAuth) {
             this.redirectToDashboard(isUserAuth);
+            return;
+        }
+        else if (isPublicRoute && !isUserAuth && path === '/') { // For logout
+            this.redirectToLogin();
             return;
         }
         console.log('RENDER ROUTE');

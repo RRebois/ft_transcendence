@@ -30,7 +30,14 @@ const routes = [
 
 initializeRouter(routes);
 
-document.addEventListener('DOMContentLoaded', initializeWebSocket);
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        console.log("TRYING TO INITIALIZE WEBSOCKET");
+        await initializeWebSocket();
+    } catch (e) {
+        console.log("WebSocket not initialized:", e.message);
+    }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     new ToastComponent();
