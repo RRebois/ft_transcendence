@@ -16,12 +16,12 @@ logger = logging.getLogger(__name__)
 class PongBot():
 	instances = 0
 	q_table = {}
-	REDUCTION = PADDLE_START_VEL * 15
+	REDUCTION = PADDLE_START_VEL * 10
 	ALPHA = 0.55 #learning rate
 	GAMMA = 0.6 #discount factor
 	EPSILON = 0.03 #exploration rate
-	EPSILON_MAX = 0.35 #exploration rate
-	HALF_PAD = (PADDLE_HEIGHT_DUO * 0.5) / REDUCTION
+	EPSILON_MAX = 0.4 #exploration rate
+	PAD_H_REDUC = PADDLE_HEIGHT_DUO / REDUCTION
 	actions = [-1, 0, 1] #moves [up, nothing, down]
 
 
@@ -35,17 +35,20 @@ class PongBot():
 		self.ideal_pos = None
 		self.old_direction = 0
 		self.new_direction = 0
-		self.epsilon = PongBot.EPSILON_MAX if self.training else PongBot.EPSILON
+		self.epsilon = PongBot.EPSILON_MAX
 
 	async def update_q_table_n_steps(self, new_state):
 		if not len(self.history):
 			return
 		old_state = None
+		new_turn = self.old_direction != self.new_direction
+		if not new_turn:
+			return
 		g_reward = 0
 		future_max = max(PongBot.q_table.get(new_state, {a: 0 for a in PongBot.actions}).values())
-		for state, action in reversed(self.history):
+		for state, action, ideal_pos in reversed(self.history):
 			if state != old_state:
-				reward = await self.get_reward(action, state, new_state)
+				reward = await self.get_reward(action, state, ideal_pos)
 				g_reward = reward + PongBot.GAMMA * g_reward
 				if state not in PongBot.q_table:
 					PongBot.q_table[state] = {a: 0 for a in PongBot.actions}
@@ -58,7 +61,7 @@ class PongBot():
 
 	async def predict_ball_position(self, ball_x, ball_y, ball_v_x, ball_v_y, paddle_x, paddle_y):
 		if (self.player == 2 and ball_v_x < 0) or (self.player == 1 and ball_v_x > 0) or ball_v_x == 0:
-			return int(GAME_HEIGHT / 2 / PongBot.REDUCTION - PongBot.HALF_PAD)
+			return int(GAME_HEIGHT / 2 / PongBot.REDUCTION)
 		while (self.player == 2 and ball_x < paddle_x) or (self.player == 1 and ball_x > paddle_x):
 			ball_x += ball_v_x
 			ball_y += ball_v_y
@@ -66,22 +69,29 @@ class PongBot():
 				ball_v_y *= -1
 				ball_y = max(0, min(ball_y, GAME_HEIGHT))
 
-		return int(ball_y / PongBot.REDUCTION - PongBot.HALF_PAD)
+		return round(ball_y / PongBot.REDUCTION)
 
 	async def is_rebound(self):
 		return (self.player == 2 and self.old_direction == 1 and self.new_direction == -1) or\
 			(self.player == 1 and self.old_direction == -1 and self.new_direction == 1)
 
-	async def get_reward(self, action, state, new_state):
+	async def lost_ball(self):
+		return (self.player == 2 and self.old_direction == 1 and self.new_direction == 0) or\
+			(self.player == 1 and self.old_direction == -1 and self.new_direction == 0)
 
-		if await self.is_rebound() and (new_state[-1] + PongBot.HALF_PAD) > self.ideal_pos > new_state[-1]:
+
+	async def get_reward(self, action, state, ideal_pos):
+
+		if await self.is_rebound():
 			self.old_direction = self.new_direction
-			return 50
-		if action == -1 and self.ideal_pos <= state[-1]:
-			return 20 - abs((self.ideal_pos - state[-1]) * 0.5)
-		if action == 1 and self.ideal_pos >= (state[-1] + PongBot.HALF_PAD):
-			return 20 - ((self.ideal_pos - state[-1]) * 0.5)
-		if action == 0 and (state[-1] + PongBot.HALF_PAD) > self.ideal_pos > state[-1]:
+			return 50 - ((ideal_pos - state[-1] + PongBot.PAD_H_REDUC * 0.5) * 0.5)
+		if await self.lost_ball():
+			return -(30 + abs((ideal_pos - state[-1]) * 0.5))
+		if action == -1 and ideal_pos <= state[-1]:
+			return 20 - abs((ideal_pos - state[-1]) * 0.5)
+		if action == 1 and ideal_pos >= (state[-1] + PongBot.PAD_H_REDUC):
+			return 20 - ((ideal_pos - state[-1] + PongBot.PAD_H_REDUC) * 0.5)
+		if action == 0 and (state[-1] + PongBot.PAD_H_REDUC) > ideal_pos > state[-1]:
 			return 20
 		return -10
 
@@ -107,14 +117,14 @@ class PongBot():
 
 	async def choose_action(self, state):
 		if random.uniform(0, 1) < PongBot.EPSILON_MAX:
-			return random.choice(PongBot.actions)
-		return -1 if self.ideal_pos < state[-1] else 1 if self.ideal_pos > (state[-1] + PongBot.HALF_PAD) else 0
-		self.epsilon = max(PongBot.EPSILON, self.epsilon * 0.99)
-		if state not in PongBot.q_table or (self.training and random.uniform(0, 1) < self.epsilon):
-			return random.choice(PongBot.actions)
-		if random.uniform(0, 1) < PongBot.EPSILON:
-			return -1 if self.ideal_pos < state[-1] else 1 if self.ideal_pos > (state[-1] + PongBot.HALF_PAD) else 0
-		return max(PongBot.q_table[state], key=PongBot.q_table[state].get)
+			return 0
+		return -1 if self.ideal_pos <= state[-1] else 1 if self.ideal_pos >= (state[-1] + PongBot.PAD_H_REDUC) else 0
+		# self.epsilon = max(PongBot.EPSILON, self.epsilon * 0.99)
+		# if state not in PongBot.q_table or (self.training and random.uniform(0, 1) < self.epsilon):
+		# 	return random.choice(PongBot.actions)
+		# if random.uniform(0, 1) < PongBot.EPSILON:
+		# 	return -1 if self.ideal_pos <= state[-1] else 1 if self.ideal_pos >= (state[-1] + PongBot.PAD_H_REDUC) else 0
+		# return max(PongBot.q_table[state], key=PongBot.q_table[state].get)
 
 	async def continuous_paddle_mov(self, state):
 		action = await self.choose_action(state)
@@ -139,9 +149,9 @@ class PongBot():
 				else:
 					self.raw_pos_pad = max(0, min(GAME_HEIGHT, self.raw_pos_pad + action * PADDLE_START_VEL))
 					new_state = state[:-1] + (int(self.raw_pos_pad / PongBot.REDUCTION), )
-				self.history.append([state, action])
-				if last_time == curr_time:
-					await self.update_q_table_n_steps(new_state)
+				# self.history.append([state, action, self.ideal_pos])
+				# if last_time == curr_time:
+					# await self.update_q_table_n_steps(new_state)
 				state = new_state
 
 				await asyncio.sleep(sleep_rate)
