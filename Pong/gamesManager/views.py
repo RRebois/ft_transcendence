@@ -35,6 +35,16 @@ class MatchMaking():
             MatchMaking.matchs[session_id]['status'] = 'open' if is_open else 'closed'
 
     @staticmethod
+    def remove_players(session_data):
+        session_id = session_data['session_id']
+        if MatchMaking.matchs.get(session_id):
+            MatchMaking.matchs[session_id]['elos'] = []
+            MatchMaking.matchs[session_id]['players'] = []
+            session_data['players'] = {}
+            session_data['connected_players'] = 0
+            cache.set(session_id, session_data)
+
+    @staticmethod
     def add_player(session_id, username):
         if MatchMaking.matchs.get(session_id):
             if username not in ['guest', BOT_NAME]:

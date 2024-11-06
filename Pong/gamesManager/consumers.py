@@ -197,17 +197,21 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
                 else:
                     if session_data['players'][player]['connected']:
                         other_player.append(player)
+            await self.update_cache_db(session_data)
             await self.game_handler.end_game(winner=other_player)
             await self.game_handler.remove_consumer(self)
 
         if session_data['connected_players'] <= 0 or (
                 self.game_code in [10, 20] and session_data['connected_players'] <= 1):
+            if session_data['status'] == 'waiting' and session_data['tournament_name']:
+                await sync_to_async(MatchMaking.remove_players)(session_data)
+                return
             await database_sync_to_async(cache.delete)(self.session_id)
             await sync_to_async(MatchMaking.delete_session)(self.session_id)
             if self.session_id in GameManagerConsumer.matchs:
                 GameManagerConsumer.matchs.pop(self.session_id)
         else:
-            await database_sync_to_async(cache.set)(self.session_id, session_data)
+            await self.update_cache_db(session_data)
 
 
 class PongHandler():
@@ -227,6 +231,7 @@ class PongHandler():
         self.message = self.consumer[0].session_data
         self.game = PongGame(players_name, multiplayer=(self.game_code == 40))
         await self.send_game_state()
+        await self.consumer[0].update_cache_db(self.message)
         if BOT_NAME in self.message['players']:
             self.bot = await init_bot('pong', self.game, self)
 
@@ -301,6 +306,9 @@ class PongHandler():
 
     async def end_game(self, winner=None):
         gs = self.message['game_state']
+        # print(f"\n\t\tEnd game gs => {gs}")
+        if gs == "waiting":
+            gs = await self.game.serialize()
         deconnection = False
         if (winner is None and gs['left_score'] != gs['winning_score'] and gs['right_score'] != gs['winning_score'])\
             or not self.consumer:
@@ -330,6 +338,7 @@ class PongHandler():
         self.message['winner'] = winner
         self.message['status'] = 'finished'
         await self.consumer[0].update_cache_db(self.message)
+        # print(f"\n\t\tEND GAME\nwinner => {winner}\nmessage => {self.message}\ngs => {gs}\nmessage['gs'] => {self.message['game_state']}\ngs serialize {await self.game.serialize()}")
         await self.consumer[0].send_to_group(self.message)
         print(f"\n\nMATCH IS TOURNAMENT ?: {self.message['tournament_name']}")
         if self.message['tournament_name']:
