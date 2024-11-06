@@ -60,8 +60,8 @@ export default class PongGame {
         this.cubesReady = 0;
 
         // limit 60 fps
-//        this.lastFrameTime = 0;  // Store the time of the last frame
-//        this.fpsInterval = 1000 / 60;
+        this.lastFrameTime = 0;  // Store the time of the last frame
+        this.fpsInterval = 1000 / 60;
 
         // document.title = "ft_transcendence | Pong";
         modal.hidden = true;
@@ -112,29 +112,26 @@ export default class PongGame {
     }
 
     load_textures() {
-        requestIdleCallback(() => {
-            const   textureLoader = new DDSLoader();
+        const   textureLoader = new DDSLoader();
 
-            const   textStadium = textureLoader.load("/textures/grass/grass_BaseColor.dds");
-            const   textInitBall = textureLoader.load("/textures/football.dds");
-            const   textBlueCube = textureLoader.load("/textures/blue_basecolor.dds");
-            const   textRedCube = textureLoader.load("/textures/red_basecolor.dds");
-            const   textPadBlue = textureLoader.load("/textures/ice/ice_basecolor.dds");
-            const   textPadRed = textureLoader.load("/textures/lava/lava_basecolor.dds");
+        const   textStadium = textureLoader.load("/textures/grass/grass_BaseColor.dds");
+        const   textInitBall = textureLoader.load("/textures/football.dds");
+        const   textBlueCube = textureLoader.load("/textures/blue_basecolor.dds");
+        const   textRedCube = textureLoader.load("/textures/red_basecolor.dds");
+        const   textPadBlue = textureLoader.load("/textures/ice/ice_basecolor.dds");
+        const   textPadRed = textureLoader.load("/textures/lava/lava_basecolor.dds");
 
-            this.textures = {
-                textStadium,
-                textInitBall,
-                textBlueCube,
-                textRedCube,
-                textPadBlue,
-                textPadRed
-            };
-        });
+        this.textures = {
+            textStadium,
+            textInitBall,
+            textBlueCube,
+            textRedCube,
+            textPadBlue,
+            textPadRed
+        };
     }
 
     load_materials() {
-//    requestIdleCallback(() => {
         // Load all materials
         this.materials["wait"] = new THREE.MeshStandardMaterial({
             color: 0xffffff,
@@ -167,7 +164,6 @@ export default class PongGame {
             metalness: 0.8,
             roughness: 0,
         });
-//        });
     }
 
     onKeyDown(event) {
@@ -737,34 +733,34 @@ export default class PongGame {
     }
 
     // Game loop
-    animate(){//currentTime) { //animate()
+    animate(currentTime) { //animate()
         // exits game loop
         if (this.gameClosed || window.location.pathname !== "/pong")
             return ;
 
         // Calculate the time since the last frame (60fps)
-//        if (!this.lastFrameTime) this.lastFrameTime = currentTime; // Initialize at first call
-//        const elapsed = currentTime - this.lastFrameTime;
+        if (!this.lastFrameTime) this.lastFrameTime = currentTime; // Initialize at first call
+        const elapsed = currentTime - this.lastFrameTime;
 //
-//        if (elapsed > this.fpsInterval) {
-//            this.lastFrameTime = currentTime - (elapsed % this.fpsInterval);
-                const   msg = this.scene.getObjectByName("waitTxt");
-                if (msg)
-                    this.waitMSGMove(msg);
+        if (elapsed > this.fpsInterval) {
+            this.lastFrameTime = currentTime - (elapsed % this.fpsInterval);
+            const   msg = this.scene.getObjectByName("waitTxt");
+            if (msg)
+                this.waitMSGMove(msg);
 
-                const   ball = this.scene.getObjectByName("ball");
-                if (ball) {
-                    this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-                    this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
-                    this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+            const   ball = this.scene.getObjectByName("ball");
+            if (ball) {
+                this.materials["p1"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+                this.materials["p2"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
+                this.materials["scores"].emissiveIntensity = 1 + Math.sin(Date.now() * 0.005) * 0.8;
 
-                    if (this.gameHasStarted === true)
-                        this.handleKeyEvent();
-                }
+                if (this.gameHasStarted === true)
+                    this.handleKeyEvent();
+            }
 
             // Render scene
             this.renderer.render(this.scene, this.camera);
-//        }
+        }
         requestAnimationFrame(this.animate);
     }
 
@@ -803,7 +799,7 @@ export default class PongGame {
          }
     }
 
-    updateBallPosition(gameState) { console.log("\n\n", gameState, "\n\n");
+    updateBallPosition(gameState) { //console.log("\n\n", gameState, "\n\n");
         const   ball = this.scene.getObjectByName("ball");
         const   prevPosition = new THREE.Vector3(ball.position.x, ball.position.y, ball.position.z);
         const   v = new THREE.Vector3(gameState.ball["x_vel"], 0, gameState.ball["y_vel"]);
@@ -838,7 +834,7 @@ export default class PongGame {
     }
 
     // Collecting info from the game logic in the back
-    display(data) { //console.log(data);
+    display(data) { console.log(data);
         if (this.userIndex === 0 && this.props?.code === "40") {
             for (let i = 0; i < this.players_nick.length; i++) {
                 if (this.players_nick[i].username === this.user.username) {
