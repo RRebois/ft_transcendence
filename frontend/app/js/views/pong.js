@@ -95,6 +95,7 @@ export default class PongGame {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        this.renderer.debug.checkShaderErrors = false; //Doc says: If it is true, defines whether material shader programs are checked for errors during compilation and linkage process. It may be useful to disable this check in production for performance gain. It is strongly recommended to keep these checks enabled during development. If the shader does not compile and link - it will not work and associated material will not render
         const   container = document.getElementById("display");
         container.appendChild(this.renderer.domElement);
 

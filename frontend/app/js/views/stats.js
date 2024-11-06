@@ -198,35 +198,68 @@ export default class Stats {
                                     <p class="fs-1 m-0">${match.game === 'pong' ? '🏓' : '✋'}</p>
                                     <p class="fs-6 m-0">${match.game === 'pong' ? 'Pong game' : 'Purrinha game'}</p>
                                 </div>
-
-                                <div class="d-flex flex-column">
-                                    <div class="d-flex flex-row">
-                                        <div class="d-flex flex-column">
-                                            <div class="d-flex flex-row align-items-center gap-1">
-                                                <p class="m-0 cursor-click text-dark" route="/stats/${match?.players[0]?.username}">${match?.players[0]?.username}</p>
-                                                <p class="m-0 cursor-click text-dark" route="/stats/${match?.players[1]?.username}">${match?.players[1]?.username}</p>
-                                                <p class="play-bold m-0 fs-1">${match.players[0].score}</p>
-                                            </div>
-                                        </div>
-                                        <p class="play-bold m-0 fs-1">-</p>
-                                        <div class="d-flex flex-column">
-                                            <div class="d-flex flex-row align-items-center gap-1">
-                                                <p class="play-bold m-0 fs-1">${match.players[2].score}</p>
-                                                <p class="m-0 cursor-click text-dark" route="/stats/${match?.players[2]?.username}">${match?.players[2]?.username}</p>
-                                                <p class="m-0 cursor-click text-dark" route="/stats/${match?.players[3]?.username}">${match?.players[3]?.username}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    ${match?.winner.includes(username) ?
-                                        `<div class="d-flex flex-row">
-                                            <i class="bi bi-trophy-fill" style="color: #e4ca6a;"></i>
-                                            <p>Victory</p>
-                                        </div>` :
-                                        `<p>Defeat</p>`
-                                    }
-                                </div>
-                                <p class="play-regular m-0">${date.calendar()}</p>
                             `;
+                            if (match.game === 'pong') {
+                                matchElement.innerHTML += `
+                                    <div class="d-flex flex-column">
+                                        <div class="d-flex flex-row">
+                                            <div class="d-flex flex-column">
+                                                <div class="d-flex flex-row align-items-center gap-1">
+                                                    <p class="m-0 cursor-click text-dark" route="/stats/${match?.players[0]?.username}">${match?.players[0]?.username}</p>
+                                                    <p class="m-0 cursor-click text-dark" route="/stats/${match?.players[1]?.username}">${match?.players[1]?.username}</p>
+                                                    <p class="play-bold m-0 fs-1">${match.players[0].score}</p>
+                                                </div>
+                                            </div>
+                                            <p class="play-bold m-0 fs-1">-</p>
+                                            <div class="d-flex flex-column">
+                                                <div class="d-flex flex-row align-items-center gap-1">
+                                                    <p class="play-bold m-0 fs-1">${match.players[2].score}</p>
+                                                    <p class="m-0 cursor-click text-dark" route="/stats/${match?.players[2]?.username}">${match?.players[2]?.username}</p>
+                                                    <p class="m-0 cursor-click text-dark" route="/stats/${match?.players[3]?.username}">${match?.players[3]?.username}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        ${match?.winner.includes(username) ?
+                                            `<div class="d-flex flex-row">
+                                                <i class="bi bi-trophy-fill" style="color: #e4ca6a;"></i>
+                                                <p>Victory</p>
+                                            </div>` :
+                                            `<p>Defeat</p>`
+                                        }
+                                    </div>
+                                    <p class="play-regular m-0">${date.calendar()}</p>
+                                `;
+                            }
+                            else {
+                                matchElement.innerHTML += `
+                                    <div class="d-flex flex-column">
+                                        <div class="d-flex flex-row">
+                                            <div class="d-flex flex-column">
+                                                <div class="d-flex flex-row align-items-center gap-1">
+                                                    <p class="m-0 cursor-click text-dark" route="/stats/${match?.winner.username}">${match?.winner.username}</p>
+                                                    <p class="play-bold m-0 fs-1">${match?.winner.score}</p>
+                                                </div>
+                                            </div>
+                                            <p class="play-bold m-0 fs-1">-</p>
+                                            <div class="d-flex flex-column">
+                                                <div class="d-flex flex-row align-items-center gap-1">
+                                                    <p class="play-bold m-0 fs-1">${match.players[2].score}</p>
+                                                    <p class="m-0 cursor-click text-dark" route="/stats/${match?.players[2]?.username}">${match?.players[2]?.username}</p>
+                                                    <p class="m-0 cursor-click text-dark" route="/stats/${match?.players[3]?.username}">${match?.players[3]?.username}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        ${match?.winner.includes(username) ?
+                                            `<div class="d-flex flex-row">
+                                                <i class="bi bi-trophy-fill" style="color: #e4ca6a;"></i>
+                                                <p>Victory</p>
+                                            </div>` :
+                                            `<p>Defeat</p>`
+                                        }
+                                    </div>
+                                    <p class="play-regular m-0">${date.calendar()}</p>
+                                `;
+                            }
                         }
 						matchHistoryContainer.appendChild(matchElement);
 					});
