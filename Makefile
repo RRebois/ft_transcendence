@@ -29,7 +29,7 @@ generate_cert:
 
 cli:
 	@if [ -z "$(FILE)" ]; then \
-		echo "Error: A file with the SERVER_URL, USERNAME and PASSWORD is expected."; \
+		echo "Error: A file with the SERVER, USERNAME and PASSWORD is expected."; \
 		echo "Try 'make cli FILE=<YOUR_FILE>'"; \
 		exit 1; \
 	elif [ ! -f $(FILE) ]; then \
@@ -37,7 +37,7 @@ cli:
 		exit 1; \
 	else \
 		. $(FILE); \
-		NODE_TLS_REJECT_UNAUTHORIZED=0 wscat -c wss://$${SERVER_URL}:8443/ws/api/ -H "username:$${USERNAME}" -H "password:$${PASSWORD}"; \
+		NODE_TLS_REJECT_UNAUTHORIZED=0 wscat -c wss://$${SERVER}:8443/ws/api/ -H "username:$${USERNAME}" -H "password:$${PASSWORD}"; \
 	fi
 
 down:

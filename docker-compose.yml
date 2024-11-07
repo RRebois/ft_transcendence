@@ -3,6 +3,8 @@ services:
     build:
       context: ./frontend
       dockerfile: docker/Dockerfile
+      args:
+        - SERVER_IP=$SERVER_IP
     container_name: frontend
     ports:
     - 3000:443
@@ -17,7 +19,7 @@ services:
   web:
     build: Pong
     container_name: django_app
-    #    command: gunicorn configFiles.wsgi:application --bind 0.0.0.0:8000 --reload
+    # command: gunicorn configFiles.wsgi:application --bind 0.0.0.0:8000 --reload
     command: python manage.py runserver 0.0.0.0:8000          # <-- Add this line for hot reload
     expose:
       - 8000
@@ -27,6 +29,8 @@ services:
       - ./Pong/:/home/Pong/web/
     env_file:
       - ./.env
+    networks:
+      - transcendence
     depends_on:
       - db
       - redis
@@ -47,8 +51,8 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     env_file:
       - ./.env
-    ports:
-      - "5432:5432"
+    networks:
+      - transcendence
     restart: on-failure
 
   redis:
@@ -56,6 +60,8 @@ services:
     container_name: redis
     expose:
       - "6379"
+    networks:
+      - transcendence
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
@@ -64,12 +70,17 @@ services:
     restart: always
 
   nginx:
-    build: ./nginx
+    build:
+      context: ./nginx
+      args:
+        - SERVER_IP=$SERVER_IP
     container_name: nginx
     volumes:
       - static_volume:/home/Pong/web/staticfiles
       - media_volume:/home/Pong/web/media
       - ./certs:/etc/nginx/ssl
+    networks:
+      - transcendence
     ports:
       - 8080:80     # <-- Change the http port here
       - 8443:443    # <-- Change the https port here

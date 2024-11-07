@@ -5,3 +5,5 @@ RUN mkdir -p /etc/nginx/ssl
 
 RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d
+ARG SERVER_IP
+RUN sed -i "s/\$SERVER_IP/$SERVER_IP/g" /etc/nginx/conf.d/nginx.conf
