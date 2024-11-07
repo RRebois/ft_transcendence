@@ -19,8 +19,7 @@ services:
   web:
     build: Pong
     container_name: django_app
-    # command: gunicorn configFiles.wsgi:application --bind 0.0.0.0:8000 --reload
-    command: python manage.py runserver 0.0.0.0:8000          # <-- Add this line for hot reload
+    command: daphne -b 0.0.0.0 -p 8000 configFiles.asgi:application
     expose:
       - 8000
     volumes:
@@ -29,6 +28,8 @@ services:
       - ./Pong/:/home/Pong/web/
     env_file:
       - ./.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=configFiles.settings
     networks:
       - transcendence
     depends_on:
