@@ -76,8 +76,8 @@ cp .env.example .env
 ## Access the website
 
 Once credentials are filled, and containers are running, you can access the website at the following URLs:
-- Frontend: https://your_serveur_url:3000  
-- Backend admin tool: https://your_serveur_url:8443/admin
+- Frontend: [https://your_serveur_url:3000](https://your_serveur_url:3000)
+- Backend admin tool: [https://your_serveur_url:8443/admin](https://your_serveur_url:3000)
 
 ## Authors
 
