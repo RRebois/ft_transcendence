@@ -10,20 +10,6 @@ from .models import User
 
 import jwt
 
-# class JWTAuthenticationMiddleware(MiddlewareMixin):
-#     def process_request(self, request):
-#         jwt_cookie = request.COOKIES.get('jwt_access')
-#
-#         if jwt_cookie:
-#             try:
-#                 user = authenticate_user(request)
-#                 request.user = user
-#             except AuthenticationFailed:
-#                 request.user = AnonymousUser()
-#         else:
-#             request.user = AnonymousUser()
-
-
 class JWTAuthWSMiddleware:
     def __init__(self, app):
         self.app = app

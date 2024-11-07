@@ -38,12 +38,9 @@ from .utils import *
 class JWTAuthView(APIView):
     def get(self, request):
         user = authenticate_user(request)
-        print(f"{user}")
         if user is not None:
-            print(f"returning isAuthenticated: True")
             return JsonResponse({'user': user_as_json(user)}, status=200)
         else:
-            print(f"returning isAuthenticated: False")
             return JsonResponse({'user': None}, status=401)
 
 
@@ -505,11 +502,9 @@ class ChangeAvatarView(APIView):
             return JsonResponse(data={"message": "No avatar selected. Please try again."}, status=400)
         src = data["data"].split("media")
         path = "/media" + src[1]
-        print(path)
         try:
             user_avatars = Avatars.objects.filter(uploaded_from=user)
             for avatar in user_avatars:
-                print(avatar.serialize()["image"])
                 if avatar.serialize()["image"] == path:
                     user.avatar_id = avatar
                     user.save()
@@ -631,10 +626,6 @@ class PasswordResetRequestView(APIView):
             return JsonResponse(data={'message': 'A mail to reset your password has been sent.'}, status=200)
         except serializers.ValidationError as e:
             error_message = e.detail.get('non_field_errors', [str(e)])[0]
-            # if str(error).find('ErrorDetail'):
-            #     error_message = "Enter a valid email address."
-            # else:
-            #     error_message = error
             return JsonResponse(data={'message': error_message}, status=400)
 
 
@@ -675,21 +666,6 @@ class PasswordResetConfirmedView(APIView):
 
         except DjangoUnicodeDecodeError as identifier:
             return JsonResponse({'message': 'Invalid or expired reset password token.'}, status=400)
-
-
-# @method_decorator(csrf_protect, name='dispatch')
-# class LostOTPView(APIView):
-#     serializer_class = LostOTPSerializer
-#
-#     def post(self, request):
-#         serializer = self.serializer_class(data=request.data, context={'request': request})
-#         try:
-#             serializer.is_valid(raise_exception=True)
-#             return JsonResponse(data={'message': 'A mail to reset your password has been sent.'}, status=200)
-#         except serializers.ValidationError as e:
-#             error_message = e.detail.get('non_field_errors', [str(e)])[0]
-#
-#             return JsonResponse(data={'message': error_message}, status=400)
 
 
 @method_decorator(csrf_protect, name='dispatch')

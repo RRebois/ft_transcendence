@@ -18,8 +18,6 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
-# from matchs import urls as murls
-# from userManagement import urls as userUrls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
