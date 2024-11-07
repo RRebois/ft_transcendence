@@ -1,5 +1,3 @@
-import logging
-
 from channels.generic.websocket import AsyncWebsocketConsumer, WebsocketConsumer
 from asgiref.sync import async_to_sync
 from channels.db import database_sync_to_async

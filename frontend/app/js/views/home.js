@@ -315,7 +315,6 @@ export default class Home {
         }
     }
 
-// TODO: check form action link
     render() {
         // document.title = 'ft_transcendence | Login';
         return `

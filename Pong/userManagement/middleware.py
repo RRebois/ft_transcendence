@@ -8,28 +8,20 @@ from urllib.parse import parse_qs
 from .views import authenticate_user
 from .models import User
 
-import logging
 import jwt
-
-logger = logging.getLogger('userManagement')
 
 # class JWTAuthenticationMiddleware(MiddlewareMixin):
 #     def process_request(self, request):
-#         logger.debug("Processing request in JWTAuthenticationMiddleware")
 #         jwt_cookie = request.COOKIES.get('jwt_access')
-#         logger.debug(f"JWT Cookie: {jwt_cookie}")
 #
 #         if jwt_cookie:
 #             try:
 #                 user = authenticate_user(request)
 #                 request.user = user
-#                 logger.debug(f"Authenticated user: {user.username}")
 #             except AuthenticationFailed:
 #                 request.user = AnonymousUser()
-#                 logger.debug("Authentication failed, setting user as AnonymousUser")
 #         else:
 #             request.user = AnonymousUser()
-#             logger.debug("JWT cookie not found, setting user as AnonymousUser")
 
 
 class JWTAuthWSMiddleware:
@@ -37,12 +29,9 @@ class JWTAuthWSMiddleware:
         self.app = app
 
     async def __call__(self, scope, receive, send):
-        logger.warning("JWTAuthWSMiddleware called")
         path = scope['path']
-        logger.warning(f"Path is: {path}")
         parts = path.split('/')
         token = parts[-2] if len(parts) >= 2 else None
-        logger.warning(f"Token is: {token}")
 
         if token:
             try:
@@ -50,15 +39,11 @@ class JWTAuthWSMiddleware:
                 user_id = payload.get('id')
                 user = await self.get_user(user_id)
                 scope['user'] = user
-                logger.warning(f"Authenticated user: {user.username}")
             except jwt.ExpiredSignatureError:
-                logger.warning("Token expired")
                 scope['user'] = AnonymousUser()
             except jwt.InvalidTokenError:
-                logger.warning("Invalid token")
                 scope['user'] = AnonymousUser()
         else:
-            logger.warning("No token provided")
             scope['user'] = AnonymousUser()
 
         return await self.app(scope, receive, send)

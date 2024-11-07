@@ -21,17 +21,8 @@ import pyotp
 import os
 import re
 from datetime import datetime, timedelta, timezone
-import logging
 import qrcode
 from io import BytesIO
-
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler()  # This handler writes logs to stdout
-    ]
-)
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -44,7 +35,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['email', 'first_name', 'last_name', 'username', 'password', 'password2']
 
     def validate(self, attrs):
-        logging.debug("Validating user registration")
         username_pattern = re.compile("^[a-zA-Z0-9-_]{5,12}$")
         name_pattern = re.compile("^[a-zA-ZàâäéèêëïîôöùûüçÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ\\-]+$")
         password_pattern = re.compile("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[?!@$ %^&*]).{8,}$")
@@ -56,7 +46,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         username = attrs.get('username', '')
         password = attrs.get('password', '')
         password2 = attrs.get('password2', '')
-        logging.debug(f"Email: {email}, First name: {first_name}, Last name: {last_name}, Username: {username}, Password: {password}, Password2: {password2}")
 
         if not email_pattern.match(email):
             raise serializers.ValidationError("Invalid email format")
@@ -116,15 +105,12 @@ class LoginSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, attrs):
-        logging.debug("[SERIALIZER VALIDATOR] Validating user login")
 
         username = attrs.get('username')
         password = attrs.get('password')
-        logging.debug(f"Username: {username}, Password: {password}")
         request = self.context.get('request')
 
         user = authenticate(request, username=username, password=password)
-        logging.debug(str(user))
         if not user:
             raise AuthenticationFailed("Invalid credentials, please try again")
 
@@ -143,7 +129,7 @@ class EditUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'language']
+        fields = ['username', 'first_name', 'last_name', 'email']
 
     def validate(self, attrs):
         username_pattern = re.compile("^[a-zA-Z0-9-_]{5,12}$")
@@ -154,8 +140,6 @@ class EditUserSerializer(serializers.ModelSerializer):
         first_name = attrs.get('first_name', '')
         last_name = attrs.get('last_name', '')
         email = attrs.get('email', '')
-        language = attrs.get('language', '')
-        logging.debug(f"Username: {username}, First name: {first_name}, Last name: {last_name}, Email: {email}, Language: {language}")
 
         if not email_pattern.match(email):
             raise serializers.ValidationError("Invalid email format")
@@ -167,8 +151,6 @@ class EditUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("This username is forbidden")
         if not username_pattern.match(username):
             raise serializers.ValidationError("Username must contain only alphanumeric characters and hyphens (- or _)")
-        # if language not in ['en', 'fr']:
-        # TODO check language
         return attrs
 
     def update(self, instance, validated_data):
@@ -176,7 +158,6 @@ class EditUserSerializer(serializers.ModelSerializer):
         instance.first_name = validated_data.get('first_name', instance.first_name)
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.email = validated_data.get('email', instance.email)
-        instance.language = validated_data.get('language', instance.language)
         instance.save()
         return instance
 
