@@ -32,18 +32,20 @@ function getScoreTable(players, winner) {
             <thead>
                 <tr>
                     <th scope="col">Username</th>
-                    <th scope="col">Guess</th>
+                    <th scope="col">Number picked</th>
+                    <th scope="col">Total guess</th>
                 </tr>
             </thead>
             <tbody>
                 ${players.map(player => {
-        return `
+                    return `
                         <tr>
                             <td>${player.name === winner ? player.name + ' 👑' : player.name}</td>
+                            <td>${player.quantity}</td>
                             <td>${player.guess === -1 ? '' : player.guess}</td>
                         </tr>
                     `;
-    }).join('')}
+                }).join('')}
             </tbody>
         </table>
     `;
@@ -131,7 +133,7 @@ export function display_game_winner(data, view) {
 export function handle_round_winner(data, view) {
     const root = document.getElementById('game-root');
     if (root) {
-        pick_initial_number(view, true);
+        pick_initial_number(view, true, data);
     }
 }
 
@@ -220,7 +222,7 @@ export const display_users_info = (data, view) => {
     });
 }
 
-export const pick_initial_number = (view, tie = false) => {
+export const pick_initial_number = (view, tie = false, data = null) => {
     const hourglassSpinner = document.getElementById('hourglass-spinner');
     if (hourglassSpinner) {
         if (tie) {
@@ -233,18 +235,49 @@ export const pick_initial_number = (view, tie = false) => {
     if (pickInitialNumberContainer) {
         return;
     }
+    let players = [];
+    if (data) {
+        players = lst2arr(data?.game_state?.players);
+    }
     const root = document.getElementById('game-root');
     const choices = [0, 1, 2, 3];
     if (root) {
         root.innerHTML += `
             <div id="pick-initial-number" class="d-flex flex-column justify-content-center align-items-center" style="gap:100px">
                 ${tie ? `
-                    <div class="monitor-table">
-                        <div class="monitor-wrapper">
-                            <div class="monitor">
-                                <p>It&apos;s a tie! New round.</p>
+                    <div class="d-flex flex-column justify-content-center align-items-center" style="gap: 5px">
+                        <div class="monitor-table">
+                            <div class="monitor-wrapper">
+                                <div class="monitor">
+                                    <p>It&apos;s a tie! New round.</p>
+                                </div>
                             </div>
                         </div>
+                        <table class="table w-50">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Username</th>
+                                    <th scope="col">Number picked</th>
+                                    <th scope="col">Total guess</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${players.map(player => {
+                                    return `
+                                        <tr>
+                                            <td>${player.name}</td>
+                                            <td>${player.guess === -1 ? '' : player.quantity}</td>
+                                            <td>${player.guess === -1 ? '' : player.guess}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-active text-center fw-bold">
+                                    <td colspan="3">Sum was ${data.game_state.result}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 ` : ''}
                 <div class="d-flex flex-column justify-content-center align-items-center">
@@ -252,13 +285,13 @@ export const pick_initial_number = (view, tie = false) => {
                     <div class="d-flex justify-content-center align-items-center">
                         <div class="purrinha-choices-grid">
                            ${choices.map(value => {
-            return `
-                                <div>
-                                    <input type="radio" class="btn btn-check rounded-circle" name="initial-choice" id="initial-choice-${value}" value="${value}" autocomplete="off">
-                                    <label class="btn btn-outline-dark" for="initial-choice-${value}">${value}</label>
-                                </div>
-                            `;
-        }).join('')}
+                                return `
+                                    <div>
+                                        <input type="radio" class="btn btn-check rounded-circle" name="initial-choice" id="initial-choice-${value}" value="${value}" autocomplete="off">
+                                        <label class="btn btn-outline-dark" for="initial-choice-${value}">${value}</label>
+                                    </div>
+                                `;
+                            }).join('')}
                         </div>
                     </div>
                     <button id="pick-initial-number-btn" class="btn btn-primary" disabled>Pick</button>
