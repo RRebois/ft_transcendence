@@ -155,7 +155,7 @@ export default class MyProfile {
                     if (data?.qrcode_url) {
                         const qrcode_div = document.getElementById('qrcode_div');
                         const qrcode_label = document.createElement('p');
-                        qrcode_label.innerText = 'Please scan the qrcode below into your authentication application.';
+                        qrcode_label.innerText = 'Please scan the qrcode below into your authentication application. You also have received a mail with the qrcode attached.';
                         const qrcode_img = document.createElement('img');
                         qrcode_img.src = "https://api.qrserver.com/v1/create-qr-code/?data=" + encodeURIComponent(data.qrcode_url) + "&size=128x128";
                         qrcode_img.classList.add('w-128', 'h-128');
@@ -169,8 +169,6 @@ export default class MyProfile {
                             qrcode_div.removeChild(qrcode_div.firstChild);
                         }
                     }
-                    const toastComponent = new ToastComponent();
-                    toastComponent.throwToast('Success', data.message, 10000, 'success');
                 }
             })
             .catch(error => {
@@ -287,7 +285,7 @@ export default class MyProfile {
 							<div class="w-100 mt-5">
                                 <p class="play-bold subtitle">Account security</p>
                                 <form id="2fa-form">
-                                    <div class="form-check form-switch">
+                                    <div class="form-check form-switch mb-2">
                                         <input class="form-check-input" type="checkbox" role="switch" id="2fa-enable" ${this.user?.tfa_activated === true ? "checked" : ""}>
                                         <label class="form-check-label" for="2fa-enable" id="2fa-enable-label">${this.user?.tfa_activated === true ? "2FA is enabled 🔒" : "2FA is disabled 🔓"}</label>
                                     </div>
