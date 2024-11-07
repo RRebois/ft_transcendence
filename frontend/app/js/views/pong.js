@@ -797,7 +797,7 @@ export default class PongGame {
          }
     }
 
-    updateBallPosition(gameState) { //console.log("\n\n", gameState, "\n\n");
+    updateBallPosition(gameState) { console.log("\n\n", gameState, "\n\n");
         const   ball = this.scene.getObjectByName("ball");
         const   prevPosition = new THREE.Vector3(ball.position.x, ball.position.y, ball.position.z);
         const   v = new THREE.Vector3(gameState.ball["x_vel"], 0, gameState.ball["y_vel"]);
