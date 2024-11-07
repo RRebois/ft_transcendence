@@ -301,7 +301,6 @@ body.bg-gradient {
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    background-color: darkred;
 }
 
 .bottom-edge-container {
@@ -314,8 +313,6 @@ body.bg-gradient {
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    background-color: darkred;
-
 }
 
 .right-edge-container {
