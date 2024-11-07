@@ -280,7 +280,6 @@ class Activating2FASerializer(serializers.Serializer):
             'email_subject': subject,
             'to_email': user.email,
         }
-        print(f"Sending email to {user.email}")
         attachments = [("2fa_qrcode.png", qr_code_image.read(), "image/png")]
 
         send_email(data, attachments)

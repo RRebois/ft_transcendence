@@ -40,14 +40,12 @@ class TerminalConsumer(AsyncWebsocketConsumer):
 			await self.handle_help()
 
 	async def disconnect(self, close_code):
-		print("\n\t\t\tDISCONNECT")
 		if self.game_consumer:
 			await self.game_consumer.disconnect(close_code)
 		if self.user:
 			await self.user_disconnection()
 
 	async def session_msg(self, event):
-		print(f"\n\t\tsession_msg => {event}")
 		message = event["message"]
 		response = await self.handler.parse_game_state(message)
 		for k in response.keys():
@@ -137,10 +135,8 @@ class TerminalConsumer(AsyncWebsocketConsumer):
 		view = GameManagerView()
 		response = view.get(self.request, "pong", game_code)
 		data = json.loads(response.content)
-		print(f"\n\t\t\tdata => {data}")
 		route = data.get("ws_route")
 		if route:
-			print(f"\n\t\t\tinside fetch => {data}")
 			scope = {
 				'type': 'websocket',
 				'path': route,

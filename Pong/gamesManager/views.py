@@ -66,7 +66,6 @@ class MatchMaking():
         if game_code in [10, 20]:
             other_player = BOT_NAME if game_code == 10 else 'guest'
             session_id = MatchMaking.create_session(game_name, game_code)
-            # MatchMaking.delete_session(session_id)
             session_data = cache.get(session_id)
             session_data['connected_players'] = 1
             session_data['players'][user.username] = {'id': 1, 'connected': False}
@@ -103,7 +102,6 @@ class MatchMaking():
         awaited_connections = 2
         if game_code == 40:
             awaited_connections = 4
-        print("\n\n\nTournament Name in createSess: ", tournament_name)
         players = {}
         session_id = f"{game_name}_{str(uuid.uuid4().hex)}"
 
@@ -117,10 +115,6 @@ class MatchMaking():
                 'players': [],
                 'elos': [],
             }
-
-        # if usernames:
-        # 	for i, username in enumerate(usernames):
-        # 		players[username] = {'id': i + 1, 'connected': False}
 
         cache.set(session_id, {
             'players': players,
@@ -142,10 +136,7 @@ class MatchMaking():
             tournament = Tournament.objects.get(name=tournament_name)
         except:
             return JsonResponse({"message": "Tournament does not exist."}, status=404)
-        print("\n\n\nTournament Name create tournament sess: ", tournament_name)
-        # matchs = [match.get_players() for match in tournament.tournament_matchs.all()]
         MatchMaking.tournament[tournament_name] = {
-            # 'status': 'open',
             'number_players': tournament.number_players,
             'players': {player.username: [] for player in tournament.players.all()},
             'matchs': [
@@ -160,8 +151,6 @@ class MatchMaking():
         tournament = MatchMaking.tournament.get(tournament_name)
         if not tournament:
             tournament = MatchMaking.create_tournament_session(tournament_name)
-        else:
-            print("\n\n\nTournament match found")
         if len(tournament['players'][username]) >= tournament['number_players'] - 1:
             raise ValueError("You have already played all matchs for this tournament.")
         for match in tournament['matchs']:
@@ -212,7 +201,6 @@ class GameManagerView(APIView):
         error_message = self.check_data(game_name, game_code)
         if error_message is not None:
             return JsonResponse({"success": False, "errors": error_message})
-        # username = user.username
         session_id = MatchMaking.get_session(game_name, game_code, user)
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
@@ -223,8 +211,6 @@ class GameManagerView(APIView):
                 "status": "in-game"
             }
         )
-        # user.status = "in-game"
-        # user.save()
         return JsonResponse({
             'game': game_name,
             'session_id': session_id,
@@ -235,17 +221,13 @@ class GameManagerView(APIView):
 @method_decorator(csrf_protect, name='dispatch')
 class CheckProvidedGame(APIView):
     def get(self, request, game_name, game_code, session_id):
-        print(f"\n\n\nsearching for => {session_id}\n\n\n")
         if game_name not in ['pong', 'purrinha']:
             return JsonResponse({"message": "This game does not exist."}, status=404)
         if game_code not in [10, 20, 22, 23, 40]:
             return JsonResponse({"message": "This code does not exist."}, status=404)
-        print(f"\n\n\nsession id search result : {MatchMaking.matchs.get(session_id)}\n\n\n")
         if not MatchMaking.matchs.get(session_id):
-            print("\n\n\nerror case 1\n\n\n")
             return JsonResponse({"message": "This session does not exist."}, status=404)
         if MatchMaking.matchs[session_id]['game_name'] != game_name:
-            print("\n\n\nerror case 2\n\n\n")
             return JsonResponse({"message": "This game does not exist."}, status=404)
         return JsonResponse({
             'game': game_name,
