@@ -148,7 +148,8 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
     async def fetch_session_data(self):
         if self.session_data['status'] != 'started':
             self.session_data = await self.get_session_data()
-            if self.session_data['status'] == "ready" and not self.game_handler:
+            # if self.session_data['status'] == "waiting" and not self.game_handler:
+            if self.session_data['awaited_players'] == self.session_data['connected_players'] and not self.game_handler:
                 self.game_handler = GameManagerConsumer.matchs.get(self.session_id)
                 await self.game_handler.add_consumer(self)
         else:
@@ -338,7 +339,6 @@ class PongHandler():
         self.message['winner'] = winner
         self.message['status'] = 'finished'
         await self.consumer[0].update_cache_db(self.message)
-        # print(f"\n\t\tEND GAME\nwinner => {winner}\nmessage => {self.message}\ngs => {gs}\nmessage['gs'] => {self.message['game_state']}\ngs serialize {await self.game.serialize()}")
         await self.consumer[0].send_to_group(self.message)
         print(f"\n\nMATCH IS TOURNAMENT ?: {self.message['tournament_name']}")
         if self.message['tournament_name']:
@@ -464,18 +464,15 @@ class PurrinhaHandler():
         if self.message['deconnection'] or self.message['status'] == 'finished':
             return
         if not winner:
-            winner = [self.message['game_state']['winner']]
+            winner = [self.message['game_state']['winner']][0]
         else:
             win = choice([i for i in enumerate(winner)])[0]
             winner = winner[win]
             deconnection = True
-        print(f"\n\n\nwinner => {winner[0]}\n\n\n")
-        if winner[0] != 'tie':
-            print(f"winner is not tie")
-            self.wins[winner[0]] += 1
+        if winner != 'tie':
+            self.wins[winner] += 1
             self.message['game_state']['history'] = self.wins
-            if self.wins[winner[0]] == MAX_ROUND_WINS or deconnection:
-                print(f"winner has won => end of game")
+            if self.wins[winner] == MAX_ROUND_WINS or deconnection:
                 self.message['winner'] = winner
                 self.message['status'] = 'finished'
                 self.message['deconnection'] = deconnection
@@ -486,7 +483,6 @@ class PurrinhaHandler():
                 if self.bot:
                     await self.bot.cancel_loop()
         await self.consumer[0].update_cache_db(self.message)
-        print(f"\n\n\nmessage => {self.message}\n\n\n")
         await self.consumer[0].send_to_group(self.message)
         if not self.message['winner']:
             await self.game.play_again()
@@ -494,5 +490,3 @@ class PurrinhaHandler():
             await self.reset_game()
         else:
             await self.remove_consumer()
-
-    # send notification + restart the game
