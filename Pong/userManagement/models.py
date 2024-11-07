@@ -34,13 +34,6 @@ class User(AbstractUser):
         ('offline', 'Offline'),
         ('in-game', 'In-game'),
     ]
-    language_choices = [
-        ['🇬🇧 English', 'en'],
-        ['🇫🇷 French', 'fr'],
-        ['🇪🇸 Spanish', 'es'],
-        ['🇵🇹 Portuguese', 'pt']
-    ]
-    language = models.CharField(choices=language_choices, default="🇬🇧 English")
     status = models.CharField(max_length=50, choices=status_choices, default='offline')
     totp = models.CharField(max_length=100, blank=True, null=True)
     tfa_activated = models.BooleanField(default=False)
@@ -93,7 +86,6 @@ class User(AbstractUser):
             "Last name": self.last_name,
             "Email": self.email,
             "Username": self.username,
-            "Language": self.language,
             "stud42": self.stud42,
             "2fa": self.tfa_activated,
             "img": self.get_img_serialize(),

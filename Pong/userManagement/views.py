@@ -33,16 +33,6 @@ from .forms import *
 from .serializer import *
 from .utils import *
 
-import logging
-
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler()  # This handler writes logs to stdout
-    ]
-)
-
 
 @method_decorator(csrf_protect, name='dispatch')
 class JWTAuthView(APIView):
@@ -163,7 +153,6 @@ class LoginView(APIView):
             user_dict = model_to_dict(user, exclude=['friends', "password"])
             image_url = user.get_img_url()
             user_dict['image_url'] = get_profile_pic_url(image_url)
-            logging.debug("image in logging : " + user_dict['image_url'])
 
             response = JsonResponse(data={'user': user_dict}, status=200)
             response.set_cookie(key='jwt_access', value=access_token, httponly=True, samesite='Lax', secure=True,
@@ -206,7 +195,6 @@ def exchange_token(code, next=False):
         "image": user['image']['link'],
         "first_name": user['first_name'],
         "last_name": user['last_name'],
-        "language_id": user["languages_users"][0]['language_id'],
     }
 
 
@@ -217,7 +205,6 @@ class Login42RedirectView(APIView):
     def post(self, request):
         return HttpResponseRedirect(reverse("index"))
 
-    # TODO: check failure cases
     def get(self, request):
         code = request.GET.get('code')
         try:
@@ -286,7 +273,6 @@ class RegisterView(APIView):
         user_data = request.data
         serializer = self.serializer_class(data=user_data)
 
-        logging.debug("============================ REGISTER VIEW ============================")
         try:
             serializer_response = serializer.is_valid(raise_exception=True)
         except:
@@ -298,7 +284,6 @@ class RegisterView(APIView):
                     elif key == 'username' and error.code == 'unique':
                         return Response('username already taken', status=400)
             return Response('Something went wrong', status=400)
-        logging.debug("serializer_response: ", str(serializer_response))
         if serializer_response:
             try:
                 user = serializer.save()
@@ -313,6 +298,7 @@ class RegisterView(APIView):
 
             if 'imageFile' in request.FILES:
                 image = request.FILES['imageFile']
+                image.name = image.name.replace(' ', '_')
                 img_serializer = self.img_serializer_class(data={'image': image})
                 if img_serializer.is_valid():
                     md5_hash = hashlib.md5(image.read()).hexdigest()
@@ -351,10 +337,7 @@ class RegisterView(APIView):
                                        algorithm='HS256')
             user_dict = model_to_dict(user, exclude=['friends'])
             image_url = get_profile_pic_url(user.get_img_url())
-            logging.debug(f"image_url: {image_url}")
             user_dict['image_url'] = image_url
-            logging.debug(f"image_url in dict: {user_dict['image_url']}")
-            logging.debug(f"user_dict: {user_dict}")
             response = JsonResponse(data={'user': user_dict}, status=201)
             response.set_cookie(key='jwt_access', value=access_token, httponly=True, samesite='Lax', secure=True,
                                 path='/')
@@ -368,7 +351,6 @@ class RegisterView(APIView):
             return response
         else:
             errors = serializer.errors
-            logging.debug("serializer validation errors: ", str(errors))
             return Response(str(errors), status=400)
 
 
@@ -472,6 +454,7 @@ class UpNewAvatarView(APIView):
                 return JsonResponse(data={"message": "The superuser can't change its avatar"}, status=403)
             if request.FILES:
                 image = request.FILES['newAvatar']
+                image.name = image.name.replace(' ', '_')
                 serializer = self.serializer_class(data={'image': image})
                 if serializer.is_valid():
                     sha256_hash = hashlib.sha256(image.read()).hexdigest()
@@ -599,11 +582,13 @@ class EditDataView(APIView):
             error_messages = []
             for field, errors in e.detail.items():
                 for error in errors:
-                    if field == 'non_field_errors':
-                        error_messages.append(f"{error}")
-                    else:
-                        error_messages.append(f"{field}: {error}")
+                    error_messages.append(f"{error}")
             error_message = " | ".join(error_messages)
+            return JsonResponse(data={'message': error_message}, status=400)
+        except IntegrityError as e:
+            error_message = str(e)
+            if error_message.startswith("duplicate key value"):
+                error_message = "Username already taken"
             return JsonResponse(data={'message': error_message}, status=400)
 
 
@@ -641,15 +626,12 @@ class PasswordResetRequestView(APIView):
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data, context={'request': request})
-        logging.debug(f"In reset request view")
         try:
             serializer.is_valid(raise_exception=True)
             return JsonResponse(data={'message': 'A mail to reset your password has been sent.'}, status=200)
         except serializers.ValidationError as e:
             error_message = e.detail.get('non_field_errors', [str(e)])[0]
-            # logging.debug(f"error: {error}")
             # if str(error).find('ErrorDetail'):
-            #     logging.debug(f"In reset request view")
             #     error_message = "Enter a valid email address."
             # else:
             #     error_message = error
@@ -685,14 +667,10 @@ class PasswordResetConfirmedView(APIView):
     def get(self, request, uidb64, token):
         try:
             user_id = smart_str(urlsafe_base64_decode(uidb64))
-            # logging.debug(f"Decoded user_id: {user_id}")
             user = User.objects.get(id=user_id)
-            # logging.debug(f"User found: {user.username}")
 
             if not PasswordResetTokenGenerator().check_token(user, token):
-                # logging.debug(f"Invalid or expired reset password token for user {user.username}")
                 return JsonResponse({'message': 'Invalid or expired reset password token.'}, status=400)
-            # logging.debug(f"Token is valid for user {user.username}")
             return JsonResponse({'token': token, 'uidb64': uidb64}, status=200)
 
         except DjangoUnicodeDecodeError as identifier:
@@ -705,7 +683,6 @@ class PasswordResetConfirmedView(APIView):
 #
 #     def post(self, request):
 #         serializer = self.serializer_class(data=request.data, context={'request': request})
-#         logging.debug(f"In reset request view")
 #         try:
 #             serializer.is_valid(raise_exception=True)
 #             return JsonResponse(data={'message': 'A mail to reset your password has been sent.'}, status=200)
@@ -828,7 +805,6 @@ class SendFriendRequestView(APIView):
                 'from_user_status': user.status,
             }
         )
-        logging.debug(f"Friend request sent to {to_user.username}")
 
         message = "Friend request sent."
         return JsonResponse({"message": message, "user": user.serialize(), "level": "success"},
@@ -848,8 +824,6 @@ class PendingFriendRequestsView(APIView):
                           )
         processedRequest = []
         for request in friendRequests:
-            # logging.debug(f" img url :  {request['from_user_image']}")
-            # from_image_url = request['from_user_image'] or os.environ.get('SERVER_URL') + '/media/profile_pics/default_pp.jpg'
             processedRequest.append({
                 'to_user__username': request['to_user__username'],
                 'time': request['time'],
@@ -874,8 +848,6 @@ class GetFriendRequestView(APIView):
                           .values('from_user__username', 'time', 'status', 'from_user_image', 'from_user_id', 'from_user__status'))
         processedRequest = []
         for request in friendRequests:
-            logging.debug(f" img url :  {request['from_user_image']}")
-            # from_image_url = request['from_user_image'] or os.environ.get('SERVER_URL') + '/media/profile_pics/default_pp.jpg'
             processedRequest.append({
                 'from_user__username': request['from_user__username'],
                 'time': request['time'],

@@ -136,6 +136,7 @@ export function handle_round_winner(data, view) {
 }
 
 export function send_player_action(websocket, game_code, action, value, player, player_set_id, session_id) {
+    console.log(`Sending player action ${action} with value ${value}`);
     websocket.send(JSON.stringify({
         "action": action,
         "player_id": player.id,

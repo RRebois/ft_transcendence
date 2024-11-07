@@ -60,10 +60,6 @@ export default class MyProfile {
         } else {
             document.getElementById('username').classList.remove('is-invalid');
         }
-        if (!data.language || data.language === "") {
-            document.getElementById('language').classList.add('is-invalid');
-            isValid = false;
-        }
         return isValid;
     }
 
@@ -93,9 +89,8 @@ export default class MyProfile {
         const last_name = document.getElementById('last_name').value;
         const email = document.getElementById('email').value;
         const username = document.getElementById('username').value;
-        const language = document.getElementById('language').value;
-        console.log(first_name, last_name, email, username, language);
-        if (!this.checkPersonalData({first_name, last_name, email, username, language})) {
+        console.log(first_name, last_name, email, username);
+        if (!this.checkPersonalData({first_name, last_name, email, username})) {
             console.log("error in personal data");
             return;
         }
@@ -110,7 +105,7 @@ export default class MyProfile {
                 'X-CSRFToken': csrfToken
             },
             credentials: 'include',
-            body: JSON.stringify({first_name, last_name, email, username, language})
+            body: JSON.stringify({first_name, last_name, email, username})
         })
             .then(response => response.json().then(data => ({ok: response.ok, data})))
             .then(({ok, data}) => {
@@ -119,15 +114,7 @@ export default class MyProfile {
                     toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
                     updateBtn.disabled = false;
                 } else {
-                    console.log('Success:', data);
-                    sessionStorage.setItem('toastMessage', JSON.stringify({
-                        title: 'Success',
-                        message: 'Your personal information has been updated',
-                        duration: 5000,
-                        type: 'success'
-                    }));
                     updateBtn.disabled = false;
-                    // window.location.href = '/my-profile';
                     appRouter.navigate('/my-profile');
                 }
             })
@@ -249,14 +236,14 @@ export default class MyProfile {
 							<div class="row g-3">
 								<div class="row g-2">
 									<div class="form-floating has-validation">
-									<input type="text" id="first_name" class="form-control" value="${this.user?.first_name}" required />
+									<input type="text" id="first_name" class="form-control" value="${this.user?.first_name}" required ${this.user?.stud42 ? 'disabled' : ''}/>
 									<label for="first_name">Firstname<span class="text-danger">*</span></label>
 									<div class="invalid-feedback clue-text">Firstname have an invalid format</div>
 									</div>
 								</div>
 								<div class="row g-2">
 									<div class="form-floating has-validation">
-                                        <input type="text" id="last_name" class="form-control" value="${this.user?.last_name}" required />
+                                        <input type="text" id="last_name" class="form-control" value="${this.user?.last_name}" required ${this.user?.stud42 ? 'disabled' : ''}/>
                                         <label for="last_name">Lastname<span class="text-danger">*</span></label>
                                         <div class="invalid-feedback clue-text">Lastname have an invalid format</div>
                                     </div>
@@ -271,22 +258,10 @@ export default class MyProfile {
 								
 								<div class="row g-2">
 									<div class="form-floating has-validation">
-										<input type="text" id="username" class="form-control" value="${this.user?.username}" required />
+										<input type="text" id="username" class="form-control" value="${this.user?.username}" required ${this.user?.stud42 ? 'disabled' : ''}/>
 										<label for="username">Username<span class="text-danger">*</span></label>
 										<div class="form-text">Username has to be 5 to 12 characters long and composed only by letters, digits and hyphens (- or _)</div>
 										<div class="invalid-feedback clue-text">Username have an invalid format</div>
-									</div>
-								</div>
-								<div class="row g-2">
-									<div class="form-floating has-validation">
-										<select id="language" class="form-select" aria-label="Language">
-											<option value="🇬🇧 English" ${this.user?.language === "🇬🇧 English" ? "selected" : ""}>🇬🇧 English</option>
-											<option value="🇫🇷 French" ${this.user?.language === "🇫🇷 French" ? "selected" : ""}>🇫🇷 French</option>
-											<option value="🇪🇸 Spanish" ${this.user?.language === "🇪🇸 Spanish" ? "selected" : ""}>🇪🇸 Spanish</option>
-											<option value="🇵🇹 Portuguese" ${this.user?.language === "🇵🇹 Portuguese" ? "selected" : ""}>🇵🇹 Portuguese</option>
-										</select>
-										<label for="language">Language <span class="text-danger">*</span></label>
-										<div class="invalid-feedback clue-text">Please, select a language</div>
 									</div>
 								</div>
 								<div class="d-flex">
@@ -320,7 +295,7 @@ export default class MyProfile {
                                 </form>
                             </div>
 						
-						    <div class="w-100 mt-5">
+						    <div class="w-100 mt-5 mb-2">
                                 <form id="password-form">
                                     <p class="play-bold subtitle">Change your password</p>
                                     <div class="row g-3">
@@ -374,6 +349,13 @@ export default class MyProfile {
                                 </form>
 							</div>
 						` : ''}
+						
+						${this.user?.stud42 ? `
+							<div class="w-100 mt-5 mb-2">
+                                <p class="play-bold subtitle">Account security</p>
+                                <span class="play-regular">For 42 users security concerns, check that directly on your 42 intra.</span>
+                            </div>
+						` : ''}
 					</div>
 				</div>
 			</div>
@@ -394,10 +376,6 @@ export default class MyProfile {
         if (passwordForm) {
             passwordForm.addEventListener('submit', this.handlePasswordChange);
         }
-        // const deleteAccountBtn = document.getElementById('delete-account-btn');
-        // if (deleteAccountBtn) {
-        //     deleteAccountBtn.addEventListener('click', this.handleDeleteAccount);
-        // }
         const newPassword = document.getElementById('password');
         if (newPassword) {
             newPassword.addEventListener('input', validatePassword);

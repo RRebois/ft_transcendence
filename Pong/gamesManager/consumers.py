@@ -437,7 +437,6 @@ class PurrinhaHandler():
         action = text_data.get('action')
         value = text_data.get('selected_value')
         player_id = text_data.get('player_id')
-        print(f"\n\n\ntext_data => {text_data}\n\n\n")
         ret = None
         if action == "pick_initial_number":
             ret = await self.parse_quantity(value, player_id)
