@@ -14,7 +14,6 @@ async def	init_bot(game_name, game, consumer):
 	if game_name == 'pong':
 		try:
 			bot_db = await sync_to_async(BotQTable.objects.get)(name=BOT_NAME)
-			# await sync_to_async(bot_db.save_table)({})
 		except:
 			bot_db = await sync_to_async(BotQTable.objects.create)(name=BOT_NAME)
 			try:
@@ -32,35 +31,6 @@ async def	init_bot(game_name, game, consumer):
 				"""
 				train2 = TrainPong(1, bot_db, game, consumer)
 				await train2.launch_train()
-
-
-		# return TrainPong(0, bot_db, game, consumer)
-		# test = []
-		# amount = 4
-		# for i in range(amount):
-		# 		tmp = TrainPong(i, bot_db, game, consumer)
-		# 		await tmp.launch_train()
-		# 		test.append(tmp)
-		# while test:
-		# 	for t in test:
-		# 		if t.finished:
-		# 			test.remove(t)
-		# 	await asyncio.sleep(SLEEP)
-
-		# """
-		# against Trainbot
-		# """
-		# tmp1 = TrainPong(0, bot_db, game, consumer)
-		# await tmp1.launch_train()
-		# while not tmp1.finished:
-		# 	await asyncio.sleep(SLEEP)
-		# """
-		# against himself
-		# """
-		# tmp2 = TrainPong(1, bot_db, game, consumer)
-		# await tmp2.launch_train()
-		# while not tmp2.finished:
-		# 	await asyncio.sleep(SLEEP)
 
 		bot = PongBot(game, 2, bot_db, training=False)
 		return bot
@@ -81,12 +51,10 @@ class	TrainPong():
 		self.bot2 = PongBot(self.game, 2, bot_db, training=True)
 
 	async def	game_loop(self):
-		print(f'create train {self.i}')
 		await self.bot1.launch_bot()
 		await self.bot2.launch_bot()
 		while True:
 			await self.game.update()
-			# await self.consumer.send_game_state()
 			await self.try_cancel_loop()
 			await asyncio.sleep(SLEEP / 10)
 
@@ -97,7 +65,6 @@ class	TrainPong():
 		gs = await self.game.serialize()
 		if gs['left_score'] >= self.count or gs['right_score'] >= self.count:
 			self.count += self.step
-			print(f'\n\nTrain {self.i} => {gs['left_score']} x {gs['right_score']}\nq-table size => {len(PongBot.q_table)}')
 		if gs['left_score'] >= self.limit or gs['right_score'] >= self.limit or len(PongBot.q_table) > 9500:
 			await self.cancel_loop()
 			if self.i:
@@ -109,7 +76,6 @@ class	TrainPong():
 		await self.bot2.cancel_loop()
 		self.loop_task.cancel()
 		self.finished = True
-		print(f'finished train {self.i}')
 
 class TestBot():
 

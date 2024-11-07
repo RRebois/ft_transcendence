@@ -14,7 +14,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             user_connected.status = status
             user_connected.save(update_fields=['status'])
             self.scope['user'] = user_connected
-            print(f"User {str(self.scope['user'])} is now {user_connected.status}")
             return True
         except:
             return False
@@ -105,7 +104,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard("Connected_users_group", self.channel_name)
 
     async def receive(self, text_data):
-        print(f"Received message: {text_data}")
         pass
 
     async def status_change(self, event):
@@ -198,7 +196,6 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def join_match(self, event):
         user = self.scope['user']
-        # await self.user_offline(user)
         await self.send(text_data=json.dumps({
             'type': 'join_match',
             'user_id': user.id,

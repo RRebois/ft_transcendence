@@ -28,11 +28,4 @@ application = ProtocolTypeRouter({
             websocket_urlpatterns
         )
     )
-    # "websocket": AllowedHostsOriginValidator(
-    #          AuthMiddlewareStack(JWTAuthWSMiddleware(
-    #     URLRouter(
-    #         websocket_urlpatterns
-    #     )
-    # ))),
-
 })

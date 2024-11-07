@@ -131,7 +131,6 @@ def update_match_data(match_result, winner, match, deco, is_pong=True):
     winner_elo = 0
     opponent_elo = 0
     timestamp = gen_timestamp()
-    print(f"UPDATING MATCH DATA !")
 
     players_data = []
     for player_username in match_result.keys():
@@ -186,7 +185,6 @@ def create_match(players, session_id, deco, is_pong):
     match = Match.objects.create(is_pong=is_pong, session_id=session_id, count=len(players), deconnection=deco)
 
     for player in players:
-        print(f"PLAYER: {player}")
         try:
             user = User.objects.get(username=player)
         except User.DoesNotExist:
@@ -231,15 +229,12 @@ def add_match_to_tournament(tournament_name, match):
     except:
         return JsonResponse({"message": "Tournament does not exist."}, status=404)
     unfinished_matches = tournament.get_unfinished_matchs()
-    print(f"\n\nUNFINISHED MATCHES ARE: {unfinished_matches}")
-    print(f"\n\nMATCH IS: {match}")
     match_player_ids = set(match.players.values_list('id', flat=True))
     for unfinished_match in unfinished_matches:
         unfinished_match_player_ids = set(unfinished_match.players.values_list('id', flat=True))
         if unfinished_match_player_ids == match_player_ids:
             unfinished_match.match = match
             unfinished_match.score = [score.score for score in match.scores.all()]
-            print(f"Unfinished match is: {unfinished_match}")
             unfinished_match.save()
             break
 
@@ -288,7 +283,6 @@ def add_player_to_tournament(user, tournament):
             'channels': [],
             'players': [],
             'matchs': [],
-            # 'live_matchs': [],
             'message': 'waiting for other players',
 
         }
