@@ -398,6 +398,7 @@ export default class Dashboard {
 		}
 		const tournamentModal = document.getElementById('create-tournament-modal');
 		if (tournamentModal) {
+			this.tournamentNbPlayers = '3';
 			tournamentModal.addEventListener('show.bs.modal', (event) => {
 				const nbPlayersContainer = document.querySelectorAll('input[name="players"]');
 				nbPlayersContainer.forEach(radio => {

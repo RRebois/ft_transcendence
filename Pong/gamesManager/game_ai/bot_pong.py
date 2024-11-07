@@ -20,7 +20,7 @@ class PongBot():
 	ALPHA = 0.55 #learning rate
 	GAMMA = 0.6 #discount factor
 	EPSILON = 0.03 #exploration rate
-	EPSILON_MAX = 0.4 #exploration rate
+	EPSILON_MAX = 0.2 #exploration rate
 	PAD_H_REDUC = PADDLE_HEIGHT_DUO / REDUCTION
 	actions = [-1, 0, 1] #moves [up, nothing, down]
 
