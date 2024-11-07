@@ -169,7 +169,6 @@ export default class ResetPw {
     }
 
     render() {
-        // document.title = 'ft_transcendence | Reset password';
         return `
         <div id="password-reset-container">
         </div>`;

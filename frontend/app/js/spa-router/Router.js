@@ -94,7 +94,7 @@ export default class Router {
 
 
     renderRoute(route, path) {
-        document.title = `ft_transcendence${route.name.length > 0 ? ' | ' + route.name : ''}`;
+        document.title = 'ft_transcendence';
         if (route.user) {
             if (path.startsWith('/purrinha') || path.startsWith('/pong')) {
                 this.renderNode.innerHTML = route.renderView();
@@ -148,8 +148,7 @@ export default class Router {
         } else if (isPublicRoute && isUserAuth) {
             this.redirectToDashboard(isUserAuth);
             return;
-        }
-        else if (isPublicRoute && !isUserAuth && path === '/') { // For logout
+        } else if (isPublicRoute && !isUserAuth && path === '/') { // For logout
             this.redirectToLogin();
             return;
         }

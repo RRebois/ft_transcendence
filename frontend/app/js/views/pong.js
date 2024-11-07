@@ -63,7 +63,6 @@ export default class PongGame {
         this.lastFrameTime = 0;  // Store the time of the last frame
         this.fpsInterval = 1000 / 60;
 
-        // document.title = "ft_transcendence | Pong";
         modal.hidden = true;
         this.userIndex = 0;
 

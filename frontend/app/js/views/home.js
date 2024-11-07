@@ -315,9 +315,7 @@ export default class Home {
         }
     }
 
-// TODO: check form action link
     render() {
-        // document.title = 'ft_transcendence | Login';
         return `
 		 <div class="w-100 min-h-full d-flex flex-column justify-content-center align-items-center">
 			<div class="bg-white d-flex flex-column align-items-center py-2 px-5 rounded login-card" style="--bs-bg-opacity: .5;">

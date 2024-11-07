@@ -33,7 +33,6 @@ export default class Friends {
     }
 
     render() {
-        // document.title = 'ft_transcendence | Friends'
         return `
 			<div class="d-flex w-full min-h-full flex-grow-1">
 				<div class="d-flex min-h-full w-full flex-column align-items-center px-5" style="gap: 16px;">

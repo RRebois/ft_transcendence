@@ -426,7 +426,6 @@ export default class Dashboard {
 	}
 
 	render() {
-		// document.title = "ft_transcendence";
 		return `
 		<div class="d-flex w-full min-h-full flex-grow-1 justify-content-center align-items-center">
             <div class="h-100 w-full d-flex flex-column justify-content-center align-items-center px-5" style="gap: 32px;">

@@ -334,7 +334,6 @@ export default class Stats {
 	};
 
 	render() {
-		// document.title = `ft_transcendence | ${this.props?.username} stats`;
 		return `
 			<div class="d-flex w-3-4 min-h-full flex-grow-1 justify-content-center align-items-center" id="statsContainer">
 				<div class="h-full w-full d-flex flex-column justify-content-center align-items-center px-5 my-5" style="gap: 16px;">
@@ -405,7 +404,6 @@ export default class Stats {
 		  });
 		}
 		else{
-			//document.title = 'User not found';
         	const contentContainer = document.getElementById("canvasContainer");
         	contentContainer.innerHTML = '<h1>User not found</h1>';
 		}
