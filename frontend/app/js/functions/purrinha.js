@@ -40,7 +40,7 @@ function getScoreTable(players, winner) {
         return `
                         <tr>
                             <td>${player.name === winner ? player.name + ' 👑' : player.name}</td>
-                            <td>${player.guess}</td>
+                            <td>${player.guess === -1 ? '' : player.guess}</td>
                         </tr>
                     `;
     }).join('')}
@@ -61,7 +61,7 @@ export function display_game_winner(data, view) {
         return Math.random() * (max - min) + min;
     }
 
-    if (data?.winner[0] === view.user.username) {
+    if (data?.winner === view.user.username) {
         const interval = setInterval(function () {
             const timeLeft = animationEnd - Date.now();
 
@@ -85,15 +85,27 @@ export function display_game_winner(data, view) {
         }, 250);
 
         if (root) {
-            root.innerHTML = `
-                <div id="game-winner" class="d-flex flex-column gap-2 align-items-center justify-content-center">
-                    <p class="fs-1 play-bold m-1">Congratulations!</p>
-                    <p class="fs-3 play-regular">You won the game!</p>
-                    <p class="fs-5 play-regular">The sum was ${data?.game_state.result}</p>
-                    ${getScoreTable(players, data?.winner[0])}
-                    <button type="button" class="btn btn-primary" route="/dashboard">Return home</button>
-                </div>
-            `;
+            if (data?.game_state.result === 'waiting') {
+                root.innerHTML = `
+                    <div id="game-winner" class="d-flex flex-column gap-2 align-items-center justify-content-center">
+                        <p class="fs-1 play-bold m-1">Congratulations!</p>
+                        <p class="fs-3 play-regular">You won the game!</p>
+                        <p class="fs-5 play-regular">your opponent has fled 👻</p>
+                        <button type="button" class="btn btn-primary" route="/dashboard">Return home</button>
+                    </div>
+                `;
+            }
+            else {
+                root.innerHTML = `
+                    <div id="game-winner" class="d-flex flex-column gap-2 align-items-center justify-content-center">
+                        <p class="fs-1 play-bold m-1">Congratulations!</p>
+                        <p class="fs-3 play-regular">You won the game!</p>
+                        <p class="fs-5 play-regular">The sum was ${data?.game_state.result}</p>
+                        ${getScoreTable(players, data?.winner)}
+                        <button type="button" class="btn btn-primary" route="/dashboard">Return home</button>
+                    </div>
+                `;
+            }
         }
     } else {
         const scalar = 2;
@@ -108,7 +120,7 @@ export function display_game_winner(data, view) {
                     <p class="fs-1 play-bold m-1">Game Over</p>
                     <p class="fs-3 play-regular">${data?.winner} is the winner</p>
                     <p class="fs-5 play-regular">The sum was ${data?.game_state.result}</p>
-                    ${getScoreTable(players, data?.winner[0])}
+                    ${getScoreTable(players, data?.winner)}
                     <button type="button" class="btn btn-primary" route="/dashboard">Return home</button>
                 </div>
             `;
