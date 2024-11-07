@@ -99,9 +99,13 @@ export default class Home {
                     window.location.href = data.redirect_url;
                 } else {
                     try {
-                        initializeWebSocket();
-                        OauthBtn.disabled = false;
-                        window.location.href = data.redirect_url;
+                        initializeWebSocket().then(() => {
+                            OauthBtn.disabled = false;
+                            window.location.href = data.redirect_url;
+                        }).catch(e => {
+                            OauthBtn.disabled = false;
+                            window.location.href = data.redirect_url;
+                        })
                     }
                     catch (e) {
                         const toastComponent = new ToastComponent();
