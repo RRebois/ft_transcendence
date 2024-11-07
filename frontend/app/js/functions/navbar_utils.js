@@ -1,17 +1,6 @@
 import ToastComponent from '@js/components/Toast.js';
 import { getCookie } from './cookie.js';
 
-export function create_div_title(username, str, divName) {
-    document.getElementById(divName).innerHTML = "";
-    const   title = document.createElement('div');
-    title.innerHTML = username + " " + str;
-
-    title.className = "title_div gradient-background";
-    setAttributes(title, {"name": "top", "id": "title"});
-
-    document.querySelector(`#${divName}`).append(title);
-}
-
 export function create_previous_avatar_div(avatar, changeAvatarCallback) {
     const AvatarsContainer = document.getElementById("previous-pp-list");
     if (AvatarsContainer) {
@@ -35,12 +24,6 @@ export function create_previous_avatar_div(avatar, changeAvatarCallback) {
     }
 }
 
-function setAttributes(el, attrs) {
-  for(var key in attrs) {
-    el.setAttribute(key, attrs[key]);
-  }
-}
-
 export function load_new_notifications() {
 		const csrfToken = getCookie('csrftoken');
 		fetch(`https://${window.location.hostname}:8443/get_notifications`, {
@@ -61,7 +44,6 @@ export function load_new_notifications() {
                 if (dropdownNotif) {
                     dropdownNotif.innerHTML = "";
                     data.forEach(notification => {
-//                        console.log("Notif is: ", notification);
                         const notifElem = document.createElement('li');
                         notifElem.classList.add('bg-notif', 'dropdown-item');
                         notifElem.innerHTML = `
@@ -79,7 +61,6 @@ export function load_new_notifications() {
 			}
 		})
 		.catch(error => {
-			console.error('Error:', error);
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
 		});

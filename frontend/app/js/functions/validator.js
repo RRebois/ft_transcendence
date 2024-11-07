@@ -1,5 +1,4 @@
 export function  validatePassword() {
-    console.log("Validating password");
     const password = document.getElementById('password').value;
     const minLength = document.getElementById('minLength');
     const uppercase = document.getElementById('uppercase');
@@ -50,7 +49,6 @@ export function  validatePassword() {
 }
 
 export function passwordMatching(){
-    console.log("In password Matching")
     const password = document.getElementById('password').value;
     const confirm_password = document.getElementById('confirm_password').value;
     let isValid = true;
@@ -61,6 +59,5 @@ export function passwordMatching(){
     } else {
         document.getElementById('confirm_password').classList.remove('is-invalid');
     }
-    console.log("isValid is: ", isValid);
     return isValid;
 }

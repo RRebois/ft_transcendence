@@ -14,8 +14,8 @@ export default class Tournament {
     }
 
     setUser = (user) => {
-		this.user = user;
-	}
+        this.user = user;
+    }
 
     removeUser() {
         if (this.user) this.user = null;
@@ -36,20 +36,17 @@ export default class Tournament {
                 },
                 credentials: 'include'
             })
-            .then(response => response.json().then(data => ({ok: response.ok, data})))
-            .then(({ok, data}) => {
-                if (!ok) {
-                    this.toast.throwToast("Error", data.message || "Something went wrong", 5000, "error");
-                } else {
-                    // this.toast.throwToast("Success", data.message || "You have joined the tournament", 5000, "success");
-                    document.getElementById('join-tournament').classList.add('disabled');
-                    // appRouter.navigate(window.location.pathname, false);
-                }
-            })
-            .catch(error => {
-                console.error("Error joining tournament: ", error);
-                this.toast.throwToast("Error", "Network error or server is unreachable", 5000, "error");
-            });
+                .then(response => response.json().then(data => ({ok: response.ok, data})))
+                .then(({ok, data}) => {
+                    if (!ok) {
+                        this.toast.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+                    } else {
+                        document.getElementById('join-tournament').classList.add('disabled');
+                    }
+                })
+                .catch(error => {
+                    this.toast.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+                });
         });
     }
 
@@ -64,21 +61,19 @@ export default class Tournament {
                 },
                 credentials: 'include'
             })
-            .then(response => response.json().then(data => ({ok: response.ok, data})))
-            .then(({ok, data}) => {
-                if (!ok) {
-                    this.toast.throwToast("Error", data.message || "Something went wrong", 5000, "error");
-                } else {
-                    // this.toast.throwToast("Success", data.message || "You are in tournament matchmaking", 5000, "success");
-                    document.getElementById('play-tournament').classList.add('disabled');
-                    const params = new URLSearchParams(data).toString();
-                    appRouter.navigate(`/${data.game}?${params}`);
-                }
-            })
-            .catch(error => {
-                console.error("Error joining tournament: ", error);
-                this.toast.throwToast("Error", "Network error or server is unreachable", 5000, "error");
-            });
+                .then(response => response.json().then(data => ({ok: response.ok, data})))
+                .then(({ok, data}) => {
+                    if (!ok) {
+                        this.toast.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+                    } else {
+                        document.getElementById('play-tournament').classList.add('disabled');
+                        const params = new URLSearchParams(data).toString();
+                        appRouter.navigate(`/${data.game}?${params}`);
+                    }
+                })
+                .catch(error => {
+                    this.toast.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+                });
         });
     }
 
@@ -89,10 +84,10 @@ export default class Tournament {
         return (false);
     }
 
-    load_games(tournament) { console.log("Tournament info: ", tournament);
+    load_games(tournament) {
         const gameDiv = document.getElementById('games');
         gameDiv.innerHTML = '';
-        tournament.matchs.forEach(match => { console.log(match)
+        tournament.matchs.forEach(match => {
             var isParticipant = this.checkUserParticipate(tournament);
             var background;
             if (match.is_finished && isParticipant)
@@ -106,7 +101,7 @@ export default class Tournament {
                     background = 'bg-tournament';
             else
                 background = 'bg-tournament';
-            const   gameElement = document.createElement('div');
+            const gameElement = document.createElement('div');
             gameElement.classList.add(background, 'player-card', 'd-flex', 'flex-wrap', 'flex-row', 'align-items-center', 'justify-content-evenly', 'rounded', 'px-3', 'py-2', 'm-1')
             gameElement.innerHTML = `
                     <div id="user-1" class="d-flex flex-column align-items-center justify-content-center w-128">
@@ -131,17 +126,17 @@ export default class Tournament {
         tournament.matchs.forEach(match => {
             if ((match.players[0].Username === player.Username || match.players[1].Username === player.Username)
                 && match.is_finished)
-                    counter++;
+                counter++;
         });
         return counter;
     }
 
     load_players(tournament) {
-        const   playerDiv = document.getElementById('players');
+        const playerDiv = document.getElementById('players');
         playerDiv.innerHTML = '';
         tournament.players.forEach(player => {
-            const   matchsPlayed = this.fetch_matchs_played(tournament, player);
-            const   playerElement = document.createElement('div');
+            const matchsPlayed = this.fetch_matchs_played(tournament, player);
+            const playerElement = document.createElement('div');
             playerElement.classList.add('player-card', 'd-flex', 'flex-wrap', 'flex-row', 'align-items-center', 'justify-content-evenly', 'bg-tournament', 'rounded', 'px-3', 'py-2', 'm-1')
             player['Username'] === tournament.winner ?
                 playerElement.innerHTML = `
@@ -178,13 +173,13 @@ export default class Tournament {
 
     setup_join_play_btn(tournament) {
         this.playerFinished = false;
-        const   joinBtn = document.getElementById('join-tournament');
-        const   playBtn = document.getElementById('play-tournament');
+        const joinBtn = document.getElementById('join-tournament');
+        const playBtn = document.getElementById('play-tournament');
         tournament.players.forEach(player => {
             if (player.Username === this.user.username) {
                 joinBtn.classList.add('disabled');
                 this.participant = true;
-                const   matchsPlayed = this.fetch_matchs_played(tournament, player);
+                const matchsPlayed = this.fetch_matchs_played(tournament, player);
                 if (matchsPlayed === tournament.nb_players - 1) {
                     playBtn.hidden = true;
                     joinBtn.hidden = true;
@@ -196,17 +191,14 @@ export default class Tournament {
             playBtn.classList.add('disabled');
             playBtn.hidden = true;
             joinBtn.hidden = true;
-        }
-        else if (tournament.status === "waiting for players"){
+        } else if (tournament.status === "waiting for players") {
             playBtn.hidden = true;
             joinBtn.hidden = false;
-        }
-        else {
+        } else {
             if (this.participant) {
                 playBtn.hidden = false;
                 joinBtn.hidden = true;
-            }
-            else {
+            } else {
                 playBtn.hidden = true;
                 joinBtn.hidden = true;
             }
@@ -217,31 +209,30 @@ export default class Tournament {
         const csrfToken = getCookie('csrftoken');
         fetch(`https://${window.location.hostname}:8443/tournament/display/${this.props.id}`, {
             method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-CSRFToken': csrfToken
-			},
-			credentials: 'include'
-		})
-		.then(response => response.json().then(data => ({ok: response.ok, data})))
-		.then(({ok, data}) => {
-			if (!ok) {
-                if (data.message === "Tournament does not exist.")
-                    appRouter.render404Page(window.location.pathname);
-				const toastComponent = new ToastComponent();
-				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
-			} else {
-                this.tournamentObj = data;
-                this.load_players(data);
-                this.load_games(data);
-                this.setup_join_play_btn(data);
-            }
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            credentials: 'include'
         })
-        .catch(error => {
-			console.error("Error fetching tournaments: ", error);
-			const toastComponent = new ToastComponent();
-			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
-		});
+            .then(response => response.json().then(data => ({ok: response.ok, data})))
+            .then(({ok, data}) => {
+                if (!ok) {
+                    if (data.message === "Tournament does not exist.")
+                        appRouter.render404Page(window.location.pathname);
+                    const toastComponent = new ToastComponent();
+                    toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
+                } else {
+                    this.tournamentObj = data;
+                    this.load_players(data);
+                    this.load_games(data);
+                    this.setup_join_play_btn(data);
+                }
+            })
+            .catch(error => {
+                const toastComponent = new ToastComponent();
+                toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
+            });
         this.join_tournament();
         this.play_tournament();
     }

@@ -93,7 +93,6 @@ export default class Register {
         const password = document.getElementById('password').value;
         const password2 = document.getElementById('password2').value;
         const profilePicture = document.getElementById('profile-picture').files[0];
-
         const formData = new FormData();
         formData.append('first_name', firstname);
         formData.append('last_name', lastname);
@@ -102,8 +101,6 @@ export default class Register {
         formData.append('password', password);
         formData.append('password2', password2);
         formData.append('imageFile', profilePicture);
-
-        console.log(firstname, lastname, username, email, password, password2, profilePicture);
         if (!this.validateInputs(firstname, lastname, username, email, password, password2)) {
             return;
         }
@@ -111,7 +108,6 @@ export default class Register {
         if (registerBtn)
             registerBtn.disabled = true;
         const csrfToken = getCookie('csrftoken');
-        console.log("CSRF Token: ", csrfToken);
         fetch(`https://${window.location.hostname}:8443/register`, {
             method: 'POST',
             headers: {
@@ -122,7 +118,6 @@ export default class Register {
         })
         .then(response => response.json().then(data => ({ok: response.ok, data})))
         .then(({ok, data}) => {
-            console.log("Response: ", data);
             if (!ok) {
                 const toastComponent = new ToastComponent();
                 toastComponent.throwToast('Error', data || 'Something went wrong', 5000, 'error');

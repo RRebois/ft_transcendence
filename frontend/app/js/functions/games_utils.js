@@ -16,7 +16,6 @@ export function checkGameInstance(session_id) {
     })
     .then(response => response.json().then(data => ({ok: response.ok, data})))
     .then(({ok, data}) => {
-        console.log("data fetch replay: ", data);
         if (!ok) {
             const errorModal = new bootstrap.Modal(document.getElementById('ErrorModal'));
             document.getElementById('errorModalBody').innerHTML = `
@@ -29,7 +28,6 @@ export function checkGameInstance(session_id) {
         }
     })
     .catch(error => {
-        console.error("Error fetching new game request: ", error);
         const toastComponent = new ToastComponent();
         toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
     });

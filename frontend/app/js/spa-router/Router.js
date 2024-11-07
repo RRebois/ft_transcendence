@@ -13,7 +13,6 @@ export default class Router {
         this.init();
     }
 
-
     async init() {
         this.addEventListeners();
         await getCsrf();
@@ -21,7 +20,6 @@ export default class Router {
         window.history.replaceState(null, null, window.location.pathname + window.location.search);
         await this.navigate(window.location.pathname + window.location.search);
     }
-
 
     addEventListeners() {
         document.addEventListener('click', (e) => {
@@ -48,7 +46,6 @@ export default class Router {
             '<li style="list-style-type:none;"><a role="button" route="/" class="btn btn-primary btn-lg">Return home</a></li>';
     }
 
-
     redirectToLogin(route = null) {
         document.title = "ft_transcendence | Login";
         this.historyStack.unshift("/");
@@ -58,15 +55,12 @@ export default class Router {
             home = this.routes.find(route => this.match(route, "/"));
         else
             home = route;
-        console.log('home page: ', home);
         this.renderNode.innerHTML = home.renderView();
         home.setupEventListeners();
         if (window.mySocket && window.mySocket.readyState === WebSocket.OPEN) {
             window.mySocket.close();
-            console.log('WebSocket connection closed');
         }
     }
-
 
     redirectToDashboard(user) {
         document.title = "ft_transcendence";
@@ -79,19 +73,15 @@ export default class Router {
         dashboard.setupEventListeners();
     }
 
-
     closeGamesWebSockets() {
         if (window.myPongSocket && window.myPongSocket.readyState === WebSocket.OPEN) {
             window.myPongSocket.close();
             window.myPongSocket = null;
-            console.log('Pong websocket connection closed');
         } else if (window.myPurrinhaSocket && window.myPurrinhaSocket.readyState === WebSocket.OPEN) {
             window.myPurrinhaSocket.close();
             window.myPurrinhaSocket = null;
-            console.log('Purrinha websocket connection closed');
         }
     }
-
 
     renderRoute(route, path) {
         document.title = 'ft_transcendence';
@@ -109,13 +99,10 @@ export default class Router {
         route.setupEventListeners();
     }
 
-
     async navigate(path, pushState = true) {
         if (path !== "/") {
             path = path.replace(/\/+$/, ''); // Remove trailing slashes
         }
-        console.log('PATH: ', path);
-        // find all elements with class "modal-backdrop" and remove them
         remove_modal_backdrops();
         const tooltips = document.querySelectorAll('.tooltip');
         if (tooltips) {
@@ -125,9 +112,7 @@ export default class Router {
         }
         const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
         const isUserAuth = await isUserConnected();
-        console.log('isUserAuth: ', isUserAuth);
         const route = this.routes.find(route => this.match(route, path));
-        console.log('route: ', route);
         if (!route) {
             this.render404Page(path);
             return;
@@ -148,13 +133,11 @@ export default class Router {
         } else if (isPublicRoute && isUserAuth) {
             this.redirectToDashboard(isUserAuth);
             return;
-        } else if (isPublicRoute && !isUserAuth && path === '/') { // For logout
+        } else if (isPublicRoute && !isUserAuth && path === '/') { // Logout case
             this.redirectToLogin();
             return;
         }
-        console.log('RENDER ROUTE');
         this.renderRoute(route, path);
-
         const currentPath = window.location.pathname + window.location.search;
         if (currentPath === path || (currentPath.startsWith('/pong') && path.startsWith('/pong')) || (currentPath.startsWith('/purrinha') && path.startsWith('/purrinha'))) {
             return;
@@ -168,11 +151,9 @@ export default class Router {
         }
     }
 
-
     getQueryParams(query) {
         return Object.fromEntries(new URLSearchParams(query).entries());
     }
-
 
     getURLParameters(path) {
         if (path.startsWith('/')) {
@@ -186,7 +167,6 @@ export default class Router {
         }
         return parameters;
     }
-
 
     // Match the route path to the current location path
     match(route, requestPath) {
@@ -217,7 +197,6 @@ export default class Router {
         }
         return false;
     }
-
 
     isPublicRoute(publicRoutes, path) {
         const splitPath = path.split('?');

@@ -13,19 +13,3 @@ export function getCookie(cname) {
     }
     return "";
 }
-
-
-export async function is_user_auth() {
-    const csrf_token = getCookie('csrftoken');
-    const jwt_token = getCookie('jwt_access');
-    const res = await fetch(`https://${window.location.hostname}:8443/jwt`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrf_token,
-            'Authorization': `Bearer ${jwt_token}`,
-        },
-        credentials: 'include',
-    });
-    console.log("jwt auth res : ", res);
-}

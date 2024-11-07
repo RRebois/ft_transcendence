@@ -1,6 +1,5 @@
 import { getCookie } from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
-import {appRouter} from "@js/spa-router/initializeRouter.js";
 import {applyFontSize} from "./display.js";
 
 export function remove_friend_request_div(userId) {
@@ -235,7 +234,6 @@ export function accept_friend_request(event, size) {
 	})
 	.then(response => response.json().then(data => ({ ok: response.ok, data })))
 	.then(({ ok, data }) => {
-		console.log("Data: ", data);
 		if (!ok) {
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
@@ -252,7 +250,6 @@ export function accept_friend_request(event, size) {
 		}
 	})
 	.catch(error => {
-		console.error("Error accepting friend request: ", error);
 		const toastComponent = new ToastComponent();
 		toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
 		button.disabled = false;
@@ -276,7 +273,6 @@ export function decline_friend_request(event, size) {
 	})
 	.then(response => response.json().then(data => ({ ok: response.ok, data })))
 	.then(({ ok, data }) => {
-		console.log("Data: ", data);
 		if (!ok) {
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
@@ -292,7 +288,6 @@ export function decline_friend_request(event, size) {
 		}
 	})
 	.catch(error => {
-		console.error("Error declining friend request: ", error);
 		const toastComponent = new ToastComponent();
 		toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
 		button.disabled = false;
@@ -332,7 +327,6 @@ export function remove_friend(event) {
 		}
 	})
 	.catch(error => {
-		console.error("Error removing friend: ", error);
 		const toastComponent = new ToastComponent();
 		toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
 		button.disabled = false;

@@ -65,14 +65,12 @@ export default class Friends {
     }
 
     load_friends_requests_sent() {
-        console.log("LOAD FRIEND REQUEST SENT CALLED")
         fetch(`https://${window.location.hostname}:8443/pending_friend_requests`, {
             method: "GET",
             credentials: "include"
         })
             .then(response => response.json().then(data => ({ok: response.ok, data})))
             .then(({ok, data}) => {
-                console.log("Data load friend requests sent: ", data);
                 if (!ok) {
                     const toastComponent = new ToastComponent();
                     toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
@@ -86,12 +84,9 @@ export default class Friends {
                             create_friend_request_sent_div(request, data.length);
                         });
                     }
-                    console.log("SUCCESS");
                 }
             })
             .catch(error => {
-                console.error("Error fetching friend requests: ", error);
-                console.log("ERROR FRIEND REQUEST SENT");
                 const toastComponent = new ToastComponent();
                 toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
             });
@@ -105,7 +100,6 @@ export default class Friends {
         })
             .then(response => response.json().then(data => ({ok: response.ok, data})))
             .then(({ok, data}) => {
-                console.log("Data load friend requests: ", data);
                 if (!ok) {
                     const toastComponent = new ToastComponent();
                     toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
@@ -122,7 +116,6 @@ export default class Friends {
                 }
             })
             .catch(error => {
-                console.error("Error fetching friend requests: ", error);
                 const toastComponent = new ToastComponent();
                 toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
             });
@@ -136,7 +129,6 @@ export default class Friends {
         })
             .then(response => response.json().then(data => ({ok: response.ok, data})))
             .then(({ok, data}) => {
-                console.log("Data load friends: ", data);
                 if (!ok) {
                     const toastComponent = new ToastComponent();
                     toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
@@ -153,7 +145,6 @@ export default class Friends {
                 }
             })
             .catch(error => {
-                console.error("Error fetching friends list: ", error);
                 const toastComponent = new ToastComponent();
                 toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
             });
@@ -199,7 +190,6 @@ export default class Friends {
                 }
             })
             .catch(error => {
-                console.error("Error sending friend request: ", error);
                 const toastComponent = new ToastComponent();
                 toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
                 requestBtn.disabled = false;

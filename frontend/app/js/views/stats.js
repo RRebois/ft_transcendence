@@ -13,7 +13,6 @@ export default class Stats {
 		this.fetchStats = this.fetchStats.bind(this);
 		this.fetchMatchHistory = this.fetchMatchHistory.bind(this);
 		this.chartInstance = null;
-		// this.init(this.user?.username);
 	}
 
 	setUser = (user) => {
@@ -115,7 +114,6 @@ export default class Stats {
 			}
 		})
 		.catch(error => {
-			console.error('Error:', error);
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
 		});
@@ -278,7 +276,6 @@ export default class Stats {
 			}
 		})
 		.catch(error => {
-			console.error('Error:', error);
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
 		});
@@ -328,7 +325,6 @@ export default class Stats {
 			return data;
 		}
 		catch (error) {
-			console.error('Error fetching user:', error);
 			return null;
 		}
 	};
@@ -386,7 +382,6 @@ export default class Stats {
 	setupEventListeners =  async () => {
 		const username = this?.props?.username;
 		const user = await this.fetchUser(username);
-
 		applyFontSize();
 		if (user) {
 			this.fetchStats(username);

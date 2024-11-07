@@ -40,7 +40,6 @@ export default class PurrinhaGame {
     }
 
     initializeWs = async (gameCode, match_exists) => {
-        console.log("purrihna initializeWs called");
         if (match_exists) {
             return ;
         }

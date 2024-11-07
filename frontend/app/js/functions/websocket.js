@@ -44,19 +44,16 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
                 return;
             }
             socket.onopen = function (e) {
-                console.log("Purrinha webSocket connection established");
                 resolve(socket);
             }
 
             socket.onmessage = function (event) {
                 const data = JSON.parse(event.data);
-                console.log("[purrinha websocket] Data is:", data);
 
                 // Case : a winner is declared
                 if (data?.winner) {
                     display_game_winner(data, view);
                 }
-
                 if (data?.status === 'waiting') {
                     display_looking_for_players_modal();
                 } else {
@@ -75,22 +72,13 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
                         } else if (data.game_state?.round === "finished") {
                             handle_round_winner(data, view);
                         }
-                    } else if (data?.status === 'finished') {
-                        console.log("Game finished");
-                    }
+                    } else if (data?.status === 'finished') {}
                 }
             };
 
-            socket.onclose = function (event) {
-                if (event.wasClean) {
-                    console.log(`Purrinha Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
-                } else {
-                    console.log('Purrinha Connection died');
-                }
-            };
+            socket.onclose = function (event) {};
 
             socket.onerror = function (error) {
-                console.log(`Purrinha webSocket Error: ${error.message}`);
                 reject(error);
             };
             window.myPurrinhaSocket = socket; // to access as a global var
@@ -102,7 +90,6 @@ export async function initializePurrinhaWebSocket(gameCode, sessionId, ws_route,
 }
 
 export async function initializePongWebSocket(data, pong) {
-    console.log("DATA received webso: ", data); // test si code = 33
     return new Promise(async (resolve, reject) => {
         const response = await fetch(`https://${window.location.hostname}:8443/get_ws_token/`, {
             credentials: 'include',
@@ -128,17 +115,13 @@ export async function initializePongWebSocket(data, pong) {
                 return;
             }
             socket.onopen = function (e) {
-                console.log("Pong WebSocket connection established");
                 resolve(socket);
             };
             pong.init();
             pong.animate(); // placed here to avoid requestAnimationFrame violation
             let test = 0;
             socket.onmessage = function (event) {
-                // console.log("Pong websocket msg received: ", event.data);
                 const data = JSON.parse(event.data);
-                // console.log("Pong websocket data msg received: ", data);
-
                 if (data.status === "waiting") // Waiting for opponent(s)
                     pong.waiting();
                 if (data.status === "ready" && test === 0) {
@@ -149,16 +132,9 @@ export async function initializePongWebSocket(data, pong) {
                     pong.display(data);
             };
 
-            socket.onclose = function (event) {
-                if (event.wasClean) {
-                    console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
-                } else {
-                    console.log('Connection died');
-                }
-            };
+            socket.onclose = function (event) {};
 
             socket.onerror = function (error) {
-                console.log(`WebSocket Error: ${error.message}`);
                 reject(error);
             };
             window.myPongSocket = socket; // to access as a global var
@@ -171,11 +147,9 @@ export async function initializePongWebSocket(data, pong) {
 export async function initializeWebSocket() {
     return new Promise(async (resolve, reject) => {
         if (window.mySocket && window.mySocket.readyState === WebSocket.OPEN) {
-            console.log("Socket already initialized");
             resolve(window.mySocket);
             return;
         }
-        console.log("In Init WS FRONT")
         const response = await fetch(`https://${window.location.hostname}:8443/get_ws_token/`, {
             credentials: 'include',
         });
@@ -183,10 +157,8 @@ export async function initializeWebSocket() {
         const isUserAuth = await isUserConnected();
         if (isUserAuth !== false) {
             const token = jwt.token
-            console.log("In Init WS FRONT, USER AUTHENTICATED")
             const wsSelect = window.location.protocol === "https:" ? "wss://" : "ws://";
             const url = wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/'
-            console.log("url is:", url);
             let socket;
             try {
                 socket = new WebSocket(wsSelect + `${window.location.hostname}:8443` + '/ws/user/' + token + '/');
@@ -196,11 +168,9 @@ export async function initializeWebSocket() {
                 return;
             }
             socket.onopen = function (e) {
-                console.log("WebSocket connection established");
                 resolve(socket);
             };
             socket.onmessage = function (event) {
-                // console.log("Message from server:", event.data);
                 const data = JSON.parse(event.data);
                 if (data.type === 'status_change') {
                     handle_friend_status(socket, data);
@@ -237,16 +207,10 @@ export async function initializeWebSocket() {
                 }
             }
             socket.onclose = function (event) {
-                if (event.wasClean) {
-                    console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
-                } else {
-                    console.log('Connection died');
-                }
                 socket = null;
             };
 
             socket.onerror = function (error) {
-                console.log(`WebSocket Error: ${error.message}`);
                 socket = null;
                 reject(error);
             };
@@ -258,9 +222,6 @@ export async function initializeWebSocket() {
 }
 
 function handle_received_friend_request(socket, message) {
-//    console.log("socket is:", socket);
-//    console.log("message is:", message);
-
     const toast = new ToastComponent();
     toast.throwToast('Notification', `You have received a new friend request from ${message.from_user}`, 5000);
     create_friend_request_div(message, message.size);
@@ -268,9 +229,6 @@ function handle_received_friend_request(socket, message) {
 }
 
 function handle_friend_req_accept(socket, message) {
-//    console.log("socket is:", socket);
-//    console.log("message is:", message);
-
     const toast = new ToastComponent();
     toast.throwToast('Notification', `${message.to_user} Is now your friend!`, 5000);
     create_friend_div_ws(message.to_status, message.to_user_id, message.to_image_url, message.to_user);
@@ -283,9 +241,6 @@ function handle_friend_req_accept(socket, message) {
 }
 
 function handle_friend_req_decline(socket, message) {
-//    console.log("socket is:", socket);
-//    console.log("message is:", message);
-
     const toast = new ToastComponent();
     toast.throwToast('Notification', `${message.to_user} declined your friend request...`, 5000);
     remove_friend_request_div(message.to_user_id);
@@ -297,9 +252,6 @@ function handle_friend_req_decline(socket, message) {
 }
 
 function handle_friend_removed(socket, message) {
-//    console.log("socket is:", socket);
-//    console.log("message is:", message);
-
     remove_friend_div(message.from_user_id);
     const friend = document.getElementsByClassName('friend');
     if (message.size === 1 || friend.length === 0) {
@@ -308,26 +260,16 @@ function handle_friend_removed(socket, message) {
 }
 
 function handle_friend_status(socket, message) {
-//    console.log("socket is:", socket);
-//    console.log("message is:", message);
-    console.log("status change detected for user:", message.user_id, "new status is:", message.status);
-
     const friendItem = document.querySelector(`[data-id="${message.user_id}"]`)
     if (friendItem) {
         const statusElement = friendItem.querySelector('.status');
         if (statusElement) {
             statusElement.innerText = `Status: ${message.status}`;
         }
-        console.log("User id is: ", message.user_id);
-        let friendID = message.user_id
         let friendStatusId = `friend-status-${message.user_id}`;
         let friendStatusTextId = `friend-status-text-${message.user_id}`;
-
-        console.log("Constructed IDs:", friendStatusId, friendStatusTextId);
         let friendStatus = document.getElementById(friendStatusId);
         let friendStatusText = document.getElementById(friendStatusTextId);
-        console.log("friendStatus is:", friendStatus);
-        console.log("friendStatusText is:", friendStatusText);
         if (friendStatus && friendStatusText) {
             friendStatus.classList.remove('bg-success', 'bg-danger');
             friendStatusText.innerText = message.status;
@@ -341,11 +283,7 @@ function handle_friend_status(socket, message) {
 }
 
 async function handle_tournament_created(socket, data) {
-    console.log("Tournament created socket:", socket);
-    console.log("data is:", data);
-
     const user = await isUserConnected();
-    console.log("User is:", user);
     if (user.id !== data.creator) {
         const toast = new ToastComponent();
         toast.throwToast('Notification', `${data.message}`, 5000);
@@ -355,18 +293,12 @@ async function handle_tournament_created(socket, data) {
 }
 
 function handle_tournament_full(socket, data) {
-    console.log("Tournament full socket:", socket);
-    console.log("data is:", data);
-
     const toast = new ToastComponent();
     toast.throwToast('Notification', `${data.message}`, 3000);
     load_new_notifications();
 }
 
 function handle_tournament_new_player(socket, data) {
-    console.log("Tournament new player socket:", socket);
-    console.log("data is:", data);
-
     reload_new_players(data.tournament_name);
 }
 

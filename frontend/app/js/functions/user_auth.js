@@ -1,5 +1,3 @@
-import ToastComponent from "../components/Toast.js";
-
 export function isUserConnected() {
     return new Promise((resolve, reject) => {
         fetch(`https://${window.location.hostname}:8443/check_jwt`, {
@@ -18,7 +16,6 @@ export function isUserConnected() {
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
                 resolve(false);
             });
     });
@@ -33,7 +30,5 @@ export async function getCsrf() {
             },
             credentials: "include"
         });
-    } catch (e) {
-        console.error('[Router] getCsrf Error :', e);
-    }
+    } catch (e) {}
 }

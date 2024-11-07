@@ -30,7 +30,6 @@ export default class ResetPw {
         const currentPath = window.location.pathname;
         const eachpath = currentPath.split('/');
         if (currentPath.startsWith('/set-reset-password')) {
-            console.log("IN RESET PASSWORD ")
             const csrfToken = getCookie("csrftoken");
             fetch(`https://${window.location.hostname}:8443/reset_password_confirmed/` + eachpath[2] +"/" + eachpath[3] + "/" , {
                 method: 'GET',
@@ -100,9 +99,7 @@ export default class ResetPw {
                             </div>
                         </div>
                         `;
-
                         document.getElementById('password').addEventListener('input', validatePassword);
-
                         const form = document.getElementById("passwordResetForm");
                         if (form) {
                             form.addEventListener('submit', passwordMatching);
@@ -117,7 +114,6 @@ export default class ResetPw {
 				}
 			})
 			.catch(error => {
-				console.error('Error:', error);
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
 			})
@@ -128,7 +124,6 @@ export default class ResetPw {
         const newPassword = document.getElementById("password").value;
         const confirmPassword = document.getElementById("confirm_password").value;
         const csrfToken = getCookie("csrftoken");
-
         if (!passwordMatching) {
             return;
         }
@@ -153,7 +148,6 @@ export default class ResetPw {
             }
         })
         .catch(error => {
-            console.error("Error resetting password: ", error);
             sessionStorage.setItem('toastMessage', JSON.stringify({
                 title: 'Error',
                 message: "Network error or server is unreachable",
@@ -170,7 +164,6 @@ export default class ResetPw {
 
     render() {
         return `
-        <div id="password-reset-container">
-        </div>`;
+        <div id="password-reset-container"></div>`;
     }
 }

@@ -45,9 +45,7 @@ export default class Dashboard {
 	}
 
 	handleTournamentCreation = () => {
-		console.log("Tournament creation handled");
 		const nbPlayers = this.tournamentNbPlayers;
-		console.log("Number of players: ", nbPlayers);
 		const csrfToken = getCookie('csrftoken');
 		const tournamentName = document.getElementById('tournament-name').value;
 		if (!this.validateInput(tournamentName)) {
@@ -73,18 +71,14 @@ export default class Dashboard {
 		.then(response => response.json().then(data => ({ok: response.ok, data})))
 		.then(({ok, data}) => {
 			if (!ok) {
-				console.log("Tournament creation error: ", data);
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
 			} else {
-				console.log("Tournament creation success: ", data);
 				const params = new URLSearchParams(data).toString();
-					console.log("Params: ", params);
 					appRouter.navigate(`/tournament/${data.name}`);
 			}
 		})
 		.catch(error => {
-			console.error("Error fetching tournament creation: ", error);
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
 		});
@@ -147,7 +141,6 @@ export default class Dashboard {
 						createMatchModal.hide();
 						remove_modal_backdrops();
 				} else {
-					console.log("Game request success: ", data);
 					data.code = code;
 					const params = new URLSearchParams(data).toString();
 					let createMatchModal = null;
@@ -164,7 +157,6 @@ export default class Dashboard {
 				}
 			})
 			.catch(error => {
-				console.error("Error fetching friend requests: ", error);
 				const toastComponent = new ToastComponent();
 				toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
 			});
@@ -191,11 +183,9 @@ export default class Dashboard {
 			} else {
 				const carouselInner = document.querySelector('.carousel-inner');
 				const carouselIndicators = document.querySelector('.carousel-indicators');
-
 				if (carouselInner && carouselIndicators) {
 					carouselInner.innerHTML = '';
 					carouselIndicators.innerHTML = '';
-
 					if (data.length === 0) {
 						carouselInner.innerHTML = `
 							<div class="d-flex justify-content-center align-items-center text-center w-full h-full">
@@ -220,7 +210,6 @@ export default class Dashboard {
 			}
 		})
 		.catch(error => {
-			console.error("Error fetching tournaments: ", error);
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
 		});
@@ -239,7 +228,6 @@ export default class Dashboard {
 		} else {
 			statusHTML = `<div class="status finished">Finished ${winner}</div>`;
 		}
-
 		return `
 			<div class="carousel-item ${isActive}">
 				<div class="tournament-slide d-flex flex-column justify-content-center align-items-center">
@@ -403,12 +391,9 @@ export default class Dashboard {
 				const nbPlayersContainer = document.querySelectorAll('input[name="players"]');
 				nbPlayersContainer.forEach(radio => {
 					radio.addEventListener('change', (event) => {
-						console.log("Number of players changed: ", event.target.value);
 						this.tournamentNbPlayers = event.target.value;
-						// this.tournamentNbPlayers = 2; // FOR TESTS
 					});
 				});
-
 				const tournamentCreationBtn = document.getElementById('tournament-creation-btn');
 				if (tournamentCreationBtn) {
 					tournamentCreationBtn.addEventListener('click', this.handleTournamentCreation);

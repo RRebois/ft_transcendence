@@ -66,7 +66,6 @@ export default class MyProfile {
     checkPasswordChange = (data) => {
         const passwordRegex = new RegExp("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[?!@$ %^&*]).{8,}$");
         let isValid = true;
-
         if (!passwordRegex.test(data.password)) {
             document.getElementById('password').classList.add('is-invalid');
             isValid = false;
@@ -83,15 +82,12 @@ export default class MyProfile {
     }
 
     handlePersonalInfoSubmit = (event) => {
-        console.log('Personal info submit');
         event.preventDefault();
         const first_name = document.getElementById('first_name').value;
         const last_name = document.getElementById('last_name').value;
         const email = document.getElementById('email').value;
         const username = document.getElementById('username').value;
-        console.log(first_name, last_name, email, username);
         if (!this.checkPersonalData({first_name, last_name, email, username})) {
-            console.log("error in personal data");
             return;
         }
         const updateBtn = document.getElementById("update-btn")
@@ -119,7 +115,6 @@ export default class MyProfile {
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
                 const toastComponent = new ToastComponent();
                 toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
                 updateBtn.disabled = false;
@@ -151,7 +146,6 @@ export default class MyProfile {
                     const toastComponent = new ToastComponent();
                     toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
                 } else {
-                    console.log('Success:', data);
                     if (data?.qrcode_url) {
                         const qrcode_div = document.getElementById('qrcode_div');
                         const qrcode_label = document.createElement('p');
@@ -172,7 +166,6 @@ export default class MyProfile {
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
                 const toastComponent = new ToastComponent();
                 toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
             });
@@ -216,7 +209,6 @@ export default class MyProfile {
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
                 const toastComponent = new ToastComponent();
                 toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
                 pwBtn.disabled = false;
@@ -378,10 +370,8 @@ export default class MyProfile {
         if (newPassword) {
             newPassword.addEventListener('input', validatePassword);
         }
-
         const savedFontSize = localStorage.getItem('fontSize') || 'md';
         document.querySelector(`input[name="font-size"][value="${savedFontSize}"]`).checked = true;
-
         document.querySelectorAll('input[name="font-size"]').forEach((radio) => {
             radio.addEventListener('change', function () {
                 if (this.checked) {
@@ -390,7 +380,5 @@ export default class MyProfile {
                 }
             });
         });
-
-
     }
 }

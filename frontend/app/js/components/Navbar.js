@@ -14,8 +14,6 @@ export default class Navbar {
 
 	setUser(user) {
 		this.user = user;
-		console.log("Navbar user: ", this.user);
-		console.log("Navbar user avatar: ", this.user.avatar);
 	}
 
 	logoutUser = async (event) => {
@@ -29,14 +27,11 @@ export default class Navbar {
 			},
 			credentials: 'include'
 		}).then(response => {
-			console.log('Logout response:', response);
 			if (window.mySocket && window.mySocket.readyState === WebSocket.OPEN) {
 				window.mySocket.close();
-				console.log('WebSocket connection closed');
 			}
 			appRouter.navigate('/', false);
 		}).catch(error => {
-			console.error('Logout error:', error);
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
 		})
@@ -76,7 +71,6 @@ export default class Navbar {
 			}
 		})
 		.catch(error => {
-			console.error('Error:', error);
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
 			saveBtn.disabled = false;
@@ -90,7 +84,6 @@ export default class Navbar {
 		})
 		.then(response => response.json().then(data => ({ok: response.ok, data})))
 		.then(({ok, data}) => {
-			console.log("Data: ", data);
 			if (!ok) {
 				if (data.message === "superuser") {
 					return;
@@ -102,7 +95,6 @@ export default class Navbar {
 			}
 		})
 		.catch(error => {
-			console.error("Error fetching previous avatars: ", error);
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
 		});
@@ -143,7 +135,6 @@ export default class Navbar {
 			}
 		})
 		.catch(error => {
-			console.error('Error:', error);
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
 		});
@@ -169,7 +160,6 @@ export default class Navbar {
 				if (dropdownNotif) {
 					let notifChanged = false;
 					data.forEach(notification => {
-//						console.log("Notif is: ", notification);
 						const notifElem = document.createElement('li');
 						notifElem.classList.add('bg-notif', 'dropdown-item');
 						notifElem.innerHTML = `
@@ -190,7 +180,6 @@ export default class Navbar {
 			}
 		})
 		.catch(error => {
-			console.error('Error:', error);
 			const toastComponent = new ToastComponent();
 			toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
 		});

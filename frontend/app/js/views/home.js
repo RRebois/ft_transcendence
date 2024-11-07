@@ -26,7 +26,6 @@ export default class Home {
     }
 
     setProps(newProps) {
-        console.log('[HOME] new props: ', newProps);
         this.props = newProps;
     }
 
@@ -35,7 +34,6 @@ export default class Home {
         const username = document.getElementById('login-username').value;
         const password = document.getElementById('login-pwd').value;
         const csrfToken = getCookie('csrftoken');
-        console.log(username, password);
         if (!username || !password) {
             return;
         }
@@ -46,7 +44,7 @@ export default class Home {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken // Include CSRF token in request headers if needed
+                'X-CSRFToken': csrfToken
             },
             credentials: 'include',
             body: JSON.stringify({username, password})
@@ -75,7 +73,6 @@ export default class Home {
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
                 const toastComponent = new ToastComponent();
                 toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
                 loginBtn.disabled = false;
@@ -99,7 +96,6 @@ export default class Home {
                     const toastComponent = new ToastComponent();
                     toastComponent.throwToast('Error', data.message || 'Something went wrong', 5000, 'error');
                     OauthBtn.disabled = false;
-                    // appRouter.navigate(data.redirect_url);
                     window.location.href = data.redirect_url;
                 } else {
                     try {
@@ -114,7 +110,6 @@ export default class Home {
                 }
             })
             .catch(error => {
-                    console.error('Error:', error);
                     const toastComponent = new ToastComponent();
                     toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
                     OauthBtn.disabled = false;
@@ -127,21 +122,16 @@ export default class Home {
         const user_id = this.user_id;
         const csrfToken = getCookie('csrftoken');
         const otpRegex = new RegExp("^[0-9]{6}$");
-        console.log("sending otp: ", otp);
-        console.log("user_id: ", user_id);
         const otpBtn = document.getElementById("otp-submit")
         if (otpBtn)
             otpBtn.disabled = true;
         if (!otp.match(otpRegex)) {
-            console.log("Invalid OTP");
             document.getElementById('otp').classList.add('is-invalid');
             otpBtn.disabled = false;
             return;
         } else {
-            console.log("Valid OTP");
             document.getElementById('otp').classList.remove('is-invalid');
         }
-        console.log("fetching otp");
         fetch(`https://${window.location.hostname}:8443/verifyotp`, {
             method: 'POST',
             headers: {
@@ -169,7 +159,6 @@ export default class Home {
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
                 const toastComponent = new ToastComponent();
                 toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
                 otpBtn.disabled = false;
@@ -193,16 +182,13 @@ export default class Home {
         const csrfToken = getCookie('csrftoken');
         const email = document.getElementById('email').value;
         const emailFeedback = document.getElementById('email-feedback')
-        console.log("Mail entered: '", email, "'");
         if (!this.checkEmailFormat(email)) {
-            console.log("Email regex failed");
             emailFeedback.textContent = "Wrong email format";
             return;
         }
         const submitBtn = document.getElementById('forgotPW-submit');
         if (submitBtn)
             submitBtn.disabled = true;
-        console.log("fetching reset pw");
         fetch(`https://${window.location.hostname}:8443/reset_password`, {
             method: 'POST',
             headers: {
@@ -215,12 +201,10 @@ export default class Home {
             .then(response => response.json().then(data => ({ok: response.ok, data})))
             .then(({ok, data}) => {
                 if (!ok) {
-                    console.log('Not success:', data);
                     document.getElementById('email').classList.add('is-invalid');
                     submitBtn.disabled = false;
                     emailFeedback.textContent = data.message;
                 } else {
-                    console.log('Success:', data);
                     document.getElementById('email').classList.remove('is-invalid');
                     const passwordModal = bootstrap.Modal.getInstance(document.getElementById('forgotPWModal'));
                     if (passwordModal)
@@ -232,30 +216,11 @@ export default class Home {
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
                 submitBtn.disabled = false;
                 const toastComponent = new ToastComponent();
                 toastComponent.throwToast('Error', 'Network error or server is unreachable', 5000, 'error');
             });
-        console.log("End of reset pw");
     }
-
-    // sendOTPMail(event) {
-    //     event.preventDefault();
-    //     const csrfToken = getCookie('csrftoken');
-    //     const email = document.getElementById('email').value;
-    //     const emailFeedback = document.getElementById('email-feedback')
-    //     console.log("Mail entered: '", email, "'");
-    //     if (!this.checkEmailFormat(email)) {
-    //         console.log("Email regex failed");
-    //         emailFeedback.textContent = "Wrong email format";
-    //         return;
-    //     }
-    //     const submitBtn = document.getElementById('mail-submit');
-    //     if (submitBtn)
-    //         submitBtn.disabled = true;
-    //     fetch
-    // }
 
     setupEventListeners() {
         const form = document.getElementById('login-form');
@@ -287,10 +252,6 @@ export default class Home {
         if (forgotPWSubmit) {
             forgotPWSubmit.addEventListener('click', this.sendResetLink);
         }
-        // const lostOTP = document.getElementById('mail-submit');
-        // if (lostOTP) {
-        //     lostOTP.addEventListener('click', this.sendOTPMail);
-        // }
         applyFontSize();
         if (this.props.message) {
             const toastComponent = new ToastComponent();

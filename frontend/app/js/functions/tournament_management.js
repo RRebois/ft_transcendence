@@ -1,6 +1,5 @@
 import { getCookie } from "@js/functions/cookie.js";
 import ToastComponent from "@js/components/Toast.js";
-import {applyFontSize} from "./display.js";
 import {appRouter} from "@js/spa-router/initializeRouter.js";
 
 export function load_tournaments_ws(type = "all") {
@@ -53,7 +52,6 @@ export function load_tournaments_ws(type = "all") {
         }
     })
     .catch(error => {
-        console.error("Error fetching tournaments: ", error);
         const toastComponent = new ToastComponent();
         toastComponent.throwToast("Error", "Network error or server is unreachable", 5000, "error");
     });
@@ -88,40 +86,3 @@ export function reload_new_players(tournament_name){
         appRouter.navigate(window.location.pathname);
     }
 }
-
-// export function load_players_ws() {
-//     const playerDiv = document.getElementById('players');
-//         if (playerDiv) {
-//             playerDiv.innerHTML = '';
-//             tournament.players.forEach(player => {
-//                 const matchsPlayed = this.fetch_matchs_played(tournament, player);
-//                 const playerElement = document.createElement('div');
-//                 playerElement.classList.add('player-card', 'd-flex', 'flex-wrap', 'flex-row', 'align-items-center', 'justify-content-evenly', 'bg-tournament', 'rounded', 'px-3', 'py-2', 'm-1')
-//                 playerElement.innerHTML = `
-//                     <div id="user-id" class="d-flex flex-column align-items-center justify-content-center w-128">
-//                         <p class="mx-2 my-1 play-bold">${player?.Username}</p>
-//                         <img src="${player.img}" alt="user avatar image" class="h-64 w-64 rounded-circle" />
-//                     </div>
-//                     <div class="d-flex flex-column align-items-center justify-content-center mx-4">
-//                         <p class="play-bold">Elo:</p>
-//                         <p class="m-0">${player?.stats.pong.elo[0].elo}</p>
-//                     </div>
-//                     <div class="d-flex flex-column align-items-center justify-content-center w-128">
-//                         <p class="play-bold">Matchs played:</p>
-//                         <p class="m-0">${matchsPlayed}</p>
-//                     </div>
-//                 `;
-//                 playerDiv.appendChild(playerElement);
-//             });
-//         }
-// }
-//
-// function fetch_matchs_played(tournament, player) {
-//         let counter = 0;
-//         tournament.matchs.forEach(match => {
-//             if ((match.player1 === player.Username || match.player2 === player.Username) && match.isFinished === "True") {
-//                 counter++;
-//             }
-//         });
-//         return counter;
-//     }
