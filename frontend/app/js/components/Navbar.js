@@ -14,6 +14,8 @@ export default class Navbar {
 
 	setUser(user) {
 		this.user = user;
+		console.log("Navbar user: ", this.user);
+		console.log("Navbar user avatar: ", this.user.avatar);
 	}
 
 	logoutUser = async (event) => {
@@ -267,7 +269,6 @@ export default class Navbar {
 								<img src="${this.user?.image_url}" class="rounded-circle h-128 w-128" alt="avatar">
 								<div>
 									<p class="play-bold mt-1 text">Select one of your previous avatars</p>
-									<!-- Previous profile pictures to load here -->
 									<div class="d-flex" id="previous-pp-list">
 									</div>
 								</div>

@@ -3,15 +3,8 @@ import random
 import asyncio
 import time
 from asgiref.sync import sync_to_async
-
 from configFiles.globals import *
 from ..models import *
-
-
-import logging
-logging.basicConfig(level=logging.ERROR)
-logger = logging.getLogger(__name__)
-
 
 class PongBot():
 	instances = 0
@@ -140,7 +133,6 @@ class PongBot():
 		refresh_rate = 1 if not self.training else 0
 		sleep_rate = SLEEP if not self.training else SLEEP / 10
 		while True:
-			try:
 				action = await self.continuous_paddle_mov(state)
 				curr_time = time.time()
 				if curr_time - last_time >= refresh_rate:
@@ -155,8 +147,6 @@ class PongBot():
 				state = new_state
 
 				await asyncio.sleep(sleep_rate)
-			except Exception as e:
-				logger.error(f'Error in bot_loop: {str(e)}', exc_info=True)
 
 	async def launch_bot(self):
 		if not PongBot.instances:
