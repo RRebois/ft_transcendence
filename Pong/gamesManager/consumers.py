@@ -177,6 +177,9 @@ class GameManagerConsumer(AsyncWebsocketConsumer):
 
     async def decrement_connection_count(self):
         session_data = await self.get_session_data()
+        if self.game_code == 40 and session_data['status'] == 'waiting':
+            await sync_to_async(MatchMaking.remove_one_player)(session_data, self.user)
+            return
         session_data['connected_players'] -= 1
         session_data['players'][self.username]['connected'] = False
         if session_data['status'] != 'waiting' and not session_data['deconnection']\

@@ -80,7 +80,6 @@ export default class Register {
         } else {
             document.getElementById('password2').classList.remove('is-invalid');
         }
-        console.log("isValid: ", isValid);
         return isValid;
     }
 

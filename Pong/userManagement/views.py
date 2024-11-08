@@ -361,7 +361,7 @@ class UserStatsDataView(APIView):
         try:
             user_stats = UserData.objects.get(user_id=User.objects.get(username=username))
         except User.DoesNotExist:
-            return JsonResponse({"message": "User does not exist."}, status=500)
+            return JsonResponse({"message": "User does not exist."}, status=404)
         return JsonResponse(user_stats.serialize())
 
 
@@ -511,7 +511,7 @@ class ChangeAvatarView(APIView):
                     return JsonResponse(data={"message": "Avatar changed successfully."})
             return JsonResponse(data={"message": "An error occurred. Please try again."})
         except Avatars.DoesNotExist:
-            return JsonResponse(data={"message": "An error occurred. Please try again."}, status=500)
+            return JsonResponse(data={"message": "An error occurred. Please try again."}, status=404)
 
 class SetPreviousAvatar(APIView):
     def post(self, request):
@@ -693,7 +693,7 @@ class Security2FAView(APIView):
                 return JsonResponse({"qrcode_url": qr_url,
                                      "message": "2FA activated, please scan the QR-code in your authenticator app to save your account code."})
             except Exception as e:
-                return JsonResponse({"message": str(e)}, status=500)
+                return JsonResponse({"message": str(e)}, status=400)
         else:
             try:
                 user.totp = None
@@ -701,7 +701,7 @@ class Security2FAView(APIView):
                 user.save()
                 return JsonResponse({"message": "2FA successfully deactivated."}, status=200)
             except Exception as e:
-                return JsonResponse({"message": str(e)}, status=500)
+                return JsonResponse({"message": str(e)}, status=400)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -846,7 +846,7 @@ class AcceptFriendRequestView(APIView):
         try:
             friend_request = FriendRequest.objects.get(from_user=friend_request_user_id, to_user=user)
         except FriendRequest.DoesNotExist as e:
-            return JsonResponse({"message": str(e), "level": "warning"}, status=500)
+            return JsonResponse({"message": str(e), "level": "warning"}, status=404)
 
         if friend_request.to_user != user:
             return JsonResponse({"message": "You cannot accept this friend request.", "level": "warning"},
@@ -898,7 +898,7 @@ class DeclineFriendRequestView(APIView):
         try:
             friend_request = FriendRequest.objects.get(from_user=friend_request_user_id, to_user=user)
         except FriendRequest.DoesNotExist as e:
-            return JsonResponse({"message": str(e), "level": "warning"}, status=500)
+            return JsonResponse({"message": str(e), "level": "warning"}, status=404)
 
         if friend_request.to_user != user:
             return JsonResponse({"message": "You cannot decline this friend request.", "level": "warning"},
@@ -934,7 +934,7 @@ class RemoveFriendView(APIView):
         try:
             friend = User.objects.get(id=friend_id)
         except User.DoesNotExist as e:
-            return JsonResponse({"message": str(e), "level": "warning"}, status=500)
+            return JsonResponse({"message": str(e), "level": "warning"}, status=404)
 
         if friend in user.friends.all():
             user.friends.remove(friend)

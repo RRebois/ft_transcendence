@@ -40,6 +40,23 @@ class MatchMaking():
             MatchMaking.matchs[session_id]['players'] = []
             session_data['players'] = {}
             session_data['connected_players'] = 0
+            if session_data['connected_players'] <= 0:
+                cache.delete(session_id)
+                MatchMaking.delete_session(session_id)
+            else:
+                cache.set(session_id, session_data)
+
+    @staticmethod
+    def remove_one_player(session_data, user):
+        session_id = session_data['session_id']
+        game_name = session_data['game']
+        if MatchMaking.matchs.get(session_id):
+            user_data = user.data
+            user_elo = user_data.user_elo_pong[-1]['elo'] if game_name == 'pong' else user_data.user_elo_purrinha[-1]['elo']
+            MatchMaking.matchs[session_id]['elos'].remove(user_elo)
+            MatchMaking.matchs[session_id]['players'].remove(user.username)
+            session_data['players'].pop(user.username)
+            session_data['connected_players'] -= 1
             cache.set(session_id, session_data)
 
     @staticmethod
@@ -57,7 +74,10 @@ class MatchMaking():
                 if MatchMaking.matchs[session_id]['awaited_players'] == len(MatchMaking.matchs[session_id]['players']):
                     MatchMaking.change_session_status(session_id, is_open=False)
                 session_data = cache.get(session_id)
-                player_id = len(session_data['players']) + 1
+                list_ids = [1, 2, 3, 4]
+                for player in session_data['players']:
+                    list_ids.remove(session_data['players'][player]['id'])
+                player_id = list_ids[0]
                 session_data['players'][username] = {'id': player_id, 'connected': False}
                 cache.set(session_id, session_data)
 
