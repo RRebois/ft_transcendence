@@ -40,11 +40,7 @@ class MatchMaking():
             MatchMaking.matchs[session_id]['players'] = []
             session_data['players'] = {}
             session_data['connected_players'] = 0
-            if session_data['connected_players'] <= 0:
-                cache.delete(session_id)
-                MatchMaking.delete_session(session_id)
-            else:
-                cache.set(session_id, session_data)
+            cache.set(session_id, session_data)
 
     @staticmethod
     def remove_one_player(session_data, user):
@@ -57,7 +53,11 @@ class MatchMaking():
             MatchMaking.matchs[session_id]['players'].remove(user.username)
             session_data['players'].pop(user.username)
             session_data['connected_players'] -= 1
-            cache.set(session_id, session_data)
+            if session_data['connected_players'] <= 0:
+                cache.delete(session_id)
+                MatchMaking.delete_session(session_id)
+            else:
+                cache.set(session_id, session_data)
 
     @staticmethod
     def add_player(session_id, username):

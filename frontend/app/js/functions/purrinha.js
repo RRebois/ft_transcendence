@@ -117,7 +117,17 @@ export function display_game_winner(data, view) {
             scalar
         });
         if (root) {
-            root.innerHTML = `
+            if (data?.deconnection === true) {
+                root.innerHTML = `
+                    <div id="game-winner" class="d-flex flex-column gap-2 align-items-center justify-content-center">
+                        <p class="fs-1 play-bold m-1">Game Over</p>
+                        <p class="fs-3 play-regular">${data?.winner} is the winner</p>
+                        <p class="fs-5 play-regular">your opponent has fled 👻</p>
+                        <button type="button" class="btn btn-primary" route="/dashboard">Return home</button>
+                    </div>
+                `;
+            } else {
+                root.innerHTML = `
                 <div id="game-winner" class="d-flex flex-column gap-2 align-items-center justify-content-center">
                     <p class="fs-1 play-bold m-1">Game Over</p>
                     <p class="fs-3 play-regular">${data?.winner} is the winner</p>
@@ -126,6 +136,7 @@ export function display_game_winner(data, view) {
                     <button type="button" class="btn btn-primary" route="/dashboard">Return home</button>
                 </div>
             `;
+            }
         }
     }
 }
