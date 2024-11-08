@@ -91,10 +91,10 @@ export default class Tournament {
             var isParticipant = this.checkUserParticipate(tournament);
             var background;
             if (match.is_finished && isParticipant)
-                if (match?.winner.Username === this.user.username &&
+                if (match?.winner[0] === this.user.username &&
                     (this.user.username === match?.players[0].Username || this.user.username === match?.players[1].Username))
                     background = 'bg-victory'
-                else if (match?.winner.Username !== this.user.username &&
+                else if (match?.winner[0] !== this.user.username &&
                     (this.user.username === match?.players[0].Username || this.user.username === match?.players[1].Username))
                     background = 'bg-defeat';
                 else

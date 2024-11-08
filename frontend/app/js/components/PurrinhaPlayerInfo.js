@@ -24,7 +24,7 @@ export default class PurrinhaPlayerInfo {
             return `
                 <div class="d-flex flex-row gap-2 align-items-center justify-content-center" style="max-height: 100%;">
                     <div class="rounded-circle ratio ratio-1x1" style="height: 100px; width: 100px; background-color: darkgray">
-                        <img id="user_info-profile-pic-${this.game_player_id}" src="${this.player?.photo_url}" alt="" class="h-100 rounded-circle" style="object-fit: cover; max-height: 10vh; max-width: 10vh" />
+                        <img id="user_info-profile-pic-${this.game_player_id}" src="${this.player?.photo_url}" alt="" class="h-100 rounded-circle" style="object-fit: cover; height: 100px; width: 100px;" />
                     </div>
                     <div style="--bs-bg-opacity: .5; min-width: 300px" class="bg-white d-flex g-4 flex-column align-items-center px-3 py-1 rounded">
                         <div class="d-flex flex-row justify-content-between w-100">

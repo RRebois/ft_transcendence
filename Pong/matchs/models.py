@@ -106,12 +106,5 @@ class TournamentMatch(models.Model):
 
             match_result['winner'] = serialized['winner']
 
-        if self.score:
-            if len(self.score) == len(self.players.all()) and all(isinstance(s, int) for s in self.score):
-                max_score = max(self.score)
-                for player in match_result['players']:
-                    if player['score'] == max_score:
-                        match_result['winner'] = player
-
         return match_result
 

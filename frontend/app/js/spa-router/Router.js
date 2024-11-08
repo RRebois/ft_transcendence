@@ -103,13 +103,13 @@ export default class Router {
         if (path !== "/") {
             path = path.replace(/\/+$/, ''); // Remove trailing slashes
         }
-        remove_modal_backdrops();
         const tooltips = document.querySelectorAll('.tooltip');
         if (tooltips) {
             tooltips.forEach(tooltip => {
                 tooltip.remove();
             });
         }
+        remove_modal_backdrops();
         const publicRoutes = ['/', '/register', '/reset_password_confirmed', '/set-reset-password'];
         const isUserAuth = await isUserConnected();
         const route = this.routes.find(route => this.match(route, path));
