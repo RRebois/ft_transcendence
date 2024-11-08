@@ -100,12 +100,6 @@ export default class PongGame {
         const container = document.getElementById("display");
         container.appendChild(this.renderer.domElement);
 
-        // Get the WebGL rendering context
-        this.gl = this.renderer.getContext();
-
-        // Get the lose context extension
-        this.loseContextExtension = this.gl.getExtension('WEBGL_lose_context');
-
         this.animate = this.animate.bind(this);
         this.gameClosed = false;
         this.gameFinished = false;
@@ -856,14 +850,14 @@ export default class PongGame {
             if (homeBtn) {
                 homeBtn.addEventListener("click", () => {
                     this.gameClosed = true;
-                    this.loseContextExtension.loseContext();
+                    this.renderer.dispose();
                 });
             }
             const backTournamentView = document.getElementById("back-tournament-btn");
             if (backTournamentView) {
                 backTournamentView.addEventListener("click", () => {
                     this.gameClosed = true;
-                    this.loseContextExtension.loseContext();
+                    this.renderer.dispose();
                     appRouter.navigate(`/tournament/${data['tournament_name']}`);
                 });
             }
@@ -885,10 +879,10 @@ export default class PongGame {
                                 const toastComponent = new ToastComponent();
                                 toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
                             } else {
-                                // Lose the context to free up resources
                                 data.code = `${this.props?.code}`;
                                 const params = new URLSearchParams(data).toString();
-                                this.loseContextExtension.loseContext();
+                                // dispose renderer to free up resources
+                                this.renderer.dispose();
                                 this.gameClosed = true;
                                 appRouter.navigate(`/${this.props?.game}?${params}`);
                                 const socket = window.mySocket;
