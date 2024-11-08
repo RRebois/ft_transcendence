@@ -856,6 +856,7 @@ export default class PongGame {
             if (homeBtn) {
                 homeBtn.addEventListener("click", () => {
                     this.gameClosed = true;
+                    this.renderer.dispose();
                     this.loseContextExtension.loseContext();
                 });
             }
@@ -863,6 +864,7 @@ export default class PongGame {
             if (backTournamentView) {
                 backTournamentView.addEventListener("click", () => {
                     this.gameClosed = true;
+                    this.renderer.dispose();
                     this.loseContextExtension.loseContext();
                     appRouter.navigate(`/tournament/${data['tournament_name']}`);
                 });
@@ -885,9 +887,10 @@ export default class PongGame {
                                 const toastComponent = new ToastComponent();
                                 toastComponent.throwToast("Error", data.message || "Something went wrong", 5000, "error");
                             } else {
-                                // Lose the context to free up resources
                                 data.code = `${this.props?.code}`;
                                 const params = new URLSearchParams(data).toString();
+                                // Lose the context to free up resources
+                                this.renderer.dispose();
                                 this.loseContextExtension.loseContext();
                                 this.gameClosed = true;
                                 appRouter.navigate(`/${this.props?.game}?${params}`);
