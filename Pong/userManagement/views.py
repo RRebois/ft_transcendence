@@ -552,7 +552,8 @@ class EditDataView(APIView):
             user = authenticate_user(request)
         except AuthenticationFailed as e:
             return JsonResponse(data={'message': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
-
+        if user.status == "in-game":
+            return JsonResponse(data={'message': 'You are currently in a game, come back later'}, status=status.HTTP_403_FORBIDDEN)
         serializer = self.serializer_class(user, data=user_data, partial=True)
         try:
             serializer.is_valid(raise_exception=True)
