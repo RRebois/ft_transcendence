@@ -100,6 +100,12 @@ export default class PongGame {
         const container = document.getElementById("display");
         container.appendChild(this.renderer.domElement);
 
+        // Get the WebGL rendering context
+        this.gl = this.renderer.getContext();
+
+        // Get the lose context extension
+        this.loseContextExtension = this.gl.getExtension('WEBGL_lose_context');
+
         this.animate = this.animate.bind(this);
         this.gameClosed = false;
         this.gameFinished = false;
@@ -851,6 +857,7 @@ export default class PongGame {
                 homeBtn.addEventListener("click", () => {
                     this.gameClosed = true;
                     this.renderer.dispose();
+                    this.loseContextExtension.loseContext();
                 });
             }
             const backTournamentView = document.getElementById("back-tournament-btn");
@@ -858,6 +865,7 @@ export default class PongGame {
                 backTournamentView.addEventListener("click", () => {
                     this.gameClosed = true;
                     this.renderer.dispose();
+                    this.loseContextExtension.loseContext();
                     appRouter.navigate(`/tournament/${data['tournament_name']}`);
                 });
             }
@@ -881,8 +889,9 @@ export default class PongGame {
                             } else {
                                 data.code = `${this.props?.code}`;
                                 const params = new URLSearchParams(data).toString();
-                                // dispose renderer to free up resources
+                                // Lose the context to free up resources
                                 this.renderer.dispose();
+                                this.loseContextExtension.loseContext();
                                 this.gameClosed = true;
                                 appRouter.navigate(`/${this.props?.game}?${params}`);
                                 const socket = window.mySocket;
